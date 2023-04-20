@@ -1,0 +1,90 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>REST API | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.4e81c79e09e9fefae70b83baa1af4e3a.css integrity="md5-ToHHngnp/vrnC4O6oa9OOg==" crossorigin=anonymous><style type=text/css>.blog-content p{text-indent:2em}.blog-content li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><title>REST API GoHalo</title><meta name=description content="Rest API introduce for bastion."><link rel=canonical href=https://gohalo.github.io/cn/docs/bastion/latest/api/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/docs/bastion/latest/api/","url":"https://gohalo.github.io/cn/docs/bastion/latest/api/","name":"REST API","description":"Rest API introduce for bastion.","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2020-10-06T08:49:31CET","dateModified":"2020-10-06T08:49:31CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/docs/bastion/latest/api/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/docs/bastion/latest/api/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/docs/bastion/latest/api/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/docs/bastion/latest/api/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/docs/","url":"https://gohalo.github.io/cn/docs/","name":"Docs"}},{"@type":"ListItem","position":4,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/docs/bastion/","url":"https://gohalo.github.io/cn/docs/bastion/","name":"Bastion"}},{"@type":"ListItem","position":5,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/docs/bastion/latest/","url":"https://gohalo.github.io/cn/docs/bastion/latest/","name":"Latest"}},{"@type":"ListItem","position":6,"item":{"@id":"https://gohalo.github.io/cn/docs/bastion/latest/api/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"REST API","description":"Rest API introduce for bastion.","isPartOf":{"@id":"https://gohalo.github.io/cn/docs/bastion/latest/api/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/docs/bastion/latest/api/"},"datePublished":"2020-10-06T08:49:31CET","dateModified":"2020-10-06T08:49:31CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/docs/bastion/latest/api/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/docs/bastion/latest/api/#/schema/image/2","url":null,"contentUrl":null,"caption":"REST API"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="docs single"><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header><div class=container-xxl><aside class=doks-sidebar><nav id=doks-docs-nav class="collapse d-lg-none" aria-label="Tertiary navigation"><ul class="list-unstyled collapsible-sidebar"><li class=mb-1><button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle=collapse data-bs-target=#section- aria-expanded=true>
+help</button><div class="collapse show" id=section-><ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small"><li><a class="docs-link rounded active" href=/cn/docs/bastion/latest/api/>REST API</a></li><li><a class="docs-link rounded" href=/cn/docs/bastion/latest/troubleshoot/>TroubleShoot</a></li></ul></div></li></ul></nav></aside></div><div class="wrap container-xxl" role=document><div class=content>xxx
+Section: docs<hr>Sections: Pages(0)<hr>Page(/docs/Bastion/latest/_index.md)<hr>Page(/docs/Bastion/latest/_index.md)<hr>Page(/docs/_index.md)<div class="row flex-xl-nowrap"><div class="col-lg-5 col-xl-4 docs-sidebar docs-sidebar-top d-none d-lg-block"><nav class=docs-links aria-label="Main navigation"><ul class="list-unstyled collapsible-sidebar"><li class=mb-1><button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle=collapse data-bs-target=#section- aria-expanded=true>
+help</button><div class="collapse show" id=section-><ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small"><li><a class="docs-link rounded active" href=/cn/docs/bastion/latest/api/>REST API</a></li><li><a class="docs-link rounded" href=/cn/docs/bastion/latest/troubleshoot/>TroubleShoot</a></li></ul></div></li></ul></nav></div><nav class="docs-toc docs-toc-top d-none d-xl-block col-xl-3" aria-label="Secondary navigation"></nav><main class="docs-content col-lg-11 col-xl"><h1>REST API</h1><p class=lead></p><nav class=d-xl-none aria-label="Quaternary navigation"></nav><p>对于合法的请求应该返回统一的数据格式，对于返回数据，通常会包含如下字段。</p><ul><li>code——即一个整数类型的HTTP响应状态码。</li><li>message——即返回给前端的信息，正常返回时是"success"，当值为 &ldquo;fail&rdquo; 或 &ldquo;error&rdquo; 时，用于显示错误信息。</li><li>data——即前端需要返回的数据。 当值为 &ldquo;fail&rdquo; 或 &ldquo;error&rdquo; 时，设置为null。</li></ul><p>2**：成功–表示请求已被成功接收。</p><pre><code>200（成功）用浏览器打开一个网页，正常情况下都会返回200HTTP状态码。
+
+201（创建成功）代表资源创建成功
+</code></pre><p>3**：重定向（URL跳转），要完成请求必须进行更进一步的操作。</p><pre><code>300（多种选择）下载一部片，服务器有 avi、mp4 等格式。
+
+301（永久移动）请求的网页已永久移动到新位置，自动将请求者转到新位置。
+
+304 (页面未修改) ：按F5刷新（第二次访问）。
+</code></pre><p>4**：客户端错误，请求有语法错误或请求无法实现。</p><pre><code>400（错误请求）服务器不理解请求的语法。
+
+401（未授权）没有携带认证信息或携带了错误的认证信息，而没有通过认证。（未登录时）
+
+403（禁止）携带了正确的认证信息，服务器认为该用户对该资源无权访问。(https输成了http)
+
+404（未找到）请求的内容不存在。
+</code></pre><p>5**：服务器端错误，服务器未能实现合法的请求。</p><pre><code>500（服务器内部错误）服务器自己出现错误。
+
+502（网关错误）服务器作为网关或代理，从上游服务器收到无效响应。
+
+503（服务器不可用）服务器超载或停机维护不可用。
+</code></pre><p>批量操作返回结构类似
+{
+&ldquo;code&rdquo;: 0,
+&ldquo;message&rdquo;: &ldquo;success&rdquo;,
+&ldquo;total&rdquo;: 10,
+&ldquo;data&rdquo;: [{
+}]
+}</p><p>https://www.tizi365.com/archives/34.html
+&mdash;&ndash; 获取单个用户所属用户组
+GET /user/group?id=xxx&amp;uid=xxx
+{
+}
+&mdash;&ndash; 获取单个用户详情，可以选择是否查询相关的用户组
+GET /user?id=xxx&amp;uid=xxx&amp;group=true
+{
+}
+&mdash;&ndash; 获取多个用户，可以分页，不含关联用户组信息
+GET /users?group=xxx&amp;total=true
+{
+&ldquo;total&rdquo;: 10,
+&ldquo;data&rdquo;: [{
+}]
+}
+&mdash;&ndash; 添加单个用户，允许绑定用户组，如果已经存在则更新
+POST /user
+{
+}
+&mdash;&ndash; 添加多个用户，允许绑定用户组，如果已经存在则更新
+POST /users
+{
+&ldquo;group&rdquo;: [&ldquo;xxx&rdquo;, &ldquo;xxx&rdquo;], 默认绑定用户组
+&ldquo;data&rdquo;: [{
+}]
+}
+{
+&ldquo;total&rdquo;: 10,
+&ldquo;error&rdquo;: 0,
+&ldquo;detail&rdquo;: [{
+&ldquo;uid&rdquo;: &ldquo;xxxx&rdquo;,
+&ldquo;code&rdquo;: 0,
+&ldquo;message&rdquo;: &ldquo;success&rdquo;,
+}]
+}
+&mdash;&ndash; 通过uid删除用户
+DELETE /user
+[&ldquo;xxx&rdquo;, &ldquo;xxx&rdquo;]
+&mdash;&ndash; 通过id删除用户
+DELETE /user/id
+[xxx, xxx]</p><p>&mdash;&ndash; 添加单个用户组，可以绑定用户
+POST /usergroup
+{
+}
+&mdash;&ndash; 添加单个用户组，可以绑定用户
+POST /usergroups
+{
+&ldquo;users&rdquo;: [&ldquo;xxx&rdquo;, &ldquo;xxx&rdquo;], 默认绑定用户
+&ldquo;data&rdquo;: [{
+}]
+}
+&mdash;&ndash; 为某个用户组绑定用户，通过uid指定
+POST /usergroup/:group_name
+[&ldquo;xxx&rdquo;, &ldquo;xxx&rdquo;]
+&mdash;&ndash; 为某个用户组解绑用户，通过uid指定
+DELETE /usergroup/:group_name
+[&ldquo;xxx&rdquo;, &ldquo;xxx&rdquo;]</p><div class="page-footer-meta d-flex flex-column flex-md-row justify-content-between"></div><div class="docs-navigation d-flex justify-content-between"><a class=ms-auto href=/cn/docs/bastion/latest/troubleshoot/><div class="card my-1"><div class="card-body py-2">TroubleShoot &rarr;</div></div></a></div></main></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2023 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
