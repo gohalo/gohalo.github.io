@@ -1,0 +1,137 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>yum 配置以及常用 rpm 命令 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><title>yum 配置以及常用 rpm 命令 GoHalo</title><meta name=description content="在 CentOS 中，会通过 YUM 或者 RPM 进行软件包的管理，不过 RPM 不能很好的解决软件之间的依赖关系，所以目前使用较多的是 YUM 源。
+介绍常用的管理命令，基本的 RPM 规范，常见的错误处理，例如镜像地址配置、本地源设置、强制安装包等等。
+"><link rel=canonical href=https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/","url":"https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/","name":"yum 配置以及常用 rpm 命令","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2020-07-16T19:18:25CET","dateModified":"2020-07-16T19:18:25CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"yum 配置以及常用 rpm 命令","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/"},"datePublished":"2020-07-16T19:18:25CET","dateModified":"2020-07-16T19:18:25CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/yum-rpm-config-and-command-usage/#/schema/image/2","url":null,"contentUrl":null,"caption":"yum 配置以及常用 rpm 命令"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
+<span>页面目录</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#源配置>源配置</a><ul><li><a href=#使用三方源>使用三方源</a></li><li><a href=#使用本地源>使用本地源</a></li></ul></li><li><a href=#常用命令>常用命令</a></li><li><a href=#其它>其它</a><ul><li><a href=#yum-lock>Yum Lock</a></li><li><a href=#优先级>优先级</a></li><li><a href=#baseurl-vs-mirrorlist>Baseurl VS. MirrorList</a></li><li><a href=#强制升级包>强制升级包</a></li></ul></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#源配置>源配置</a><ul><li><a href=#使用三方源>使用三方源</a></li><li><a href=#使用本地源>使用本地源</a></li></ul></li><li><a href=#常用命令>常用命令</a></li><li><a href=#其它>其它</a><ul><li><a href=#yum-lock>Yum Lock</a></li><li><a href=#优先级>优先级</a></li><li><a href=#baseurl-vs-mirrorlist>Baseurl VS. MirrorList</a></li><li><a href=#强制升级包>强制升级包</a></li></ul></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>yum 配置以及常用 rpm 命令</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2020-07-16</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/linux/ role=button>linux</a></div></div><hr><div class=content-body><p>在 CentOS 中，会通过 YUM 或者 RPM 进行软件包的管理，不过 RPM 不能很好的解决软件之间的依赖关系，所以目前使用较多的是 YUM 源。</p><p>介绍常用的管理命令，基本的 RPM 规范，常见的错误处理，例如镜像地址配置、本地源设置、强制安装包等等。</p><p><img src=images/centos-power-logo.jpg alt="centos power logo" title="centos power logo"></p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>其中 Redhat Package Manager, RPM 是由 RedHat 公司提供的软件包管理器，可以实现软件包的安装、查询、卸载、升级以及校验等，相关的数据会保存在 <code>/var/lib/rpm</code> 目录下，但 rpm 不能很好的解决软件之间的依赖关系。</p><p>在安装时，通常系统文件存放在 <code>/bin</code>、<code>/sbin</code>、<code>/lib</code> 目录下，而第三方软件会存放在 <code>/usr/local/bin</code>、<code>/usr/local/sbin</code>、 <code>/usr/local/lib</code>、<code>/usr/share/man</code> 和 <code>/usr/local/share/man</code> (后两者为帮助文件) 。</p><p>RPM 包通常有一个通用的命名方式：<code>name-version-release.arch.rpm</code> 。</p><ul><li>name: 表示包的名称，包括主包名和分包名；</li><li>version: 表示包的版本信息；</li><li>release: 用于标识 rpm 包本身的发行号，可还包含适应的操作系统；</li><li>arch: 表示主机平台，noarch 表示此包能安装到所有平台上面。</li></ul><p>如 <code>gd-devel-2.0.35-11.el6.x86_64.rpm</code> ，<code>gd</code> 是这个包的主包名；<code>devel</code> 是这个包的分包名；<code>2.0.35</code> 是表示版本信息，<code>2</code> 为主版本号，<code>0</code> 表示次版本号，<code>35</code> 为源码包的发行号也叫修订号； <code>11.el6</code> 中的 <code>11</code> 是 rpm 的发行号，<code>el6</code> 表示 RHEL6；<code>x86_64</code> 是表示适合的平台。</p><p>为了解决各个包之间的依赖关系，可以采用 Yellowdog Updater Modified, YUM 进行管理，该软件是由 Seth Vidal 开发，用于管理 RPM 包。</p><h1 id=源配置>源配置 <a href=#%e6%ba%90%e9%85%8d%e7%bd%ae class=anchor aria-hidden=true>#</a></h1><p>CentOS 中官方的源只包含了有限的安装包，为此需要安装一些常用的三方源。当然，也可以自己手动创建 Yum 仓库，主要采用了 createrepo，用于生成 repodata 软件信息仓库。</p><p>可以通常如下命令查看源列表的配置。</p><pre tabindex=0><code># yum repolist                                            // 查看现在可用的源列表
+# yum repolist all                                        // 查看所有的源列表
+# yum --enablerepo=epel install mysql                     // 从指定源列表下载
+</code></pre><p>接下来看看如何配置第三方的源。</p><h2 id=使用三方源>使用三方源 <a href=#%e4%bd%bf%e7%94%a8%e4%b8%89%e6%96%b9%e6%ba%90 class=anchor aria-hidden=true>#</a></h2><p>配置完成后可以通过 <code>yum repolist all</code> 命令查看三方源是否生效，通过 <code>yum list software</code> 查看相应的软件。对于一些 RPM 包，也可以从 <a href=http://pkgs.org/search/>pkgs.org</a> 或者 <a href=http://www.rpmfind.net>www.rpmfind.net</a> 查找相应的软件包，以及与该软件包相关的依赖。</p><p>注意：如果在安装过程中出现 <code>error: Failed dependencies</code> 可以使用 <code>--nodeps</code> <code>--force</code> 选项强制安装，不过此时有可能导致部分功能失效。</p><p>另外，关于 CentOS 的第三方源，可以参考 <a href=http://wiki.centos.org/zh/AdditionalResources/Repositories>CentOS Wiki</a> 中给出的参考意见。</p><h3 id=国内官方源>国内官方源 <a href=#%e5%9b%bd%e5%86%85%e5%ae%98%e6%96%b9%e6%ba%90 class=anchor aria-hidden=true>#</a></h3><p>也就是一些 CentOS 的镜像，常见的有 <a href=https://mirrors.aliyun.com/>mirrors.aliyun.com</a>、<a href=http://centos.ustc.edu.cn/>centos.ustc.edu.cn</a>、<a href=http://mirrors.163.com/centos/>mirrors.163.com</a>、<a href=http://mirrors.sohu.com/centos/>mirrors.sohu.com</a>，只需要修改基本数据源中的 URL 配置选项。</p><p>阿里云提供了很多的三方仓库，例如 EPEL RPMFusion 等。</p><h3 id=epel-extra-packages-for-enterprise-linux>EPEL, Extra Packages for Enterprise Linux <a href=#epel-extra-packages-for-enterprise-linux class=anchor aria-hidden=true>#</a></h3><p>EPEL是由 Fedora 社区打造，为 RHEL 及衍生发行版如 CentOS、Scientific Linux 等提供高质量软件包的项目，详细内容可以参考 <a href=https://fedoraproject.org/wiki/EPEL/zh-cn>EPEL-Wiki</a> 。</p><p>安装源，其中对应的版本需要根据当前的版本自行选择。</p><pre tabindex=0><code># rpm -Uvh http://mirrors.ustc.edu.cn/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
+# rpm -Uvh http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
+# rpm -Uvh https://mirrors.aliyun.com/epel/epel-release-latest-8.noarch.rpm
+</code></pre><p>接下来时导入证书，当然这步也可以在通过 yum 安装时根据提示自动导入。</p><pre tabindex=0><code># rpm -import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+</code></pre><h3 id=rpmforge>rpmforge <a href=#rpmforge class=anchor aria-hidden=true>#</a></h3><p>可以从 <a href=http://pkgs.repoforge.org/rpmforge-release/>pkgs.repoforge.org</a> 或者 <a href=http://apt.sw.be/redhat/el7/en/x86_64/rpmforge/RPMS/>apt.sw.be</a> 下载。</p><pre tabindex=0><code># rpm -Uvh http://apt.sw.be/redhat/el7/en/x86_64/rpmforge/RPMS/rpmforge-release-xxx.rpm
+</code></pre><h3 id=nux-dextop>nux-dextop <a href=#nux-dextop class=anchor aria-hidden=true>#</a></h3><p>直接从 <a href=http://li.nux.ro/download/nux/dextop/el7/x86_64/>nux-dextop-release*rpm</a> 上查找安装最新的配置，通常 mplayer 会包含在该三方源中。</p><h2 id=使用本地源>使用本地源 <a href=#%e4%bd%bf%e7%94%a8%e6%9c%ac%e5%9c%b0%e6%ba%90 class=anchor aria-hidden=true>#</a></h2><p>可以通过如下方法使用本地源，也就是下载的包含安装包的 ISO 镜像。</p><p>对于 VMware 需要通过如下方法挂载，<code>[Setting] -> [Hardware] -> [CD/DVD] -> 右边 Device 里勾选 Connected</code>，在 Use ISO image file 里选择 ISO 文件后确定即可。</p><p>CentOS 中使用的 yum 源配置文件保存在 <code>/etc/yum.repos.d</code> 目录下，主要包括了两个配置文件 <code>CentOS-Base.repo</code> 和 <code>CentOS-Media.repo</code>；其中，前者是配置网络 yum 源的，而后者是用来配置本地 yum 源。</p><pre tabindex=0><code>----- 对于VM来说，也可以使用Share Folder
+# mount /dev/cdrom /media/cdrom
+# mount -o loop /mnt/hgfs/Share/CentOS-xxx-xxx-bin-DVD.iso /media/cdrom/
+# vi /etc/yum.repos.d/iso.repo
+[c6-media]
+name=CentOS-$releasever - Media      # 自定义名称
+baseurl=file:///media/cdrom/         # 可以指定多个路径
+        file:///media/cdrom2/
+gpgcheck=1
+enabled=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+----- 清除缓存
+# yum clean all
+
+----- 证书也可以使用如下方式安装
+# rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-5
+# yum --enablerepo=c6-media install mysql-server                   # 本地和网络
+# yum --disablerepo=\* --enablerepo=c6-media install mysql-server  # 只使用本地光盘
+</code></pre><h3 id=原生本地源>原生本地源 <a href=#%e5%8e%9f%e7%94%9f%e6%9c%ac%e5%9c%b0%e6%ba%90 class=anchor aria-hidden=true>#</a></h3><p>如上的 ISO 镜像文件中，已经包含了索引文件 (位于 <code>repodata</code> 文件夹)，如果自己创建本地镜像，例如平时收藏的 RPM 软件包或者集成测试等，此时需要通过 <code>createrepo</code> 创建索引文件。</p><p>当然，如过没有 <code>createrepo</code> 命令，则需要安装 <code>createrepo.xxx.rpm</code> 包。</p><pre tabindex=0><code>----- 1. 创建本地yum仓库目录
+$ mkdir -p /share/CentOS/7/local/x86_64/RPMS
+
+----- 2. 创建索引&amp;更新缓存
+$ createrepo /share/CentOS/7/local/x86_64
+$ yum makecache
+
+----- 3. 创建本地repo文件
+$ cat&lt;&lt;-&#34;EOF&#34;&gt;/etc/yum.repos.d/CentOS-Local.repo
+[local]
+name=CentOS-$releasever - local packages for $basearch
+baseurl=file:///share/CentOS/$releasever/local/$basearch
+enabled=1
+gpgcheck=0
+protect=1
+EOF
+</code></pre><p>另外，可以参考 <a href=https://wiki.centos.org/HowTos/CreatePublicMirrors>How to create public mirrors for CentOS</a>、<a href=https://wiki.centos.org/HowTos/CreateLocalRepos>Create Local Repos</a> 。</p><h1 id=常用命令>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 class=anchor aria-hidden=true>#</a></h1><p>如下列举一些常用的命令。</p><pre tabindex=0><code>----- 查看仓库源列表信息，可以先将/var/cache/yum/中的Cache清理
+# yum repolist                                            // 可以是all disabled enabled
+# yum repoinfo                                            // 以及源的信息
+
+----- 查看软件信息
+# rpm -q kernel                                           // 查看安装包的全名
+# rpm -ql kernel                                          // 查看已安装软件包含有的文件
+# rpm -qi kernel                                          // 查看已安装软件包的摘要信息
+# rpm -qa | grep software                                 // 查看是否安装了software
+# rpm -qf /usr/sbin/ifcfg                                 // 查看某文件属于那个包
+# rpm -qc iproute                                         // 查看生成了那些配置文件
+# rpm -qd iproute                                         // 查看生成了那些帮助文件
+# rpm -qpi iproute.rpm                                    // 查看rpm包的信息
+# rpm -qpl iproute.rpm                                    // 查看rpm包中含有的软件列表
+# yum info mysql                                          // 查看包信息
+
+----- 搜索软件
+# yum search package                                      // 搜索package
+
+----- 安装软件
+# rpm --checksig foobar.rpm                               // 校验PGP Signature，查看完整性和来源
+# rpm -qpR foobar.rpm                                     // 查看依赖
+# rpm -ivh --nodeps --force foobar.rpm                    // 强制安装，如果其它软件包未安装，则不能工作
+# yum -y install foobar                                   // 默认为 yes ，通常用于脚本文件，不需要交互
+
+----- 只下载软件，如下命令包含在yum-utils包中
+# yumdownloader PACK                                      // 使用yum自带软件
+# yum -y install yum-downloadonly                         // 通过yum-downloadonly插件
+# yum -y install --downloadonly --downloaddir=/tmp/ PACK  // 直接使用
+
+----- 安装软件包群，很多被打包成Group的软件，可以通过如下命令查看、安装
+# yum grouplist
+# yum groupinstall &#39;MySQL Database&#39;
+# yum groupupdate &#39;MySQL Database&#39;
+# yum groupremove &#39;MySQL Database&#39;
+
+----- 卸载软件
+# rpm -evv --nodeps foobar                                // 不需要指定到foobar.rpm
+# yum -y remove foobar
+
+----- 升级软件包
+# rpm -Uvh foobar.rpm                                     // 如果新版本不工作，仍可以使用之前的版本
+# yum check-update                                        // 查看可升级的软件包
+# yum update foobar                                       // 升级特定的软件
+# yum update                                              // 升级所有软件
+
+----- 清除/更新Cache
+# yum clean all                                           // 默认会保存在/var/cache/yum
+# yum makecache                                           // 通常在修改/etc/yum/repos.d目录下配置文件之后
+
+----- 获得源码，需要安装yum-utils工具，提供了yumdownloader
+# vi /etc/yum.repos.d/CentOS-Source.repo                  // 将enabled设置为1
+# yum clean all                                           // 清空缓存
+# yum makecache                                           // 使修改生效
+# rpm -qf `which mysql`                                   // 查看对应安装包
+# yumdownloader --source mariadb                          // 下载源码包，不加--source则只下载
+# rpm2cpio coreutils-8.4-19.el6_4.2.src.rpm | cpio -ivd   // 解压rpm包
+
+----- 列出软件
+# yum list | less                                         // 列出所有可安装的软件包
+# yum list updates                                        // 列出所有可更新的软件包
+# yum list installed                                      // 列出所有已安装的软件包
+# yum list extras                                         // 列出所有已安装但不在 Yum Repository 內的软件包
+# yum list [package]                                      // 列出所指定的软件包
+
+----- 其它
+# yum shell                                               // 交互环境，可以执行多条命令
+# yum history                                             // 查看历史
+# rpm -Vp xxx.rpm                                         // 与数据库中的版本校验 (Verify)
+# rpm -Va                                                 // 校验所有的
+# rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6      // 导入 GPG key
+----- 查询未安装软件包的依赖关系
+$ rpm -qRp vim-common-6.3.046-2.el4.1.x86_64.rpm
+----- 查询已安装软件包的依赖关系
+$ rpm -qR vim-common-6.3.046-2.el4.1
+
+----- 数据库出错，通过下述命令重建
+# rm /var/lib/rpm/__db*
+# rpm --rebuilddb
+# rpmdb_verify Packages
+</code></pre><p><code>yum makecache</code> 会把服务器的包信息下载到本地电脑缓存起来，配合 <code>yum -C search xxx</code> 使用，不用上网检索就能查找软件的相关信息。</p><h1 id=其它>其它 <a href=#%e5%85%b6%e5%ae%83 class=anchor aria-hidden=true>#</a></h1><h2 id=yum-lock>Yum Lock <a href=#yum-lock class=anchor aria-hidden=true>#</a></h2><p>如果在通过 yum 安装软件时出现，<code>Another app is currently holding the yum lock</code> 错误，主要是为了防止 RPM 许同时运行造成冲突。</p><p>如果确认没有 yum 同时运行，那么可以通过 <code>cat /var/run/yum.pid</code> 查看占用的进程的 PID ，通过 <code>rm -f /var/run/yum.pid</code> 删除，重新安装。</p><h2 id=优先级>优先级 <a href=#%e4%bc%98%e5%85%88%e7%ba%a7 class=anchor aria-hidden=true>#</a></h2><p>在使用时，最好先安装 <code>yum-priorities</code> 插件，该插件用来设置 yum 在调用软件源时的顺序，因为官方提供的软件源，都是比较稳定和被推荐使用的，因此，官方源的顺序要高于第三方源的顺序。</p><pre tabindex=0><code># yum install yum-priorities
+</code></pre><p>安装后需要设置 <code>/etc/yum.repos.d/</code> 目录下的 <code>*.repo</code> 相关文件，例如 <code>CentOS-Base.repo</code>、<code>epel.repo</code>、<code>nux-dextop.repo</code> 等，在这些文件中配置优先级 <code>priority=N</code> (N为1到99的正整数，数值越小优先级越高)，一般第三的软件源设置的优先级大于 10 。</p><h2 id=baseurl-vs-mirrorlist>Baseurl VS. MirrorList <a href=#baseurl-vs-mirrorlist class=anchor aria-hidden=true>#</a></h2><p>在 <code>/etc/yum.repo.d</code> 目录下，基本上每个仓库的配置文件都包含了这两个配置项，例如：</p><pre tabindex=0><code>mirrorlist=http://mirrorlist.centos.org/?release=$releasever&amp;arch=$basearch&amp;repo=BaseOS&amp;infra=$infra
+baseurl=http://mirror.centos.org/$contentdir/$releasever/BaseOS/$basearch/os/
+</code></pre><p>另外，在 <code>/etc/yum.conf</code> 文件中看到如下配置项，实际上就是缓存。</p><pre tabindex=0><code>cachedir=/var/cache/yum/$basearch/$releasever
+</code></pre><p>如果打开 <code>mirrorlist</code> 的配置项，实际上是一堆的 <code>baseurl</code>；而 <code>baseurl</code> 必须要指向 YUM 仓库上的 <code>repodata</code> 目录，该目录保存了 RPM 安装时的依赖信息。</p><p>当需要配置三方的仓库时，就需要修改 <code>baseurl</code> 的值。</p><h2 id=强制升级包>强制升级包 <a href=#%e5%bc%ba%e5%88%b6%e5%8d%87%e7%ba%a7%e5%8c%85 class=anchor aria-hidden=true>#</a></h2><p>当一个软件打上 Patch 并制作 RPM 包之后，如果希望本地安装、测试，那么就可能会遇到如下的一些问题。</p><h3 id=同名同版本>同名同版本 <a href=#%e5%90%8c%e5%90%8d%e5%90%8c%e7%89%88%e6%9c%ac class=anchor aria-hidden=true>#</a></h3><p>已经安装好的包，需要重新安装同名而且同版本的包，那么可以使用下面的命令强制安装。</p><pre tabindex=0><code>rpm -ivh --replacepkgs package-1.2.3-34.el7.x86_64.rpm
+</code></pre><h3 id=回退到老包>回退到老包 <a href=#%e5%9b%9e%e9%80%80%e5%88%b0%e8%80%81%e5%8c%85 class=anchor aria-hidden=true>#</a></h3><p>也就是需要安装一个版本号较老的包。</p><pre tabindex=0><code>rpm -Uvh --oldpackage package-1.2.1-34.el7.x86_64.rpm
+</code></pre><p>当然，其实也可以使用 YUM 安装，这样就不需要再记住上面的包，也就是直接使用 <code>yum localinstall package-1.2.3-34.el7.x86_64.rpm</code> 命令即可。</p></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/linux-network-settings/>Linux 网络配置</a></li><li><a class=text-body href=/cn/blog/linux-system-config/>Linux 系统配置</a></li><li><a class=text-body href=/cn/blog/c-linux-executable-binary-parse-tools/>Linux 可执行文件解析工具</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2023 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
