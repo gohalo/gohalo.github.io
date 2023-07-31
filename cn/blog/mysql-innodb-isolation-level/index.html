@@ -4,10 +4,10 @@
 <button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
 <span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
 <span>页面目录</span>
-<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#常用命令>常用命令</a></li><li><a href=#事务超时>事务超时</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#读取异常>读取异常</a><ul><li><a href=#lost-update>Lost Update</a></li><li><a href=#dirty-read>Dirty Read</a></li><li><a href=#non-repeatable-read>Non-Repeatable Read</a></li><li><a href=#phantom>Phantom</a></li><li><a href=#其它-1>其它</a></li></ul></li><li><a href=#隔离级别>隔离级别</a><ul><li><a href=#read-uncommitted>READ UNCOMMITTED</a></li><li><a href=#read-committed>READ COMMITTED</a></li><li><a href=#repeatable-read>REPEATABLE READ</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#常用命令>常用命令</a></li><li><a href=#事务超时>事务超时</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#读取异常>读取异常</a><ul><li><a href=#lost-update>Lost Update</a></li><li><a href=#dirty-read>Dirty Read</a></li><li><a href=#non-repeatable-read>Non-Repeatable Read</a></li><li><a href=#phantom>Phantom</a></li><li><a href=#其它-1>其它</a></li></ul></li><li><a href=#隔离级别>隔离级别</a><ul><li><a href=#read-uncommitted>READ UNCOMMITTED</a></li><li><a href=#read-committed>READ COMMITTED</a></li><li><a href=#repeatable-read>REPEATABLE READ</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>InnoDB 隔离级别使用实例</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2015-11-01</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#异常场景>异常场景</a></li><li><a href=#总结>总结</a></li></ul></li><li><a href=#mysql-配置>MySQL 配置</a><ul><li><a href=#事务超时>事务超时</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#示例详解>示例详解</a><ul><li><a href=#read-uncommitted>READ UNCOMMITTED</a></li><li><a href=#read-committed>READ COMMITTED</a></li><li><a href=#repeatable-read>REPEATABLE READ</a></li><li><a href=#serializable>SERIALIZABLE</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#异常场景>异常场景</a></li><li><a href=#总结>总结</a></li></ul></li><li><a href=#mysql-配置>MySQL 配置</a><ul><li><a href=#事务超时>事务超时</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#示例详解>示例详解</a><ul><li><a href=#read-uncommitted>READ UNCOMMITTED</a></li><li><a href=#read-committed>READ COMMITTED</a></li><li><a href=#repeatable-read>REPEATABLE READ</a></li><li><a href=#serializable>SERIALIZABLE</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>InnoDB 隔离级别使用实例</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2015-11-01</span>
 <span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/mysql/ role=button>mysql</a>
 <a class="btn btn-light" href=https://gohalo.github.io/tags/innodb/ role=button>innodb</a>
-<a class="btn btn-light" href=https://gohalo.github.io/tags/database/ role=button>database</a></div></div><hr><div class=content-body><p>数据库的事务存在着 ACID 四个属性，而在实际应用场景中，当面临着性能需求时，隔离性往往成为最容易妥协的一个，其实际上就是指数据库在并发事务下的表现。</p><p>在本文章中，详细介绍下 InnoDB 中关于隔离级别的实现。</p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>很多 DBMS 定义了不同的 &ldquo;事务隔离等级&rdquo; 来控制锁的程度，多数的数据库事务都避免高等级的隔离等级 (如可序列化) 从而减少对系统的锁的开销，高的隔离级别往往会增加死锁发生的几率。</p><p>同时，当降低事务的隔离级别时，程序员需要小心的分析数据库访问部分的代码，以保证不会造成难以发现的代码 bug。</p><h2 id=常用命令>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 class=anchor aria-hidden=true>#</a></h2><p>InnoDB 默认是可重复读的 (REPEATABLE READ)，提供 SQL-92 标准所描述的所有四个事务隔离级别，可以在启动时用 <code>--transaction-isolation</code> 选项设置，也可以配置文件中设置。</p><pre tabindex=0><code>$ cat /etc/my.cnf
+<a class="btn btn-light" href=https://gohalo.github.io/tags/database/ role=button>database</a></div></div><hr><div class=content-body><p>数据库的事务存在着 ACID 四个属性，而在实际应用场景中，当面临着性能需求时，隔离性往往成为最容易妥协的一个，其实际上就是指数据库在并发事务下的表现。</p><p>在本文章中，详细介绍下 InnoDB 中关于隔离级别的实现。</p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>事务是具有 ACID 特性的一系列操作集合，其中原子性表示某个事务中的所有操作，要么全部成功，要么全部失败，但无法保证事务的过程也是原子的，约束事务过程的是隔离性，而隔离级别定义了事务间的隔离程度。</p><p>在 <a href=http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt>ANSI SQL-92</a> 中定义的隔离级别定义是当前使用最广的，包括了读未提交 (Read Uncommitted)、读提交 (Read Committed)、可重复读 (Repeatable Read) 和可序列化 (Serializable) 四种。</p><h2 id=异常场景>异常场景 <a href=#%e5%bc%82%e5%b8%b8%e5%9c%ba%e6%99%af class=anchor aria-hidden=true>#</a></h2><p>不同隔离级别会影响到数据库的资源开销，最常见的就是锁，从而会影响系统并发，除此之外，还会需要特别注意可能产生的影响，在 SQL-92 中对其中的三种也进行了说明。</p><h3 id=lost-update-丢失更新>Lost Update 丢失更新 <a href=#lost-update-%e4%b8%a2%e5%a4%b1%e6%9b%b4%e6%96%b0 class=anchor aria-hidden=true>#</a></h3><p>当两个事务读取相同数据，然后都尝试更新原来的数据成新的值，此时，第二个事务可能完全覆盖掉第一个所完成的更新，这也是唯一一个用户可能在所有情况下都想避免的行为，在 SQL 92 中甚至没有提及。</p><h3 id=dirty-read-脏读>Dirty Read 脏读 <a href=#dirty-read-%e8%84%8f%e8%af%bb class=anchor aria-hidden=true>#</a></h3><p>严格脏读是指已经提交事物读取到一个不会提交事物写入内容，不过也可以扩展为一个事务中读取到另一个事务未提交的数据。例如，事务 T1 读取到另一个事务 T2 <code>未提交的数据</code>，如果 T2 回滚，则 T1 相当于读取到了一个被认为不可能出现的值。</p><h3 id=non-repeatable-read-不可重复读>Non-Repeatable Read 不可重复读 <a href=#non-repeatable-read-%e4%b8%8d%e5%8f%af%e9%87%8d%e5%a4%8d%e8%af%bb class=anchor aria-hidden=true>#</a></h3><p>在一个事务中，当重复读取 <code>同一条记录</code> 时，发现该记录的结果不同或者已经被删除了；如在事务 T1 中读取了一行，接着 T2 修改或者删除了该行并提交，那么当 T1 尝试读取新的值时，就会发现改行的值已经修改或者被删除。</p><h3 id=phantom-read-幻读>Phantom Read 幻读 <a href=#phantom-read-%e5%b9%bb%e8%af%bb class=anchor aria-hidden=true>#</a></h3><p>通常是指在一个事务中，当重复查询 <code>一个结果集</code> 时，返回的两个不同的结果集，可能是由于另一个事务插入或者删除了一些记录。例如，事务 T1 读取一个结果集，T2 修改了该结果集中的部分记录 (例如插入一条记录)，T1 再次读取时发现与之前的结果不同 (多出来一条记录)，就像产生幻觉一样。</p><h2 id=总结>总结 <a href=#%e6%80%bb%e7%bb%93 class=anchor aria-hidden=true>#</a></h2><p>隔离级别与读场景。</p><table><thead><tr><th style=text-align:center>Isolation Level</th><th style=text-align:center>Dirty Read</th><th style=text-align:center>Non-repeatable Read</th><th style=text-align:center>Phantom Read</th></tr></thead><tbody><tr><td style=text-align:center>Read Uncommitted</td><td style=text-align:center>Possible</td><td style=text-align:center>Possible</td><td style=text-align:center>Possible</td></tr><tr><td style=text-align:center>Read Committed</td><td style=text-align:center>Not Possible</td><td style=text-align:center>Possible</td><td style=text-align:center>Possible</td></tr><tr><td style=text-align:center>Repeatable Read</td><td style=text-align:center>Not Possible</td><td style=text-align:center>Not Possible</td><td style=text-align:center>Possible</td></tr><tr><td style=text-align:center>Serializable</td><td style=text-align:center>Not Possible</td><td style=text-align:center>Not Possible</td><td style=text-align:center>Not Possible</td></tr></tbody></table><h1 id=mysql-配置>MySQL 配置 <a href=#mysql-%e9%85%8d%e7%bd%ae class=anchor aria-hidden=true>#</a></h1><p>InnoDB 默认是可重复读的 (REPEATABLE READ)，提供 SQL-92 标准所描述的所有四个事务隔离级别，可以在启动时用 <code>--transaction-isolation</code> 选项设置，也可以配置文件中设置。</p><pre tabindex=0><code>$ cat /etc/my.cnf
 [mysqld]
 transaction-isolation = {READ-UNCOMMITTED | READ-COMMITTED | REPEATABLE-READ | SERIALIZABLE}
 </code></pre><p>用户可以用 <code>SET TRANSACTION</code> 语句改变单个会话或者所有新进连接的隔离级别，语法如下：</p><pre tabindex=0><code>mysql&gt; SET autocommit=0;
@@ -40,14 +40,14 @@ mysql&gt; SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 
 ----- 或者通过如下SQL查看，如果在事务中则会返回当前的事务ID，否则返回为空。
 mysql&gt; SELECT trx_id FROM information_schema.innodb_trx WHERE trx_mysql_thread_id = connection_id();
-</code></pre><h1 id=读取异常>读取异常 <a href=#%e8%af%bb%e5%8f%96%e5%bc%82%e5%b8%b8 class=anchor aria-hidden=true>#</a></h1><p>在 <a href=http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt>SQL 92</a> 规范的定义中，规定了四种隔离级别，同时对可能出现的三种现象进行了说明（不包含如下的丢失更新）。</p><h2 id=lost-update>Lost Update <a href=#lost-update class=anchor aria-hidden=true>#</a></h2><p>丢失更新，当两个事务读取相同数据，然后都尝试更新原来的数据成新的值，此时，第二个事务可能完全覆盖掉第一个所完成的更新。丢失更新是唯一一个用户可能在所有情况下都想避免的行为，在 SQL 92 中甚至没有提及。</p><h2 id=dirty-read>Dirty Read <a href=#dirty-read class=anchor aria-hidden=true>#</a></h2><p>脏读，一个事务中读取到另一个事务未提交的数据。例如，事务 T1 读取到另一个事务 T2 <strong>未提交的数据</strong>，如果 T2 回滚，则 T1 相当于读取到了一个被认为不可能出现的值。</p><h2 id=non-repeatable-read>Non-Repeatable Read <a href=#non-repeatable-read class=anchor aria-hidden=true>#</a></h2><p>不可重复读，在一个事务中，当重复读取同一条记录时，发现该记录的结果不同或者已经被删除了；如在事务 T1 中读取了一行，接着 T2 修改或者删除了该行 <strong>并提交</strong>，那么当 T1 尝试读取新的值时，就会发现改行的值已经修改或者被删除。</p><h2 id=phantom>Phantom <a href=#phantom class=anchor aria-hidden=true>#</a></h2><p>幻读，通常是指在一个事务中，当重复查询一个结果集时，返回的两个不同的结果集，可能是由于另一个事务插入或者删除了一些记录。</p><p>例如，事务 T1 读取一个结果集，T2 修改了该结果集中的部分记录 (例如插入一条记录)，T1 再次读取时发现与之前的结果不同 (多出来一条记录)，就像产生幻觉一样。</p><h2 id=其它-1>其它 <a href=#%e5%85%b6%e5%ae%83-1 class=anchor aria-hidden=true>#</a></h2><p>隔离级别与读现象。</p><table><thead><tr><th style=text-align:center>隔离级别</th><th style=text-align:center>脏读</th><th style=text-align:center>不可重复读取</th><th style=text-align:center>幻影数据行</th></tr></thead><tbody><tr><td style=text-align:center>READ UNCOMMITTED</td><td style=text-align:center>YES</td><td style=text-align:center>YES</td><td style=text-align:center>YES</td></tr><tr><td style=text-align:center>READ COMMITTED</td><td style=text-align:center>NO</td><td style=text-align:center>YES</td><td style=text-align:center>YES</td></tr><tr><td style=text-align:center>REPEATABLE READ</td><td style=text-align:center>NO</td><td style=text-align:center>NO</td><td style=text-align:center>YES</td></tr><tr><td style=text-align:center>SERIALIZABLE</td><td style=text-align:center>NO</td><td style=text-align:center>NO</td><td style=text-align:center>NO</td></tr></tbody></table><h1 id=隔离级别>隔离级别 <a href=#%e9%9a%94%e7%a6%bb%e7%ba%a7%e5%88%ab class=anchor aria-hidden=true>#</a></h1><p>先准备下环境，隔离级别在测试时，会针对不同的场景分别进行设置；另外，将 <code>autocommit</code> 设置为 <code>0</code>，此时 <code>commit/rollback</code> 后的一条语句会自动开启一个新事务。</p><pre tabindex=0><code>----- 新建表并写入数据
+</code></pre><h1 id=示例详解>示例详解 <a href=#%e7%a4%ba%e4%be%8b%e8%af%a6%e8%a7%a3 class=anchor aria-hidden=true>#</a></h1><p>先准备下环境，隔离级别在测试时，会针对不同的场景分别进行设置；另外，将 <code>autocommit</code> 设置为 <code>0</code>，此时 <code>commit/rollback</code> 后的一条语句会自动开启一个新事务。</p><pre tabindex=0><code>----- 新建表并写入数据
 mysql&gt; SET GLOBAL autocommit=0;
 mysql&gt; CREATE TABLE user (id INT PRIMARY KEY, name VARCHAR(20), age INT UNSIGNED) engine=InnoDB;
 mysql&gt; INSERT INTO user VALUES (1, &#39;andy&#39;, 28);
 
 ----- 设置隔离级别
 mysql&gt; SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-</code></pre><p>一般来说，也显然，高一级的级别可以提供更强的隔离性。</p><h2 id=read-uncommitted>READ UNCOMMITTED <a href=#read-uncommitted class=anchor aria-hidden=true>#</a></h2><p>也就是读未提交，在此场景下 <strong>允许脏读</strong>，也就是允许某个事务看到其它事务尚未提交的数据行改动，这是最低的隔离等级。</p><pre tabindex=0><code>### 准备数据
+</code></pre><p>一般来说，也显然，高一级的级别可以提供更强的隔离性。</p><h2 id=read-uncommitted>READ UNCOMMITTED <a href=#read-uncommitted class=anchor aria-hidden=true>#</a></h2><p>在读未提交隔离级别下可能出现 <code>脏读</code>，也就是某个事务可以看到其它事务尚未提交的数据改动，这是最低的隔离等级。</p><pre tabindex=0><code>### 准备数据
 DELETE FROM user;
 INSERT INTO user VALUES (1, &#39;andy&#39;, 28);
 ### 同时设置两个事务的隔离级别
@@ -83,7 +83,7 @@ SELECT * FROM user WHERE id=1;
 |  1 | andy |   28 |
 +----+------+------+
 1 row in set (0.00 sec)
-</code></pre><p>如上所示，在事务 A 中，会读取到不同的 age 值。</p><h2 id=read-committed>READ COMMITTED <a href=#read-committed class=anchor aria-hidden=true>#</a></h2><p>也就是读已提交，此时不允许上述的脏读，<strong>允许不可重复读</strong>，也就是 Fuzzy Read (也被称之为 Non-Repeatable Read)，也指一个事务内的两次读同一行看到的数据不一样，&ldquo;不可重复&rdquo; 。</p><pre tabindex=0><code>### 准备数据
+</code></pre><p>如上所示，在事务 A 中，会读取到不同的 age 值，而且该值最终已经回退，相当于一个不存在的值。</p><h2 id=read-committed>READ COMMITTED <a href=#read-committed class=anchor aria-hidden=true>#</a></h2><p>在读已提交隔离级别下不会出现上述的脏读，但 <code>可能出现不可重复读</code>，也指一个事务内的两次读同一行看到的数据不一样。</p><pre tabindex=0><code>### 准备数据
 DELETE FROM user;
 INSERT INTO user VALUES (1, &#39;andy&#39;, 28);
 ### 同时设置两个事务的隔离级别
@@ -91,7 +91,7 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 ----- TRANS A ---------------------------------------------+----- TRANS B -------------------------
 START TRANSACTION;
-SELECT * FROM user;
+SELECT * FROM user WHERE id = 1;
 +----+------+------+
 | id | name | age  |
 +----+------+------+
@@ -107,8 +107,8 @@ SELECT * FROM user;
                                                              |  1 | andy |   30 |
                                                              +----+------+------+
                                                              1 row in set (0.00 sec)
-### 读到的age仍然为28，没有幻读
-SELECT * FROM user;
+### 读到的age仍然为28
+SELECT * FROM user WHERE id = 1;
 +----+------+------+
 | id | name | age  |
 +----+------+------+
@@ -116,8 +116,8 @@ SELECT * FROM user;
 +----+------+------+
 1 row in set (0.00 sec)
                                                              COMMIT;
-### 此时在事务B提交之后，读到的age为30
-SELECT * FROM user;
+### 此时在事务B提交之后，读到的age为30，不可重复读
+SELECT * FROM user WHERE id = 1;
 +----+------+------+
 | id | name | age  |
 +----+------+------+
@@ -125,13 +125,71 @@ SELECT * FROM user;
 +----+------+------+
 1 row in set (0.00 sec)
 COMMIT;
-</code></pre><p>如上，事务 A 中同一条 SQL 会读取到不同的数值，即使事务 B 中是删除操作。</p><h2 id=repeatable-read>REPEATABLE READ <a href=#repeatable-read class=anchor aria-hidden=true>#</a></h2><p>也即可重复读，InnoDB 默认的隔离级别，此时不允许脏读、不可重复读，但是允许 <strong>幻读</strong> 。</p><pre tabindex=0><code>### 准备数据
+</code></pre><p>如上，事务 A 中同一条 SQL 会读取到不同的数值，即使事务 B 中是删除操作。</p><h2 id=repeatable-read>REPEATABLE READ <a href=#repeatable-read class=anchor aria-hidden=true>#</a></h2><p>可重复读是 InnoDB 默认的隔离级别，严格来说 MySQL 是不会出现幻读的，但是在某些场景下会降级到 RC 级别，但是允许通过显示加锁规避。</p><pre tabindex=0><code>### 准备数据
 DELETE FROM user;
+INSERT INTO user VALUES (1, &#39;andy&#39;, 28),(2, &#39;cassie&#39;, 25);
 INSERT INTO user VALUES (1, &#39;andy&#39;, 28);
 ### 同时设置两个事务的隔离级别
 SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 
 ----- TRANS A ---------------------------------------------+----- TRANS B -------------------------
+START TRANSACTION;
+SELECT SUM(age) FROM user WHERE ID IN(1, 2);
++----------+
+| SUM(age) |
++----------+
+|       53 |
++----------+
+1 row in set (0.01 sec)
+                                                             UPDATE user SET age=30 WHERE id=1;
+                                                             SELECT * FROM user;
+                                                             +----+--------+------+
+                                                             | id | name   | age  |
+                                                             +----+--------+------+
+                                                             |  1 | andy   |   30 |
+                                                             |  2 | cassie |   25 |
+                                                             +----+--------+------+
+                                                             2 row in set (0.00 sec)
+
+### 默认是快照读，此时和保持不变，没有幻读
+SELECT SUM(age) FROM user WHERE ID IN(1, 2);
++----------+
+| SUM(age) |
++----------+
+|       53 |
++----------+
+1 row in set (0.01 sec)
+
+### 更新之后会导致幻读
+UPDATE user SET name=&#34;Hello&#34; WHERE id=1;
+SELECT SUM(age) FROM user WHERE ID IN(1, 2);
++----------+
+| SUM(age) |
++----------+
+|       55 |
++----------+
+1 row in set (0.01 sec)
+</code></pre><p>这里是因为 MySQL 将快照读和当前读混合使用导致，也可以理解为降级到 Read Committed 隔离级别，严格来说这是不满足重复读的，不只是出现幻读。</p><p>如下的场景也是类似的。</p><pre tabindex=0><code>### 准备数据
+DELETE FROM user;
+### 同时设置两个事务的隔离级别
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+----- TRANS A ---------------------------------------------+----- TRANS B -------------------------
+START TRANSACTION;
+SELECT * FROM user;
+Empty set (0.00 sec)
+                                                             START TRANSACTION;
+                                                             INSERT INTO user VALUES (1, &#39;andy&#39;, 28);
+                                                             COMMIT;
+### 此时查询仍然为空
+SELECT * FROM user;
+Empty set (0.00 sec)
+### 尝试插入数据时报错，TMD明明说没有这条记录的
+INSERT INTO user VALUES (1, &#39;andy&#39;, 28);
+ERROR 1062 (23000): Duplicate entry &#39;1&#39; for key &#39;PRIMARY&#39;
+COMMIT;
+
+
 START TRANSACTION;
 SELECT * FROM user;
 +----+------+------+
@@ -141,24 +199,8 @@ SELECT * FROM user;
 +----+------+------+
 1 row in set (0.00 sec)
                                                              START TRANSACTION;
-                                                             UPDATE user SET age=30 WHERE id=1;
-                                                             SELECT * FROM user;
-                                                             +----+------+------+
-                                                             | id | name | age  |
-                                                             +----+------+------+
-                                                             |  1 | andy |   30 |
-                                                             +----+------+------+
-                                                             1 row in set (0.00 sec)
-### 读到的age仍然为28，没有幻读
-SELECT * FROM user;
-+----+------+------+
-| id | name | age  |
-+----+------+------+
-|  1 | andy |   28 |
-+----+------+------+
-1 row in set (0.00 sec)
+                                                             INSERT INTO user VALUES (2, &#39;cassie&#39;, 25);
                                                              COMMIT;
-### 读到的age仍然为28，没有不可重复读
 SELECT * FROM user;
 +----+------+------+
 | id | name | age  |
@@ -166,14 +208,145 @@ SELECT * FROM user;
 |  1 | andy |   28 |
 +----+------+------+
 1 row in set (0.00 sec)
+### 不是说有一条记录吗，怎么多出来一条啊！！！
+UPDATE user SET age=10;
+Query OK, 2 rows affected (0.00 sec)
+Rows matched: 2  Changed: 2  Warnings: 0
+</code></pre><p>注意，还有一个相关的场景。</p><pre tabindex=0><code>----- TRANS A ---------------------------------------------+----- TRANS B -------------------------
+START TRANSACTION;
+select * from user where id &gt; 0 and id &lt; 5;
+                                                              START TRANSACTION;
+                                                              INSERT INTO user VALUES(3, &#39;bob&#39;, 22);
+### 可以正常查询
+SELECT * FROM USER WHERE ID &gt; 0 AND ID &lt; 5;
+### 如下查询，会导致锁超时
+SELECT * FROM USER WHERE ID &gt; 0 AND ID &lt; 5 LOCK IN SHARE MODE;
+SELECT * FROM USER WHERE ID &gt; 0 AND ID &lt; 5 FOR UPDATE;
+UPDATE USER SET AGE = 50 WHERE ID = 3;
 COMMIT;
+</code></pre><p>InnoDB 提供了这样的机制，在可重复读的隔离级别里，会同时使用快照和加锁，包括间隙锁，也可以使用加锁读去查询当前最新的数据。</p><h3 id=write-skew>Write Skew <a href=#write-skew class=anchor aria-hidden=true>#</a></h3><p>在 Repeatable Read 可能出现 Write Skew，该异常主要是针对多行写事务。</p><p>一个简单的示例，事务 A 读取了行 X，并以此将 Y 修改为 X，然后提交；同时事务 B 读取了行 Y，并将 X 修改为 Y 然后提交；在每个事物里都是期望两者相同的，但最终结果两者的值互换了。</p><pre tabindex=0><code>### 准备数据
+DELETE FROM user;
+INSERT INTO user VALUES (1, &#39;andy&#39;, 28),(2, &#39;cassie&#39;, 25);
+### 同时设置两个事务的隔离级别
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 
-### 此时读到的age为30
-SELECT * FROM user;
+----- TRANS A ---------------------------------------------+----- TRANS B -------------------------
+START TRANSACTION;
+SELECT * FROM user WHERE id=1;
 +----+------+------+
 | id | name | age  |
 +----+------+------+
-|  1 | andy |   30 |
+|  1 | andy |   28 |
 +----+------+------+
 1 row in set (0.00 sec)
-</code></pre><h1 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h1><ul><li>关于数据库的事务隔离级别可以参考 <a href=https://en.wikipedia.org/wiki/Isolation_%28database_systems%29>WikiPedia - Isolation (database systems)</a> 中的介绍。</li></ul></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/mysql-sample-database/>MySQL 示例数据库</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2023 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
+                                                             START TRANSACTION;
+                                                             SELECT * FROM user WHERE id=2;
+                                                             +----+--------+------+
+                                                             | id | name   | age  |
+                                                             +----+--------+------+
+                                                             |  2 | cassie |   25 |
+                                                             +----+--------+------+
+                                                             1 row in set (0.00 sec)
+UPDATE user SET age=28 WHERE id=2;
+SELECT * FROM user;
++----+--------+------+
+| id | name   | age  |
++----+--------+------+
+|  1 | andy   |   28 |
+|  2 | cassie |   28 |
++----+--------+------+
+2 rows in set (0.00 sec)
+                                                             UPDATE user SET age=25 WHERE id=1;
+                                                             SELECT * FROM user;
+                                                             +----+--------+------+
+                                                             | id | name   | age  |
+                                                             +----+--------+------+
+                                                             |  1 | andy   |   25 |
+                                                             |  2 | cassie |   25 |
+                                                             +----+--------+------+
+                                                             2 rows in set (0.00 sec)
+                                                             COMMIT;
+COMMIT;
+SELECT * FROM user;
++----+--------+------+
+| id | name   | age  |
++----+--------+------+
+|  1 | andy   |   25 |
+|  2 | cassie |   28 |
++----+--------+------+
+2 rows in set (0.00 sec)
+</code></pre><h2 id=serializable>SERIALIZABLE <a href=#serializable class=anchor aria-hidden=true>#</a></h2><p>也就是串行化不允许上述的异常情况，包括 Phantom 和 Write Skew 以及任何不可串行化的反常情况。</p><pre tabindex=0><code>### 准备数据
+DELETE FROM user;
+INSERT INTO user VALUES (1, &#39;andy&#39;, 28),(2, &#39;cassie&#39;, 25);
+### 同时设置两个事务的隔离级别
+SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+----- TRANS A ---------------------------------------------+----- TRANS B -------------------------
+START TRANSACTION;
+SELECT * FROM user;
++----+--------+------+
+| id | name   | age  |
++----+--------+------+
+|  1 | andy   |   28 |
+|  2 | cassie |   25 |
++----+--------+------+
+2 rows in set (0.00 sec)
+                                                             START TRANSACTION;
+                                                             SELECT * FROM user;
+                                                             +----+--------+------+
+                                                             | id | name   | age  |
+                                                             +----+--------+------+
+                                                             |  1 | andy   |   28 |
+                                                             |  2 | cassie |   25 |
+                                                             +----+--------+------+
+                                                             2 rows in set (0.00 sec)
+SELECT * FROM user WHERE id=2;
++----+--------+------+
+| id | name   | age  |
++----+--------+------+
+|  2 | cassie |   25 |
++----+--------+------+
+1 row in set (0.00 sec)
+                                                             ### 此时尝试更新时会等待直到锁超时
+                                                             UPDATE user SET age=15 WHERE id=2;
+COMMIT;
+                                                             ### 重新尝试提交
+                                                             UPDATE user SET age=15 WHERE id=2;
+                                                             SELECT * FROM user;
+                                                             +----+--------+------+
+                                                             | id | name   | age  |
+                                                             +----+--------+------+
+                                                             |  1 | andy   |   28 |
+                                                             |  2 | cassie |   15 |
+                                                             +----+--------+------+
+                                                             2 rows in set (0.00 sec)
+                                                             COMMIT;
+</code></pre><p>接下来，再看个示例。</p><pre tabindex=0><code>### 准备数据
+DELETE FROM user;
+INSERT INTO user VALUES (1, &#39;andy&#39;, 28);
+### 同时设置两个事务的隔离级别
+SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+----- TRANS A ---------------------------------------------+----- TRANS B -------------------------
+START TRANSACTION;
+SELECT * FROM user;
++----+--------+------+
+| id | name   | age  |
++----+--------+------+
+|  1 | andy   |   28 |
++----+--------+------+
+1 rows in set (0.00 sec)
+                                                             START TRANSACTION;
+                                                             SELECT * FROM user;
+                                                             +----+--------+------+
+                                                             | id | name   | age  |
+                                                             +----+--------+------+
+                                                             |  1 | andy   |   28 |
+                                                             |  2 | cassie |   25 |
+                                                             +----+--------+------+
+                                                             2 rows in set (0.00 sec)
+                                                             ### 此时尝试更新时会等待直到锁超时
+                                                             UPDATE user SET age=15 WHERE id=2;
+                                                             ### 同上，仍然锁等待超时
+                                                             INSERT INTO user VALUES (2, &#39;cassie&#39;, 25);
+</code></pre><h1 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h1><ul><li><a href=https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf>A Critique of ANSI SQL Isolation Levels</a></li><li>关于数据库的事务隔离级别可以参考 <a href=https://en.wikipedia.org/wiki/Isolation_%28database_systems%29>WikiPedia - Isolation (database systems)</a> 中的介绍。</li></ul></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/mysql-sample-database/>MySQL 示例数据库</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2023 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>

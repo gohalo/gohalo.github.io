@@ -33,9 +33,11 @@ $ git push -u github opensource:main
 [branch &#34;opensource&#34;]
         remote = github
         merge = refs/heads/main
+</code></pre><p>而且允许一个 remote 绑定多个远端地址，这样就可以将提交同时同步给两个远端仓库。</p><pre tabindex=0><code>$git remote set-url --add --push origin git@git.coding.net:user/project.git
 </code></pre><p>也可以从 origin 的某个远端分支同步过来，然后再同步到 github 的一个远端分支。</p><pre tabindex=0><code>----- 将 origin 中的 develop 分支拉取到本地，作为本地的 master 分支
 $ git pull origin develop:master
 
 ----- 再将本地的 master 推到 github 的远端 main 分支
 $ git push github master:main
+</code></pre><p>如果要修改 URL 可以执行如下命令。</p><pre tabindex=0><code>$ git remote set-url origin git@gogs.cargo.com:cargo/Bastion.git
 </code></pre></div></div></div></article></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2023 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
