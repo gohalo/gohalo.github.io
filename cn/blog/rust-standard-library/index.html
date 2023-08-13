@@ -1,0 +1,432 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Rust 常用标准库介绍 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><title>Rust 常用标准库介绍 GoHalo</title><meta name=description content><link rel=canonical href=https://gohalo.github.io/cn/blog/rust-standard-library/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/rust-standard-library/","url":"https://gohalo.github.io/cn/blog/rust-standard-library/","name":"Rust 常用标准库介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2022-10-19T21:15:12CET","dateModified":"2022-10-19T21:15:12CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/rust-standard-library/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/rust-standard-library/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/rust-standard-library/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/rust-standard-library/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/rust-standard-library/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"Rust 常用标准库介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/rust-standard-library/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/rust-standard-library/"},"datePublished":"2022-10-19T21:15:12CET","dateModified":"2022-10-19T21:15:12CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/rust-standard-library/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/rust-standard-library/#/schema/image/2","url":null,"contentUrl":null,"caption":"Rust 常用标准库介绍"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
+<span>页面目录</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#标准库>标准库</a><ul><li><a href=#string>String</a></li><li><a href=#vec>vec</a></li><li><a href=#rc-vs-arc>Rc VS. Arc</a></li></ul></li><li><a href=#泛型>泛型</a><ul><li><a href=#关联类型-associated-type>关联类型 Associated Type</a></li><li><a href=#生命周期>生命周期</a></li><li><a href=#trait>Trait</a></li></ul></li><li><a href=#闭包>闭包</a><ul><li><a href=#变量捕获>变量捕获</a></li><li><a href=#move>move</a></li></ul></li><li><a href=#宏编程>宏编程</a><ul><li><a href=#简介>简介</a></li></ul></li><li><a href=#所有权>所有权</a><ul><li><a href=#所有权转移>所有权转移</a></li><li><a href=#解引用>解引用</a></li></ul></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#标准库>标准库</a><ul><li><a href=#string>String</a></li><li><a href=#vec>vec</a></li><li><a href=#rc-vs-arc>Rc VS. Arc</a></li></ul></li><li><a href=#泛型>泛型</a><ul><li><a href=#关联类型-associated-type>关联类型 Associated Type</a></li><li><a href=#生命周期>生命周期</a></li><li><a href=#trait>Trait</a></li></ul></li><li><a href=#闭包>闭包</a><ul><li><a href=#变量捕获>变量捕获</a></li><li><a href=#move>move</a></li></ul></li><li><a href=#宏编程>宏编程</a><ul><li><a href=#简介>简介</a></li></ul></li><li><a href=#所有权>所有权</a><ul><li><a href=#所有权转移>所有权转移</a></li><li><a href=#解引用>解引用</a></li></ul></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>Rust 常用标准库介绍</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2022-10-19</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/rust/ role=button>rust</a>
+<a class="btn btn-light" href=https://gohalo.github.io/tags/program/ role=button>program</a></div></div><hr><div class=content-body><h1 id=标准库>标准库 <a href=#%e6%a0%87%e5%87%86%e5%ba%93 class=anchor aria-hidden=true>#</a></h1><h2 id=string>String <a href=#string class=anchor aria-hidden=true>#</a></h2><p>核心只有 <code>str</code> 这一种字符串，而且通常以借用 <code>&amp;str</code> 方式使用，例如 <code>let s = "Hello";</code> 中的 <code>s</code> 就是 <code>&amp;str</code> 类型，如果使用切片，其返回的也是 <code>&amp;str</code> 类型。
+而 <code>String</code> 是标准库一个可变长的实现(是 Vec<u8> 的封装)，两者都是通过 UTF8 编码，这是 Unicode 的一种编码形式，采用变长编码。
+要理解编码需要区分如下几个概念：</p><ul><li>字节 Byte，在计算机中以 Byte 方式保存的实现，是最底层的实现，因为UTF8是1~4字节变长编码，所以一个可见字符对应1~4个字节。</li><li>标量值 Scalar Values，严格来说是除去高位和低位代理之外的 Unicode 码位，可以简单理解为码位，也就是类似 <code>U+03a9</code> 这种表示方式。</li><li>字形簇 Grapheme Clusters，这才是最终看到的字符，大部分的字符都可以通过一个标量值表示，但是有些语言会使用多个标量值顺序表示一个字符。
+因为字符串采用的是变长编码，对字符串的索引是不支持的，如果一个字符是通过 3 字节编码，那么选取其中一个字节是没有意义的，所以如下的代码会报错。
+let s = String::from(&ldquo;hello&rdquo;);
+let h = s[0];
+上述代码编译阶段会报 <code>String` cannot be indexed by `{integer}</code> 这种错误。另外，切片会在运行时检查，可能会出现 panic 错误。
+fn main() {
+let hey = &ldquo;你好&rdquo;;
+let s = &amp;hey[0..3]; // OK
+//let s = &amp;hey[0..4]; // Panic
+println!("{}", s);
+}
+编译阶段可以通过，但是会在运行时 Panic，报错为 <code>byte index 4 is not a char boundary</code> 。标准库提供了对字节、标量值的遍历方式，并未提供字形簇的遍历，可以参考一些三方 crate 的实现。
+fn main() {
+let word = String::from(&ldquo;你好&rdquo;);
+for byte in word.bytes() {
+println!("{}", byte);
+}
+for scalar in word.chars() {
+println!("{}", scalar);
+}
+}</li></ul><h2 id=vec>vec <a href=#vec class=anchor aria-hidden=true>#</a></h2><p>简单的 array 可以通过 let mut arr = [0 as u8; 64] 这种方式定义，但是无法动态扩展，相对来说 vec 要更加灵活。
+用来保存相同类型元素的动态数组，保存元素的类型必须要相同，不过可以通过 enum 实现不同类型的存储。由三部分组成：A) 指向堆保存数据的指针；B) 数组长度；C) 当前容量。
+fn main() {
+let mut vec1: Vec<i32> = Vec::with_capacity(6); // or Vec::new()
+let mut vec2 = vec![3, 4, 5];
+vec1.push(1); // [1]
+vec1.append(&amp;mut vec2); // [1, 3, 4, 5]
+vec1.pop(); // rc=Some(5) [1, 3, 4]
+vec1.remove(1); // [1, 4]
+vec1.insert(1, 3); // [1, 3, 4]
+vec1.resize(8, 0); // expend [1, 3, 4, 0, 0, 0, 0, 0]
+vec1.resize(2, 0); // shrink [1, 3]
+for elem in vec1.iter() { // readonly
+println!("{}", elem);
+}
+for elem in vec1.iter_mut() { // writable [2, 6, 8]
+*elem = *elem * 2;
+}
+println!(&ldquo;data={:?} len={} cap={} empty={} 4th={:?} has8={}&rdquo;, vec1, vec1.len(), vec1.capacity(),
+vec1.is_empty(), vec1.get(4), vec1.contains(&amp;8));
+}
+创建时可以指定容量，不足会自动扩容，访问对应元素时，可以通过 vec[1] 进行访问，但是如果索引不存在，那么就会 panic 掉，建议使用 <code>vec.get(1)</code> 获取，此时会返回 Option 信息。</p><h2 id=rc-vs-arc>Rc VS. Arc <a href=#rc-vs-arc class=anchor aria-hidden=true>#</a></h2><p>Rust 的所有权要求一个对象只能有一个所有者，但是多线程并发编程可能出现持有一份数据的问题，可以通过引用计数解决，有两种方案：A) Rc Reference Counting 引用计数；B) Arc Atomic Rc 原子引用计数；分别用于单线程和多线程版本。
+如下是一个所有权的典型报错。
+#[allow(unused)]
+fn main() {
+let s = String::from(&ldquo;Hello&rdquo;);
+let a = Box::new(s); // s的所有权转移给了a
+let b = Box::new(s); // 报use of moved value错误
+}
+可以通过引用计数修改为。
+use std::rc::Rc;</p><p>#[allow(unused)]
+fn main() {
+let s = String::from(&ldquo;Hello&rdquo;);
+let a = Rc::new(s); // s的所有权转移给了a
+let b = Rc::clone(&amp;a); // 等价于a.clone()，非深拷贝，只是增加引用计数，没有复制底层数据
+println!(&ldquo;Current {}&rdquo;, Rc::strong_count(&amp;a));
+}
+如下是一个多线程中的示例。
+use std::rc::Rc;
+use std::thread;</p><p>fn main() {
+let s = Rc::new(String::from(&ldquo;Hello World&rdquo;));
+for _ in 0..10 {
+let s = Rc::clone(&amp;s);
+thread::spawn(move || {
+println!("{}", s)
+});
+}
+}
+编译会报 the trait <code>Send</code> is not implemented for <code>Rc&lt;String></code> 的错误，看着是因为没有实现 Send 特征，无法在线程间安全传递，实际上 Rc 中的引用计数并没有使用任何并发原语，无法实现原子性计数，多线程中会导致错误
+修复也很简单。
+use std::sync::Arc;
+use std::thread;</p><p>fn main() {
+let s = Arc::new(String::from(&ldquo;Hello World&rdquo;));
+for _ in 0..10 {
+let s = Arc::clone(&amp;s);
+thread::spawn(move || {
+println!("{}", s)
+});
+}
+}
+原因在于通过原子或者锁实现线程安全，这样同时会带来性能损耗，所以，相当于将最终的决策权交给了用户。
+总结</p><ul><li>Rc/Arc 包含的是不可变引用，无法修改只能读取。</li><li>当最后一个拥有者消失时，对应的资源会被回收，所以声明周期在编译阶段已经确定。</li></ul><h1 id=泛型>泛型 <a href=#%e6%b3%9b%e5%9e%8b class=anchor aria-hidden=true>#</a></h1><p>大部分语言都有针对类型的代码复用能力，Rust 同样提供了泛型支持模板功能，包括了函数、结构体等都支持，同时在 Rust 中会通过 trait 限制特定类型。</p><p>fn largest<t>(list: &[T]) -> T {
+let mut largest = list[0];
+for &amp;item in list {
+if item > largest {
+largest = item;
+}
+}
+largest
+}</p><p>fn main() {
+let numbers = vec![34, 50, 25, 100, 65];
+println!(&ldquo;The largest number is {}&rdquo;, largest(&amp;numbers));</p><pre><code>let chars = vec!['y', 'm', 'a', 'q'];
+println!(&quot;The largest char is {}&quot;, largest(&amp;chars));
+</code></pre><p>}</p><p>实际上述内容编译时会报错，主要是由于比较符号并非对所有类型都适用，这就需要通过 Trait 对类型进行约束，也就是说，相关的类型需要实现对应的接口才可以。</p><p>只需要把上述的第一行修改为 <code>fn largest&lt;T: PartialOrd + Copy>(list: &[T]) -> T {</code> 即可，也就是类型需要支持比较以及复制 trait 才行，这也被称为特征区间 (trait bounds)。</p><p>如果约束的 trait 太多，还可以将其放到最后，如下。</p><p>fn largest<t>(list: &[T]) -> T
+where T: PartialOrd + Copy,
+{
+let mut largest = list[0];
+for &amp;item in list {
+if item > largest {
+largest = item;
+}
+}
+largest
+}</p><h2 id=关联类型-associated-type>关联类型 Associated Type <a href=#%e5%85%b3%e8%81%94%e7%b1%bb%e5%9e%8b-associated-type class=anchor aria-hidden=true>#</a></h2><p>这是泛型的一个子概念，跟 trait 绑定，指定的方法中可以使用，用来指定输出的类型，在实现是具体指定类型。其中最常见的是 Iterator 这个 trait 的实现，其定义方法如下。
+pub trait Iterator {
+type Item;
+fn next(&amp;mut self) -> Option<a href=Self::Item>Self::Item</a>;
+}
+当然，也可以直接使用泛型，区别在于，使用关联类型时，只需要在实现时指定后续调用接口时无需每次再指定，而泛型则需要每次实现时都指定类型。
+https://rust-lang.github.io/rfcs/0195-associated-items.html</p><h2 id=生命周期>生命周期 <a href=#%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f class=anchor aria-hidden=true>#</a></h2><p>与大多数语言类似，每个函数都会有一个作用域，也可以在函数内使用一对花括号来内嵌一个作用域，在作用域中声明的变量会在作用域结束时结束。再结合到借用的概念，就会约束借用方的生命周期不能比出借方还要长。
+fn main() {
+let a; // &mdash;&mdash;&mdash;&mdash;-+&ndash; a start
+{ // |
+let b = 5; // -+&ndash; b start |
+a = &amp;b; // | |
+} // -+&ndash; b over |
+println!("{}", a); // |
+} // &mdash;&mdash;&mdash;&mdash;-+&ndash; a over
+其中 <code>a</code> 是借用方而 <code>b</code> 是出借方，此时借用方的生命周期要比出借方长，会导致悬垂引用。</p><h3 id=函数>函数 <a href=#%e5%87%bd%e6%95%b0 class=anchor aria-hidden=true>#</a></h3><p>比较容易出问题的是再结合函数时，其入参是借用方，而返回参数是出借方，例如如下的示例。
+fn longer(x: &amp;String, y: &amp;String) -> &amp;String {
+if x.len() > y.len() {
+x
+} else {
+y
+}
+}</p><p>fn main() {
+let x = String::from(&ldquo;Hi&rdquo;); // &mdash;&mdash;&mdash;&mdash;-+&ndash; x start
+let max; // &mdash;&mdash;&mdash;&mdash;-+&ndash; max start
+{ // |
+let y = String::from(&ldquo;Hello&rdquo;); // &mdash;&mdash;&mdash;&mdash;-+&ndash; y start
+max = longer(x, y); // |
+} // &mdash;&mdash;&mdash;&mdash;-+&ndash; y over
+println!(&ldquo;max {}&rdquo;, max); // |
+} // &mdash;&mdash;&mdash;&mdash;-+&ndash; max, x over
+因为不知道 <code>longer()</code> 函数返回值的声明周期是什么，有可能是新建的，也有可能是与入参相同，所以，如果直接编译会报 <code>error[E0106]: missing lifetime specifier</code> 错误，</p><p>此时需要通过函数后的 <code>&lt;></code> 来指明生命周期，后面的参数以及返回值需要通过 <code>'</code> 引用即可。</p><p>fn longer&lt;&lsquo;a>(x: &&lsquo;a String, y: &&lsquo;a String) -> &&lsquo;a String {
+if x.len() > y.len() {
+x
+} else {
+y
+}
+}</p><p>fn main() {
+let x = String::from(&ldquo;Hi&rdquo;);
+let max;
+{
+let y = String::from(&ldquo;Hello&rdquo;);
+max = longer(&amp;x, &amp;y);
+}
+println!(&ldquo;max {}&rdquo;, max);
+}</p><p>上述意味着入参 <code>a</code> <code>b</code> 的生命周期和返回值相同，但是入参的生命周期不同，此时会选择较小的一个，所以，上述编译会报 <code>error[E0597]: `y` does not live long enough</code> 的错误。</p><p>如果有多个生命周期参数，那么就需要标注各个参数之间的关系。
+fn longer&lt;&lsquo;a, &lsquo;b: &lsquo;a>(x: &&lsquo;a String, y: &&lsquo;b String) -> &&lsquo;a String {
+if x.len() > y.len() {
+x
+} else {
+y
+}
+}</p><p>fn main() {
+let x = String::from(&ldquo;Hi&rdquo;);
+let y = String::from(&ldquo;Hello&rdquo;);
+let max = longer(&amp;x, &amp;y);
+println!(&ldquo;max {}&rdquo;, max);
+}
+如上通过 <code>'b: 'a</code> 标识 <code>'a</code> 的生命周期不能超过 <code>'b</code>。</p><h3 id=结构体>结构体 <a href=#%e7%bb%93%e6%9e%84%e4%bd%93 class=anchor aria-hidden=true>#</a></h3><p>如果结构体中包含引用成员，那么就必须保证结构体本身的生命周期不能超过任何一个引用成员的生命周期，否则，会出现成员销毁后结构体仍然会引用成员，同样造成悬垂引用。
+#[derive(Debug)]
+struct Foo&lt;&lsquo;a> {
+v: &&lsquo;a i32
+}</p><p>fn main() {
+let foo; // &mdash;&mdash;&mdash;&mdash;-+&ndash; foo start
+{ // |
+let v = 123; // &mdash;&mdash;&mdash;&mdash;-+&ndash; v start
+foo = Foo { // |
+v: &amp;v // |
+} // |
+} // &mdash;&mdash;&mdash;&mdash;-+&ndash; v over
+println!(&ldquo;foo: {:?}&rdquo;, foo); // |
+} // &mdash;&mdash;&mdash;&mdash;-+&ndash; foo over
+结构体变量 foo 的生命周期还没有结束，但是其对应的成员变量引用已经结束，所以会报错。</p><h3 id=static>Static <a href=#static class=anchor aria-hidden=true>#</a></h3><p>这是一个特殊的生命周期，与整个应用相同，存储在静态段中，可以通过类似 <code>let s: &'static str = "Hello"</code> 这种方式声明，因为所有的字符串字面值实际都是静态的，所以可以简写为 <code>let s: &amp;str = "Hello"</code> 。
+另外，通过 <code>static</code> 所声明变量的生命周期也是 <code>'static</code> 的，例如 <code>static v: i32 = 123</code> 。</p><h2 id=trait>Trait <a href=#trait class=anchor aria-hidden=true>#</a></h2><p>描述了抽象接口，可以被类型继承，所有的 Trait 都定义了一个隐含类型 <code>Self</code>，用来指向该 Trait 的类型，而且为了方便使用，同时提供了 <code>self</code>，此时 <code>fn foo(self) {}</code> 等价于 <code>fn foo(self: Self) {}</code>，同理 <code>&amp;self</code> 等价于 <code>self: &amp;Self</code>，<code>&amp;mut self</code> 等价于 <code>self: &amp;mut Self</code> 。</p><p>// trait Shape: Hello 约束只有实现了Hello这个trait类型才能实现Shape这个trait类型
+trait Shape {
+// 用途1: 接口抽象
+fn area(&amp;self) -> i32;</p><pre><code>// 默认实现，可以被覆盖
+fn info(&amp;self) -&gt; String {
+    String::from(&quot;Shape&quot;)
+}
+</code></pre><p>}</p><p>struct Rectangle {
+width: i32,
+length: i32,
+}</p><p>impl Shape for Rectangle {
+fn area(&amp;self) -> i32 {
+self.width * self.length
+}
+// Overide
+fn info(&amp;self) -> String {
+String::from(&ldquo;Rectangle&rdquo;)
+}
+}</p><p>// 用途2: 泛型约束，多个通过 + 连接
+fn dump&lt;T: Shape>(s: &amp;T) {
+println!("{} &ndash;> {}", s.info(), s.area());
+}
+// 这里标识入参是特性参数，这只是上述的语法糖
+fn dump2(s: impl Shape) {
+println!("{} &ndash;> {}", s.info(), s.area());
+}</p><p>fn main() {
+let rect = Rectangle {
+width: 10,
+length: 20,
+};
+dump(&amp;rect);
+dump2(rect);
+}</p><p>另外，有个孤儿规则，就是在为某类型实现某 trait 时，两者至少有一个在当前 crate 中定义，否则会报错。</p><h3 id=结合泛型>结合泛型 <a href=#%e7%bb%93%e5%90%88%e6%b3%9b%e5%9e%8b class=anchor aria-hidden=true>#</a></h3><p>上述的类型中只定义了 <code>i32</code> 类型的长度，那么使用时还可能是其它类型，此时就可以结合泛型来使用。</p><p>use std::ops::Mul;</p><p>trait Shape<t> {
+fn area(&amp;self) -> T;
+}</p><p>struct Rectangle<t> {
+width: T,
+length: T,
+}</p><p>impl<t> Shape<t> for Rectangle<t>
+where
+T: Mul&lt;Output = T> + Copy,
+{
+fn area(&amp;self) -> T {
+self.width * self.length
+}
+}</p><p>fn dump&lt;S: Shape<i32>>(s: &amp;S) {
+println!("&ndash;> {}", s.area());
+}</p><p>fn main() {
+let rect = Rectangle {
+width: 10,
+length: 20,
+};
+dump(&amp;rect);
+}</p><p>FIXME: 在 dump 函数中，能否使用类似 <code>fn dump&lt;S: Shape&lt;T>>(s: &amp;S)</code> 这种方式，而不是指定了 <code>i32</code> 类型。</p><p>在实现时对类型进行了约束，需要支持 <code>std::ops::Mul</code> 的 trait，而且输入和输出的数据类型是相同的，所以实现 <code>std::ops::Mul&lt;Output = T></code> 的 trait 即可。</p><p>https://zhuanlan.zhihu.com/p/127365605</p><h3 id=impl-trait-vs-dyn-trait>impl Trait VS. dyn Trait <a href=#impl-trait-vs-dyn-trait class=anchor aria-hidden=true>#</a></h3><p>两者分别被称为静态和动态分发，前者会在编译阶段完成类型的确定以及替换，而后者则在运行阶段确定，为了区分两者，在 <a href=https://github.com/rust-lang/rfcs/blob/master/text/2113-dyn-trait-syntax.md>RFC 2113</a> 中新增了 <code>dyn</code> 关键字，主要是为了更加明显的标识 trait object 。
+trait Shape {
+fn area(&amp;self) -> f64;
+}</p><p>struct Rectangle {
+width: f64,
+height: f64,
+}
+impl Shape for Rectangle {
+fn area(&amp;self) -> f64 {
+self.width * self.height
+}
+}</p><p>const PI: f64 = 3.1415926;
+struct Circle {
+radius: f64,
+}
+impl Shape for Circle {
+fn area(&amp;self) -> f64 {
+self.radius * self.radius * PI
+}
+}</p><p>fn get_area(s: &amp;dyn Shape) -> f64 {
+s.area()
+}</p><p>fn main() {
+let rect = Rectangle{width: 10.0, height: 2.0};
+let circle = Circle{radius: 3.0};
+println!(&ldquo;Rectangle {}, Circle {}&rdquo;, get_area(&amp;rect), get_area(&amp;circle));
+}</p><p>如果直接取指针就是普通指针，大小是 64bit，而如果通过 as 转换为 trait object，那么就成了胖指针，会携带额外信息，也就是所谓的虚函数表，包含了具体的调用地址。
+use std::mem;</p><p>trait Shape {
+fn area(&amp;self) -> f64;
+}</p><p>struct Rectangle {
+width: f64,
+height: f64,
+}
+impl Shape for Rectangle {
+fn area(&amp;self) -> f64 {
+self.width * self.height
+}
+}</p><p>const PI: f64 = 3.1415926;
+struct Circle {
+radius: f64,
+}
+impl Shape for Circle {
+fn area(&amp;self) -> f64 {
+self.radius * self.radius * PI
+}
+}</p><p>fn dump_trait(p: &amp;dyn Shape) {
+let (data, vtable) : (usize, usize) = unsafe {mem::transmute(p)}; // 强制获取内部数据
+println!(&ldquo;TraitObject [data:{:#x}, vtable:{:#x}]&rdquo;, data, vtable);
+unsafe {
+let v: *const usize = vtable as *const () as *const usize;
+println!(&ldquo;data in vtable [{:#x}, {:#x}, {:#x}, {:#x}]&rdquo;, *v, *v.offset(1), *v.offset(2), *v.offset(3));
+}
+}</p><p>fn get_area(s: &amp;dyn Shape) -> f64 {
+s.area()
+}</p><p>fn main() {
+let rect = Rectangle{width: 10.0, height: 2.0};
+let p_rect = ▭
+let p_shape = p_rect as &amp;dyn Shape;
+println!(&ldquo;sizeof(rect) {}, sizeof(shape) {}&rdquo;, mem::size_of_val(&amp;p_rect), mem::size_of_val(&amp;p_shape));</p><pre><code>println!(&quot;Circle::area {:#x}&quot;, Circle::area as usize);
+println!(&quot;Rectangle::area {:#x}&quot;, Rectangle::area as usize);
+
+dump_trait(&amp;rect);
+//let circle = Circle{radius: 3.0};
+//println!(&quot;Rectangle {}, Circle {}&quot;, get_area(&amp;rect), get_area(&amp;circle));
+</code></pre><p>}</p><p>还有关于Object Safe的介绍
+https://zhuanlan.zhihu.com/p/23791817
+https://rustmagazine.github.io/rust_magazine_2021/chapter_4/ant_trait.html
+关于泛型、静态和动态分发
+https://rustmagazine.github.io/rust_magazine_2021/chapter_5/rust-to-system-essence-lang-generic.html</p><h3 id=生命周期接口>生命周期接口 <a href=#%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e6%8e%a5%e5%8f%a3 class=anchor aria-hidden=true>#</a></h3><p>在函数中，对于像 <code>i32</code> 类型的变量是保存在 Stack 中的，默认实现了 copy 接口，而像 <code>String</code> 这类，除了在 Stack 中保存了元数据，还会在 Heap 中保存真实的数据，在赋值语句中，可能调用的是 <code>copy</code> 或者 <code>move</code> 接口。
+使用过程中，比较容易混淆的是 <code>move</code> <code>copy</code> <code>clone</code> <code>drop</code> 几个接口，尤其再结合了闭包捕获的场景，简单整理如下：</p><ul><li><code>move</code> <code>copy</code> 主要用在变量赋值、函数入参、函数返回值、闭包捕获场景中。</li><li><code>clone</code> 需要显示调用。</li><li><code>drop</code> 退出变量作用域时会自动调用。</li><li>闭包中使用外部变量会自动捕获。
+如果类型没有实现 <code>copy</code> trait 的话(很多基本类型都实现了该语义)，那么变量赋值、函数入参、函数返回值都是 <code>move</code> 语义，而 C++11 在出现了右值引用之后才有了 <code>move</code> 语义。</li></ul><p>注意，<code>drop</code> 和 <code>copy</code> 只能二选一，一般来说 <code>copy</code> 不会执行类似 <code>clone</code> 的深度复制。如果两个都实现了，而且 <code>copy</code> 是没有实现深度复制的，那么变量在退出时会执行 <code>drop</code>，该方法会清空栈空间，就会导致重复释放内存。</p><p>另外，<code>clone</code> 是 <code>copy</code> 的 super trait，也就是说，如果要实现 <code>copy</code> 那么就必须要实现 <code>clone</code>，前者用于 Stack 中的按位复制，而后者则可能要进行深度复制。
+https://www.jianshu.com/p/ea1b96cbf0a1</p><h4 id=partial-move>Partial Move <a href=#partial-move class=anchor aria-hidden=true>#</a></h4><p>#[derive(Debug)]
+struct Person {
+age: Box<u8>,
+name: String,
+}</p><p>fn main() {
+let person = Person {
+age: Box::new(20),
+name: String::from(&ldquo;Alice&rdquo;),
+};
+let Person { name, ref age } = person;
+println!(&ldquo;Name={} Age={}&rdquo;, name, age);
+//println!(&ldquo;Person.Name={}&rdquo;, person.name); // moved无法使用
+println!(&ldquo;Person.Age={}&rdquo;, person.age); // 非moved操作，仍然可以使用
+}</p><p>如上的结构体 Person 中，在获取 age 参数时使用的是引用，而 name 则是 move 操作，这就导致变量中的 person.name 没有了所有权，也就是所谓的 Partial Move 操作了。</p><p>另外比较常见的是在模式匹配中，例如如下示例。
+fn main() {
+let mut data = 10;
+let var = Some(&amp;mut data);
+match var {
+None => (),
+Some(ref z) => {
+println!("{}", z);
+}
+}
+println!("{:?}", var);
+}
+如果不添加 <code>ref</code> 上述的代码会报错，因为匹配到 Some 之后，会将其中的值读取出来，但是原结构体不变，就是所谓的 Partial Move 了。而添加了 ref 就表示只是引用，并不会发生所有权的转移。
+https://stackoverflow.com/questions/69561786/why-is-compiler-reporting-partial-move-in-error-and-not-move</p><h3 id=其它>其它 <a href=#%e5%85%b6%e5%ae%83 class=anchor aria-hidden=true>#</a></h3><p>如上已经介绍了泛型特征 Generic Traits、类型关联特征 Associated Type Traits，还有如下的常见用法：</p><ul><li>特征是可以支持继承的。</li><li>Marker Traits 在 std::marker 模块中定义，不包含任何方法，用于获取一些编译期间的保障。</li></ul><h1 id=闭包>闭包 <a href=#%e9%97%ad%e5%8c%85 class=anchor aria-hidden=true>#</a></h1><p>现在的多数语言都有闭包特性的支持，简单来说就是匿名函数，可以捕获调用者作用域中的值，这样原环境中的变量所有权就没了，完全由闭包控制，即使脱离了上下文仍然可以运行。当然，个别情况并非完全一致，但这是理解闭包的关键。</p><p>其语法很简单 <code>|args| -> ret {codes}</code>，如果没有返回值或者代码只有一行，那么还可以进一步简化，而且还可以自动推断参数类型。</p><p>另外，被捕获的原上下文变量被称为自由变量。</p><p>fn main() {
+// 简单示例
+let foobar1 = |var: i32| -> i32 {
+println!(&ldquo;variable = {}&rdquo;, var);
+var
+};
+foobar1(10);</p><pre><code>// 没有返回值
+let foobar2 = |var: i32| {
+	println!(&quot;variable = {}&quot;, var);
+};
+foobar2(20);
+
+// 只有一行
+let foobar3 = |var: i32| println!(&quot;variable = {}&quot;, var);
+foobar3(30);
+
+// 自动推导类型
+let foobar4 = |var| println!(&quot;variable = {}&quot;, var);
+foobar4(40);
+</code></pre><p>}
+涉及到闭包变量捕获的会稍微有些麻烦。</p><h2 id=变量捕获>变量捕获 <a href=#%e5%8f%98%e9%87%8f%e6%8d%95%e8%8e%b7 class=anchor aria-hidden=true>#</a></h2><p>与闭包相关的 Trait 有三个，分别为：</p><ul><li><code>Fn</code> 不修改，捕获的是 <code>&amp;T</code> 类型，闭包可以重复执行多次。</li><li><code>FnMut</code> 会修改，捕获的是 <code>&amp;mut T</code> 类型，可以重复执行多次。</li><li><code>FnOnce</code> 变量所有权会转移，也就是 <code>move</code> 到闭包，只能执行一次，而且外部不能使用。</li></ul><h2 id=move>move <a href=#move class=anchor aria-hidden=true>#</a></h2><p>关键字 move 的作用是将所引用变量的所有权转移到闭包内，通常用于闭包的生命周期大于所捕获变量的原生命周期。</p><p>fn main() {
+// 实现了Copy则闭包使用的是副本
+let num01 = 5;
+let mut num02 = 5;
+let mut func01 = move |x: i32| -> i32 { num02 += x + num01; num02 };
+println!(&ldquo;num is {:?}, mut is {:?}&rdquo;, num01, num02); // 5 5
+let ret01 = func01(3);
+println!(&ldquo;num is {:?}, mut is {:?}, ret is {:?}&rdquo;, num01, num02, ret01); // 5 5 13</p><pre><code>// 因为没有move关键字，虽然实现了Copy所有权仍然被占用，而且在释放所有权之前无法使用                                                                                  
+let num03 = 5;
+let mut num04 = 5;
+let mut func02 = |x: i32| -&gt; i32 { num04 += x + num03; num04 };
+//println!(&quot;num is {:?}, mut is {:?}&quot;, num03, num04); // no ownership
+let ret02 = func02(3);
+println!(&quot;num is {:?}, mut is {:?}, ret is {:?}&quot;, num03, num04, ret02); // 5 13 13                                                                                   
+
+// 未实现Copy则闭包会拥有所有权，无论是否存在move
+let str01 = &quot;Hello&quot;;
+let mut str02 = &quot;World&quot;.to_string();
+let mut func01 = move |x: &amp;str| -&gt; &amp;str { str02 = str01.to_owned() + x + str02; str02 };                                                                             
+//println!(&quot;str is {:?}, mut is {:?}&quot;, num01, num02); // 5 5
+let ret03 = func01(&quot; &quot;);
+println!(&quot;str is {:?}, mut is {:?}, ret is {:?}&quot;, str01, str02, ret03); // 5 5 13                                                                                    
+</code></pre><p>}
+FIXME: 后面的String没有跑通还</p><ul><li>move 对实现 copy trait 的变量，闭包使用的是副本，原变量无影响；未实现 copy trait 则原变量所有权无，只是非 mut 变量因为只读，外部扔可以使用。</li><li>无 move 所有变量被捕获，同样，只是因为非 mut 变量因为是只读，外部扔可以使用；另外，如果包的声明周期较短，外部仍然可以使用。</li></ul><p>简言之，闭包会捕获变量，有两个特殊地方：A) move + copy trait 捕获时会使用复制，这样原作用域仍然可以使用；B) mut 变量被捕获后原作用域不能使用，非 mut 变量因为只读两侧都可以使用。</p><h1 id=宏编程>宏编程 <a href=#%e5%ae%8f%e7%bc%96%e7%a8%8b class=anchor aria-hidden=true>#</a></h1><p>相比 C 语言这种简单替换不同，在 Rust 中的宏要复杂很多，其基于词法树实现，甚至基于此可以自己发明语法，也就是所谓的元编程，最常见的 <code>println!</code> 就是通过宏来实现的，在 <code>println</code> 添加一个 <code>!</code> 符号。
+其它如 <code>vec!</code> <code>assert_eq!</code> 都是通过宏实现的，不过会发现调用方式为 <code>println!()</code>、<code>vec![]</code>，实际上，宏的参数可以使用 <code>()</code> <code>[]</code> <code>{}</code>，只是内置的宏都有自己约定俗成的方式。
+fn main() {
+println!(&ldquo;Hello World!&rdquo;);
+println![&ldquo;Hello World!&rdquo;];
+println!{&ldquo;Hello World!&rdquo;}
+}
+除此之外，还有比较常用的 <code>#[derive(Debug)]</code> 派生宏。
+在 Rust 中有两类宏：</p><ul><li>声明式宏 Declarative Macros，可以写出类似 match 表达式的东西，以此来操作 Rust 代码。</li><li>过程宏 Procedural Macros，可以操作给定 Rust 代码的抽象语法树。
+The Little Book of Rust Macros
+https://veykril.github.io/tlborm/introduction.html
+宏的基本运作机制就是：先匹配宏规则中定义的模式，然后将匹配结果绑定到变量，最后展开变量替换后的代码。</li></ul><h2 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h2><p>macro_rules! hey {
+() => {}
+}
+其中 <code>() => {}</code> 是最简单的模式，前者 Matcher 为匹配器，用来匹配模式并捕获变量，是自定义语法和DSL的关键；后者 Transcriber 为转码器，用来使用捕获变量并转换成 Rust 的代码。
+在匹配器中，使用类似 <code>($name:expr)</code> 的方式，其中 <code>$name</code> 定义了变量名，匹配结果会保存在该变量中，然后在转码器中使用；而通过 <code>:</code> 分割的后半部分为选择器 Designator，用来声明要匹配的类型，例如 <code>expr</code> 为表达式。
+其它常用的选择器可以查看
+https://doc.rust-lang.org/rust-by-example/macros/designators.html
+如下是一个简单的示例。
+macro_rules! hey {
+($name:expr) => {
+println!(&ldquo;Hey {}!&rdquo;, $name);
+};
+}</p><p>fn main() {
+hey!(&ldquo;Andy&rdquo;);
+}
+如果入参不止一个，那就需要用到重复模式的提取和利用，简单来说就是使用类似 <code>($($name:expr), *)</code> 这种方式，其中 <code>,</code> 表示分割符号，而 <code>*</code> 表示重复次数，其中 <code>*</code> 为零到无数次，而 <code>+</code> 表示一到无数次，<code>?</code> 为零或一次。</p><h1 id=所有权>所有权 <a href=#%e6%89%80%e6%9c%89%e6%9d%83 class=anchor aria-hidden=true>#</a></h1><p>所有权 Ownership 是 Rust 的核心功能之一，使得 Rust 无需垃圾回收，却仍然可以保证内存安全。</p><p>Rust 主要解决的是两个问题：A) 如何安全地进行系统编程；B) 如何更容易并发。而 Rust 通过 Ownership 同时解决了这两个问题，也就是，让 Rust 安全的同时可以直接解决并发问题。</p><p>所有权的规则为：</p><ul><li>每个值都有一个被称为其所有者的变量。</li><li>值在任一时刻有且只有一个所有者。</li><li>当所有者离开作用域时，这个值将被丢弃。</li></ul><p>在 Rust 中，字符串字面值硬编码在可执行文件中，不可变化，不过可以通过 String 类型，该类型会分配到堆上，能够动态处理变长的字符串，可以通过 <code>let mut s = String::from("Hello")</code> 进行定义。</p><p>默认会使用移动操作，对于像 <code>String</code> 这种在堆上分配的内存，在移动之后原值将失去所有权，也就无法再使用；当然，也可以通过 <code>clone()</code> 函数完全复制一份。</p><p>fn main() {
+let s1 = String::from(&ldquo;Hello World&rdquo;);
+let s2 = s1;
+let s3 = s2.clone();</p><pre><code>println!(&quot;{}&quot;, s2); // s1的所有权已经转移，无法直接打印s1变量
+println!(&quot;{}&quot;, s3); // s3是复制了一份，所以s2和s3都可以使用
+</code></pre><p>}</p><p>对于一些基础的变量类型，实际上已经实现了 Copy Trait，那么其通过赋值移动实际上是不影响原变量的，包括了整型、浮点、布尔、字符以及包含这些类型的元组。</p><p>fn main() {
+let s1 = 10;
+let s2 = s1;</p><pre><code>println!(&quot;{} {}&quot;, s1, s2); // 整型实现了Copy Trait，赋值时没有发生所有权的转移
+</code></pre><p>}</p><h2 id=所有权转移>所有权转移 <a href=#%e6%89%80%e6%9c%89%e6%9d%83%e8%bd%ac%e7%a7%bb class=anchor aria-hidden=true>#</a></h2><p>赋值、函数入参、函数返回等都会发生所有权的转移。</p><p>fn say_hi(s: String) -> String {
+println!(&ldquo;Hi {}!&rdquo;, s);
+s
+}</p><p>fn main() {
+let s1 = String::from(&ldquo;Andy&rdquo;);
+let s2 = say_hi(s1);
+//println!("{}", s1); // 所有权已转移会报错
+println!("{}", s2); // 所有权通过返回值返回
+}</p><p>有时候仅仅是使用某个变量，而不是将所有权进行转移，那么此时就可以使用引用，类似于其它语言中的指针。</p><p>fn main() {
+let x = String::from(&ldquo;Hello&rdquo;);
+let x1 = &amp;x;
+let x2 = x1; // 引用有Copy Trait可以直接赋值
+println!("{} {} {}", x, x1, x2);</p><pre><code>let mut site = String::from(&quot;HelloWorld&quot;);
+let domain = &amp;mut site; // 可以修改，引用对象也必须是mut才可以
+domain.push_str(&quot;.com&quot;);
+println!(&quot;{}&quot;, domain);
+</code></pre><p>}</p><h2 id=解引用>解引用 <a href=#%e8%a7%a3%e5%bc%95%e7%94%a8 class=anchor aria-hidden=true>#</a></h2><p>与其它语言类似，通过 <code>&</code> 表示引用/借用，而 <code>*</code> 解引用，常规的引用是一个指针类型，包含了目标数据的内存地址。
+fn main() {
+let x = 5;
+let y = &amp;x;</p><pre><code>assert_eq!(5, x);
+assert_eq!(5, *y);
+</code></pre><p>}
+其中的 y 就是一个常规引用，包含的是 5 所在的地址，通过解引用 <code>*y</code> 获取到了对应的值 <code>5</code>，如果执行 <code>assert_eq!(5, y)</code> 就会报错，因为引用和数值不是一个类型。</p></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/rust-basic-syntax/>Rust 基本语法</a></li><li><a class=text-body href=/cn/blog/rust-basic-introduce/>Rust 基本介绍</a></li><li><a class=text-body href=/cn/blog/bash-pitfalls/>Bash 使用常见错误以及规避措施</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2023 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
