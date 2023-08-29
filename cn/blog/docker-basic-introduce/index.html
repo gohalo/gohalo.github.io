@@ -53,8 +53,9 @@ docker.io/centos    latest              67fa590cfc1c        4 weeks ago         
 ----- 删除镜像，可以通过REPO或者ID指定
 # docker image rm 67fa590cfc1c
 
------ 重命名镜像，通过ID指定
+----- 重命名镜像，通过ID指定，同样可以删除Tag
 # docker tag 67fa590cfc1c centos
+# docker rmi centos:7.7.1908
 
 ----- 运行容器，指定名称为REPOSITORY:TAG
 # docker run hello-world
