@@ -1,0 +1,198 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 使用简介 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><title>MySQL 使用简介 GoHalo</title><meta name=description content="MySQL 是一款最流行的开源关系型数据库，最初由瑞典的 MySQL AB 公司开发，目前已被 Oracle 收购，现在比较流行的分支包括了 MariaDB 和 Percona。
+现在来看，MySQL 被收购之后，实际上添加了很多不错的特性，解掉了很多之前未解的问题，而现在 MariaDB 离主干的特性越来越远；而 Percona 据说为了保证质量是不接受社区提供的代码的，不过其提供的工具却是极好的^_^
+在此，简单介绍，二进制安装、源码编译安装、单实例以及多实例的启动、常见的调试方法。
+"><link rel=canonical href=https://gohalo.github.io/cn/blog/mysql-basic-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/mysql-basic-introduce/","url":"https://gohalo.github.io/cn/blog/mysql-basic-introduce/","name":"MySQL 使用简介","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2017-10-16T19:39:18CET","dateModified":"2017-10-16T19:39:18CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/mysql-basic-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/mysql-basic-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/mysql-basic-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/mysql-basic-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/mysql-basic-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"MySQL 使用简介","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/mysql-basic-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/mysql-basic-introduce/"},"datePublished":"2017-10-16T19:39:18CET","dateModified":"2017-10-16T19:39:18CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/mysql-basic-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/mysql-basic-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"MySQL 使用简介"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
+<span>页面目录</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#安装>安装</a><ul><li><a href=#密码配置>密码配置</a></li><li><a href=#编译安装>编译安装</a></li><li><a href=#调试程序>调试程序</a></li></ul></li><li><a href=#shell-script-invoked-with-the-following-arguments>shell script invoked with the following arguments</a></li><li><a href=#cxx-cxx_defines-cxx_flags--o-object_file--c-source_file>$(CXX) $(CXX_DEFINES) $(CXX_FLAGS) -o OBJECT_FILE -c SOURCE_FILE</a></li><li><a href=#extract-parameters>extract parameters</a></li><li><a href=#make-source-file-path-relative-to-project-source-dir>make source file path relative to project source dir</a></li><li><a href=#make-object-file-path-absolute>make object file path absolute</a></li><li><a href=#invoke-compiler>invoke compiler</a><ul><li></li></ul></li><li><a href=#-dispatch_command>@ dispatch_command()</a><ul><li></li><li><a href=#打印执行的sql>打印执行的SQL</a></li></ul></li><li><a href=#tcpdump--i-lo--s-0--l--w---dst-port-3306--strings>tcpdump -i lo -s 0 -l -w - dst port 3306 | strings</a></li><li><a href=#tcpdump--i-lo--s-0--l--w---dst-port-3306--strings--perl--e->tcpdump -i lo -s 0 -l -w - dst port 3306 | strings | perl -e '</a><ul><li><a href=#参考>参考</a></li></ul></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#安装>安装</a><ul><li><a href=#密码配置>密码配置</a></li><li><a href=#编译安装>编译安装</a></li><li><a href=#调试程序>调试程序</a></li></ul></li><li><a href=#shell-script-invoked-with-the-following-arguments>shell script invoked with the following arguments</a></li><li><a href=#cxx-cxx_defines-cxx_flags--o-object_file--c-source_file>$(CXX) $(CXX_DEFINES) $(CXX_FLAGS) -o OBJECT_FILE -c SOURCE_FILE</a></li><li><a href=#extract-parameters>extract parameters</a></li><li><a href=#make-source-file-path-relative-to-project-source-dir>make source file path relative to project source dir</a></li><li><a href=#make-object-file-path-absolute>make object file path absolute</a></li><li><a href=#invoke-compiler>invoke compiler</a><ul><li></li></ul></li><li><a href=#-dispatch_command>@ dispatch_command()</a><ul><li></li><li><a href=#打印执行的sql>打印执行的SQL</a></li></ul></li><li><a href=#tcpdump--i-lo--s-0--l--w---dst-port-3306--strings>tcpdump -i lo -s 0 -l -w - dst port 3306 | strings</a></li><li><a href=#tcpdump--i-lo--s-0--l--w---dst-port-3306--strings--perl--e->tcpdump -i lo -s 0 -l -w - dst port 3306 | strings | perl -e '</a><ul><li><a href=#参考>参考</a></li></ul></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>MySQL 使用简介</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2017-10-16</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/topic/ role=button>topic</a>
+<a class="btn btn-light" href=https://gohalo.github.io/tags/language/ role=button>language</a>
+<a class="btn btn-light" href=https://gohalo.github.io/tags/golang/ role=button>golang</a></div></div><hr><div class=content-body><p>MySQL 是一款最流行的开源关系型数据库，最初由瑞典的 MySQL AB 公司开发，目前已被 Oracle 收购，现在比较流行的分支包括了 MariaDB 和 Percona。</p><p>现在来看，MySQL 被收购之后，实际上添加了很多不错的特性，解掉了很多之前未解的问题，而现在 MariaDB 离主干的特性越来越远；而 Percona 据说为了保证质量是不接受社区提供的代码的，不过其提供的工具却是极好的^_^</p><p>在此，简单介绍，二进制安装、源码编译安装、单实例以及多实例的启动、常见的调试方法。</p><img src=images/mysql-intro-logo.jpg alt="mysql introduce logo" width=30%><h1 id=安装>安装 <a href=#%e5%ae%89%e8%a3%85 class=anchor aria-hidden=true>#</a></h1><p>对于 Ubuntu、CentOS 这样的发行版本可以直接通过命令行安装，从 CentOS 7 之后，实际安装的是 MariaDB ，也可以通过 Oracle 提供的官方 YUM repository ，然后安装 MySQL Community Server，下面以 CentOS 为例。</p><pre tabindex=0><code># yum install -y mariadb-server mariadb                                      ← 安装MariaDB
+# systemctl start mariadb                                                    ← 启动server
+# systemctl enable mysqld                                                    ← 设置开机启动
+
+# rpm -Uvh http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm ← 安装仓库
+# yum install mysql-community-server                                         ← 安裝社区版
+# cat &lt;&lt; EOF &gt; /etc/my.cnf                                                   ← 设置配置文件
+[client]
+password        = new_password
+port            = 5506
+socket          = /tmp/mysql-5506.sock
+[mysqld]
+user            = mysql
+port            = 5506
+socket          = /tmp/mysql-5506.sock
+basedir         = /usr
+datadir         = /home/foobar/databases/data-5506
+pid-file        = /home/foobar/databases/data-5506/mysqld.pid
+EOF
+# /usr/sbin/mysqld --initialize-insecure --basedir=/usr --user=mysql \       ← 初始化数据，可通过空白密码登陆
+    --datadir=/home/foobar/databases/data-5506
+# systemctl start mysqld                                                     ← 启动server
+
+$ mysql -h 127.1                                                             ← 直接登陆
+mysql&gt; ALTER USER &#39;root&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;new_password&#39;;           ← 修改密码
+mysql&gt; FLUSH PRIVILEGES;
+</code></pre><p>通过 RPM 包安装时，默认是保存到 <code>/var/lib/mysql</code> 目录下。另外，需要注意，需要保证上级目录权限为 755，否则可能会报 Permission denied 错误。</p><p>当然也可以从 <a href=http://dev.mysql.com/downloads/>MySQL 官网</a>、<a href=https://downloads.mariadb.org/>MariaDB 官网</a> 或者 <a href=https://www.percona.com/>Percona 官网</a> 下载相应的安装包，或者源码。对于 CentOS 7 来说，可以从 <a href=https://dev.mysql.com/downloads/>MySQL Community Downloads</a> 下载 server、client、common、libs 对应的 RPM 包，也可从 <a href=http://mirrors.sohu.com/mysql/>sohu 镜像</a> 下载，然后安装即可。</p><h2 id=密码配置>密码配置 <a href=#%e5%af%86%e7%a0%81%e9%85%8d%e7%bd%ae class=anchor aria-hidden=true>#</a></h2><p>如果没有手动初始化数据直接启动，那么会将 root 密码打印到日志中，然后可以直接登陆；也可以修改配置文件跳过认证，也就是添加 <code>skip-grant-tables</code> 选项。</p><pre tabindex=0><code>----- 不建议使用如下方式修改密码
+mysql&gt; SET PASSWORD=PASSWORD(&#39;Root1234@&#39;);
+mysql&gt; FLUSH PRIVILEGES;
+
+----- 可以使用如下方式修改，且不需要FLUSH，建议时候后者
+mysql&gt; SET password=&#39;Root1234@&#39;;
+mysql&gt; ALTER USER &#39;root&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;Your@123NewPassword&#39;;
+</code></pre><p>在 8.X 版本之后会初始化一个默认的密码，可以通过 <code>grep 'temporary password' /var/log/mysqld.log</code> 命令查看，或者第一次启动 mysqld 服务时添加 <code>--initialize-insecure</code> 参数无密码登录。</p><p>登录后需要修改密码，否则执行其它 SQL 会报错，注意，对密码的复杂度是有要求的。</p><h2 id=编译安装>编译安装 <a href=#%e7%bc%96%e8%af%91%e5%ae%89%e8%a3%85 class=anchor aria-hidden=true>#</a></h2><p>还是直接从官网下载源码即可，假设直接解压到 <code>/home/foobar/Workspace/mysql</code> 并将安装目录设置为 <code>/opt/mysql-5.7</code> 。</p><p>下面介绍如何通过源码进行安装，最简单的是通过 <code>BUILD/compile-ARCH</code> 脚本进行编译，当然，可以选择使用 autotools 或者 CMake 指定相应的参数进行安装，在此通过 CMake 安装。</p><p>通过 CMake 编译时，有两种编译方式：A) 内部编译，即在源码内部编译，此时会有一些编译产生的临时文件，影响代码结构；B) 外部编译，不会影响原代码的结构，在此采用外部编译。</p><p>所谓的外部编译，就是在一个新的目录下进行编译，此时编译的中间文件不会影响到源码的目录结构。源码可以直接从官网下载，三个发行版本的源码编译方式都类似，在此以 MySQL 为例。</p><pre tabindex=0><code>----- 安装依赖包，以及相关的开发库
+# yum install gcc-c++ g++ ncurses-devel readline-devel zlib-devel
+
+----- 源码安装
+$ tar -xf mysql-boost-x.x.xx.tar.bz2
+$ cd mysql-boost-x.x.xx &amp;&amp; mkdir build &amp;&amp; cd build       ← 新建编译的目录
+$ cmake ..                                     \
+    -DCMAKE_INSTALL_PREFIX=/opt/mysql-5.7      \         ← 安装根目录
+    -DMYSQL_DATADIR=/opt/data                  \         ← 数据文件的默认路径
+    -DSYSCONFDIR=/etc                          \         ← 配置文件目录，默认/etc/my.cnf
+                                               \
+    -DWITH_INNOBASE_STORAGE_ENGINE=ON          \         ← 使用InnoDB存储引擎
+    -DWITH_BLACKHOLE_STORAGE_ENGINE=ON         \         ← 黑洞存储引擎
+    -DWITH_EXAMPLE_STORAGE_ENGINE=ON           \         ← 使用存储示例
+                                               \
+    -DWITHOUT_FEDERATED_STORAGE_ENGINE=ON      \         ← 取消一些不常用的存储引擎
+    -DWITHOUT_PARTITION_STORAGE_ENGINE=ON      \
+    -DWITHOUT_ARCHIVE_STORAGE_ENGINE=ON        \         ← 日志记录和聚合分析，不支持索引
+                                               \
+    -DMYSQL_TCP_PORT=3306                      \         ← 默认使用的端口号
+    -DMYSQL_UNIX_ADDR=/tmp/mysql.sock          \         ← 默认套接字文件路径
+    -DMYSQL_USER=mysql                         \         ← 默认使用的用户
+                                               \
+    -DEXTRA_CHARSETS=all                       \         ← 是否支持额外的字符集
+    -DDEFAULT_CHARSET=utf8                     \         ← 默认编码机制
+    -DDEFAULT_COLLATION=utf8_general_ci        \         ← 设定默认语言的排序规则
+                                               \
+    -DWITH_READLINE=ON                         \         ← 使用readline库，支持类shell的快捷键以及历史命令
+    -DENABLED_LOCAL_INFILE=ON                  \         ← 支持批量导入
+    -DWITH_LIBWRAP=OFF                         \         ← 是否可以基于WRAP实现访问控制
+    -DWITH_SSL=system                          \         ← 支持ssl会话，实现基于ssl的数据复制
+    -DWITH_ZLIB=system                         \         ← 压缩库
+    -DWITH_EMBEDDED_SERVER=OFF                 \         ← 取消embedded模式
+    -DENABLE_PROFILING=ON                      \         ← 启用性能分析功能
+    -DCMAKE_BUILD_TYPE=Debug                   \         ← 打开调试选项
+    -DWITH_SAFEMALLOC=OFF                      \         ← 关闭safemalloc，经常会报错误，5.7不需要
+    -DWITH_BOOST=../boost                                ← 5.7需要该boost库，直接下载含该库的包
+
+----- 编译源码并安装
+$ make -j`cat /proc/cpuinfo | grep &#39;processor&#39; | wc -l`  ← 可以简单使用make并行编译，指定并发
+# make install                                           ← 安装
+
+----- 设置环境
+$ export PATH=$PATH:/opt/mysql-5.7/bin                   ← 设置环境变量
+$ vi /etc/ld.so.conf &amp;&amp; sudo ldconfig                    ← 设置动态库目录
+$ mysql_config                                           ← 可用于查看环境配置，很多MySQL软件依赖该命令
+
+----- 源码安装时最好将build目录中的如下文件保存下
+# cat install_manifest.txt | xargs rm                    ← 直接手动删除
+</code></pre><p>注意，除了上述列举的选项外，可通过 <code>cmake .. -LH</code> 查看当前版本所支持的选项，如要重新编译可以直接运行 <code>make clean; rm CMakeCache.txt; cmake ..</code> 即可。</p><p>另外，MariaDB 不支持使用 <code>-DWITH_DEBUG=1</code>，应该使用 <code>-DCMAKE_BUILD_TYPE=Debug</code>；更多 MySQL 编译选项可以参考 <a href=http://dev.mysql.com/doc/mysql-sourcebuild-excerpt/en/source-configuration-options.html>Source Configration Options</a> 。</p><p>通过 make 编译时，可以通过 <code>-j</code> 选项指定使用多个 Jobs 进行编译，也就是通过多个 CPU 进行编译，这样可以加快编译速度。</p><p>源码编译完成后，默认会将程序保存在 <code>sql/mysqld</code> 目录下，然后即可以通过 <code>make install</code> 将其安装在 <code>/opt/mysql-5.7</code> 目录下，为了方便运行，可以将 <code>/opt/mysql-5.7/bin</code> 添加到环境变量 <code>PATH</code> 中。</p><p>如果不通过 --user 参数指定用户名，则使用默认的当前用户，此时不需要设置 datadir 目录的权限，否则需要设置相应权限。</p><p>basedir 指定 MySQL 的安装目录；datadir 指定数据的存放位置；可以使用 --defaults-file=my.cnf 指定默认的配置文件，可以使用相对路径，默认相对于 datadir。在 share 子目录下，包含了一些配置文件，以及初次安装运行需要的初始数据库文件比如 mysql_system_tables.sql。</p><p>注意，如果要使用参数指定默认配置文件，则 --defaults-file 选项应该放置在第一个参数，而且 datadir、basedir 必须使用绝对路径。</p><h3 id=单实例运行>单实例运行 <a href=#%e5%8d%95%e5%ae%9e%e4%be%8b%e8%bf%90%e8%a1%8c class=anchor aria-hidden=true>#</a></h3><p>新建配置文件 data/my.cnf (可以为空)，并通过如下命令启动/停止/连接服务器。</p><p>{% highlight text %}
+&mdash;&ndash; 1. 切换到工作目录
+$ cd /home/foobar/Workspace/mysql</p><p>&mdash;&ndash; 2. 启动单个MySQL实例，前台运行，如果要后台运行直接添加&即可
+$ /opt/mysql-5.7/bin/mysqld &ndash;defaults-file=data/my.cnf<br>&ndash;datadir=/home/foobar/Workspace/mysql/data<br>&ndash;basedir=/opt/mysql-5.7 &ndash;skip-networking &ndash;debug
+$ /opt/mysql-5.7/bin/mysqld_safe &ndash;defaults-file=data/my.cnf<br>&ndash;datadir=/home/foobar/Workspace/mysql/data<br>&ndash;basedir=/opt/mysql-5.7 &ndash;skip-networking &ndash;debug &</p><p>&mdash;&ndash; 3. 如下命令连接到数据库，5.6之前为密码为空，5.7密码保存在~/.mysql_secret
+$ /opt/mysql-5.7/bin/mysql -uroot -p&rsquo;init-password&rsquo; -S /tmp/mysql.sock</p><p>&mdash;&ndash; 4. 可以通过如下命令关闭、查看状态
+$ /opt/mysql-5.7/bin/mysqladmin -uroot -p&rsquo;init-password&rsquo; shutdown
+$ /opt/mysql-5.7/bin/mysqladmin -uroot -p&rsquo;init-password&rsquo; status
+{% endhighlight %}</p><p>在通过上述命令启动服务器时，添加了 skip-networking 参数，也就是不启动 TCP 网络，因此只能通过 sock 连接。</p><p>需要注意的是，如果不使用 --defaults-file 选项，mysqld 会自动读取 /etc/my.cnf 配置文件，如果默认值与期望值不符，从而可能会导致部分错误，当然可以删除该配置文件，不过不建议。</p><p><strong>推荐</strong> 可以将对应的启动、关闭命令设置为 alias ，这样可以简化启动方式，同时仍然可以动态添加参数，如直接再在命令的末尾添加 --debug 。</p><h3 id=多实例运行>多实例运行 <a href=#%e5%a4%9a%e5%ae%9e%e4%be%8b%e8%bf%90%e8%a1%8c class=anchor aria-hidden=true>#</a></h3><p>多实例主要是端口以及保存的数据目录不同，通过简单设置这些参数，可以在同一台 server 上启动多个实例，下面启动一个端口号为 3307 的实例，其中配置文件 mysql3307.cnf 的内容如下。</p><p>{% highlight text %}
+$ cat mysql3307.cnf
+[mysqld]
+port = 3307
+server-id = 3307
+basedir = /opt/mysql-5.7
+socket = /tmp/mysql3307.sock
+pid-file = /home/foobar/Workspace/mysql/data3307/mysql3307.pid
+datadir = /home/foobar/Workspace/mysql/data3307
+{% endhighlight %}</p><p>然后，可以通过如下命令设置并启动一个新的 MySQL 实例。</p><p>{% highlight text %}
+&mdash;&ndash; 1. 创建目录
+$ cd /home/foobar/Workspace/mysql && mkdir data3307</p><p>&mdash;&ndash; 2. 如上，初始化实例
+$ /opt/mysql-5.7/bin/mysqld &ndash;initialize-insecure &ndash;basedir=/opt/mysql-5.7<br>&ndash;datadir=/home/foobar/Workspace/mysql/data3307 &ndash;user=mysql</p><p>&mdash;&ndash; 3. 启动实例
+$ /opt/mariadb/bin/mysqld &ndash;defaults-file=data3307/mysql3307.cnf</p><p>&mdash;&ndash; 4. 连接数据库
+$ mysql -uroot -h127.1 -P3307</p><p>&mdash;&ndash; 5. 关闭数据库
+$ /opt/mariadb/bin/mysqladmin -uroot -S /tmp/mysql3307.sock shutdown
+{% endhighlight %}</p><p>对于多实例，可以通过上述的方法创建实例，不过管理操作还是略微有点复杂，实际上可以直接通过 mysqld_multi 命令管理。</p><p>另外，可以通过 mysqld_multi --example 查看示例配置文件，或者使用 multi.cnf 。</p><p>{% highlight text %}
+$ cat multi.cnf
+[mysqld_multi]
+mysqld = /opt/mysql-5.7/bin/mysqld
+mysqladmin = /opt/mysql-5.7/bin/mysqladmin
+user = root</p><p>[mysqld3307]
+socket = /tmp/mysql3307.sock
+port = 3307
+pid-file = /home/foobar/Workspace/mysql/data3307/mysql3307.pid
+datadir = /home/foobar/Workspace/mysql/data3307
+basedir = /opt/mysql-5.7
+server-id=3307</p><p>[mysqld3308]
+socket = /tmp/mysql3308.sock
+port = 3308
+pid-file = /home/foobar/Workspace/mysql/data3308/mysql3308.pid
+datadir = /home/foobar/Workspace/mysql/data3308
+basedir = /opt/mysql-5.7
+server-id=3308
+{% endhighlight %}</p><p>如下是一些常见的操作。</p><p>{% highlight text %}
+$ cd /home/foobar/Workspace/mysql
+$ /opt/mysql-5.7/bin/mysqld_multi &ndash;defaults-file=multi.cnf report ← 查看多个实例状态
+$ /opt/mysql-5.7/bin/mysqld_multi &ndash;defaults-file=multi.cnf start
+$ /opt/mysql-5.7/bin/mysqld_multi &ndash;defaults-file=multi.cnf stop
+{% endhighlight %}</p><h2 id=调试程序>调试程序 <a href=#%e8%b0%83%e8%af%95%e7%a8%8b%e5%ba%8f class=anchor aria-hidden=true>#</a></h2><p>如果要调试需要在编译时添加 -DCMAKE_BUILD_TYPE=Debug 选项，可以通过 gdb 或者使用 dbug 打印调试信息。</p><h3 id=使用-gdb>使用 GDB <a href=#%e4%bd%bf%e7%94%a8-gdb class=anchor aria-hidden=true>#</a></h3><p>可以通过如下的方式加载程序，然后运行。</p><p>{% highlight text %}
+$ gdb -args /opt/mariadb/bin/mysqld &ndash;defaults-file=&mldr;&mldr;
+(gdb) run
+{% endhighlight %}</p><p>如果 MySQL 已经启动，此时可以通过 gdb 的 attach PID 命令来调试，一般会阻塞在系统调用 poll() 处；调试结束通过 detach 命令退出。注意，要先 <strong>设置断点</strong> 。</p><p>如果通过 CMake 进行编译，往往会采用绝对路径，可以通过 readelf -p .debug_str 查看，此时设置/查看断点时应该使用绝对路径。可以修改/添加如下文件。</p><p>{% highlight text %}
+$ cat CMakeLists.txt # 添加如下内容
+&mldr; &mldr;
+CONFIGURE_FILE(
+&ldquo;${PROJECT_SOURCE_DIR}/gcc_debug_fix.sh.in&rdquo;
+&ldquo;${PROJECT_BINARY_DIR}/gcc_debug_fix.sh&rdquo;
+@ONLY)
+&mldr; &mldr;</p><p>$ cat cmake/mysql_add_executable.cmake # 添加如下内容
+ADD_EXECUTABLE(&mldr; &mldr;)
+SET_TARGET_PROPERTIES(${target} PROPERTIES
+RULE_LAUNCH_COMPILE &ldquo;${PROJECT_BINARY_DIR}/gcc_debug_fix.sh&rdquo;)
+&mldr; &mldr;</p><p>$ cat gcc_debug_fix.sh.in # 添加如下文件，需要设置可执行
+#!/bin/sh
+PROJECT_BINARY_DIR="@PROJECT_BINARY_DIR@"
+PROJECT_SOURCE_DIR="@PROJECT_SOURCE_DIR@"</p><h1 id=shell-script-invoked-with-the-following-arguments>shell script invoked with the following arguments <a href=#shell-script-invoked-with-the-following-arguments class=anchor aria-hidden=true>#</a></h1><h1 id=cxx-cxx_defines-cxx_flags--o-object_file--c-source_file>$(CXX) $(CXX_DEFINES) $(CXX_FLAGS) -o OBJECT_FILE -c SOURCE_FILE <a href=#cxx-cxx_defines-cxx_flags--o-object_file--c-source_file class=anchor aria-hidden=true>#</a></h1><h1 id=extract-parameters>extract parameters <a href=#extract-parameters class=anchor aria-hidden=true>#</a></h1><p>SOURCE_FILE="${@: -1:1}"
+OBJECT_FILE="${@: -3:1}"
+COMPILER_AND_FLAGS=${@:1:$#-4}</p><h1 id=make-source-file-path-relative-to-project-source-dir>make source file path relative to project source dir <a href=#make-source-file-path-relative-to-project-source-dir class=anchor aria-hidden=true>#</a></h1><p>SOURCE_FILE_RELATIVE="${SOURCE_FILE:${#PROJECT_SOURCE_DIR} + 1}"</p><h1 id=make-object-file-path-absolute>make object file path absolute <a href=#make-object-file-path-absolute class=anchor aria-hidden=true>#</a></h1><p>OBJECT_FILE_ABSOLUTE="$PROJECT_BINARY_DIR/$OBJECT_FILE"</p><p>cd &ldquo;$PROJECT_SOURCE_DIR&rdquo;</p><h1 id=invoke-compiler>invoke compiler <a href=#invoke-compiler class=anchor aria-hidden=true>#</a></h1><p>exec $COMPILER_AND_FLAGS -c &ldquo;${SOURCE_FILE_RELATIVE}&rdquo; -o &ldquo;${OBJECT_FILE_ABSOLUTE}&rdquo;
+{% endhighlight %}</p><p>编译方式仍如上所示，相关内容可以参考 <a href=http://www.stackoverflow.com/questions/9607155/make-gcc-put-relative-filenames-in-debug-information>Make gcc put relative filenames in debug information</a> 。</p><h3 id=调试技巧>调试技巧 <a href=#%e8%b0%83%e8%af%95%e6%8a%80%e5%b7%a7 class=anchor aria-hidden=true>#</a></h3><p>为了比较好的查看变量内容，可以设置如下。</p><p>{% highlight text %}
+(gdb) set print vtbl on ← 用比较规整的格式来显示虚函数表
+(gdb) ptype obj/class/struct ← 查看obj/class/struct的成员，但是会把基类指针指向的派生类识别为基类
+(gdb) set print object on ← 查看派生对象的真实类名
+(gdb) set print pretty on ← 以树形打印对象的成员，可以清晰展示继承关系
+{% endhighlight %}</p><p>链接到 mysqld 后，会阻塞在 poll()，然后设置调试入口，在此简单列举一下常见的调试入口点。</p><ul><li>handle_connections_sockets() @ mysqld.cc<br>等待接收处理新的链接。</li><li>do_handle_one_connection() @ sql_connect.cc<br>接下来的处理过程为处理链接，注意该处理函数与链接的处理方式有关。</li><li>do_command() @ sql_parse.cc; dispatch_command() @ sql_parse.cc<br>接着是处理接收到的 SQL，其中有一个变量 THD thd @ sql_class.h 会经常使用，该结构体中包含了当前线程的相关信息。</li></ul><p>如下是简单的在 dispatch_command() 断点处打印的信息，用 @ 简单标示断点信息。</p><p>{% highlight text %}</p><h1 id=-dispatch_command>@ dispatch_command() <a href=#-dispatch_command class=anchor aria-hidden=true>#</a></h1><p>(gdb) p thd.net ← 查看网络的信息
+(gdb) p packet ← 请求的命令
+{% endhighlight %}</p><h3 id=使用-dbug>使用 DBUG <a href=#%e4%bd%bf%e7%94%a8-dbug class=anchor aria-hidden=true>#</a></h3><p>对于 MySQL 需要在编译时添加调试选项 -DCMAKE_BUILD_TYPE=Debug ，然后在启动时使用 --debug 参数，默认会启动所有的调试选项，调试的信息会保存在 /tmp/mysqld.trace 文件中。</p><p>可以在启动时使用 --debug[=debug_options] 添加调试选项，默认值是 d:t:i:o,/tmp/mysqld.trace 。选项的格式为 [field1]:[field2]&mldr; 每个 field 之间用冒号分割，各个 field 的内容为 flag[,modifier,modifier&mldr;] 。</p><p>常用的标记有：</p><p>{% highlight text %}
+d
+允许对当前状态从DBUG_<n>宏输出。可能跟着一列关键词，这些关键词仅对那些带有关键词的DBUG宏选择输出。
+一个空的关键词列意味着对所有宏输出。
+t
+允许函数调用/退出跟踪行。可能跟着一个给出最大跟踪级别的数字列（只含一个修改量），超过这个数字，
+调试中或跟踪中的宏不能产生任何输出。 默认为一个编译时间选项。
+i
+对调试或跟踪输出的每一行用PID或线程ID识别进程。
+o
+重定向调试器输出流到指定文件，默认输出是stderr 文件。
+{% endhighlight %}</p><p>注意：调试输出选项是在 mysqld_main() 中的 handle_options() 返回后开始输出的，之前应该是还没有初始化，所以 &mldr;&mldr;</p><p>另外，在运行的时候也可以通过，如下的方式修改，日志的保存位置可以查看该变量。</p><p>{% highlight text %}
+mysql> SHOW VARIABLES LIKE &lsquo;debug&rsquo;;
+mysql> SET GLOBAL debug = &rsquo;d:t:i:o,/tmp/mysqld.trace&rsquo;;
+mysql> SET SESSION debug = &rsquo;d:t:i:o,/tmp/mysqld.trace&rsquo;;
+{% endhighlight %}</p><p>其中，DBUG_RETURN() 后面的数字对应的是行号。</p><p>其它与 dbug 相关的内容可以参考 <a href=http://sourceforge.net/projects/dbug/>dbug 源码</a>，其中有一个 example.c 文件，可以将其复制到 src 目录下，最简单的方式是直接通过 gcc example.c dbug.c 编译，编译后运行将直接输出到终端上；当要取消调试选项时只需要添加宏 #define DBUG_OFF。</p><p>注意：MySQL 的 dbug 库是经过修改的，会有稍微的差别。</p><h2 id=打印执行的sql>打印执行的SQL <a href=#%e6%89%93%e5%8d%b0%e6%89%a7%e8%a1%8c%e7%9a%84sql class=anchor aria-hidden=true>#</a></h2><p>通常在测试某些功能时，希望可以直接输出所执行的 SQL，通常可以使用如下的两种方式。</p><h3 id=general-log>general log <a href=#general-log class=anchor aria-hidden=true>#</a></h3><p>可以通过 general_log 打开日志，记录所有的执行日志，当然只用于测试，生产环境不要打开。</p><p>{% highlight text %}
+mysql> show global variables like &lsquo;general%&rsquo;;
+mysql> set global general_log=1; # 打开查询日志
+{% endhighlight %}</p><p>默认日志保存在 $datadir/$general_log_file 文件中。</p><p>另外，slow query log 用于记录执行时间超过 long_query_time 的 SQL 。</p><h3 id=tcpdump>tcpdump <a href=#tcpdump class=anchor aria-hidden=true>#</a></h3><p>可以通过 tcpdump 截取 MySQL 报文，假设使用的时 lo 接口；需要注意的是：使用本地连接可能会直接用 Linux sock 链接，通过客户端创建连接时需要指定 -h 127.1。</p><p>{% highlight text %}</p><h1 id=tcpdump--i-lo--s-0--l--w---dst-port-3306--strings>tcpdump -i lo -s 0 -l -w - dst port 3306 | strings <a href=#tcpdump--i-lo--s-0--l--w---dst-port-3306--strings class=anchor aria-hidden=true>#</a></h1><p>其中的选项为：
+-s 0 将截取报文的长度设置为默认值 65536 bytes
+-i lo 指定监听的网络接口
+-l 输出变为缓冲行形式
+-w 直接将包写入文件中，并不分析和打印出来，在此输出到标准输入</p><h1 id=tcpdump--i-lo--s-0--l--w---dst-port-3306--strings--perl--e->tcpdump -i lo -s 0 -l -w - dst port 3306 | strings | perl -e ' <a href=#tcpdump--i-lo--s-0--l--w---dst-port-3306--strings--perl--e- class=anchor aria-hidden=true>#</a></h1><p>while(&lt;>) { chomp; next if /^[^ ]+[ ]*$/;
+if(/^(SELECT|UPDATE|DELETE|INSERT|SET|COMMIT|ROLLBACK|CREATE|DROP|ALTER)/i) {
+if (defined $q) { print &ldquo;$q\n&rdquo;; }
+$q=$<em>;
+} else {
+$</em> =~ s/^[ \t]+//; $q.=" $_";
+}
+}&rsquo;
+{% endhighlight %}</p><h2 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h2><p>其中调试时的相对路径设置可以参考 <a href=http://stackoverflow.com/questions/9607155/make-gcc-put-relative-filenames-in-debug-information>stackflow</a> 或者 [本地文档](/reference/databases/mysql/make gcc put relative filenames in debug information.mht) 。
+&ndash;></p></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/topic-language-rust/>【专题】Rust 编程语言</a></li><li><a class=text-body href=/cn/blog/topic-language-golang/>【专题】GoLang 编程语言</a></li><li><a class=text-body href=/cn/blog/golang-json-encode-decode-introduce/>GoLang JSON 编码解码</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2023 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
