@@ -98,7 +98,10 @@ False
 </span></span><span class=line><span class=cl>    <span class=k>done</span>
 </span></span><span class=line><span class=cl><span class=o>}</span>
 </span></span><span class=line><span class=cl>foobar <span class=m>1</span> <span class=m>2</span> <span class=s2>&#34;3 4&#34;</span>
-</span></span></code></pre></div><h1 id=函数>函数 <a href=#%e5%87%bd%e6%95%b0 class=anchor aria-hidden=true>#</a></h1><p>其中 <code>$#</code> 表示所有入参的数量，位置参数 <code>$1</code> <code>$2</code> &mldr; <code>$N</code> 代表了各个参数，而 <code>$0</code> 代表了第一个参数，也就是脚本的名字。</p><p>函数的返回值需要小于 <code>255</code> ，可以通过 <code>$?</code> 获取。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=k>function</span> foobar<span class=o>()</span> <span class=o>{</span>
+</span></span></code></pre></div><h3 id=文件遍历>文件遍历 <a href=#%e6%96%87%e4%bb%b6%e9%81%8d%e5%8e%86 class=anchor aria-hidden=true>#</a></h3><pre tabindex=0><code>for file in data/*; do
+	echo $file
+done
+</code></pre><h1 id=函数>函数 <a href=#%e5%87%bd%e6%95%b0 class=anchor aria-hidden=true>#</a></h1><p>其中 <code>$#</code> 表示所有入参的数量，位置参数 <code>$1</code> <code>$2</code> &mldr; <code>$N</code> 代表了各个参数，而 <code>$0</code> 代表了第一个参数，也就是脚本的名字。</p><p>函数的返回值需要小于 <code>255</code> ，可以通过 <code>$?</code> 获取。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=k>function</span> foobar<span class=o>()</span> <span class=o>{</span>
 </span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=o>[[</span> <span class=nv>$1</span> <span class=o>==</span> <span class=s2>&#34;foo&#34;</span> <span class=o>]]</span><span class=p>;</span> <span class=k>then</span>
 </span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=m>1</span>
 </span></span><span class=line><span class=cl>    <span class=k>fi</span>

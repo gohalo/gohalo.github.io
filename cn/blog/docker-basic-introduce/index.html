@@ -54,7 +54,7 @@ $ docker pull registry.docker-cn.com/library/ubuntu:16.04
 # docker pull docker.io/centos
 
 ----- 查看镜像，及其详细信息，也可以查看DIGEST
-# docker images --digest
+# docker images --digests
 REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
 docker.io/centos    latest              67fa590cfc1c        4 weeks ago         202 MB
 # docker inspect 67fa590cfc1c
@@ -116,16 +116,16 @@ hostport:containerport      # 未指定ip、指定宿主机port、指定容器po
 # docker run -P -it ubuntu /bin/bash
 
 ----- 将容器的80端口随机映射到宿主机的一个端口上
-# docker run -P 80 -it ubuntu /bin/bash
+# docker run -p 80 -it ubuntu /bin/bash
 
 ----- 容器的80端口映射到8000端口上
 # docker run -p 8000:80 -it ubuntu /bin/bash
 
 ----- 容器的192.168.0.100和80端口随机映射到宿主机的一个端口上
-# docker run -P 192.168.0.100::80 -it ubuntu /bin/bash
+# docker run -p 192.168.0.100::80 -it ubuntu /bin/bash
 
 ----- 容器的192.168.0.100和80端口映射到宿主机的8000端口上
-# docker run -P 192.168.0.100:8000:80 -it ubuntu /bin/bash
+# docker run -p 192.168.0.100:8000:80 -it ubuntu /bin/bash
 </code></pre><p>然后可以通过 <code>docker port CONTAINER-ID</code> 命令查看。</p><h2 id=资源清理>资源清理 <a href=#%e8%b5%84%e6%ba%90%e6%b8%85%e7%90%86 class=anchor aria-hidden=true>#</a></h2><p>随着 Docker 的运行，会占用越来越多的资源，比较常见的是磁盘资源，对于一些无用的镜像、容器、网络、数据卷实际可以直接删除，可以通过如下命令查看当前使用的资源。</p><pre tabindex=0><code>----- 所有的容器信息，不带-a参数之列举出运行的容器
 # docker container ls -a
 

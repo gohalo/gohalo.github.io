@@ -1,0 +1,110 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Java 常用工具详解 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><title>Java 常用工具详解 GoHalo</title><meta name=description content="Java 安装包中除了 JVM 虚拟机之外，还提供了一些常用的命令行，这里简单介绍常用的命令。
+"><link rel=canonical href=https://gohalo.github.io/cn/blog/java-tools-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/java-tools-introduce/","url":"https://gohalo.github.io/cn/blog/java-tools-introduce/","name":"Java 常用工具详解","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2021-08-29T20:38:50CET","dateModified":"2021-08-29T20:38:50CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/java-tools-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/java-tools-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/java-tools-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/java-tools-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/java-tools-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"Java 常用工具详解","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/java-tools-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/java-tools-introduce/"},"datePublished":"2021-08-29T20:38:50CET","dateModified":"2021-08-29T20:38:50CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/java-tools-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/java-tools-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"Java 常用工具详解"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
+<span>页面目录</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#jstat>jstat</a></li><li><a href=#jstack>jstack</a></li><li><a href=#jmap>jmap</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#jstat>jstat</a></li><li><a href=#jstack>jstack</a></li><li><a href=#jmap>jmap</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>Java 常用工具详解</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2021-08-29</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/language/ role=button>language</a>
+<a class="btn btn-light" href=https://gohalo.github.io/tags/java/ role=button>java</a></div></div><hr><div class=content-body><p>Java 安装包中除了 JVM 虚拟机之外，还提供了一些常用的命令行，这里简单介绍常用的命令。</p><h1 id=jstat>jstat <a href=#jstat class=anchor aria-hidden=true>#</a></h1><p>通过 JVM 内建的指令对 Java 应用的资源和性能进行实时的命令行监控，命令行格式如下。</p><pre tabindex=0><code>jstat [-t] &lt;-Command&gt; &lt;PID&gt; [Interval] [Counts]
+-class            统计ClassLoader行为信息
+-compiler         统计JIT行为信息
+-gcutil           统计gc时栈的使用占比
+-gc               统计gc时栈的字节信息
+</code></pre><p>会按照 Interval 间隔(毫秒)显示 Counts 次，如果不指定次数则一直执行，也可以通过 <code>-t</code> 显示当前进程运行时间。</p><pre tabindex=0><code>----- 统计ClassLoader信息
+----- 装载14154个类共31471字节，卸载39个类共45.4字节，耗时5.42秒
+$ jstat -class 4022416
+Loaded   Bytes  Unloaded  Bytes     Time   
+ 14154 31471.0        39   45.4     5.42
+
+----- 统计GC时的栈使用占比以及耗时
+----- S0 S1 Eden Old MetaSpace 内存空间使用占比，CSS 压缩类占比
+----- YGC/YGCT 统计YoungGC次数和耗时 FGC/FGCT 统计FullGC次数和耗时 GCT总耗时
+$ jstat -gcutil 4022416 1000 5
+    S0     S1      E      O      M    CCS    YGC     YGCT   FGC     FGCT      GCT   
+ 20.03   0.00  99.47  43.92  98.17  96.03     62    0.375     6    0.141    0.516
+ 20.03   0.00  99.53  43.92  98.17  96.03     62    0.375     6    0.141    0.516
+ 20.03   0.00  99.54  43.92  98.17  96.03     62    0.375     6    0.141    0.516
+ 20.03   0.00  99.54  43.92  98.17  96.03     62    0.375     6    0.141    0.516
+ 20.03   0.00  99.57  43.92  98.17  96.03     62    0.375     6    0.141    0.516
+ 
+----- 统计GC时的栈使用情况以及耗时
+----- S0 S1 Eden Old MetaSpace 信息，其中 C 表示总空间(KB)，而 U 表示已经使用空间(KB)，耗时与上面相同
+$ jstat -gc 4022416 1000 5
+   S0C    S1C    S0U  S1U     EC      EU     OC    OU   MC      MU    CCSC    CCSU YGC  YGCT FGC  FGCT   GCT   
+7024.0 7024.0 3374.4  0.0 36576.0 2746.2 1376.0 211.3 32.0 97131.4 10612.0 10190.3  64 0.380   6 0.141 0.521
+7024.0 7024.0 3374.4  0.0 36576.0 2746.2 1376.0 211.3 32.0 97131.4 10612.0 10190.3  64 0.380   6 0.141 0.521
+7024.0 7024.0 3374.4  0.0 36576.0 2746.2 1376.0 211.3 32.0 97131.4 10612.0 10190.3  64 0.380   6 0.141 0.521
+7024.0 7024.0 3374.4  0.0 36576.0 2865.3 1376.0 211.3 32.0 97131.4 10612.0 10190.3  64 0.380   6 0.141 0.521
+7024.0 7024.0 3374.4  0.0 36576.0 3510.8 1376.0 211.3 32.0 97131.4 10612.0 10190.3  64 0.380   6 0.141 0.521
+</code></pre><h1 id=jstack>jstack <a href=#jstack class=anchor aria-hidden=true>#</a></h1><p>可以用来观察 JVM 当前所有线程的运行情况和当前状态，也包括了 Core 文件。</p><pre tabindex=0><code>$ jstack [options] &lt;PID&gt;
+-F 强制输出线程的栈，当负载较高时可以加上该参数
+-l 同时显示锁的附加信息
+-m 调用本地方法时可以显示 C/C++ 的堆栈
+</code></pre><p>打印的线程包含了 JVM 线程和用户线程两类，一般重点关注用户线程即可。另外，通过 jinfo 可以从 core 文件中知道崩溃 Jave 的配置信息。</p><h1 id=jmap>jmap <a href=#jmap class=anchor aria-hidden=true>#</a></h1><p>用来查看 JVM 当前栈信息，包括各个对象的数量、占用空间等。</p><pre tabindex=0><code>----- 显示类的内存使用情况，包括对象数量、内存大小、完全限定类名 -histo:live
+$ jmap -histo 4022416
+ num     #instances         #bytes  class name
+----------------------------------------------
+   1:        740112       64463272  [C
+   2:        103817       23393960  [B
+   3:        739391       17745384  java.lang.String
+   4:        273711       13138128  com.sun.tools.javac.file.ZipFileIndex$Entry
+   5:        362864        8708736  com.sun.tools.javac.util.List
+   6:         38364        3582936  [Ljava.lang.Object;
+
+----- 显示整体堆信息
+$ jmap -heap 4022416
+Attaching to process ID 4022416, please wait...
+Debugger attached successfully.
+Server compiler detected.
+JVM version is 25.265-b01
+
+using parallel threads in the new generation.
+using thread-local object allocation.
+Concurrent Mark-Sweep GC
+
+Heap Configuration:
+   MinHeapFreeRatio         = 40
+   MaxHeapFreeRatio         = 70
+   MaxHeapSize              = 8589934592 (8192.0MB)
+   NewSize                  = 174718976 (166.625MB)
+   MaxNewSize               = 697892864 (665.5625MB)
+   OldSize                  = 349569024 (333.375MB)
+   NewRatio                 = 2
+   SurvivorRatio            = 8
+   MetaspaceSize            = 21807104 (20.796875MB)
+   CompressedClassSpaceSize = 1073741824 (1024.0MB)
+   MaxMetaspaceSize         = 17592186044415 MB
+   G1HeapRegionSize         = 0 (0.0MB)
+
+Heap Usage:
+New Generation (Eden + 1 Survivor Space):
+   capacity = 157286400 (150.0MB)
+   used     = 41684912 (39.75382995605469MB)
+   free     = 115601488 (110.24617004394531MB)
+   26.502553304036457% used
+Eden Space:
+   capacity = 139853824 (133.375MB)
+   used     = 39180088 (37.36504364013672MB)
+   free     = 100673736 (96.00995635986328MB)
+   28.015028033841965% used
+From Space:
+   capacity = 17432576 (16.625MB)
+   used     = 2504824 (2.3887863159179688MB)
+   free     = 14927752 (14.236213684082031MB)
+   14.368639494243421% used
+To Space:
+   capacity = 17432576 (16.625MB)
+   used     = 0 (0.0MB)
+   free     = 17432576 (16.625MB)
+   0.0% used
+concurrent mark-sweep generation:
+   capacity = 349569024 (333.375MB)
+   used     = 155050312 (147.86750030517578MB)
+   free     = 194518712 (185.50749969482422MB)
+   44.35470575333357% used
+
+34582 interned Strings occupying 3705320 bytes.
+
+----- 导出内存文件，可用于问题定位，注意会暂停应用，如果内存很大会有较大耗时
+$ jmap -dump 4022416
+</code></pre></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/java-some-tips/>Java 常用技巧</a></li><li><a class=text-body href=/cn/blog/topic-language-java/>【专题】Java 编程语言</a></li><li><a class=text-body href=/cn/blog/python-package-distribute/>Python 打包详解</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2023 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
