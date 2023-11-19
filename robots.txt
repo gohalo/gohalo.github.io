@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /cn/docs
+Sitemap: https://gohalo.github.io/sitemap.xml

@@ -180,28 +180,28 @@ After : vals[0]=1 vals[1]=4 vals[2]=3 vals[3]=8 vals[4]=5
 </span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>foobar</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span><span class=p>(</span><span class=s>&#34;hello&#34;</span><span class=p>));</span> <span class=c1>// 参数是右值，T推导成了string
 </span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>foobar</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>move</span><span class=p>(</span><span class=n>str</span><span class=p>));</span>  <span class=c1>// 参数是右值，T推导成了string
 </span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
-</span></span></code></pre></div><p>简单来说，传递左值进去就是左值引用，传递右值进去就是右值引用，这就是其名字的由来，下面的完美转发就是利用了这个特性。</p><h2 id=完美转发>完美转发 <a href=#%e5%ae%8c%e7%be%8e%e8%bd%ac%e5%8f%91 class=anchor aria-hidden=true>#</a></h2><p>转发就是通过一个函数将参数继续转交给另一个函数进行处理，原参数可能是右值或者左值，如果还能继续保持参数的原有特征，那么它就是完美的，就是所谓的完美转发。</p><pre tabindex=0><code>#include &lt;string&gt;
-#include &lt;iostream&gt;
-
-void process(std::string &amp;str) {
-    std::cout &lt;&lt; &#34;string&amp; &#34; &lt;&lt; str &lt;&lt; std::endl;
-}
-
-void process(std::string &amp;&amp;str) {
-    std::cout &lt;&lt; &#34;string&amp;&amp; &#34; &lt;&lt; str &lt;&lt; std::endl;
-}
-
-void forward(std::string &amp;&amp;str) {
-    std::cout &lt;&lt; &#34;forward &#34; &lt;&lt; str &lt;&lt; std::endl;
-    process(str);
-}
-
-int main() {
-    std::string a = &#34;Hello&#34;;
-    forward(std::move(a)); // 右值因为有了名字，最后转发的实际上是左值
-    //forward(a); // 错误，右值不接受左值
-}
-</code></pre><p>上述就是不完美的转发，将一个右值经过转发后变成了左值，解决办法是将 <code>forward()</code> 函数修改为如下，利用标准库中的模板函数解决。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=kt>void</span> <span class=nf>forward</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=o>&amp;&amp;</span><span class=n>str</span><span class=p>)</span> <span class=p>{</span>
+</span></span></code></pre></div><p>简单来说，传递左值进去就是左值引用，传递右值进去就是右值引用，这就是其名字的由来，下面的完美转发就是利用了这个特性。</p><h2 id=完美转发>完美转发 <a href=#%e5%ae%8c%e7%be%8e%e8%bd%ac%e5%8f%91 class=anchor aria-hidden=true>#</a></h2><p>转发就是通过一个函数将参数继续转交给另一个函数进行处理，原参数可能是右值或者左值，如果还能继续保持参数的原有特征，那么它就是完美的，就是所谓的完美转发。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;iostream&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>process</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=o>&amp;</span><span class=n>str</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;string&amp; &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>str</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>process</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=o>&amp;&amp;</span><span class=n>str</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;string&amp;&amp; &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>str</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>forward</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=o>&amp;&amp;</span><span class=n>str</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;forward &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>str</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>process</span><span class=p>(</span><span class=n>str</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>a</span> <span class=o>=</span> <span class=s>&#34;Hello&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>forward</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>move</span><span class=p>(</span><span class=n>a</span><span class=p>));</span> <span class=c1>// 右值因为有了名字，最后转发的实际上是左值
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>//forward(a); // 错误，右值不接受左值
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>上述就是不完美的转发，将一个右值经过转发后变成了左值，解决办法是将 <code>forward()</code> 函数修改为如下，利用标准库中的模板函数解决。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=kt>void</span> <span class=nf>forward</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=o>&amp;&amp;</span><span class=n>str</span><span class=p>)</span> <span class=p>{</span>
 </span></span><span class=line><span class=cl>	<span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;forward &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>str</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
 </span></span><span class=line><span class=cl>	<span class=n>process</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>forward</span><span class=o>&lt;</span><span class=n>std</span><span class=o>::</span><span class=n>string</span><span class=o>&gt;</span><span class=p>(</span><span class=n>str</span><span class=p>));</span>
 </span></span><span class=line><span class=cl><span class=p>}</span>
@@ -237,4 +237,4 @@ int main() {
 </span></span><span class=line><span class=cl>    <span class=n>forward</span><span class=p>(</span><span class=n>b</span><span class=p>);</span>
 </span></span><span class=line><span class=cl>    <span class=n>forward</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>move</span><span class=p>(</span><span class=n>b</span><span class=p>));</span>
 </span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><h1 id=其它>其它 <a href=#%e5%85%b6%e5%ae%83 class=anchor aria-hidden=true>#</a></h1><h2 id=数组>数组 <a href=#%e6%95%b0%e7%bb%84 class=anchor aria-hidden=true>#</a></h2><p>使用 <code>std::vector</code> 时一般会通过 <code>push_back()</code> 函数添加，如果实现了移动构造函数，那么可以通过 <code>emplace_back()</code> 赋值，这样可以有效减少数据的复制，尤其是大对象。</p></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/c-linux-tools-executable-binary-parse/>Linux 可执行文件解析工具</a></li><li><a class=text-body href=/cn/blog/c-dynamic-arguments/>C 动态参数使用详解</a></li><li><a class=text-body href=/cn/blog/c-linux-network-socket-program/>Linux C 网络编程</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2023 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
+</span></span></code></pre></div><h1 id=其它>其它 <a href=#%e5%85%b6%e5%ae%83 class=anchor aria-hidden=true>#</a></h1><h2 id=数组>数组 <a href=#%e6%95%b0%e7%bb%84 class=anchor aria-hidden=true>#</a></h2><p>使用 <code>std::vector</code> 时一般会通过 <code>push_back()</code> 函数添加，如果实现了移动构造函数，那么可以通过 <code>emplace_back()</code> 赋值，这样可以有效减少数据的复制，尤其是大对象。</p></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/cpp-basic-callable-introduce/>C++ 可调用对象</a></li><li><a class=text-body href=/cn/blog/c-linux-tools-executable-binary-parse/>Linux 可执行文件解析工具</a></li><li><a class=text-body href=/cn/blog/c-dynamic-arguments/>C 动态参数使用详解</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>

@@ -1,0 +1,270 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>| GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><title>GoHalo</title><meta name=description content="ftrace 函数跟踪，可以用来跟踪内核函数的调用。 kprobes 动态插入探测点，可以收集调试所需的状态信息。 uprobes 与kprobes类似，用于用户空间。 tracepoints 在固定代码处埋点，可以调用执行回调函数。 收集”真香”数据的机制 ftrace perf_events eBPF sysdig systemtap LTTng 前端 perf 前端 ftrace 前端 eBPF 前端: bcc LTTng &amp;amp; SystemTap 前端 https://zyun.360.cn/blog/?p=832 ebpf介绍 https://ftp.halifax.rwth-aachen.de/ccc/congress/2018/slides-pdf/35c3-9532-kernel_tracing_with_ebpf.pdf BCC库 https://github.com/iovisor/bcc https://arthurchiao.art/blog/trace-packet-with-tracepoint-perf-ebpf-zh/ perf ltrace systrace systemtap http://www.ktap.org/ https://lttng.org/ kprobes in ftrace 可以通过 kprobe 来优化 ftrace 跟踪函数。 内核hacker的最爱。已经包含在内核，能够支持 tracepoints, kprobes, and uprobes, 并提供一些能力: 事件追踪, 可选择过滤器和参数; 事件计数和时间采样，内核概览；基于函数的路径追踪 动态跟踪技术 https://www.brendangregg.com/overview.html https://blog.openresty.com.cn/cn/dynamic-tracing/ 内核中的相关文档 https://www.kernel.org/doc/Documentation/trace/ https://www.brendangregg.com/blog/2015-07-03/hacking-linux-usdt-ftrace.html LTTng利用各种内核工具进行分析 https://lttng.org/ 通过 strace 可以捕获 https://blog.packagecloud.io/eng/2016/03/14/how-does-ltrace-work/ https://blog.packagecloud.io/eng/2016/02/29/how-does-strace-work/ ## debugfs 与 procfs 以及 sysfs 类似，是一个虚拟文件系统，便于用户导出内核空间数据。现在的大部分发行版本都支持，可以通过如下命令确认。 grep CONFIG_DEBUG_FS /boot/config-`uname -r` 默认会挂载到 /sys/kernel/debug 目录，也可以手动挂载。 mount -t debugfs none /sys/kernel/debug https://www."><link rel=canonical href=https://gohalo.github.io/cn/blog/linux-tracer-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/linux-tracer-introduce/","url":"https://gohalo.github.io/cn/blog/linux-tracer-introduce/","name":"","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"0001-01-01T00:00:00CET","dateModified":"0001-01-01T00:00:00CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/linux-tracer-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/linux-tracer-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/linux-tracer-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/linux-tracer-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/linux-tracer-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/linux-tracer-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/linux-tracer-introduce/"},"datePublished":"0001-01-01T00:00:00CET","dateModified":"0001-01-01T00:00:00CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/linux-tracer-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/linux-tracer-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":""}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1></h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>0001-01-01</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span></div></div><hr><div class=content-body><pre tabindex=0><code>ftrace 函数跟踪，可以用来跟踪内核函数的调用。
+kprobes 动态插入探测点，可以收集调试所需的状态信息。
+uprobes 与kprobes类似，用于用户空间。
+tracepoints 在固定代码处埋点，可以调用执行回调函数。
+
+
+收集”真香”数据的机制
+ftrace
+perf_events
+eBPF
+sysdig
+systemtap
+LTTng
+前端
+perf 前端
+ftrace 前端
+eBPF 前端: bcc
+LTTng &amp; SystemTap 前端
+
+https://zyun.360.cn/blog/?p=832
+
+
+
+ebpf介绍
+https://ftp.halifax.rwth-aachen.de/ccc/congress/2018/slides-pdf/35c3-9532-kernel_tracing_with_ebpf.pdf
+
+BCC库
+https://github.com/iovisor/bcc
+https://arthurchiao.art/blog/trace-packet-with-tracepoint-perf-ebpf-zh/
+
+perf
+
+ltrace
+systrace
+systemtap
+
+
+http://www.ktap.org/
+https://lttng.org/
+
+kprobes in ftrace 可以通过 kprobe 来优化 ftrace 跟踪函数。
+
+
+
+内核hacker的最爱。已经包含在内核，能够支持 tracepoints, kprobes, and uprobes,
+
+并提供一些能力: 事件追踪, 可选择过滤器和参数; 事件计数和时间采样，内核概览；基于函数的路径追踪
+
+
+
+动态跟踪技术
+https://www.brendangregg.com/overview.html
+https://blog.openresty.com.cn/cn/dynamic-tracing/
+内核中的相关文档
+https://www.kernel.org/doc/Documentation/trace/
+
+https://www.brendangregg.com/blog/2015-07-03/hacking-linux-usdt-ftrace.html
+
+LTTng利用各种内核工具进行分析
+https://lttng.org/
+
+通过 strace 可以捕获
+https://blog.packagecloud.io/eng/2016/03/14/how-does-ltrace-work/
+https://blog.packagecloud.io/eng/2016/02/29/how-does-strace-work/
+
+## debugfs
+
+与 procfs 以及 sysfs 类似，是一个虚拟文件系统，便于用户导出内核空间数据。现在的大部分发行版本都支持，可以通过如下命令确认。
+
+grep CONFIG_DEBUG_FS /boot/config-`uname -r`
+
+默认会挂载到 /sys/kernel/debug 目录，也可以手动挂载。
+
+mount -t debugfs none /sys/kernel/debug
+https://www.kernel.org/doc/Documentation/filesystems/debugfs.txt
+竟然还有个命令行可以用来恢复删除文件
+https://www.dazhuanlan.com/2019/10/04/5d96f11a0991b/
+
+
+#################################
+# tracepoints
+#################################
+
+在代码中提供了一个 hook 用来调用其它函数。
+
+#################################
+# kprobes VS. uprobes
+#################################
+
+调试时，一般是需要获取内核函数变量的值，通过 Kernel Probes, KProbes 可以自定义回调函数，执行到指定探测点时在回调函数中获取 CPU 寄存器的值。
+
+该技术提供了三种调用方式：A) pre_handler 调用前；B) post_handler 调用后；C) fault_handler 内存访问出错。
+
+在外部没有办法直接使用，需要以内核模块的方式编写代码
+http://tinylab.org/linux-kprobes/
+
+CONFIG_KPROBES
+
+# uprobes
+
+UserSpace Probes 提供了与 kprobes 类似的特性。
+
+grep CONFIG_UPROBE_EVENT /boot/config-`uname -r`
+
+
+在 [User-Level Dynamic Tracing](https://www.brendangregg.com/blog/2015-06-28/linux-ftrace-uprobe.html) 提供了一个很方便使用的脚本。
+
+
+----- 获取可执行文件的符号地址
+# grep &#39;r-xp.*/usr/bin/bash&#39; /proc/$$/maps
+00400000-004dd000 r-xp 00000000 fd:00 133328                             /usr/bin/bash
+# objdump -T /usr/bin/bash | grep -w readline
+000000000048a7c0 g    DF .text  00000000000001c5  Base        readline
+
+其中 0x48a7c0 是 /usr/bin/bash 中 readline 函数的偏移，而实际加载地址是 0x400000 
+
+echo &#39;p:readline /usr/bin/bash:0x48a7c0&#39; &gt; uprobe_events
+----- 当上述命令执行成功后会出现如下目录
+echo 1 &gt; events/uprobes/enable
+cat trace
+
+
+
+
+#################################
+# ftrace
+#################################
+function tracer, ftracer 是一个内核的跟踪器，通常用来调试、分析性能问题，包含了很多静态事件点，可以看到内核在哪些部分运行。通过不同的工具集，可以延迟跟踪检查、何时发生中断、任务的启用、禁用及抢占等。
+
+CONFIG_DYNAMIC_FTRACE
+
+其基本原理是基于编译器的 Profiler 机制，例如 gcc 可以通过 `-pg -mfentry` 指定，此时会增加特殊的 mcount 代码调用，所有函数都会调用改函数，相当于一个跳转。
+
+但是，如果直接增加 mcount 的话，会导致性能下降 13% ，所以，实现是支持动态调试的，也就是：
+
+1. 编译阶段，记录被编译器添加了跳转指令的函数，也就是通过 scripts/recordmcount.pl 扫描所有 mcount 调用点，保存在 __mcount_loc 段中。
+2. 启动阶段，调用 ftrace_process_locs 函数将所有被编译器添加的跳转指令替换成 nop 指令，实现非调试状态性能零损失。
+3. 跟踪阶段，根据设置，通过 ftrace_run_update_code 动态将被调试函数的 nop 指令，替换成跳转指令。
+
+一般跳转的目标函数是 ftrace_caller()，在该函数中实现跟踪功能。
+
+## 动态修改
+
+通过 `gcc -pg -fentry` 编译文件时，会增加 5Byte 的 Stub ，然后在系统启动时会替换为 NOP 指令 `66 66 66 66 90H`。
+
+当开始跟踪时，需要将 NOP 修改为跳转指令，不同 trace 类型会调用不同的 hook 函数，例如 function trace 对应的 hook 函数是 function_trace_call 。
+
+在运行阶段修改代码非常危险，对于多核系统，如果被修改的 5Bytes 在不同的 CacheLine ，那么其它正在运行的 Core 可能会读取到修改一半的结果，就是导致系统 Crash 。
+
+所以，在 ftrace_replace_code 函数里有三个大循环：
+
+* add_breakpoints 找到所需要修改的 trace 函数，将第一个字节修改为 0xCC ，也就是 int 3 指令。
+* add_update 修改为 callq 的调用指令，但是第一个字节保留为 0xCC 。
+* finish_update 将 0xCC 修改为 0xE8，即为 call 指令。
+
+例如使用如下指令修改。
+
+# echo expand_files &gt; set_ftrace_filter
+# echo function &gt; current_tracer 
+
+修改时，前 5Bytes 的变化为：
+
+0xffffffff8114aae0 &lt;expand_files&gt;: 
+66 66 66 66 90H        &lt;-- NOP
+    |
+    V
+CC 66 66 66 90H        &lt;-- int 3
+    |
+    V
+CC 1b 55 eb 1eH        &lt;-- 跳转的偏移已经修改好了，但opcode还是int 3
+    |
+    V
+e8 1b 55 eb 1eH        &lt;-- callq  0xffffffffa0000000
+
+而在 do_int3 函数中，也就是 int 3 的异常处理，会直接返回。
+
+实现原理
+http://tinylab.org/ftrace-principle-and-practice/
+http://www.what21.com/sys/view/liunx_99_1474435249448.html
+https://richardweiyang-2.gitbook.io/kernel-exploring/00-index-3/04-ftrace_internal
+https://github.com/freelancer-leon/notes/blob/master/kernel/trace/ftrace-design.md
+
+## 基本使用
+
+----- 当前支持的跟踪类型
+cat /sys/kernel/debug/tracing/available_tracers
+----- 是否已经开启
+cat /sys/kernel/debug/tracing/tracing_on
+----- 指定需要跟踪的函数
+echo &#39;*sched*&#39; &gt; set_ftrace_filter
+----- 使用函数跟踪，也可以用function_graph更方便查看调用结构
+echo function &gt; current_tracer
+cat /sys/kernel/debug/tracing/trace
+
+Ftrace Kernel Hooks: More than just tracing 作者的介绍
+https://blog.linuxplumbersconf.org/2014/ocw/system/presentations/1773/original/ftrace-kernel-hooks-2014.pdf
+
+
+## trace event
+
+就是利用 ftrace 框架实现的低性能损耗，对调用流无影响的一种信息输出，相比 printk 来说，更加灵活。
+
+当前系统支持的所有 trace event 位于 /sys/kernel/debug/tracing/events 目录，也可以通过 /sys/kernel/debug/tracing/available_events 查看。
+
+例如跟踪进程切换信息。
+
+echo 1 &gt; /sys/kernel/debug/tracing/events/sched/sched_switch/enable
+cat /sys/kernel/debug/tracing/events/sched/sched_switch/trace
+
+
+## 配套工具
+trace-cmd
+KernelShark
+
+
+## USDT
+user-level statically defined tracing
+
+Linux 的内置跟踪点 ftrace perf_events
+
+uprobes 用户空间的动态跟踪，在 3.5 新增，并 3.14 完善。
+
+
+
+
+GPerfTools
+https://github.com/gperftools/gperftools
+
+这个案例不错
+https://www.cnblogs.com/happenlee/p/16813046.html
+
+
+# 内存
+常见的是：A) 内存使用是否合理，使用过大通常是内存泄漏，或者使用不当导致；B) 内存使用不当，例如存在内存越界、非法访问等。
+## 内存过大
+Doris 当前使用 TCMalloc 管理内存，当遇到大的内存申请时会打印日志到 be.out 文件中，会打印具体的地址，因为 BE 没有 strip 掉，可以通过如下命令确认在源码的具体调用位置。
+addr2line -e lib/doris_be  0x2af6f63 0x2c4095b
+如果内存过大是因为频繁申请小对象导致，那么可以通过 TCMalloc 的 [HeapProfile](https://gperftools.github.io/gperftools/heapprofile.html) 功能来获取进程整体的内存申请情况。
+export HEAPPROFILE=/tmp/doris_be.hprof
+./bin/start_be.sh --daemon
+可以通过其它参数设置周期或者超过大小时保存数据，然后可以通过 `pprof` 进行分析。
+pprof --text lib/doris_be /tmp/doris_be.hprof.0012.heap
+pprof --svg lib/doris_be /tmp/doris_be.hprof.0012.heap &gt; heap.svg
+这一选项会影响性能，线上谨慎使用。
+上述方式的缺点是需要重启服务，而且会一直开启，影响整个进程的性能。可以通过 [pprof remote server](https://gperftools.github.io/gperftools/pprof_remote_servers.html) 机制在运行时采集。
+pprof --text --seconds=60 http://be_host:be_webport/pprof/heap
+如果采用 jemalloc 也有类似的方案。
+https://doris.apache.org/zh-CN/community/developer-guide/debug-tool/
+## 越界
+另外，还可以通过 [LSAN](https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer) 检查内存泄漏，[ASAN](https://github.com/google/sanitizers/wiki/AddressSanitizer) 做越界检查，可以通过 BUILD_TYPE=LASN/ASAN ./build.sh 开启，此时 TCMalloc 会关闭。
+cat be.out | python asan_symbolize.py | c++filt
+用于解析
+# CPU
+和内存类似，可以在运行时检查 CPU 的使用情况。
+pprof --svg --seconds=60 http://be_host:be_webport/pprof/profile &gt; be.svg 
+或者使用 perf 进行分析，不过需要登录到物理机上 ??
+----- 每分钟统计CPU运行情况，生成perf.data文件
+perf record -g -p be_pid -- sleep 60
+perf report
+----- 生成火焰图检查
+perf script | ./FlameGraph/stackcollapse-perf.pl | ./FlameGraph/flamegraph.pl &gt; be.svg
+
+
+
+一个用户的函数trace
+https://github.com/namhyung/uftrace
+</code></pre></div></div></div></article></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
