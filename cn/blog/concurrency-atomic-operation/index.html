@@ -1,0 +1,160 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>原子操作使用介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="实际上目前大部分的语言都提供了原子操作的能力，包括了 GoLang、JAVA、C/C++、Rust 等等，当然这些能力大部分都需要硬件平台的支撑。
+这里简单介绍 GCC 以及 C/C++ 中提供的一些原子操作指令。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>原子操作使用介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2022-12-05</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a></div></div><hr><div class=content><p>实际上目前大部分的语言都提供了原子操作的能力，包括了 GoLang、JAVA、C/C++、Rust 等等，当然这些能力大部分都需要硬件平台的支撑。</p><p>这里简单介绍 GCC 以及 C/C++ 中提供的一些原子操作指令。</p><a class=anchor id=基本介绍></a><h1>基本介绍 <a href=#%e5%9f%ba%e6%9c%ac%e4%bb%8b%e7%bb%8d aria-hidden=true>#</a></h1><p>在多线程编程时，通常需要对一些常见的基本类型进行操作，如 <code>int</code> <code>float</code> 等等，一般为了解决竞态条件，通常是通过 mutex、spinlock 等进行保护。</p><p>如果不进行保护，那么实际得到的值是什么？可以从如下程序进行测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;pthread.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/syscall.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define INC_TO 1000000 </span><span class=c1>// one million...
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=n>global_int</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>pid_t</span> <span class=nf>gettid</span><span class=p>(</span> <span class=kt>void</span> <span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nf>syscall</span><span class=p>(</span> <span class=n>__NR_gettid</span> <span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=o>*</span><span class=nf>thread_routine</span><span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=n>arg</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int</span> <span class=n>proc_num</span> <span class=o>=</span> <span class=p>(</span><span class=kt>int</span><span class=p>)(</span><span class=kt>long</span><span class=p>)</span><span class=n>arg</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=kt>cpu_set_t</span> <span class=n>set</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nf>CPU_ZERO</span><span class=p>(</span><span class=o>&amp;</span><span class=n>set</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>CPU_SET</span><span class=p>(</span><span class=n>proc_num</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>set</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=nf>sched_setaffinity</span><span class=p>(</span><span class=nf>gettid</span><span class=p>(),</span> <span class=k>sizeof</span><span class=p>(</span><span class=kt>cpu_set_t</span><span class=p>),</span> <span class=o>&amp;</span><span class=n>set</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nf>perror</span><span class=p>(</span> <span class=s>&#34;sched_setaffinity&#34;</span> <span class=p>);</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>INC_TO</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=n>global_int</span><span class=o>++</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int</span> <span class=n>procs</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=kt>pthread_t</span> <span class=o>*</span><span class=n>thrs</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=cm>/* Getting number of CPUs */</span>
+</span></span><span class=line><span class=cl>        <span class=n>procs</span> <span class=o>=</span> <span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=nf>sysconf</span><span class=p>(</span><span class=n>_SC_NPROCESSORS_ONLN</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>procs</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nf>perror</span><span class=p>(</span><span class=s>&#34;sysconf&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>thrs</span> <span class=o>=</span> <span class=p>(</span><span class=kt>pthread_t</span> <span class=o>*</span><span class=p>)</span><span class=nf>malloc</span><span class=p>(</span><span class=k>sizeof</span><span class=p>(</span><span class=kt>pthread_t</span><span class=p>)</span> <span class=o>*</span> <span class=n>procs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>thrs</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nf>perror</span><span class=p>(</span> <span class=s>&#34;malloc&#34;</span> <span class=p>);</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Starting %d threads...</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>procs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>procs</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=p>(</span><span class=nf>pthread_create</span><span class=p>(</span><span class=o>&amp;</span><span class=n>thrs</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=nb>NULL</span><span class=p>,</span> <span class=n>thread_routine</span><span class=p>,</span> <span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=p>)(</span><span class=kt>long</span><span class=p>)</span><span class=n>i</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nf>perror</span><span class=p>(</span> <span class=s>&#34;pthread_create&#34;</span> <span class=p>);</span>
+</span></span><span class=line><span class=cl>                        <span class=n>procs</span> <span class=o>=</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>                        <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>procs</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=nf>pthread_join</span><span class=p>(</span><span class=n>thrs</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nf>free</span><span class=p>(</span><span class=n>thrs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;After doing all the math, global_int value is: %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>global_int</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Expected value is: %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>INC_TO</span> <span class=o>*</span> <span class=n>procs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如上程序中，每个 CPU 会绑定一个线程，并对一个线程累加，不同的平台可能会有所区别。</p><p>一般输出的内容如下，当然不同的平台也可能会输出 <code>4000000</code>。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ ./atomics
+</span></span><span class=line><span class=cl>Starting 4 threads...
+</span></span><span class=line><span class=cl>After doing all the math, global_int value is: 2933043
+</span></span><span class=line><span class=cl>Expected value is: 4000000
+</span></span></code></pre></div><p>在编译使用 <code>-O2</code> 参数时会输出 <code>4000000</code>，实际上这是编译器优化的效果，将原来的循环直接替换成了加 1000000 。</p><p>对于 CPU 操作，每次读写、累加都是原子操作，但是几个操作的组合将不再是原子操作。</p><a class=anchor id=原理></a><h2>原理 <a href=#%e5%8e%9f%e7%90%86 aria-hidden=true>#</a></h2><p>原子操作对于 CPU 来说很简单，在访问内存时，可以通过特定的指令可以锁定 Front Serial Bus, FSB 。FSB 就是 CPU 与内存通讯的总线，当锁 FSB 时，CPU 就无法访问内存，从而达到原子操作。</p><p>内核中很早就在使用原子操作了，而 gcc 在 4.1.2 才支持用户模式下的原子操作。</p><p>假设，有如下的伪代码，看看当两个线程同时操作时会发生什么问题。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>decrement_atomic_value();
+</span></span><span class=line><span class=cl>if (atomic_value() == 0)
+</span></span><span class=line><span class=cl>	fire_a_gun();
+</span></span></code></pre></div><p>假设其执行顺序如下。</p><p><img alt="hello world logo" src=images/pthread-atomic-two-threads.png class="mx-auto d-block"></p><p>对于上述的执行顺序，实际上 line3 不会执行。</p><a class=anchor id=原子操作></a><h1>原子操作 <a href=#%e5%8e%9f%e5%ad%90%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h1><p>Windows、C++ 实际上都提供了一些原子操作指令，这里简单介绍的是 <code>GCC 4.1.2</code> 版本之后提供的内置原子操作，可以直接对 <code>1</code> <code>2</code> <code>4</code> <code>8</code> 字节的数值或指针类型，进行原子 <code>加</code> <code>减</code> <code>与</code> <code>或</code> <code>异或</code> 等操作。</p><p>其中接口示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>//----- 比较*ptr与oldval的值，如果相等则将newval更新到*ptr并返回true
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kt>bool</span> <span class=nf>__sync_bool_compare_and_swap</span> <span class=p>(</span><span class=n>type</span> <span class=o>*</span><span class=n>ptr</span><span class=p>,</span> <span class=n>type</span> <span class=n>oldval</span><span class=p>,</span> <span class=n>type</span> <span class=n>newval</span><span class=p>,</span> <span class=p>...)</span>
+</span></span><span class=line><span class=cl><span class=c1>//----- 比较*ptr与oldval的值，如果相等则将newval更新到*ptr并返回操作之前*ptr的值
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>type</span> <span class=nf>__sync_val_compare_and_swap</span> <span class=p>(</span><span class=n>type</span> <span class=o>*</span><span class=n>ptr</span><span class=p>,</span> <span class=n>type</span> <span class=n>oldval</span><span class=p>,</span> <span class=n>type</span> <span class=n>newval</span><span class=p>,</span> <span class=p>...)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>//----- 将value加、减、或、与、异或到*ptr上，结果更新到*ptr，并返回操作前*ptr的值
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>type</span> <span class=nf>__sync_fetch_and_add</span> <span class=p>(</span><span class=n>type</span> <span class=o>*</span><span class=n>ptr</span><span class=p>,</span> <span class=n>type</span> <span class=n>value</span><span class=p>,</span> <span class=p>...)</span> 
+</span></span><span class=line><span class=cl><span class=n>type</span> <span class=nf>__sync_fetch_and_sub</span> <span class=p>(</span><span class=n>type</span> <span class=o>*</span><span class=n>ptr</span><span class=p>,</span> <span class=n>type</span> <span class=n>value</span><span class=p>,</span> <span class=p>...)</span>
+</span></span><span class=line><span class=cl><span class=n>type</span> <span class=nf>__sync_fetch_and_or</span> <span class=p>(</span><span class=n>type</span> <span class=o>*</span><span class=n>ptr</span><span class=p>,</span> <span class=n>type</span> <span class=n>value</span><span class=p>,</span> <span class=p>...)</span>
+</span></span><span class=line><span class=cl><span class=n>type</span> <span class=nf>__sync_fetch_and_and</span> <span class=p>(</span><span class=n>type</span> <span class=o>*</span><span class=n>ptr</span><span class=p>,</span> <span class=n>type</span> <span class=n>value</span><span class=p>,</span> <span class=p>...)</span>
+</span></span><span class=line><span class=cl><span class=n>type</span> <span class=nf>__sync_fetch_and_xor</span> <span class=p>(</span><span class=n>type</span> <span class=o>*</span><span class=n>ptr</span><span class=p>,</span> <span class=n>type</span> <span class=n>value</span><span class=p>,</span> <span class=p>...)</span>
+</span></span><span class=line><span class=cl><span class=n>type</span> <span class=nf>__sync_fetch_and_nand</span> <span class=p>(</span><span class=n>type</span> <span class=o>*</span><span class=n>ptr</span><span class=p>,</span> <span class=n>type</span> <span class=n>value</span><span class=p>,</span> <span class=p>...)</span>
+</span></span></code></pre></div><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>注意，原子操作并没有解决竞争，只是将竞争放到了硬件层面，冲突高仍会导致低效。如下，直接利用 Linux 中的多线程，对一个全局的变量进行累加操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;pthread.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define COUNT_PER_WORKER  5000000
+</span></span></span><span class=line><span class=cl><span class=cp>#define WORKER_NUM        10
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=n>sum</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=kt>pthread_t</span> <span class=n>workers</span><span class=p>[</span><span class=n>WORKER_NUM</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=o>*</span><span class=nf>worker_func</span><span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=n>arg</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=n>arg</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// printf(&#34;Worker thread %08lx startup.\n&#34;, pthread_self());
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>COUNT_PER_WORKER</span><span class=p>;</span> <span class=o>++</span><span class=n>i</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=cp>#ifdef USE_ATOMIC
+</span></span></span><span class=line><span class=cl><span class=cp></span>        <span class=nf>__sync_fetch_and_add</span><span class=p>(</span><span class=o>&amp;</span><span class=n>sum</span><span class=p>,</span> <span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=cp>#else
+</span></span></span><span class=line><span class=cl><span class=cp></span>        <span class=n>sum</span><span class=o>++</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp></span>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>WORKER_NUM</span><span class=p>;</span> <span class=o>++</span><span class=n>i</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nf>pthread_create</span><span class=p>(</span><span class=o>&amp;</span><span class=n>workers</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=nb>NULL</span><span class=p>,</span> <span class=n>worker_func</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>WORKER_NUM</span><span class=p>;</span> <span class=o>++</span><span class=n>i</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nf>pthread_join</span><span class=p>(</span><span class=n>workers</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Sum expect %d, got %d.</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>COUNT_PER_WORKER</span> <span class=o>*</span> <span class=n>WORKER_NUM</span><span class=p>,</span> <span class=n>sum</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>可以通过如下方式进行编译，其中前者没有使用原子操作，会导致最后累加的值远小于预期。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 使用线程操作
+</span></span><span class=line><span class=cl>$ gcc -o atomic -lpthread atomic.c
+</span></span><span class=line><span class=cl>$ time ./atomic 
+</span></span><span class=line><span class=cl>Sum expect 50000000, got 12635555.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>real    0m0.240s
+</span></span><span class=line><span class=cl>user    0m0.794s
+</span></span><span class=line><span class=cl>sys     0m0.001s
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 使用原子操作
+</span></span><span class=line><span class=cl>$ gcc -DUSE_ATOMIC -o atomic -lpthread atomic.c
+</span></span><span class=line><span class=cl>$ time ./atomic 
+</span></span><span class=line><span class=cl>Sum expect 50000000, got 50000000.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>real    0m1.237s
+</span></span><span class=line><span class=cl>user    0m4.164s
+</span></span><span class=line><span class=cl>sys     0m0.010s
+</span></span></code></pre></div><p>从上述的结果可以看出，虽然通过原子操作保证了逻辑的正确性，但同时成本也非常高，这也就是为什么架构设计如此重要。或者简单来说，原子操作并没有解决竞争，只是将竞争放到了硬件层面，冲突高仍会导致低效。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#基本介绍>基本介绍</a><ul><li><a href=#原理>原理</a></li></ul></li><li><a href=#原子操作>原子操作</a><ul><li><a href=#示例>示例</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

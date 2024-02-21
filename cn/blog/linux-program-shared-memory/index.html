@@ -1,0 +1,108 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 共享内存 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="共享内存应该是进程间通信最有效的方式，同一块物理内存被映射到两个不同进程 A、B 各自的地址空间；进程 A 可以立即看到进程 B 对共享内存中数据的更新，反之亦然。
+接下来简单介绍下与共享内存相关的内容。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 共享内存</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2014-09-10</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kernel/ role=button>kernel</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>共享内存应该是进程间通信最有效的方式，同一块物理内存被映射到两个不同进程 A、B 各自的地址空间；进程 A 可以立即看到进程 B 对共享内存中数据的更新，反之亦然。</p><p>接下来简单介绍下与共享内存相关的内容。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>采用共享内存通信的一个显而易见的好处是效率高，因为进程可以直接读写内存，而不需要任何数据的拷贝。对于像管道和消息队列等通信方式，则需要在内核和用户空间进行四次的数据拷贝，而共享内存则只拷贝两次数据：一次从输入文件到共享内存区，另一次从共享内存区到输出文件。</p><p><strong>注意</strong> 共享内存并未提供同步机制，也就是说，在第一个进程结束对共享内存的写操作之前，并无自动机制可以阻止第二个进程开始对它进行读取。所以我们通常需要用其他的机制来同步对共享内存的访问，例如信号量、互斥锁。</p><a class=anchor id=使用示例></a><h1>使用示例 <a href=#%e4%bd%bf%e7%94%a8%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h1><p>共享内存主要用于进程间通信，Linux 有几种方式的共享内存 (Shared Memory) 机制：</p><ol><li><code>System V shared memory(shmget/shmat/shmdt)</code>，用于不相关进程的通讯；</li><li><code>POSIX shared memory(shm_open/shm_unlink)</code>，同样不同进程通讯，相比接口更简单；</li><li><code>mmap(), shared mappings</code> 包括了 A) 匿名映射 (通过fork关联)，B) 文件映射，通常用于不相关的进程通讯；</li></ol><p>SYSV 和 POSIX 两者提供功能基本类似，也就是 <code>semaphores</code> <code>shared memory</code> <code>message queues</code>，不过由于 SYSV 的历史原因使用更广泛，不过两者的实现基本相同。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>The POSIX shared memory object implementation on Linux 2.4 makes use of
+</span></span><span class=line><span class=cl>a dedicated filesystem, which is normally mounted under /dev/shm.
+</span></span></code></pre></div><p>也就是说，POSIX 共享内存是基于 tmpfs 来实现的，而 SYSV 共享内存在内核也是基于 tmpfs 实现的；从内核文档 <a href=https://www.kernel.org/doc/Documentation/filesystems/tmpfs.txt>tmpfs.txt</a> 可以看到如下内容：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>1) There is always a kernel internal mount which you will not see at
+</span></span><span class=line><span class=cl>   all. This is used for shared anonymous mappings and SYSV shared
+</span></span><span class=line><span class=cl>   memory.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   This mount does not depend on CONFIG_TMPFS. If CONFIG_TMPFS is not
+</span></span><span class=line><span class=cl>   set, the user visible part of tmpfs is not build. But the internal
+</span></span><span class=line><span class=cl>   mechanisms are always present.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2) glibc 2.2 and above expects tmpfs to be mounted at /dev/shm for
+</span></span><span class=line><span class=cl>   POSIX shared memory (shm_open, shm_unlink). Adding the following
+</span></span><span class=line><span class=cl>   line to /etc/fstab should take care of this:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    tmpfs   /dev/shm    tmpfs   defaults    0 0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   Remember to create the directory that you intend to mount tmpfs on
+</span></span><span class=line><span class=cl>   if necessary.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   This mount is _not_ needed for SYSV shared memory. The internal
+</span></span><span class=line><span class=cl>   mount is used for that. (In the 2.3 kernel versions it was
+</span></span><span class=line><span class=cl>   necessary to mount the predecessor of tmpfs (shm fs) to use SYSV
+</span></span><span class=line><span class=cl>   shared memory)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>3) Some people (including me) find it very convenient to mount it
+</span></span><span class=line><span class=cl>   e.g. on /tmp and /var/tmp and have a big swap partition. And now
+</span></span><span class=line><span class=cl>   loop mounts of tmpfs files do work, so mkinitrd shipped by most
+</span></span><span class=line><span class=cl>   distributions should succeed with a tmpfs /tmp.
+</span></span></code></pre></div><p>在上述的内容中，tmpfs 与共享内存相关的主要有两个作用：</p><ul><li>SYSV 还有匿名内存映射，这部分由内核管理，用户不可见；</li><li>POSIX 由用户负责 mount，而且一般 mount 到 <code>/dev/shm</code>，依赖 <code>CONFIG_TMPFS</code> 。</li></ul><a class=anchor id=sysv></a><h2>SYSV <a href=#sysv aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看以及调整支持的最大内存，shmmax shmall shmmni
+</span></span><span class=line><span class=cl>$ cat /proc/sys/kernel/shmmax
+</span></span><span class=line><span class=cl>33554432
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改为32M
+</span></span><span class=line><span class=cl># echo 33554432 &gt; /proc/sys/kernel/shmmax
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 尝试创建65M的system V共享内存时失败
+</span></span><span class=line><span class=cl>$ ipcmk -M 68157440
+</span></span><span class=line><span class=cl>ipcmk: create share memory failed: Invalid argument
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建10M共享内存
+</span></span><span class=line><span class=cl>$ ipcmk -M 10485760
+</span></span><span class=line><span class=cl>Shared memory id: 19431492
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看刚创建的共享内存
+</span></span><span class=line><span class=cl>$ ipcs -m -i 19431492
+</span></span><span class=line><span class=cl>Shared memory Segment shmid=19431492
+</span></span><span class=line><span class=cl>uid=0   gid=0   cuid=0  cgid=0
+</span></span><span class=line><span class=cl>mode=0644       access_perms=0644
+</span></span><span class=line><span class=cl>bytes=10485760  lpid=0  cpid=28064      nattch=0
+</span></span><span class=line><span class=cl>att_time=Not set
+</span></span><span class=line><span class=cl>det_time=Not set
+</span></span><span class=line><span class=cl>change_time=Sun May 28 10:15:50 2015
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除刚创建的资源
+</span></span><span class=line><span class=cl># ipcrm -m 19431492
+</span></span></code></pre></div><p>注意，这里看到的 system v 共享内存的大小并不受 <code>/dev/shm</code> 的影响。</p><a class=anchor id=配置项></a><h3>配置项 <a href=#%e9%85%8d%e7%bd%ae%e9%a1%b9 aria-hidden=true>#</a></h3><p>与共享内存相关的内容可以参考 <code>/etc/sysctl.conf</code> 文件中的配置，简介如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>kernel.shmmax = 4398046511104
+</span></span><span class=line><span class=cl>kernel.shmall = 1073741824     系统可用共享内存的总页数
+</span></span><span class=line><span class=cl>kernel.shmmni = 4096
+</span></span></code></pre></div><a class=anchor id=posix></a><h2>POSIX <a href=#posix aria-hidden=true>#</a></h2><p>大多数的 Linux 发行版本中，内存盘默认使用的是 <code>/dev/shm</code> 路径，文件系统类型为 tmpfs，默认大小是内存实际的大小，其大小可以通过 <code>df -h</code> 查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看当前大小
+</span></span><span class=line><span class=cl>$ df -h /dev/shm
+</span></span><span class=line><span class=cl>Filesystem      Size  Used Avail Use% Mounted on
+</span></span><span class=line><span class=cl>tmpfs           3.9G   17M  3.9G   1% /dev/shm
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改挂载点的大小，然后重新挂载
+</span></span><span class=line><span class=cl>$ cat /etc/fstab
+</span></span><span class=line><span class=cl>tmpfs /dev/shm tmpfs defaults,size=4096M 0 0
+</span></span><span class=line><span class=cl># mount -o remount /dev/shm
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 不用重启重新挂载
+</span></span><span class=line><span class=cl># mount -o remount,size=256M /dev/shm
+</span></span><span class=line><span class=cl># mount -o size=1500M -o nr_inodes=1000000 -o noatime,nodiratime -o remount /dev/shm
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ df -h /dev/shm
+</span></span><span class=line><span class=cl>Filesystem      Size  Used Avail Use% Mounted on
+</span></span><span class=line><span class=cl>tmpfs           256M   82M  175M  32% /dev/shm
+</span></span><span class=line><span class=cl>$ ls /dev/shm/shm1 -alh
+</span></span><span class=line><span class=cl>-rw-r--r-- 1 andy andy 65M 5月  28 10:57 /dev/shm/shm1
+</span></span><span class=line><span class=cl>$ stat /dev/shm/shm1
+</span></span></code></pre></div><p>注意，如果申请的内存超过了限制，那么会报 <code>Bus error</code> 的错误。</p><a class=anchor id=总结></a><h2>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h2><p>虽然 System V 与 POSIX 共享内存都是通过 tmpfs 实现，但是两个不同实例，对于 <code>/proc/sys/kernel/shmmax</code> 只会影响 SYS V 共享内存，<code>/dev/shm</code> 只会影响 Posix 共享内存。</p><a class=anchor id=tmpfs></a><h1>tmpfs <a href=#tmpfs aria-hidden=true>#</a></h1><p>tmpfs 是基于内存/交换分区的文件系统，ramdisk 是作为块设备，基于 ext 的文件系统，所以不会绕过 page cache 的内存复制；而 tmpfs 直接操作内存做为文件系统的，而不是基于块设备的。</p><p>其源码实现在 <code>mm/shmem.c</code> 中，根据 <code>CONFIG_SHMEM</code> 是否配置，略微有所区别。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>static struct file_system_type shmem_fs_type = {
+</span></span><span class=line><span class=cl>    .owner      = THIS_MODULE,
+</span></span><span class=line><span class=cl>    .name       = &#34;tmpfs&#34;,
+</span></span><span class=line><span class=cl>    .mount      = shmem_mount,
+</span></span><span class=line><span class=cl>    .kill_sb    = kill_litter_super,
+</span></span><span class=line><span class=cl>    .fs_flags   = FS_USERNS_MOUNT,
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></div><p>在函数 <code>init_tmpfs()</code> 里，实际会通过 <code>register_filesystem()</code> 函数将 tmpfs 注册到文件系统中，在 <code>shmem_file_setup()</code> 中，更改了 <code>file->f_op = &amp;shmem_file_operations;</code> 下面来看具体的结构体。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>static</span> <span class=k>struct</span> <span class=n>file_operations</span> <span class=n>shmem_file_operations</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=p>.</span><span class=n>mmap</span>       <span class=o>=</span> <span class=n>shmem_mmap</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=cp>#ifdef CONFIG_TMPFS
+</span></span></span><span class=line><span class=cl><span class=cp></span>    <span class=p>.</span><span class=n>llseek</span>     <span class=o>=</span> <span class=n>generic_file_llseek</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>.</span><span class=n>read</span>       <span class=o>=</span> <span class=n>shmem_file_read</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>.</span><span class=n>write</span>      <span class=o>=</span> <span class=n>shmem_file_write</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>.</span><span class=n>fsync</span>      <span class=o>=</span> <span class=n>simple_sync_file</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>.</span><span class=n>sendfile</span>   <span class=o>=</span> <span class=n>shmem_file_sendfile</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=p>};</span>
+</span></span></code></pre></div><p>也就是说在操作在 tmpfs 文件时候，并没有使用常用的 ext 文件系统中的函数 <code>do_sync_read()</code>，而是调用了 tmpfs 自己封装的函数 <code>shmem_file_read()</code>，当然在 <code>shmem_file_read()</code> 并没有对 page cache 进行操作，虽然里面还是使用了 page cache 中 maping、file、inode 等结构体和算法。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#使用示例>使用示例</a><ul><li><a href=#sysv>SYSV</a></li><li><a href=#posix>POSIX</a></li><li><a href=#总结>总结</a></li></ul></li><li><a href=#tmpfs>tmpfs</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

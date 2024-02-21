@@ -1,0 +1,287 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL GTID 简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="全局事务 ID (Global Transaction ID, GTID) 是用来强化数据库在主备复制场景下，可以有效保证主备一致性、提高故障恢复、容错能力。
+接下来，看看 GTID 是如何实现的，以及如何使用。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL GTID 简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-10-08</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a></div></div><hr><div class=content><p>全局事务 ID (Global Transaction ID, GTID) 是用来强化数据库在主备复制场景下，可以有效保证主备一致性、提高故障恢复、容错能力。</p><p>接下来，看看 GTID 是如何实现的，以及如何使用。</p><p><img alt=gtid src=images/gtid-logo.jpg class="mx-auto d-block"></p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>GTID 是一个已提交事务的编号，并且是一个全局唯一的编号，在 MySQL 中，GTID 实际上是由 UUID+TID 组成的。其中 UUID 是一个 MySQL 实例的唯一标识；TID 代表了该实例上已经提交的事务数量，并且随着事务提交单调递增。</p><p>使用 GTID 功能具体可以归纳为以下两点：</p><ul><li>可以确认事务最初是在哪个实例上提交的；</li><li>方便了 Replication 的 Failover 。</li></ul><p>第一条显而易见，对于第二点稍微介绍下。</p><p>在 GTID 出现之前，在配置主备复制的时候，首先需要确认 event 在那个 binlog 文件，及其偏移量；假设有 A(Master)、B(Slave)、C(Slave) 三个实例，如果主库宕机后，需要通过 <code>CHANGE MASTER TO MASTER_HOST='xxx', MASTER_LOG_FILE='xxx', MASTER_LOG_POS=nnnn</code> 指向新库。</p><p>这里的难点在于，同一个事务在每台机器上所在的 binlog 文件名和偏移都不同，这也就意味着需要知道新主库的文件以及偏移量，对于有一个主库+多个备库的场景，如果主库宕机，那么需要手动从备库中选出最新的备库，升级为主，然后重新配置备库。</p><p>这就导致操作特别复杂，不方便实施，这也就是为什么需要 MHA、MMM 这样的管理工具。</p><p>之所以会出现上述的问题，主要是由于各个实例 binlog 中的 event 以及 event 顺序是一致的，但是 binlog+position 是不同的；而通过 GTID 则提供了对于事物的全局一致 ID，主备复制时，只需要知道这个 ID 即可。</p><p>另外，利用 GTID，MySQL 会记录那些事物已经执行，从而也就知道接下来要执行那些事务。当有了 GTID 之后，就显得非常的简单；因为同一事务的 GTID 在所有节点上的值一致，那么就可以直接根据 GTID 就可以完成 failover 操作。</p><a class=anchor id=uuid></a><h2>UUID <a href=#uuid aria-hidden=true>#</a></h2><p>MySQL 5.6 用 128 位的 <code>server_uuid</code> 代替了原本的 32 位 server_id 的大部分功能；主要是担心手动设置配置文件中的 <code>server_id</code> 时，可能会产生冲突，通过 UUID(128bits) 避免冲突。</p><p>首次启动时会调用 <code>generate_server_uuid()</code> 函数，自动生成一个 <code>server_uuid</code>，并保存到 <code>auto.cnf</code> 文件，目前该文件的唯一目的就是保存 <code>server_uuid</code>；下次启动时会自动读取 <code>auto.cnf</code> 文件，继续使用上次生成的 <code>UUID</code> 。</p><p>可以通过如下命令查看当前服务器的 UUID 值。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW GLOBAL VARIABLES LIKE &#39;server_uuid&#39;;
+</span></span><span class=line><span class=cl>c133fbac-e07b-11e6-a219-286ed488dd40
+</span></span></code></pre></div><p>在 Slave 向 Master 申请 binlog 时，会先发送 Slave 自己的 <code>server_uuid</code>，Master 会使用该值作为 <code>kill_zombie_dump_threads</code> 的参数，来终止冲突或者僵死的 <code>BINLOG_DUMP</code> 线程。</p><a class=anchor id=gtid></a><h2>GTID <a href=#gtid aria-hidden=true>#</a></h2><p>MySQL 在 5.6 版本加入了 GTID 功能，GTID 也就是事务提交时创建分配的唯一标识符，所有事务均与 GTID 一一映射，其格式类似于：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>5882bfb0-c936-11e4-a843-000c292dc103:1
+</span></span></code></pre></div><p>这个字符串，用 <code>:</code> 分开，前面表示这个服务器的 <code>server_uuid</code>，后面是事务在该服务器上的序号。</p><p>GTID 模式实例和非 GTID 模式实例是不能进行复制的，要求非常严格；而且 <code>gtid_mode</code> 是只读的，要改变状态必须 1) 关闭实例、2) 修改配置文件、3) 重启实例。</p><p>与 GTID 相关的参数可以参考如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW GLOBAL VARIABLES LIKE &#39;%gtid%&#39;;
+</span></span><span class=line><span class=cl>+----------------------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name                    | Value |
+</span></span><span class=line><span class=cl>+----------------------------------+-------+
+</span></span><span class=line><span class=cl>| binlog_gtid_simple_recovery      | ON    |
+</span></span><span class=line><span class=cl>| enforce_gtid_consistency         | ON    |
+</span></span><span class=line><span class=cl>| gtid_executed                    |       |    已经在该实例上执行过的事务
+</span></span><span class=line><span class=cl>| gtid_executed_compression_period | 1000  |
+</span></span><span class=line><span class=cl>| gtid_mode                        | ON    |
+</span></span><span class=line><span class=cl>| gtid_owned                       |       |    正在执行的事务的gtid以及对应的线程ID
+</span></span><span class=line><span class=cl>| gtid_purged                      |       |    本机已经执行，且被PURGE BINARY LOG删除
+</span></span><span class=line><span class=cl>| session_track_gtids              | OFF   |
+</span></span><span class=line><span class=cl>+----------------------------------+-------+
+</span></span><span class=line><span class=cl>8 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SESSION VARIABLES LIKE &#39;gtid_next&#39;;
+</span></span><span class=line><span class=cl>+---------------+-----------+
+</span></span><span class=line><span class=cl>| Variable_name | Value     |
+</span></span><span class=line><span class=cl>+---------------+-----------+
+</span></span><span class=line><span class=cl>| gtid_next     | AUTOMATIC |        session级别变量，表示下一个将被使用的gtid
+</span></span><span class=line><span class=cl>+---------------+-----------+
+</span></span><span class=line><span class=cl>1 row in set (0.02 sec)
+</span></span></code></pre></div><p>对于 <code>gtid_executed</code> 变量，执行 <code>reset master</code> 会将该变量置空；而且还可以通过设置 <code>gtid_next</code> 执行一个空事务，来影响 <code>gtid_executed</code> 。</p><a class=anchor id=生命周期></a><h2>生命周期 <a href=#%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f aria-hidden=true>#</a></h2><p>一个 GTID 的生命周期包括：</p><ol><li>事务在主库上执行并提交，此时会给事务分配一个 <code>gtid</code>，该值会被写入到 <code>binlog</code> 中；</li><li>备库读取 <code>relaylog</code> 中的 <code>gtid</code>，并设置 session 级别的 <code>gtid_next</code> 值，以告诉备库下一个事务必须使用这个值；</li><li>备库检查该 <code>gtid</code> 是否已经被使用并记录到他自己的 <code>binlog</code> 中；</li><li>由于 <code>gtid_next</code> 非空，备库不会生成一个新的 <code>gtid</code>，而是使用从主库获得的 <code>gtid</code> 。</li></ol><p>由于 GTID 在全局唯一性，通过 GTID 可以在自动切换时对一些复杂的复制拓扑很方便的提升新主库及新备库。</p><a class=anchor id=通讯协议></a><h2>通讯协议 <a href=#%e9%80%9a%e8%ae%af%e5%8d%8f%e8%ae%ae aria-hidden=true>#</a></h2><p>开启 GTID 之后，除了将原有的 file+position 替换为 GTID 之外，实际上还实现了一套新的复制协议，简单来说，GTID 的目的就是保证所有节点执行了相同的事务。</p><p>老协议很简单，备库链接到主库时会带有 file+position 信息，用来确认从那个文件开始复制；而新协议则是在链接到主库时会发送当前备库已经执行的 GTID Sets，主库将所有缺失的事务发送给备库。</p><a class=anchor id=源码实现></a><h1>源码实现 <a href=#%e6%ba%90%e7%a0%81%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h1><p>在 binlog 中，与 GTID 相关的事件类型包括了：</p><ul><li><code>GTID_LOG_EVENT</code> 随后事务的 GTID；</li><li><code>ANONYMOUS_GTID_LOG_EVENT</code> 匿名 GTID 事件类型；</li><li><code>PREVIOUS_GTIDS_LOG_EVENT</code> 当前 binlog 文件之前已经执行过的 GTID 集合，会记录在 binlog 文件头。</li></ul><p>如下是一个示例：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># at 120
+</span></span><span class=line><span class=cl># 130502 23:23:27 server id 119821  end_log_pos 231 CRC32 0x4f33bb48     Previous-GTIDs
+</span></span><span class=line><span class=cl># 10a27632-a909-11e2-8bc7-0010184e9e08:1,
+</span></span><span class=line><span class=cl># 7a07cd08-ac1b-11e2-9fcf-0010184e9e08:1-1129
+</span></span></code></pre></div><p>除 <code>gtid</code> 之外，还有 <code>gtid set</code> 的概念，类似 <code>7a07cd08-ac1b-11e2-9fcf-0010184e9e08:1-31</code>，其中变量 <code>gtid_executed</code> 和 <code>gtid_purged</code> 都是典型的 <code>gtid set</code> 类型变量；在一个复制拓扑结构中，<code>gtid_executed</code> 可能包含好几组数据。</p><a class=anchor id=结构体></a><h2>结构体 <a href=#%e7%bb%93%e6%9e%84%e4%bd%93 aria-hidden=true>#</a></h2><p>在内存中通过 <code>Gtid_state *gtid_state</code> 全局变量维护了三个集合。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=k>class</span> <span class=nc>Gtid_state</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=k>private</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>    <span class=n>Gtid_set</span> <span class=n>lost_gtids</span><span class=p>;</span>          <span class=c1>// 对应gtid_purged
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>Gtid_set</span> <span class=n>executed_gtids</span><span class=p>;</span>      <span class=c1>// 对应gtid_executed
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>Owned_gtids</span> <span class=n>owned_gtids</span><span class=p>;</span>      <span class=c1>// 对应gtid_owned
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>Gtid_state</span> <span class=o>*</span><span class=n>gtid_state</span><span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span></code></pre></div><a class=anchor id=gtid-限制></a><h1>GTID 限制 <a href=#gtid-%e9%99%90%e5%88%b6 aria-hidden=true>#</a></h1><p>开启 GTID 之后，会由部分的限制，内容如下。</p><a class=anchor id=更新非事务引擎表></a><h2>更新非事务引擎表 <a href=#%e6%9b%b4%e6%96%b0%e9%9d%9e%e4%ba%8b%e5%8a%a1%e5%bc%95%e6%93%8e%e8%a1%a8 aria-hidden=true>#</a></h2><p>GTID 同步复制是基于事务的，所以 MyISAM 存储引擎不支持，这可能导致多个 GTID 分配给同一个事务。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; CREATE TABLE error (ID INT) ENGINE=MyISAM;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; INSERT INTO error VALUES(1),(2);
+</span></span><span class=line><span class=cl>Query OK, 2 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>Records: 2  Duplicates: 0  Warnings: 0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; CREATE TABLE hello (ID INT) ENGINE=InnoDB;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; INSERT INTO hello VALUES(1),(2);
+</span></span><span class=line><span class=cl>Query OK, 2 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>Records: 2  Duplicates: 0  Warnings: 0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SET AUTOCOMMIT = 0；
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; BEGIN;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; UPDATE hello SET id = 3 WHERE id =2;
+</span></span><span class=line><span class=cl>Query OK, 1 row affected (0.00 sec)
+</span></span><span class=line><span class=cl>Rows matched: 1  Changed: 1  Warnings: 0
+</span></span><span class=line><span class=cl>mysql&gt; UPDATE error SET id = 3 WHERE id =2;
+</span></span><span class=line><span class=cl>ERROR 1785 (HY000): When @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 1, updates to non-transactional
+</span></span><span class=line><span class=cl>tables can only be done in either autocommitted statements or single-statement transactions,
+</span></span><span class=line><span class=cl>and never in the same statement as updates to transactional tables.
+</span></span></code></pre></div><a class=anchor id=create-table--select></a><h2>CREATE TABLE &mldr; SELECT <a href=#create-table--select aria-hidden=true>#</a></h2><p>上述的语句不支持，因为该语句会被拆分成 <code>CREATE TABLE</code> 和 <code>INSERT</code> 两个事务，并且这个两个事务被分配了同一个 GTID，这会导致 <code>INSERT</code> 被备库忽略掉。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; CREATE TABLE hello ENGINE=InnoDB AS SELECT * FROM hello;
+</span></span><span class=line><span class=cl>ERROR 1786 (HY000): Statement violates GTID consistency: CREATE TABLE ... SELECT.
+</span></span></code></pre></div><a class=anchor id=临时表></a><h2>临时表 <a href=#%e4%b8%b4%e6%97%b6%e8%a1%a8 aria-hidden=true>#</a></h2><p>事务内部不能执行创建删除临时表语句，但可以在事务外执行，但必须设置 <code>set autocommit=1</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; CREATE TEMPORARY TABLE test(id INT);
+</span></span><span class=line><span class=cl>ERROR 1787 (HY000): Statement violates GTID consistency: CREATE TEMPORARY TABLE and DROP
+</span></span><span class=line><span class=cl>TEMPORARY TABLE can only be executed outside transactional context.  These statements are
+</span></span><span class=line><span class=cl>also not allowed in a function or trigger because functions and triggers are also considered
+</span></span><span class=line><span class=cl>to be multi-statement transactions.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SET AUTOCOMMIT = 1;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; CREATE TEMPORARY TABLE test(id INT);
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.04 sec)
+</span></span></code></pre></div><p>与临时表相关的包括了 <code>CREATE/DROP TEMPORARY TABLE</code> 临时表操作。</p><a class=anchor id=总结></a><h2>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h2><p>实际上，一般启动 GTID 时，可以启用 <code>enforce-gtid-consistency</code> 选项，从而在执行上述不支持的语句时，将会返回错误。</p><a class=anchor id=运维相关></a><h1>运维相关 <a href=#%e8%bf%90%e7%bb%b4%e7%9b%b8%e5%85%b3 aria-hidden=true>#</a></h1><p>简单介绍一些常见的运维操作。</p><p>当备库配置为 GTID 复制时，可以通过 <code>SHOW SLAVE STATUS</code> 命令查看其中的 <code>Retrieved_Gtid_Set</code> 和 <code>Executed_Gtid_Set</code>，分别表示已经从主库获取，以及已经执行的事务。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW SLAVE STATUS\G
+</span></span><span class=line><span class=cl>*************************** 1. row ***************************
+</span></span><span class=line><span class=cl>               Slave_IO_State: Waiting for master to send event
+</span></span><span class=line><span class=cl>                  Master_Host: 192.168.0.123
+</span></span><span class=line><span class=cl>                  Master_User: mysync
+</span></span><span class=line><span class=cl>                  Master_Port: 3306
+</span></span><span class=line><span class=cl>                Connect_Retry: 60
+</span></span><span class=line><span class=cl>              Master_Log_File: mysqld-bin.000005
+</span></span><span class=line><span class=cl>          Read_Master_Log_Pos: 879
+</span></span><span class=line><span class=cl>               Relay_Log_File: mysqld-relay-bin.000009      # 备库中的relaylog文件
+</span></span><span class=line><span class=cl>                Relay_Log_Pos: 736                          # 备库执行的偏移量
+</span></span><span class=line><span class=cl>        Relay_Master_Log_File: mysqld-bin.000005
+</span></span><span class=line><span class=cl>             Slave_IO_Running: Yes
+</span></span><span class=line><span class=cl>            Slave_SQL_Running: No
+</span></span><span class=line><span class=cl>                          ... ...
+</span></span><span class=line><span class=cl>                 Skip_Counter: 0
+</span></span><span class=line><span class=cl>          Exec_Master_Log_Pos: 634
+</span></span><span class=line><span class=cl>              Relay_Log_Space: 1155
+</span></span><span class=line><span class=cl>                          ... ...
+</span></span><span class=line><span class=cl>                Last_IO_Errno: 0
+</span></span><span class=line><span class=cl>                Last_IO_Error:
+</span></span><span class=line><span class=cl>               Last_SQL_Errno: 1062
+</span></span><span class=line><span class=cl>               Last_SQL_Error: Error &#39;Duplicate entry &#39;1&#39; for key &#39;PRIMARY&#39;&#39; on query.
+</span></span><span class=line><span class=cl>                               Default database: &#39;&#39;. Query: &#39;insert into wb.t1 set i=1&#39;
+</span></span><span class=line><span class=cl>  Replicate_Ignore_Server_Ids:
+</span></span><span class=line><span class=cl>             Master_Server_Id: 3
+</span></span><span class=line><span class=cl>                  Master_UUID: 46fdb7ad-5852-11e6-92c9-0800274fb806
+</span></span><span class=line><span class=cl>                          ... ...
+</span></span><span class=line><span class=cl>           Retrieved_Gtid_Set: 46fdb7ad-5852-11e6-92c9-0800274fb806:1-4,
+</span></span><span class=line><span class=cl>                               4fbe2d57-5843-11e6-9268-0800274fb806:1-3
+</span></span><span class=line><span class=cl>            Executed_Gtid_Set: 46fdb7ad-5852-11e6-92c9-0800274fb806:1-3,
+</span></span><span class=line><span class=cl>                               4fbe2d57-5843-11e6-9268-0800274fb806:1-3,
+</span></span><span class=line><span class=cl>                               81a567a8-5852-11e6-92cb-0800274fb806:1
+</span></span><span class=line><span class=cl>                Auto_Position: 1
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span></code></pre></div><p>一般来说是已经从主库复制过来，只是在执行的时候报错，可以从上述的状态中查看，然后通过命令 <code>show relaylog events in 'mysqld-relay-bin.000009' from 736\G</code> 确认。</p><a class=anchor id=忽略复制错误></a><h2>忽略复制错误 <a href=#%e5%bf%bd%e7%95%a5%e5%a4%8d%e5%88%b6%e9%94%99%e8%af%af aria-hidden=true>#</a></h2><p>当备库复制出错时，如果仍采用传统的跳过错误方法，也就是设置 <code>sql_slave_skip_counter</code>，然后再 <code>START SLAVE</code>；但如果打开了 GTID，在设置上述参数时，就会报错。</p><p>提示的错误信息告诉我们，可以通过生成一个空事务来跳过错误的事务，示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; CREATE DATABASE test;
+</span></span><span class=line><span class=cl>Query OK, 1 row affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; USE test;
+</span></span><span class=line><span class=cl>Database changed
+</span></span><span class=line><span class=cl>mysql&gt; CREATE TABLE foobar(id INT PRIMARY KEY);
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 备库执行如下SQL
+</span></span><span class=line><span class=cl>mysql&gt; INSERT INTO foobar VALUES(1),(2),(3);
+</span></span><span class=line><span class=cl>Query OK, 3 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>Records: 3  Duplicates: 0  Warnings: 0
+</span></span><span class=line><span class=cl>----- 主库执行如下SQL
+</span></span><span class=line><span class=cl>mysql&gt; INSERT INTO foobar VALUES(1),(4),(5);
+</span></span><span class=line><span class=cl>Query OK, 3 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>Records: 3  Duplicates: 0  Warnings: 0
+</span></span><span class=line><span class=cl>mysql&gt; SHOW MASTER STATUS;
+</span></span><span class=line><span class=cl>+------------------+----------+--------------+------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set                        |
+</span></span><span class=line><span class=cl>+------------------+----------+--------------+------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>| mysql-bin.000002 |     1109 |              |                  | ab298681-00f5-11e7-a02a-ac2b6e8b4228:1-5 |
+</span></span><span class=line><span class=cl>+------------------+----------+--------------+------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 备库执行如下SQL
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SLAVE STATUS \G
+</span></span><span class=line><span class=cl>*************************** 1. row ***************************
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>             Slave_IO_Running: Yes
+</span></span><span class=line><span class=cl>            Slave_SQL_Running: No
+</span></span><span class=line><span class=cl>                   Last_Errno: 1062
+</span></span><span class=line><span class=cl>                   Last_Error: Error &#39;Duplicate entry &#39;1&#39; for key &#39;PRIMARY&#39;&#39; on query.
+</span></span><span class=line><span class=cl>Default database: &#39;test&#39;. Query: &#39;INSERT INTO foobar VALUES(1),(4),(5)&#39;
+</span></span><span class=line><span class=cl>                 Skip_Counter: 0
+</span></span><span class=line><span class=cl>           Retrieved_Gtid_Set: ab298681-00f5-11e7-a02a-ac2b6e8b4228:1-5
+</span></span><span class=line><span class=cl>            Executed_Gtid_Set: ab298681-00f5-11e7-a02a-ac2b6e8b4228:1-4,
+</span></span><span class=line><span class=cl>                               ad9b6105-00f5-11e7-a114-ac2b6e8b4228:1-2
+</span></span><span class=line><span class=cl>                Auto_Position: 1
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SET @@SESSION.GTID_NEXT= &#39;ab298681-00f5-11e7-a02a-ac2b6e8b4228:5&#39;;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; BEGIN;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; COMMIT;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; SET SESSION GTID_NEXT = AUTOMATIC;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; START SLAVE;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span></code></pre></div><p>再查看 <code>SHOW SLAVE STATUS</code> 时，就会发现错误事务已经被跳过了；这种方法的原理很简单，空事务产生的 GTID 加入到 <code>GTID_EXECUTED</code> 中，相当于告诉备库，这个 GTID 对应的事务已经执行了。</p><p>注意，此时主从会导致数据不一致，需要进行修复。</p><a class=anchor id=主库事件被清除></a><h2>主库事件被清除 <a href=#%e4%b8%bb%e5%ba%93%e4%ba%8b%e4%bb%b6%e8%a2%ab%e6%b8%85%e9%99%a4 aria-hidden=true>#</a></h2><p>变量 <code>gtid_purged</code> 记录了本机已经执行过，且已被 <code>PURGE BINARY LOGS TO</code> 命令清理的 <code>gtid_set</code>；在此，看看如果主库上把某些备库还没有获取到的 <code>gtid event</code> 清理后会有什么样的结果。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 主库执行如下SQL
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH LOGS; CREATE TABLE foobar1 (id INT) ENGINE=InnoDB;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.02 sec)
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH LOGS; CREATE TABLE foobar2 (id INT) ENGINE=InnoDB;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.02 sec)
+</span></span><span class=line><span class=cl>mysql&gt; SHOW MASTER STATUS;
+</span></span><span class=line><span class=cl>+------------------+----------+--------------+------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set                        |
+</span></span><span class=line><span class=cl>+------------------+----------+--------------+------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>| mysql-bin.000004 |      379 |              |                  | 91116597-016c-11e7-94db-ac2b6e8b4228:1-5 |
+</span></span><span class=line><span class=cl>+------------------+----------+--------------+------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GLOBAL VARIABLES LIKE &#39;gtid_%&#39;;
+</span></span><span class=line><span class=cl>+----------------------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>| Variable_name                    | Value                                    |
+</span></span><span class=line><span class=cl>+----------------------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>| gtid_executed                    | 91116597-016c-11e7-94db-ac2b6e8b4228:1-5 |
+</span></span><span class=line><span class=cl>| gtid_executed_compression_period | 1000                                     |
+</span></span><span class=line><span class=cl>| gtid_mode                        | ON                                       |
+</span></span><span class=line><span class=cl>| gtid_owned                       |                                          |
+</span></span><span class=line><span class=cl>| gtid_purged                      |                                          |
+</span></span><span class=line><span class=cl>+----------------------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>5 rows in set (0.02 sec)
+</span></span><span class=line><span class=cl>mysql&gt; PURGE BINARY LOGS TO &#39;mysql-bin.000004&#39;;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GLOBAL VARIABLES LIKE &#39;gtid_%&#39;;
+</span></span><span class=line><span class=cl>+----------------------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>| Variable_name                    | Value                                    |
+</span></span><span class=line><span class=cl>+----------------------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>| gtid_executed                    | 91116597-016c-11e7-94db-ac2b6e8b4228:1-5 |
+</span></span><span class=line><span class=cl>| gtid_executed_compression_period | 1000                                     |
+</span></span><span class=line><span class=cl>| gtid_mode                        | ON                                       |
+</span></span><span class=line><span class=cl>| gtid_owned                       |                                          |
+</span></span><span class=line><span class=cl>| gtid_purged                      | 91116597-016c-11e7-94db-ac2b6e8b4228:1-4 |
+</span></span><span class=line><span class=cl>+----------------------------------+------------------------------------------+
+</span></span><span class=line><span class=cl>5 rows in set (0.01 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 在备库上执行如下SQL
+</span></span><span class=line><span class=cl>mysql&gt; START SLAVE;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SLAVE STATUS\G
+</span></span><span class=line><span class=cl>*************************** 1. row ***************************
+</span></span><span class=line><span class=cl>                          ......
+</span></span><span class=line><span class=cl>             Slave_IO_Running: No
+</span></span><span class=line><span class=cl>            Slave_SQL_Running: Yes
+</span></span><span class=line><span class=cl>                          ......
+</span></span><span class=line><span class=cl>                Last_IO_Errno: 1236
+</span></span><span class=line><span class=cl>                Last_IO_Error: Got fatal error 1236 from master when reading data from
+</span></span><span class=line><span class=cl>binary log: &#39;The slave is connecting using CHANGE MASTER TO MASTER_AUTO_POSITION = 1,
+</span></span><span class=line><span class=cl>but the master has purged binary logs containing GTIDs that the slave requires.&#39;
+</span></span><span class=line><span class=cl>                          ......
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span></code></pre></div><p>接下来我们在备库忽略 <code>purged</code> 的部分，然后强行同步，在备库同样设置 <code>gtid_purged</code> 变量。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 备库上清除gtid_executed，然后设置gtid_purged，忽略主库的事务
+</span></span><span class=line><span class=cl>mysql&gt; RESET MASTER;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.05 sec)
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL gtid_purged = &#34;91116597-016c-11e7-94db-ac2b6e8b4228:1-5&#34;;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.05 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 备库上执行上述的SQL，需要根据具体情况修复
+</span></span><span class=line><span class=cl>mysql&gt; CREATE TABLE foobar1 (id INT) ENGINE=InnoDB;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>mysql&gt; CREATE TABLE foobar2 (id INT) ENGINE=InnoDB;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.02 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 启动备库即可
+</span></span><span class=line><span class=cl>mysql&gt; START SLAVE;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.02 sec)
+</span></span></code></pre></div><p>实际生产应用中，当遇到上述的情况后，需要 DBA 人为保证该备库数据和主库一致；或者即使不一致，这些差异也不会导致今后的主从异常，例如，所有主库上只有 insert 没有 update 。</p><a class=anchor id=errant-transaction></a><h2>Errant-Transaction <a href=#errant-transaction aria-hidden=true>#</a></h2><p>简单来说，就是没有在主库执行，而是直接在备库执行的事务，通常可能是在修复备库的问题或者应用异常写入了备库导致。</p><p>如果发生 ET 的备库被提升为主库，那么根据 GTID 协议，新主库就会发现备库没有执行 ET 中的事务，接下来就可能会发生如下两种情况：</p><ol><li>备库中 ET 对应的 binlog 仍然存在，那么会将相应的事件发送给新的备库，此时则会导致数据不一致或者发生其它异常；</li><li>备库中 ET 对应的 binlog 已经被删除，由于无法发送给备库，那么会导致复制异常。</li></ol><p>对于有些需要修复备库的任务可以通过 <code>SET sql_log_bin=0</code> 命令，设置会话参数，防止生成 ET，当然，此时需要保证数据一致性。在修复时有两种方案：</p><ol><li>在 GTID 的执行历史中删除 ET，这样即使备库被提升为主库，也不会发生异常；</li><li>在其它 MySQL 服务中执行空白的事务，使其它库认为已经执行了 ET，那么 Failover 之后也不会尝试获取相应的事件。</li></ol><p>接下来看个示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 在主库执行如下SQL，查看主库已执行事务对应的GTID Sets
+</span></span><span class=line><span class=cl>mysql&gt; SHOW MASTER STATUS\G
+</span></span><span class=line><span class=cl>*************************** 1. row ***************************
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>Executed_Gtid_Set: 8e349184-bc14-11e3-8d4c-0800272864ba:1-30,
+</span></span><span class=line><span class=cl>8e3648e4-bc14-11e3-8d4c-0800272864ba:1-7
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 同上，在备库执行
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SLAVE STATUS\G
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>Executed_Gtid_Set: 8e349184-bc14-11e3-8d4c-0800272864ba:1-29,
+</span></span><span class=line><span class=cl>8e3648e4-bc14-11e3-8d4c-0800272864ba:1-9
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 比较两个GTID Sets
+</span></span><span class=line><span class=cl>mysql&gt; SELECT gtid_subset(&#39;8e349184-bc14-11e3-8d4c-0800272864ba:1-29,
+</span></span><span class=line><span class=cl>8e3648e4-bc14-11e3-8d4c-0800272864ba:1-9&#39;,&#39;8e349184-bc14-11e3-8d4c-0800272864ba:1-30,
+</span></span><span class=line><span class=cl>8e3648e4-bc14-11e3-8d4c-0800272864ba:1-7&#39;) AS slave_is_subset;
+</span></span><span class=line><span class=cl>+-----------------+
+</span></span><span class=line><span class=cl>| slave_is_subset |
+</span></span><span class=line><span class=cl>+-----------------+
+</span></span><span class=line><span class=cl>|               0 |
+</span></span><span class=line><span class=cl>+-----------------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 获取对应的差值
+</span></span><span class=line><span class=cl>mysql&gt; SELECT gtid_subtract(&#39;8e349184-bc14-11e3-8d4c-0800272864ba:1-29,
+</span></span><span class=line><span class=cl>8e3648e4-bc14-11e3-8d4c-0800272864ba:1-9&#39;,&#39;8e349184-bc14-11e3-8d4c-0800272864ba:1-30,
+</span></span><span class=line><span class=cl>8e3648e4-bc14-11e3-8d4c-0800272864ba:1-7&#39;) AS errant_transactions;
+</span></span><span class=line><span class=cl>+------------------------------------------+
+</span></span><span class=line><span class=cl>| errant_transactions                      |
+</span></span><span class=line><span class=cl>+------------------------------------------+
+</span></span><span class=line><span class=cl>| 8e3648e4-bc14-11e3-8d4c-0800272864ba:8-9 |
+</span></span><span class=line><span class=cl>+------------------------------------------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span></code></pre></div><p>接下来，看看如何修复，假设有 3 个服务，A (主库)、B (备库的异常 XXX:3) 以及 C (备库的异常 YYY:18-19)，那么，接下来可以在不同的服务器上写入空白事务。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># A
+</span></span><span class=line><span class=cl>- Inject empty trx(XXX:3)
+</span></span><span class=line><span class=cl>- Inject empty trx(YYY:18)
+</span></span><span class=line><span class=cl>- Inject empty trx(YYY:19)
+</span></span><span class=line><span class=cl># B
+</span></span><span class=line><span class=cl>- Inject empty trx(YYY:18)
+</span></span><span class=line><span class=cl>- Inject empty trx(YYY:19)
+</span></span><span class=line><span class=cl># C
+</span></span><span class=line><span class=cl>- Inject empty trx(XXX:3)
+</span></span></code></pre></div><p>当然，也可以使用 MySQL-Utilities 中的 <code>mysqlslavetrx</code> 脚本写入空白事务。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ mysqlslavetrx --gtid-set=&#39;457e7d57-1da2-11e7-9c71-286ed488dd40:5&#39; --verbose \
+</span></span><span class=line><span class=cl>    --slaves=&#39;root:new-password@127.0.0.1:3308,root:new-password@127.0.0.1:3309&#39;
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li><a href=https://dev.mysql.com/doc/refman/en/replication-gtids.html>MySQL Reference Manual - Replication with Global Transaction Identifiers</a> 。</li><li>关于 GTID 的介绍可以参考 <a href=https://severalnines.com/resources/tutorials/mysql-replication-high-availability-tutorial>MySQL Replication for High Availability - Tutorial</a> 中的内容，一篇不错的介绍，也可以直接参考 <a href=/reference/databases/mysql/MySQL_Replication_for_High_Availability.mht>本地</a> 。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#uuid>UUID</a></li><li><a href=#gtid>GTID</a></li><li><a href=#生命周期>生命周期</a></li><li><a href=#通讯协议>通讯协议</a></li></ul></li><li><a href=#源码实现>源码实现</a><ul><li><a href=#结构体>结构体</a></li></ul></li><li><a href=#gtid-限制>GTID 限制</a><ul><li><a href=#更新非事务引擎表>更新非事务引擎表</a></li><li><a href=#create-table--select>CREATE TABLE &mldr; SELECT</a></li><li><a href=#临时表>临时表</a></li><li><a href=#总结>总结</a></li></ul></li><li><a href=#运维相关>运维相关</a><ul><li><a href=#忽略复制错误>忽略复制错误</a></li><li><a href=#主库事件被清除>主库事件被清除</a></li><li><a href=#errant-transaction>Errant-Transaction</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

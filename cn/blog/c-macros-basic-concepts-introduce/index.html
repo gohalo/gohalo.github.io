@@ -1,0 +1,117 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>C 宏使用技巧 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="拼接宏 # 其中 # 把宏的参数直接替换为字符串，不进行替换；而 ## 会把两个宏参数贴在一起。注意，当宏参数是另一个宏时，只要宏定义用到了 # 或 ## 的地方，其宏参数都不会再展开。
+#include &amp;lt;stdio.h&amp;gt; #define INT_MAX 0x7FFFFFFF #define STRING(s) #s #define A 2 #define CONCAT(a, b) (int)(a##e##b) int main(void) { int AeA = 55; puts(STRING(INT_MAX)); // INT_MAX printf(&amp;#34;%d\n&amp;#34;, CONCAT(A, A)); // 55 return 0; } 如果将 CONCAT 宏定义修改为 (int)((a##e##b) + a) ，那么结果为 57 。
+其中 A 和 INT_MAX 都是宏，而且做为了 STRING 和 CONCAT 的参数，但是因为存在 # 或者 ## 符号，所以其中的 A 和 INT_MAX 都没有展开。"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>C 宏使用技巧</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-09-30</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/c/cpp/ role=button>c/cpp</a></div></div><hr><div class=content><a class=anchor id=拼接宏></a><h1>拼接宏 <a href=#%e6%8b%bc%e6%8e%a5%e5%ae%8f aria-hidden=true>#</a></h1><p>其中 <code>#</code> 把宏的参数直接替换为字符串，不进行替换；而 <code>##</code> 会把两个宏参数贴在一起。注意，当宏参数是另一个宏时，只要宏定义用到了 <code>#</code> 或 <code>##</code> 的地方，其宏参数都不会再展开。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define INT_MAX      0x7FFFFFFF
+</span></span></span><span class=line><span class=cl><span class=cp>#define STRING(s)    #s
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define A            2
+</span></span></span><span class=line><span class=cl><span class=cp>#define CONCAT(a, b) (int)(a##e##b)
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>AeA</span> <span class=o>=</span> <span class=mi>55</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>puts</span><span class=p>(</span><span class=nf>STRING</span><span class=p>(</span><span class=n>INT_MAX</span><span class=p>));</span>        <span class=c1>// INT_MAX
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>CONCAT</span><span class=p>(</span><span class=n>A</span><span class=p>,</span> <span class=n>A</span><span class=p>));</span> <span class=c1>// 55
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如果将 <code>CONCAT</code> 宏定义修改为 <code>(int)((a##e##b) + a)</code> ，那么结果为 <code>57</code> 。</p><p>其中 <code>A</code> 和 <code>INT_MAX</code> 都是宏，而且做为了 <code>STRING</code> 和 <code>CONCAT</code> 的参数，但是因为存在 <code>#</code> 或者 <code>##</code> 符号，所以其中的 <code>A</code> 和 <code>INT_MAX</code> 都没有展开。</p><p>如果本意不是如此，而对宏定义的内容进行处理，那么可以在中间再加一层宏定义，如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#define INT_MAX       0x7FFFFFFF
+</span></span><span class=line><span class=cl>#define _STRING(s)    #s
+</span></span><span class=line><span class=cl>#define STRING(s)     _STRING(s)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#define A             2
+</span></span><span class=line><span class=cl>#define _CONCAT(a, b) (int)(a##e##b)
+</span></span><span class=line><span class=cl>#define CONCAT(a, b)  _CONCAT(a, b)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int main(void) {
+</span></span><span class=line><span class=cl>    int AeA = 55;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // STRING(INT_MAX) -&gt; _STRING(0x7FFFFFFF)
+</span></span><span class=line><span class=cl>    puts(STRING(INT_MAX));        // 0x7FFFFFFF
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // CONCAT(A, A) -&gt; CONCAT((2), (2)) -&gt; int((2)e(2))
+</span></span><span class=line><span class=cl>    printf(&#34;%d\n&#34;, CONCAT(A, A)); // 200
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    return 0;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=do-while></a><h1>do-while <a href=#do-while aria-hidden=true>#</a></h1><p>如果通过 <code>define</code> 定义一个含有多个语句的宏，通常我们使用 <code>do{...} while(0);</code> 进行定义，具体原因，如下详细介绍。</p><p>如果想在宏中包含多个语句，可能会如下这样写。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define do_something() \
+</span></span></span><span class=line><span class=cl><span class=cp>	do_a();        \
+</span></span></span><span class=line><span class=cl><span class=cp>	do_b();
+</span></span></span></code></pre></div><p>通常，这样就可以用 <code>do_somethin()</code> 来执行一系列操作，但这样会有个问题：如果通过如下的方式用这个宏，将会出错。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>if</span> <span class=p>(...)</span>
+</span></span><span class=line><span class=cl>	<span class=nf>do_something</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 宏被展开后
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>if</span> <span class=p>(...)</span>
+</span></span><span class=line><span class=cl>	<span class=nf>do_a</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=nf>do_b</span><span class=p>();</span>
+</span></span></code></pre></div><p>原代码的目的是想在 if 为真的时候执行 <code>do_a()</code> 和 <code>do_b()</code>, 但现在，实际上只有 <code>do_a()</code> 在条件语句中，而 <code>do_b()</code> 任何时候都会执行。</p><p>当然这时可以通过如下的方式将那个宏改进一下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define do_something() { \
+</span></span></span><span class=line><span class=cl><span class=cp>	do_a();          \
+</span></span></span><span class=line><span class=cl><span class=cp>	do_b();          \
+</span></span></span><span class=line><span class=cl><span class=cp>}
+</span></span></span></code></pre></div><p>然而，即使是这样，仍然有错。假设有一个宏是这个样子的，</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define do_something() { \
+</span></span></span><span class=line><span class=cl><span class=cp>	if (a)           \
+</span></span></span><span class=line><span class=cl><span class=cp>		do_a();  \
+</span></span></span><span class=line><span class=cl><span class=cp>	else             \
+</span></span></span><span class=line><span class=cl><span class=cp>		do_b();  \
+</span></span></span></code></pre></div><p>在使用如下情况时，仍会出错。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>if</span> <span class=p>(...)</span>
+</span></span><span class=line><span class=cl>	<span class=nf>do_something</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=p>...</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 宏展开后
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>if</span> <span class=p>(...)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>a</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nf>do_a</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=k>else</span>
+</span></span><span class=line><span class=cl>		<span class=nf>do_b</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=p>};</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=p>...</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>此时第二个 else 前边会有一个分号，那么编译时就会出错。</p><p>因此对于含有多条语句的宏我们使用 <code>do{...} while(0);</code> ，do-while 语句是需要分号来结束的，另外，现代编译器的优化模块能够足够聪明地注意到这个循环只会执行一次而将其优化掉。</p><p>综上所述，<code>do{...} while(0);</code> 这个技术就是为了类似的宏可以在任何时候使用。</p><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><a class=anchor id=宏定义顺序></a><h2>宏定义顺序 <a href=#%e5%ae%8f%e5%ae%9a%e4%b9%89%e9%a1%ba%e5%ba%8f aria-hidden=true>#</a></h2><p>当使用一个静态函数时，当 <code>A()</code> 调用 <code>B()</code> 时，需要保证 <code>B()</code> 先定义 (声明也可以) ，但是对于宏定义，只需要在使用时能够查找到即可，也就是使用与宏定义的顺序无关。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>// outer.h
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#define OUTER(x) INNER(x)
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;inner.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=c1>// inner.h
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#define INNER(x) puts(x)
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=c1>// main.c
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;outer.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>OUTER</span><span class=p>(</span><span class=s>&#34;Hi&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>虽然宏 <code>OUTER()</code> 定义在 <code>INNER()</code> 之前，但是在使用时，仍然可以正常展开。</p><p>利用这个特性，在多平台上，可以将 <code>outer.h</code> 文件作为一个平台相关的文件，然后 <code>inner.h</code> 作为默认的操作。</p><a class=anchor id=内核实例></a><h3>内核实例 <a href=#%e5%86%85%e6%a0%b8%e5%ae%9e%e4%be%8b aria-hidden=true>#</a></h3><p>在内核的 <code>barrier.h</code> 实现中，其中与 x86 相关的定义在 <code>arch/x86/include/asm/barrier.h</code> 头文件中定义，例如 <code>dma_rmb()</code> 宏实际上使用的是 <code>asm-generic/barrier.h</code> 中的定义，也就是 <code>include/linux/compiler.h</code> 默认的定义。</p><a class=anchor id=undef></a><h3>undef <a href=#undef aria-hidden=true>#</a></h3><p>另外，可以通过 <code>#undef</code> 取消宏的定义，实际上也就是定义宏的作用区间。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#define DUMP()  puts(MSG)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>#define MSG &#34;message #1&#34;
+</span></span><span class=line><span class=cl>        DUMP();
+</span></span><span class=line><span class=cl>#undef MSG
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#define MSG &#34;message #2&#34;
+</span></span><span class=line><span class=cl>        DUMP();
+</span></span><span class=line><span class=cl>#undef MSG
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        return 0;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>在取消之后，会输出不同的信息。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#拼接宏>拼接宏</a></li><li><a href=#do-while>do-while</a></li><li><a href=#其它>其它</a><ul><li><a href=#宏定义顺序>宏定义顺序</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

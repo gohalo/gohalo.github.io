@@ -1,0 +1,82 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 内存监控 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 内存监控</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2015-10-12</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/monitor/ role=button>monitor</a></div></div><hr><div class=content><a class=anchor id=procmeminfo></a><h2>/proc/meminfo <a href=#procmeminfo aria-hidden=true>#</a></h2><p>该文件是查看当前 Linux 系统内存使用状况的主要入口，最常用的 free、vmstat、dstat 等命令就是通过它获取数据，该文件的输出实现在 <code>fs/proc/meminfo.c</code> 文件中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>MemTotal:        8070604 kB   内核可用内存
+</span></span><span class=line><span class=cl>MemFree:          842800 kB   从内核角度看，当前系统未使用内存(不含可回收内存)，包括LowFree+HighFree(CONFIG_HIGHMEM)
+</span></span><span class=line><span class=cl>MemAvailable:    3720728 kB   在不发生swap时的最大可用内存，真正可用物理内存
+</span></span><span class=line><span class=cl>Shmem:            962032 kB   一般是tmpfs使用，如/dev/shm,/run等，另外还有内核中的SysV
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Buffers:          104944 kB
+</span></span><span class=line><span class=cl>Cached:          3734768 kB
+</span></span><span class=line><span class=cl>SwapCached:         1028 kB
+</span></span><span class=line><span class=cl>Active:          4575172 kB
+</span></span><span class=line><span class=cl>Inactive:        2156288 kB
+</span></span><span class=line><span class=cl>Active(anon):    2779724 kB
+</span></span><span class=line><span class=cl>Inactive(anon):  1074056 kB
+</span></span><span class=line><span class=cl>Active(file):    1795448 kB
+</span></span><span class=line><span class=cl>Inactive(file):  1082232 kB
+</span></span><span class=line><span class=cl>Unevictable:           0 kB
+</span></span><span class=line><span class=cl>Mlocked:               0 kB
+</span></span><span class=line><span class=cl>SwapTotal:       8127484 kB
+</span></span><span class=line><span class=cl>SwapFree:        8101540 kB
+</span></span><span class=line><span class=cl>Dirty:              2156 kB
+</span></span><span class=line><span class=cl>Writeback:             0 kB
+</span></span><span class=line><span class=cl>AnonPages:       2891148 kB
+</span></span><span class=line><span class=cl>Mapped:           554884 kB
+</span></span><span class=line><span class=cl>Shmem:            962032 kB
+</span></span><span class=line><span class=cl>Slab:             354444 kB
+</span></span><span class=line><span class=cl>SReclaimable:     304396 kB
+</span></span><span class=line><span class=cl>SUnreclaim:        50048 kB
+</span></span><span class=line><span class=cl>KernelStack:        8144 kB
+</span></span><span class=line><span class=cl>PageTables:        41536 kB
+</span></span><span class=line><span class=cl>NFS_Unstable:          0 kB
+</span></span><span class=line><span class=cl>Bounce:                0 kB
+</span></span><span class=line><span class=cl>WritebackTmp:          0 kB
+</span></span><span class=line><span class=cl>CommitLimit:    12162784 kB
+</span></span><span class=line><span class=cl>Committed_AS:    6948452 kB
+</span></span><span class=line><span class=cl>VmallocTotal:   34359738367 kB
+</span></span><span class=line><span class=cl>VmallocUsed:      370112 kB
+</span></span><span class=line><span class=cl>VmallocChunk:   34358947836 kB
+</span></span><span class=line><span class=cl>HardwareCorrupted:     0 kB
+</span></span><span class=line><span class=cl>AnonHugePages:    839680 kB
+</span></span><span class=line><span class=cl>HugePages_Total:       0
+</span></span><span class=line><span class=cl>HugePages_Free:        0
+</span></span><span class=line><span class=cl>HugePages_Rsvd:        0
+</span></span><span class=line><span class=cl>HugePages_Surp:        0
+</span></span><span class=line><span class=cl>Hugepagesize:       2048 kB
+</span></span><span class=line><span class=cl>DirectMap4k:      278372 kB
+</span></span><span class=line><span class=cl>DirectMap2M:     5908480 kB
+</span></span><span class=line><span class=cl>DirectMap1G:     2097152 kB
+</span></span></code></pre></div><p>在计算可用内存时，最早一般使用 free+cached，而实际上 cached 中包含了</p><blockquote><p>简单介绍下 CONFIG_HIGHMEM 。</p><p>部分 CPU (如ARM) 只能映射 4G 的内存管理空间，这 4G 空间包括了用户空间、内核空间、IO 空间，如果物理内存大于 4G ，那么必定有部分内存在这种情况下是无法管理的，这部分内存也就被称为 &ldquo;high memory&rdquo; 。</p><p>简单来说，之所以有 high memory 是因为物理内存超过了虚拟内存，导致内核无法一次映射所有物理内存，为此就需要有临时的映射。注意，创建临时映射的成本很高，需要修改内核的 page table 以及 TLB/MMU 。</p><p>详细可以查看 <a href=https://www.kernel.org/doc/Documentation/vm/highmem.txt>Kenel-doc HIGH MEMORY HANDLING</a> 文档。</p></blockquote><a class=anchor id=memtotal></a><h4>MemTotal <a href=#memtotal aria-hidden=true>#</a></h4><p>系统从加电开始到引导完成，firmware/BIOS 要保留一些内存，Kernel 本身要占用一些内存，最后剩下可供 Kernel 支配的内存就是 MemTotal 。</p><p>该值在系统运行期间一般固定不变，详细可查看 dmesg 中的内存初始化信息。</p><a class=anchor id=memfree></a><h4>MemFree <a href=#memfree aria-hidden=true>#</a></h4><p>从内核角度看，当前系统的可用内存，这里会将可以回收的内存也看作是已经分配的内存。</p><a class=anchor id=memavailable></a><h4>MemAvailable <a href=#memavailable aria-hidden=true>#</a></h4><p>记录当前真正可用的物理内存，注意 MemFree 不能代表全部可用的内存，系统中有些内存虽然已被使用但是可以回收的，比如 cache、buffer、slab 都有一部分可以回收，所以这部分可回收的内存加上 MemFree 才是系统可用的内存。</p><a class=anchor id=active-vs-inactive></a><h3>Active VS. Inactive <a href=#active-vs-inactive aria-hidden=true>#</a></h3><p>除了通过 <code>/proc/meminfo</code> 查看外，还可以通过 <code>vmstat -a</code> 命令查看，与之相关的代码如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>static</span> <span class=kt>int</span> <span class=nf>meminfo_proc_show</span><span class=p>(</span><span class=k>struct</span> <span class=n>seq_file</span> <span class=o>*</span><span class=n>m</span><span class=p>,</span> <span class=kt>void</span> <span class=o>*</span><span class=n>v</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>lru</span> <span class=o>=</span> <span class=n>LRU_BASE</span><span class=p>;</span> <span class=n>lru</span> <span class=o>&lt;</span> <span class=n>NR_LRU_LISTS</span><span class=p>;</span> <span class=n>lru</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=n>pages</span><span class=p>[</span><span class=n>lru</span><span class=p>]</span> <span class=o>=</span> <span class=nf>global_page_state</span><span class=p>(</span><span class=n>NR_LRU_BASE</span> <span class=o>+</span> <span class=n>lru</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>    <span class=nf>seq_printf</span><span class=p>(</span><span class=n>m</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;Active:         %8lu kB</span><span class=se>\n</span><span class=s>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;Inactive:       %8lu kB</span><span class=se>\n</span><span class=s>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;Active(anon):   %8lu kB</span><span class=se>\n</span><span class=s>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;Inactive(anon): %8lu kB</span><span class=se>\n</span><span class=s>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;Active(file):   %8lu kB</span><span class=se>\n</span><span class=s>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;Inactive(file): %8lu kB</span><span class=se>\n</span><span class=s>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>        <span class=nf>K</span><span class=p>(</span><span class=n>pages</span><span class=p>[</span><span class=n>LRU_ACTIVE_ANON</span><span class=p>]</span>   <span class=o>+</span> <span class=n>pages</span><span class=p>[</span><span class=n>LRU_ACTIVE_FILE</span><span class=p>]),</span>
+</span></span><span class=line><span class=cl>        <span class=nf>K</span><span class=p>(</span><span class=n>pages</span><span class=p>[</span><span class=n>LRU_INACTIVE_ANON</span><span class=p>]</span> <span class=o>+</span> <span class=n>pages</span><span class=p>[</span><span class=n>LRU_INACTIVE_FILE</span><span class=p>]),</span>
+</span></span><span class=line><span class=cl>        <span class=nf>K</span><span class=p>(</span><span class=n>pages</span><span class=p>[</span><span class=n>LRU_ACTIVE_ANON</span><span class=p>]),</span>
+</span></span><span class=line><span class=cl>        <span class=nf>K</span><span class=p>(</span><span class=n>pages</span><span class=p>[</span><span class=n>LRU_INACTIVE_ANON</span><span class=p>]),</span>
+</span></span><span class=line><span class=cl>        <span class=nf>K</span><span class=p>(</span><span class=n>pages</span><span class=p>[</span><span class=n>LRU_ACTIVE_FILE</span><span class=p>]),</span>
+</span></span><span class=line><span class=cl>        <span class=nf>K</span><span class=p>(</span><span class=n>pages</span><span class=p>[</span><span class=n>LRU_INACTIVE_FILE</span><span class=p>]),</span>
+</span></span><span class=line><span class=cl>        <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>为了实现 LRU 功能，正常应该有字段记录最近访问时间，可惜 x86 CPU 硬件并不支持这个特性，只能做到在访问页面时设置一个 Access Bit 标志位，无法记录时间。</p><p>所以 Linux 使用了一个折衷的方法，采用 LRU list 列表，把刚访问过的页面放在列首，越接近列尾的就是越长时间未访问过的页面，这样，虽然不能记录访问时间，但利用页面在 LRU list 中的相对位置也可以轻松找到年龄最长的页面。</p><p>内核设计了两种 LRU list: active list 和 inactive list，刚访问过的页面放进 active list，长时间未访问过的页面放进 inactive list，这样从 inactive list 回收页面就变得简单了。</p><p>内核线程 kswapd 会周期性地把 active list 中符合条件的页面移到 inactive list 中。</p><p><img alt="active inactive list" src=images/memory-active-inactive-list.png class="mx-auto d-block"></p><p>如上，如果 inactive list 很大，表明在必要时可以回收的页面很多，反之，则说明可以回收的页面不多。另外，这里的内存是用户进程所占用的内存而言的，内核占用的内存 (包括slab) 不在其中。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><ul><li><a href=#procmeminfo>/proc/meminfo</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

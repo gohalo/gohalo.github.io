@@ -1,0 +1,246 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>详细介绍 GoLang 的包管理机制 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="当拿到代码后，用户首先看到和接触的就是源码文件的布局、命名还有包的结构，代码漂亮、布局清晰、通俗易懂，就像是设计严谨的 API 一样。GoLang 的包管理经历了好几个阶段，从简单的通过环境变量管理，到现在完善的机制。
+相比其它语言，GoLang 的包管理机制对包、变量、代码格式，甚至代码组织结构等，都有详细的约束，这里详细介绍其包管理的规则。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>详细介绍 GoLang 的包管理机制</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-10-16</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><p>当拿到代码后，用户首先看到和接触的就是源码文件的布局、命名还有包的结构，代码漂亮、布局清晰、通俗易懂，就像是设计严谨的 API 一样。GoLang 的包管理经历了好几个阶段，从简单的通过环境变量管理，到现在完善的机制。</p><p>相比其它语言，GoLang 的包管理机制对包、变量、代码格式，甚至代码组织结构等，都有详细的约束，这里详细介绍其包管理的规则。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>GoLang 包的命名遵循简洁、小写、单数和与目录同名的原则，这样便于引用和快速定位查找。一个包中可以根据功能拆分为多个文件，不同的文件实现不同功能点；相同包下的函数可以直接使用。</p><p>对于自带的标准包，例如 <code>net/http</code> 采用的是全路径，net 是最顶级的包，然后是 http 包，包的路径跟其在源码中的目录路径相同，这样就便于查找。</p><p>自己或者公司开发的程序而言，一般采用域名作为顶级包名的方式，这样就不用担心和其他开发者包名重复了，例如 <code>github.com/coreos</code>。</p><a class=anchor id=main-包></a><h2>main 包 <a href=#main-%e5%8c%85 aria-hidden=true>#</a></h2><p>当把一个 go 文件的包名声明为 main 时，就等于告诉编译器这是一个可执行程序，会尝试把它编译为一个二进制的可执行文件。main 包可以被拆分成多个文件，但是只能有一个 <code>main()</code> 函数入口，假设被拆成了 <code>main.go</code> 和 <code>foobar.go</code> 那么直接运行时需要包含两个文件，如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 直接运行
+</span></span><span class=line><span class=cl>$ go run main.go foobar.go
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 编译，生成的程序名称以第一个文件为准
+</span></span><span class=line><span class=cl>$ go build main.go foobar.go
+</span></span></code></pre></div><a class=anchor id=import></a><h2>import <a href=#import aria-hidden=true>#</a></h2><p>在 golang 中可以通过如下的方式导入。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>import</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>       <span class=c1>// 标准库
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=s>&#34;./model&#34;</span>   <span class=c1>// 本地库
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=s>&#34;model/png&#34;</span> <span class=c1>// 加载$GOPATH/src/model/png中的库
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=p>.</span> <span class=s>&#34;png&#34;</span>     <span class=c1>// 直接使用相关的函数即可，无需包前缀
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>p</span> <span class=s>&#34;png&#34;</span>     <span class=c1>// 重命名包名
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>)</span>
+</span></span></code></pre></div><p>另外，常见的一种操作符 <code>_</code> ，例如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span><span class=s>&#34;database/sql&#34;</span> <span class=nx>_</span> <span class=s>&#34;github.com/ziutek/mymysql/godrv&#34;</span><span class=p>)</span>
+</span></span></code></pre></div><p>这里其实只是引入该包，当导入一个包时，它所有的 <code>init()</code> 函数就会被执行，如果仅仅是希望它的 <code>init()</code> 函数被执行，此时就可以使用 <code>_</code> 。</p><p>如果有多个包，那么不同包之间引入的初始化顺序为：</p><p><img alt="golang init sequence" src=images/init-sequence.png class="mx-auto d-block"></p><ol><li>import pkg 的初始化过程；</li><li>pkg 中定义的 const 变量初始化；</li><li>pkg 中定义的 var 全局变量；</li><li>pkg 中定义的 init 函数，可能有多个。</li></ol><a class=anchor id=包管理-历史></a><h1>包管理 (历史) <a href=#%e5%8c%85%e7%ae%a1%e7%90%86-%e5%8e%86%e5%8f%b2 aria-hidden=true>#</a></h1><p>最初的包是通过环境变量进行查找的，其中 <code>GOROOT</code> 保存 Go 的源码目录，而通过 <code>GOPATH</code> 保存项目工程目录，当然，如果由多个目录，可以通过 <code>:</code> 分割来设置多个。</p><p>在实际使用时，通过会将一些常用的三方库保存在 <code>GOPATH</code> 的第一个目录下，所以，此时的目录一般为。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>WORKSPACE
+</span></span><span class=line><span class=cl> |-src/github.com/hello/world   引用的三方库
+</span></span><span class=line><span class=cl> |    /foobar                   项目实现的代码
+</span></span><span class=line><span class=cl> |    /foobar/mymath            项目子模块
+</span></span><span class=line><span class=cl> |-bin
+</span></span><span class=line><span class=cl> |-pkg
+</span></span></code></pre></div><p>其中，在 <code>foobar</code> 目录下保存了项目代码，如果要引用 <code>mymath</code> 模块，需要调用 <code>import foobar/mymath</code> 才可以；然后，通过 <code>go install foobar</code> 安装，此时会在 <code>bin/</code> 目录下生成对应的二进制文件。</p><p>注意，如果通过 <code>go build foobar</code> 会在当前目录下生成二进制文件。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>新建一个临时的项目工程 <code>mkdir /tmp/foobar && GOPATH=/tmp/foobar</code>，简单来说，上述的三方库引入一个最简单打印输出。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// src/github.com/hello/world/hello.go
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kn>package</span> <span class=nx>world</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Hi</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Hello World!&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如下是一个项目内的代码。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// src/foobar/main.go
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;foobar/mymath&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;github.com/hello/world&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>world</span><span class=p>.</span><span class=nf>Hi</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;sqrt(4) %.2f\n&#34;</span><span class=p>,</span> <span class=nx>mymath</span><span class=p>.</span><span class=nf>Sqrt</span><span class=p>(</span><span class=mi>4</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>以及项目中的子模块。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// src/foobar/mymath/sqrt.go
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kn>package</span> <span class=nx>mymath</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;math&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Sqrt</span><span class=p>(</span><span class=nx>x</span> <span class=kt>float64</span><span class=p>)</span> <span class=kt>float64</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>math</span><span class=p>.</span><span class=nf>Sqrt</span><span class=p>(</span><span class=nx>x</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=vendor></a><h2>Vendor <a href=#vendor aria-hidden=true>#</a></h2><p>从 v1.5 开始开始引入 vendor 包模式，如果项目目录下有 vendor 目录，那么 go 工具链会优先使用 vendor 内的包进行编译、测试等，而不是之前的 <code>GOPATH</code> <code>GOROOT</code> 等环境变量。</p><p>实际上，这之后第三方的包管理思路都是通过这种方式来实现，比如说由社区维护准官方包管理工具 dep ，不过官方不认可。如果只维护了一个项目，而且该目录下包含的都是与当前项目相关的内容，那么实际上维护起来还好，但是如果有多个项目，而且想共用一些三方仓库，那么维护起来就比较麻烦。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>WORKSPACE
+</span></span><span class=line><span class=cl> |-src/github.com/some/third                  引用的一些通用三方库
+</span></span><span class=line><span class=cl> |    /foobar                                 项目实现的代码
+</span></span><span class=line><span class=cl> |    /foobar/mymath                          项目子模块
+</span></span><span class=line><span class=cl> |    /foobar/vendor/github.com/hello/world   单个项目引用的三方库
+</span></span><span class=line><span class=cl> |-bin
+</span></span><span class=line><span class=cl> |-pkg
+</span></span></code></pre></div><p>在 v1.11 中加入了 Go Module 作为官方包管理形式，在 v1.11 和 v1.12 版本中 gomod 不能直接使用，可以执行 <code>go env</code> 命令查看是否有 GOMOD 判断是否已开启。如果没有开启，可以通过设置环境变量 <code>export GO111MODULE=on</code> 开启，当使用 modules 时，会完全忽略原有的 vendor 机制。</p><p>接着详细介绍如何使用 Go 标准的包管理方案 Modules 。</p><a class=anchor id=module-最新></a><h1>Module (最新) <a href=#module-%e6%9c%80%e6%96%b0 aria-hidden=true>#</a></h1><p>之所以会引入依赖，无非是为了复用自己 (或别人) 的工作成果，但这样会存在很多的不确定因素：包的 API 会变化，内部行为会变化，改包的依赖会变化，包与包之间的不同依赖相互冲突等等。不仅如此，随着软件开发规模的逐步增大，涉及到的外部依赖越来越多，手动管理的所有依赖愈发不可能。所以需要依赖管理，需要有个工具或者规范来描述和定义包与包之间的依赖关系，并自动化的去处理、解析和满足这些依赖。</p><p>GoLang 的 Module 是官方提供的一个依赖管理方案，各个发布包通过版本进行兼容性约束，不同的依赖包同时引入了版本管理，以保证兼容性。</p><p>这里实际是强制要求所有的模块遵循语义化版本规则 <a href=https://semver.org/>Semantic Versioning</a> ，规定，当主版本号大于等于 <code>v2</code> 时，这个模块在 <code>import</code> 路径的结尾上必须指定主版本号；也就是说，当主版本号为 <code>v0</code> 或者 <code>v1</code> 的时候可以省略。</p><p>根据语义化版本的要求，v0 是不需要保证兼容性的，可以随意的引入破坏性变更，所以不需要显式的写出来；而省略 v1 更大程度上是为了兼容现有的代码库，很少有版本会超过 v2 。</p><a class=anchor id=0-准备环境></a><h2>0. 准备环境 <a href=#0-%e5%87%86%e5%a4%87%e7%8e%af%e5%a2%83 aria-hidden=true>#</a></h2><p>在使用之前，首先设置如下的环境变量。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>export GO111MODULE=on
+</span></span><span class=line><span class=cl>export GOPROXY=https://goproxy.cn
+</span></span><span class=line><span class=cl>export GONOSUMDB=*
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 版本大于1.13(推荐)
+</span></span><span class=line><span class=cl>go env -w GO111MODULE=on
+</span></span><span class=line><span class=cl>go env -w GOPROXY=https://goproxy.cn,direct
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看当前设置的环境变量
+</span></span><span class=line><span class=cl>go env
+</span></span></code></pre></div><p>其中 <code>GO111MODULE</code> 打开模块支持，忽略 <code>GOPATH</code> 以及 <code>vendor</code> 目录；<code>GONOSUMDB</code> 默认下载完依赖模块后，会检查其校验值，默认是 <code>https://sum.golang.org</code> ，这里过滤掉所有的包。</p><p>校验地址可以通过 <code>GOSUMDB</code> 指定地址及其公钥值，与此相关的还有 <code>GOPRIVATE</code> <code>GONOPROXY</code> 几个环境变量。</p><p><strong>注意</strong> 如果之前已经设置了环境变量，例如 <code>GOPROXY</code> ，那么通过 <code>go env -w</code> 修改会报 <code>does not override conflicting OS environment variable</code> 类似的错误，主要是因为通过 <code>go env</code> 修改时不支持覆盖，此时可以直接命令行修改。</p><a class=anchor id=1-创建新模块></a><h2>1. 创建新模块 <a href=#1-%e5%88%9b%e5%bb%ba%e6%96%b0%e6%a8%a1%e5%9d%97 aria-hidden=true>#</a></h2><p>这里尝试在 <code>/tmp/HelloWorld</code> 目录下创建一个项目，先创建目录 <code>/tmp/HelloWorld</code> ，然后添加如下文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// hello.go
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kn>package</span> <span class=nx>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Hello</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=s>&#34;Hello World.&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// hello_test.go
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kn>package</span> <span class=nx>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;testing&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>TestHello</span><span class=p>(</span><span class=nx>t</span> <span class=o>*</span><span class=nx>testing</span><span class=p>.</span><span class=nx>T</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>want</span> <span class=o>:=</span> <span class=s>&#34;Hello, world.&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>got</span> <span class=o>:=</span> <span class=nf>Hello</span><span class=p>();</span> <span class=nx>got</span> <span class=o>!=</span> <span class=nx>want</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>t</span><span class=p>.</span><span class=nf>Errorf</span><span class=p>(</span><span class=s>&#34;Hello() = %q, want %q&#34;</span><span class=p>,</span> <span class=nx>got</span><span class=p>,</span> <span class=nx>want</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>当执行测试时，会有如下的输出信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go test
+</span></span><span class=line><span class=cl>PASS
+</span></span><span class=line><span class=cl>ok      _/tmp/HelloWorld    0.020s
+</span></span></code></pre></div><p>因为当前目录不在 <code>$GOPATH</code> 且不是一个 Module 工程，所以上述的测试结果会根据当前路径生成一个虚拟的包名称。</p><p>当初始化包之后再执行，会直接输出包的名称。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-v data-lang=v><span class=line><span class=cl><span class=err>$</span> <span class=k>go</span> <span class=nv>mod</span> <span class=nv>init</span> <span class=nv>example</span><span class=p>.</span><span class=nv>com</span><span class=o>/</span><span class=nv>hello</span>
+</span></span><span class=line><span class=cl><span class=k>go</span><span class=p>:</span> <span class=nv>creating</span> <span class=nv>new</span> <span class=k>go</span><span class=p>.</span><span class=nv>mod</span><span class=p>:</span> <span class=kn>module</span> <span class=nv>example</span><span class=p>.</span><span class=nv>com</span><span class=o>/</span><span class=nv>hello</span>
+</span></span><span class=line><span class=cl><span class=err>$</span> <span class=k>go</span> <span class=nv>test</span>
+</span></span><span class=line><span class=cl><span class=nc>PASS</span>
+</span></span><span class=line><span class=cl><span class=nv>ok</span>      <span class=nv>example</span><span class=p>.</span><span class=nv>com</span><span class=o>/</span><span class=nv>hello</span>    <span class=mf>0.020</span><span class=nv>s</span>
+</span></span></code></pre></div><p>注意，在 <code>go mod init</code> 过程中，会在 <code>$GOPATH</code> 目录下创建一个子目录 <code>pkg/mod/cache</code> 来缓存版本信息，所以使用时需要保证当前用户对该目录有写权限。</p><p>完成初始化之后会自动创建一个 <code>go.mod</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-v data-lang=v><span class=line><span class=cl><span class=err>$</span> <span class=nv>cat</span> <span class=k>go</span><span class=p>.</span><span class=nv>mod</span>
+</span></span><span class=line><span class=cl><span class=kn>module</span> <span class=nv>example</span><span class=p>.</span><span class=nv>com</span><span class=o>/</span><span class=nv>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>go</span> <span class=mf>1.13</span>
+</span></span></code></pre></div><p>改文件只会出现在模块的顶层。</p><a class=anchor id=2-添加依赖></a><h2>2. 添加依赖 <a href=#2-%e6%b7%bb%e5%8a%a0%e4%be%9d%e8%b5%96 aria-hidden=true>#</a></h2><p>将上述的 <code>hello.go</code> 文件引入一个三方模块。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;rsc.io/quote&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Hello</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>quote</span><span class=p>.</span><span class=nf>Hello</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>然后再次执行 <code>go test</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go test
+</span></span><span class=line><span class=cl>go: downloading rsc.io/quote v3.1.0+incompatible
+</span></span><span class=line><span class=cl>go: extracting rsc.io/quote v3.1.0+incompatible
+</span></span><span class=line><span class=cl>go: downloading rsc.io/sampler v1.3.0
+</span></span><span class=line><span class=cl>go: extracting rsc.io/sampler v1.3.0
+</span></span><span class=line><span class=cl>go: downloading golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c
+</span></span><span class=line><span class=cl>go: extracting golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c
+</span></span><span class=line><span class=cl>go: finding rsc.io/sampler v1.3.0
+</span></span><span class=line><span class=cl>go: finding golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c
+</span></span><span class=line><span class=cl>PASS
+</span></span><span class=line><span class=cl>ok      example.com/hello       0.003s
+</span></span></code></pre></div><p>相关的工具链会解析 <code>go.mod</code> 中的包并下载，如果没有指定，那么会尝试下载最新的包及其相关的依赖包。然后会更新 <code>go.mod</code> 以及 <code>go.sum</code> 文件，包会缓存在 <code>$GOPATH/pkg/mod</code> 目录下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-v data-lang=v><span class=line><span class=cl><span class=kn>module</span> <span class=nv>example</span><span class=p>.</span><span class=nv>com</span><span class=o>/</span><span class=nv>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>go</span> <span class=mf>1.13</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>require</span> <span class=nv>rsc</span><span class=p>.</span><span class=nv>io</span><span class=o>/</span><span class=nv>quote</span> <span class=nv>v3</span><span class=mf>.1.0</span><span class=o>+</span><span class=nv>incompatible</span>
+</span></span></code></pre></div><p>整个模块的依赖可以通过 <code>go list -m all</code> 查看。</p><a class=anchor id=gomod></a><h3>go.mod <a href=#gomod aria-hidden=true>#</a></h3><p>这里简单介绍一些相关的版本命名方式，详细可以参考 <a href=https://golang.org/cmd/go/#hdr-Pseudo_versions>Pseudo Versions</a> 中的介绍。</p><p>建议使用标准的 <code>vX.Y.Z</code> 的 tag 格式，如果没有会使用 <code>v0.0.0-yyyymmddhhmmss-abcdefabcdef</code> 的格式，其中 <code>v0.0.0</code> 表示最新的 tag ，接着是 UTC 提交时间，以及最近一次提交的 hash 值。这样，Go 就可以通过时间比较那个的版本最新。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c
+</span></span></code></pre></div><p>还有一种是打了 tag ，但是没有使用模块，会有类似 <code>v3.2.1+incompatible</code> 的版本号。</p><a class=anchor id=3-依赖升级></a><h2>3. 依赖升级 <a href=#3-%e4%be%9d%e8%b5%96%e5%8d%87%e7%ba%a7 aria-hidden=true>#</a></h2><p>上述的 <code>golang.org/x/text</code> 因为默认的最小依赖原则，实际上下载的是一个老的版本，这里直接尝试更新成最新的版本。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go get golang.org/x/text
+</span></span><span class=line><span class=cl>go: finding golang.org/x/text v0.3.2
+</span></span><span class=line><span class=cl>go: downloading golang.org/x/text v0.3.2
+</span></span><span class=line><span class=cl>go: extracting golang.org/x/text v0.3.2
+</span></span><span class=line><span class=cl>$ go test
+</span></span><span class=line><span class=cl>PASS
+</span></span><span class=line><span class=cl>ok      example.com/hello       0.003s
+</span></span></code></pre></div><p>也就是升级成了 <code>v0.3.2</code> 版本，而且测试通过。此时的 <code>go.mod</code> 文件会同步更新成如下内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>module</span> <span class=nx>example</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>go</span> <span class=mf>1.13</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nf>require</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=nx>golang</span><span class=p>.</span><span class=nx>org</span><span class=o>/</span><span class=nx>x</span><span class=o>/</span><span class=nx>text</span> <span class=nx>v0</span><span class=mf>.3.2</span> <span class=c1>// indirect
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>rsc</span><span class=p>.</span><span class=nx>io</span><span class=o>/</span><span class=nx>quote</span> <span class=nx>v3</span><span class=mf>.1.0</span><span class=o>+</span><span class=nx>incompatible</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span></code></pre></div><p>其中 <code>indirect</code> 表示非本模块直接引入的包，其它的标识可以查看 <code>go help modules</code> 命令。</p><p>同样的方式尝试更新 <code>rsc.io/sampler</code> 包。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go get rsc.io/sampler
+</span></span><span class=line><span class=cl>go: finding rsc.io/sampler v1.99.99
+</span></span><span class=line><span class=cl>go: downloading rsc.io/sampler v1.99.99
+</span></span><span class=line><span class=cl>go: extracting rsc.io/sampler v1.99.99
+</span></span><span class=line><span class=cl>$ go test
+</span></span><span class=line><span class=cl>--- FAIL: TestHello (0.00s)
+</span></span><span class=line><span class=cl>    hello_test.go:8: Hello() = &#34;99 bottles of beer on the wall, 99 bottles of beer, ...&#34;, want &#34;Hello, world.&#34;
+</span></span><span class=line><span class=cl>FAIL
+</span></span><span class=line><span class=cl>exit status 1
+</span></span><span class=line><span class=cl>FAIL    example.com/hello       0.002s
+</span></span></code></pre></div><p>不过这次更新后的测试没有通过，也就是说最新的版本是不兼容的，通过如下命令查看该包当前的版本。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go list -m -versions rsc.io/sampler
+</span></span><span class=line><span class=cl>rsc.io/sampler v1.0.0 v1.2.0 v1.2.1 v1.3.0 v1.3.1 v1.99.99
+</span></span></code></pre></div><p>然后尝试使用 <code>v.1.3.1</code> 版本，也就是命令 <code>go get rsc.io/sampler@v1.3.1</code> ，其中 <code>@XXXX</code> 用来指定具体的版本号，默认是 <code>@latest</code> 。</p><a class=anchor id=4-指定大版本号></a><h2>4. 指定大版本号 <a href=#4-%e6%8c%87%e5%ae%9a%e5%a4%a7%e7%89%88%e6%9c%ac%e5%8f%b7 aria-hidden=true>#</a></h2><p>引入一个函数 <code>Proverb</code> 返回那句 Go 里面经典的 <code>Concurrency is not parallelism.</code>，相关源码文件更新如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;rsc.io/quote&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=nx>quoteV3</span> <span class=s>&#34;rsc.io/quote/v3&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Hello</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>quote</span><span class=p>.</span><span class=nf>Hello</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Proverb</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>quoteV3</span><span class=p>.</span><span class=nf>Concurrency</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;testing&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>TestHello</span><span class=p>(</span><span class=nx>t</span> <span class=o>*</span><span class=nx>testing</span><span class=p>.</span><span class=nx>T</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>want</span> <span class=o>:=</span> <span class=s>&#34;Hello, world.&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>got</span> <span class=o>:=</span> <span class=nf>Hello</span><span class=p>();</span> <span class=nx>got</span> <span class=o>!=</span> <span class=nx>want</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>t</span><span class=p>.</span><span class=nf>Errorf</span><span class=p>(</span><span class=s>&#34;Hello() = %q, want %q&#34;</span><span class=p>,</span> <span class=nx>got</span><span class=p>,</span> <span class=nx>want</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>TestProverb</span><span class=p>(</span><span class=nx>t</span> <span class=o>*</span><span class=nx>testing</span><span class=p>.</span><span class=nx>T</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>want</span> <span class=o>:=</span> <span class=s>&#34;Concurrency is not parallelism.&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>got</span> <span class=o>:=</span> <span class=nf>Proverb</span><span class=p>();</span> <span class=nx>got</span> <span class=o>!=</span> <span class=nx>want</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>t</span><span class=p>.</span><span class=nf>Errorf</span><span class=p>(</span><span class=s>&#34;Proverb() = %q, want %q&#34;</span><span class=p>,</span> <span class=nx>got</span><span class=p>,</span> <span class=nx>want</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>然后同样调用 <code>go test</code> 测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=err>$</span> <span class=k>go</span> <span class=nx>test</span>
+</span></span><span class=line><span class=cl><span class=k>go</span><span class=p>:</span> <span class=nx>finding</span> <span class=nx>rsc</span><span class=p>.</span><span class=nx>io</span><span class=o>/</span><span class=nx>quote</span><span class=o>/</span><span class=nx>v3</span> <span class=nx>v3</span><span class=mf>.1.0</span>
+</span></span><span class=line><span class=cl><span class=k>go</span><span class=p>:</span> <span class=nx>downloading</span> <span class=nx>rsc</span><span class=p>.</span><span class=nx>io</span><span class=o>/</span><span class=nx>quote</span><span class=o>/</span><span class=nx>v3</span> <span class=nx>v3</span><span class=mf>.1.0</span>
+</span></span><span class=line><span class=cl><span class=k>go</span><span class=p>:</span> <span class=nx>extracting</span> <span class=nx>rsc</span><span class=p>.</span><span class=nx>io</span><span class=o>/</span><span class=nx>quote</span><span class=o>/</span><span class=nx>v3</span> <span class=nx>v3</span><span class=mf>.1.0</span>
+</span></span><span class=line><span class=cl><span class=nx>PASS</span>
+</span></span><span class=line><span class=cl><span class=nx>ok</span>      <span class=nx>example</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>hello</span>       <span class=mf>0.003</span><span class=nx>s</span>
+</span></span></code></pre></div><p>然后这个 hello 模块会依赖 <code>rsc.io/quote</code> 的两个版本。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go list -m rsc.io/q...
+</span></span><span class=line><span class=cl>rsc.io/quote v3.1.0+incompatible
+</span></span><span class=line><span class=cl>rsc.io/quote/v3 v3.1.0
+</span></span></code></pre></div><p>每个大版本的路径都会添加版本号信息，例如上述的 <code>v3</code> 版本路径为 <code>rsc.io/quote/v3</code>，也就是 <a href=https://research.swtch.com/vgo-import>Semantic Import Versioning</a> ，对于不兼容的版本使用不同的路径。</p><p>一般来说，同一个大版本中，应该是向前兼容的，当然也有例外，例如上述的 <code>rsc.io/sampler v1.99.99</code> 。</p><p>通过版本号的控制，可以对代码中的不同部分逐渐升级。</p><a class=anchor id=5-升级到同一版本></a><h2>5. 升级到同一版本 <a href=#5-%e5%8d%87%e7%ba%a7%e5%88%b0%e5%90%8c%e4%b8%80%e7%89%88%e6%9c%ac aria-hidden=true>#</a></h2><p>上述的 <code>rsc.io/quote</code> 引入了两个版本，这里将其统一到同一个版本，也就是最新版本。首先查看文档，确认其对应的接口变化。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=err>$</span> <span class=k>go</span> <span class=nx>doc</span> <span class=nx>rsc</span><span class=p>.</span><span class=nx>io</span><span class=o>/</span><span class=nx>quote</span><span class=o>/</span><span class=nx>v3</span>
+</span></span><span class=line><span class=cl><span class=kn>package</span> <span class=nx>quote</span> <span class=c1>// import &#34;rsc.io/quote/v3&#34;
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl><span class=nx>Package</span> <span class=nx>quote</span> <span class=nx>collects</span> <span class=nx>pithy</span> <span class=nx>sayings</span><span class=p>.</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Concurrency</span><span class=p>()</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>GlassV3</span><span class=p>()</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>GoV3</span><span class=p>()</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>HelloV3</span><span class=p>()</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>OptV3</span><span class=p>()</span> <span class=kt>string</span>
+</span></span></code></pre></div><p>然后直接替换为如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;rsc.io/quote/v3&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Hello</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>quote</span><span class=p>.</span><span class=nf>HelloV3</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Proverb</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>quote</span><span class=p>.</span><span class=nf>Concurrency</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=6-清理不需要的包></a><h2>6. 清理不需要的包 <a href=#6-%e6%b8%85%e7%90%86%e4%b8%8d%e9%9c%80%e8%a6%81%e7%9a%84%e5%8c%85 aria-hidden=true>#</a></h2><p>如上，已经不再依赖 <code>rsc.io/quote</code> 这个包了，但是通过 <code>go list -m all</code> 查看时仍然存在。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-v data-lang=v><span class=line><span class=cl><span class=err>$</span> <span class=nv>cat</span> <span class=k>go</span><span class=p>.</span><span class=nv>mod</span>
+</span></span><span class=line><span class=cl><span class=kn>module</span> <span class=nv>example</span><span class=p>.</span><span class=nv>com</span><span class=o>/</span><span class=nv>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>go</span> <span class=mf>1.13</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>require</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=nv>golang</span><span class=p>.</span><span class=nv>org</span><span class=o>/</span><span class=nv>x</span><span class=o>/</span><span class=nv>text</span> <span class=nv>v0</span><span class=mf>.3.2</span> <span class=c1>// indirect
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nv>rsc</span><span class=p>.</span><span class=nv>io</span><span class=o>/</span><span class=nv>quote</span> <span class=nv>v3</span><span class=mf>.1.0</span><span class=o>+</span><span class=nv>incompatible</span>
+</span></span><span class=line><span class=cl>        <span class=nv>rsc</span><span class=p>.</span><span class=nv>io</span><span class=o>/</span><span class=nv>quote</span><span class=o>/</span><span class=nv>v3</span> <span class=nv>v3</span><span class=mf>.1.0</span>
+</span></span><span class=line><span class=cl>        <span class=nv>rsc</span><span class=p>.</span><span class=nv>io</span><span class=o>/</span><span class=nv>sampler</span> <span class=nv>v1</span><span class=mf>.3.1</span> <span class=c1>// indirect
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>)</span>
+</span></span></code></pre></div><p>这主要是因为，像 <code>go test</code> <code>go build</code> 这类的工具，很容易发现那些包需要，但如果要确认那些不再依赖，需要加载所有的包依赖。</p><p>可以通过 <code>go mod tidy</code> 手动清理。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-v data-lang=v><span class=line><span class=cl><span class=err>$</span> <span class=nv>cat</span> <span class=k>go</span><span class=p>.</span><span class=nv>mod</span>
+</span></span><span class=line><span class=cl><span class=kn>module</span> <span class=nv>example</span><span class=p>.</span><span class=nv>com</span><span class=o>/</span><span class=nv>hello</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>go</span> <span class=mf>1.13</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>require</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=nv>golang</span><span class=p>.</span><span class=nv>org</span><span class=o>/</span><span class=nv>x</span><span class=o>/</span><span class=nv>text</span> <span class=nv>v0</span><span class=mf>.3.2</span> <span class=c1>// indirect
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nv>rsc</span><span class=p>.</span><span class=nv>io</span><span class=o>/</span><span class=nv>quote</span><span class=o>/</span><span class=nv>v3</span> <span class=nv>v3</span><span class=mf>.1.0</span>
+</span></span><span class=line><span class=cl>        <span class=nv>rsc</span><span class=p>.</span><span class=nv>io</span><span class=o>/</span><span class=nv>sampler</span> <span class=nv>v1</span><span class=mf>.3.1</span> <span class=c1>// indirect
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>)</span>
+</span></span></code></pre></div><p>相关包的依赖关系可以通过 <code>go mod graph</code> 查看。</p><a class=anchor id=7-其它></a><h2>7. 其它 <a href=#7-%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><a class=anchor id=常用命令></a><h3>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看所有依赖
+</span></span><span class=line><span class=cl>go list -u -m all
+</span></span></code></pre></div><a class=anchor id=semantic-import-versioning></a><h3>Semantic Import Versioning <a href=#semantic-import-versioning aria-hidden=true>#</a></h3><p>详细可以参考 <a href=https://research.swtch.com/vgo-import>Semantic Import Versioning</a> 中的相关介绍，这里只是对其关键信息的摘录。</p><p>主要是为了解决，当前项目引入了一个非兼容的包之后如何进行处理，而 go 的原则是，只要是相同的路径，对应的包就是向前兼容的，对于不兼容的包，则通过 <code>vN</code> 版本号解决。</p><p>这样带来的好处是，对于不兼容的接口，允许代码完成灰度的升级替换。</p><a class=anchor id=三方包></a><h1>三方包 <a href=#%e4%b8%89%e6%96%b9%e5%8c%85 aria-hidden=true>#</a></h1><p>在 1.5 版本之前，包的管理方式简单的粗暴，仅通过环境变量进行设置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>GOROOT=/usr/local/golang
+</span></span><span class=line><span class=cl>GOPATH=/home/USER/golang
+</span></span><span class=line><span class=cl>GOBIN=/usr/local/golang/bin
+</span></span></code></pre></div><p>其中 <code>GOROOT</code> 会保存编译器、工具链、基础源码库等基础代码，而 <code>GOPATH</code> 是用户自定义的代码所在位置。</p><p>如果执行 <code>go install</code> 安装包，那么对应的二进制会保存在 <code>${GOBIN}/bin</code> 目录下，如果 <code>GOBIN</code> 环境变量不存在，那么就会保存在 <code>${GOPATH}/bin</code> 目录下。</p><p>当通过 <code>go get -v</code> 下载包时，会将下载依赖包源码保存到 <code>${GOPATH}/src</code> 目录下，然后在 <code>${GOPATH}/pkg</code> 目录下生成该包的静态库，那么下次使用就不用再从源码编译。</p><p>在包搜索时，会依次查找 <code>${GOROOT}</code> 以及 <code>${GOPATH}</code> ，所以尽量不要重名。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li><a href=https://talks.golang.org/2014/organizeio.slide#1>Organizing Go code</a> 。</li><li><a href=https://blog.golang.org/using-go-modules>Using Go Modules</a> 总共有四篇文章介绍如何使用、迁移、发布基于 Modules 的包。</li><li><a href=https://research.swtch.com/vgo>Go & Versioning</a> Russ Cox 关于 Go 版本管理的文章汇总，以及相关原则 <a href=https://research.swtch.com/vgo-principles>The Principles of Versioning in Go</a>。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#main-包>main 包</a></li><li><a href=#import>import</a></li></ul></li><li><a href=#包管理-历史>包管理 (历史)</a><ul><li><a href=#示例>示例</a></li><li><a href=#vendor>Vendor</a></li></ul></li><li><a href=#module-最新>Module (最新)</a><ul><li><a href=#0-准备环境>0. 准备环境</a></li><li><a href=#1-创建新模块>1. 创建新模块</a></li><li><a href=#2-添加依赖>2. 添加依赖</a></li><li><a href=#3-依赖升级>3. 依赖升级</a></li><li><a href=#4-指定大版本号>4. 指定大版本号</a></li><li><a href=#5-升级到同一版本>5. 升级到同一版本</a></li><li><a href=#6-清理不需要的包>6. 清理不需要的包</a></li><li><a href=#7-其它>7. 其它</a></li></ul></li><li><a href=#三方包>三方包</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,166 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Golang 语法之接口 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="在 Go 语言的实际编程中，几乎所有的数据结构都围绕 Interface 展开，这是 GoLang 中所有数据结构的核心。
+首先，Go 不是一种典型的 OO 语言，它在语法上不支持类和继承的概念，而通过 Interface 可以看到多态的影子。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Golang 语法之接口</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-03-30</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><p>在 Go 语言的实际编程中，几乎所有的数据结构都围绕 Interface 展开，这是 GoLang 中所有数据结构的核心。</p><p>首先，Go 不是一种典型的 OO 语言，它在语法上不支持类和继承的概念，而通过 Interface 可以看到多态的影子。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>Interface 定义了方法集，只要某个类型实现了该接口的超集(实现了接口定义的所有方法，而且可能还有其它方法)，那么就可以说这个类型实现了该接口。</p><p>这意味着，一个类型可能实现了多个接口，例如，所有的类型都实现了 <code>interface {}</code> 这个接口。</p><p>Interface 会在编译时检查，在运行时动态生成，如果有类似类型的报错，在编译阶段就可以发现，而不像 Python 会在运行时报错。</p><p>上面说的 <code>interface {}</code> 比较容易混淆，它定义的是空接口，所有的类型都实现了该接口，在函数传参定义类型时，可以认为是 C 语言中的 <code>void *</code>，可接收任意类型的参数。</p><a class=anchor id=简单示例></a><h1>简单示例 <a href=#%e7%ae%80%e5%8d%95%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h1><p>一般通过如下的规则判断一个类型或者指针是否实现了该接口：</p><ul><li>类型 <code>*T</code> 的对象可调用方法集含类型为 <code>*T</code> 或 <code>T</code> 的所有方法集。</li><li>类型 <code>T</code> 的对象可调用方法集含类型为 <code>T</code> 的所有方法集。</li></ul><p>同时也可以得出一条推论：</p><ul><li>类型 <code>T</code> 的对象不能调用方法集类型为 <code>*T</code> 的方法集。</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Notifier</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>Notify</span><span class=p>()</span> <span class=kt>error</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>User</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Name</span>  <span class=kt>string</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Email</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>u</span> <span class=o>*</span><span class=nx>User</span><span class=p>)</span> <span class=nf>Notify</span><span class=p>()</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;User: Sending User Email To %s&lt;%s&gt;\n&#34;</span><span class=p>,</span> <span class=nx>u</span><span class=p>.</span><span class=nx>Name</span><span class=p>,</span> <span class=nx>u</span><span class=p>.</span><span class=nx>Email</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>SendNotification</span><span class=p>(</span><span class=nx>notify</span> <span class=nx>Notifier</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>notify</span><span class=p>.</span><span class=nf>Notify</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>user</span> <span class=o>:=</span> <span class=nx>User</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Name</span><span class=p>:</span>  <span class=s>&#34;FooBar&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Email</span><span class=p>:</span> <span class=s>&#34;foobar@example.com&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>SendNotification</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>user</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如果将 <code>SendNotification(&amp;user)</code> 替换为 <code>SendNotification(user)</code> 将会报错。</p><a class=anchor id=理解接口></a><h1>理解接口 <a href=#%e7%90%86%e8%a7%a3%e6%8e%a5%e5%8f%a3 aria-hidden=true>#</a></h1><p>首先 Interface 是一种类型，可以参考上述示例的定义方法。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Notifier</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>Notify</span><span class=p>()</span> <span class=kt>error</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>它的定义可以看出用了 type 关键字，更准确的说 interface 是一种具有一组方法的类型，这些方法定义了 interface 的行为。</p><p>允许不带任何方法的 interface ，称为 <code>Empty Interface</code>，也就是上述的 <code>interface {}</code>。</p><p>在 go 中没有显式的关键字用来实现 interface，只需要实现 interface 包含的方法即可。</p><a class=anchor id=变量存储></a><h2>变量存储 <a href=#%e5%8f%98%e9%87%8f%e5%ad%98%e5%82%a8 aria-hidden=true>#</a></h2><p>interface 变量存储的是实现者的值</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// #1
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>type</span> <span class=nx>Notifier</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>Notify</span><span class=p>()</span> <span class=kt>error</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>User</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Name</span>  <span class=kt>string</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Email</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// #2
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>u</span> <span class=o>*</span><span class=nx>User</span><span class=p>)</span> <span class=nf>Notify</span><span class=p>()</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;User: Sending User Email To %s&lt;%s&gt;\n&#34;</span><span class=p>,</span> <span class=nx>u</span><span class=p>.</span><span class=nx>Name</span><span class=p>,</span> <span class=nx>u</span><span class=p>.</span><span class=nx>Email</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>SendNotification</span><span class=p>(</span><span class=nx>notify</span> <span class=nx>Notifier</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>notify</span><span class=p>.</span><span class=nf>Notify</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>user</span> <span class=o>:=</span> <span class=nx>User</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Name</span><span class=p>:</span>  <span class=s>&#34;FooBar&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Email</span><span class=p>:</span> <span class=s>&#34;foobar@example.com&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>SendNotification</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>user</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>同样复制上述的示例，其中 <code>#1</code> 定义了接口，<code>#2</code> 实现了接口中定义的方法，也就是说 <code>User</code> 是接口 <code>Notifier</code> 的实现，接着通过 <code>SendNotification(&amp;user)</code> 完成了一次对接口类型的使用。</p><p>其比较重要的用途就在 <code>SendNotification()</code> 函数中，如果有多种类型实现了这个接口，这些类型的值都可以直接使用接口的变量存储。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>user</span> <span class=o>:=</span> <span class=nx>User</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>n</span> <span class=nx>Notifier</span>      <span class=c1>// 声明一个接口对象
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>n</span> <span class=p>=</span> <span class=o>&amp;</span><span class=nx>user</span>           <span class=c1>// 将对象赋值到接口变量
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nf>SendNotification</span><span class=p>(</span><span class=nx>n</span><span class=p>)</span> <span class=c1>// 调用该类型变量实现的接口
+</span></span></span></code></pre></div><p>也就是说，接口变量中存储的是实现了该接口类型的对象值，这种能力称为 <code>duck typing</code>。</p><p>在使用接口时不需要显式声明要实现哪个接口，只需要实现对应接口中的方法即可，go 会自动进行检查，并在运行时完成从其他类型到接口类型的自动转换。</p><p>即使实现了多个接口，go 也会在使用对应接口时实现自动转换，这就是接口的魔力所在。</p><a class=anchor id=类型判断></a><h2>类型判断 <a href=#%e7%b1%bb%e5%9e%8b%e5%88%a4%e6%96%ad aria-hidden=true>#</a></h2><p>如上，如果有多种类型实现了 <code>Notifier</code> 这个接口，那么在调用接口时，如何判断接口变量保存的究竟时那种类型的实现。</p><p>此时可以使用 <code>comma, ok</code> 的形式做区分，也就是 <code>value, ok := em.(T)</code>，其中 <code>em</code> 是接口类型的变量，<code>T</code> 代表要判断的类型，<code>value</code> 是接口变量存储的值，<code>ok</code> 返回是否类型 <code>T</code> 的实现。</p><p>例如，上述的示例可以修改为。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>SendNotification</span><span class=p>(</span><span class=nx>notify</span> <span class=nx>Notifier</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>n</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>notify</span><span class=p>.(</span><span class=o>*</span><span class=nx>User</span><span class=p>);</span> <span class=nx>ok</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;User implements Notifier %+v\n&#34;</span><span class=p>,</span> <span class=nx>n</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>notify</span><span class=p>.</span><span class=nf>Notify</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>当 <code>ok</code> 是 <code>true</code> 表明 <code>notify</code> 存储的是 <code>*User</code> 类型的值，<code>false</code> 则不是，这种区分能力叫 <code>Type assertions</code> (类型断言)。</p><p>如果需要区分多种类型，可以使用 <code>switch</code> 语句，如下，其中 <code>Foo</code> 未定义会报错。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>SendNotification</span><span class=p>(</span><span class=nx>notify</span> <span class=nx>Notifier</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>switch</span> <span class=nx>n</span> <span class=o>:=</span> <span class=nx>notify</span><span class=p>.(</span><span class=kd>type</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=o>*</span><span class=nx>User</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>            <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;notify store *User, %+v&#34;</span><span class=p>,</span> <span class=nx>n</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=o>*</span><span class=nx>Foo</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>            <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;notify store *Foo, %+v&#34;</span><span class=p>,</span> <span class=nx>n</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>notify</span><span class=p>.</span><span class=nf>Notify</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=空接口></a><h2>空接口 <a href=#%e7%a9%ba%e6%8e%a5%e5%8f%a3 aria-hidden=true>#</a></h2><p><code>interface{}</code> 是一个空的接口类型，如前所述，可以认为所有的类型都实现了 <code>interface{}</code>，那么如果定义一个函数参数是 <code>interface{}</code> 类型，这个函数可以接受任何类型作为它的参数。</p><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><p>如果实现的类型不一致，那么在如下的调用时同样会报错。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Animal</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>Speak</span><span class=p>()</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Dog</span> <span class=kd>struct</span> <span class=p>{}</span>
+</span></span><span class=line><span class=cl><span class=c1>// #2 func (d Dog) Speak() string {
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>d</span> <span class=o>*</span><span class=nx>Dog</span><span class=p>)</span> <span class=nf>Speak</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=s>&#34;Woof!&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Cat</span> <span class=kd>struct</span> <span class=p>{}</span>
+</span></span><span class=line><span class=cl><span class=c1>// #2 func (c Cat) Speak() string {
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>c</span> <span class=o>*</span><span class=nx>Cat</span><span class=p>)</span> <span class=nf>Speak</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=s>&#34;Meow!&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// #2 animals := []Animal{Dog{}, Cat{}}
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>animals</span> <span class=o>:=</span> <span class=p>[]</span><span class=nx>Animal</span><span class=p>{</span><span class=o>&amp;</span><span class=nx>Dog</span><span class=p>{},</span> <span class=o>&amp;</span><span class=nx>Cat</span><span class=p>{}}</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=nx>_</span><span class=p>,</span> <span class=nx>animal</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>animals</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>animal</span><span class=p>.</span><span class=nf>Speak</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>可以保持现状，或者都修改为 <code>#2</code> 的方式，但是如果有不一致的，将会报错。</p><a class=anchor id=receiver-类型></a><h1>Receiver 类型 <a href=#receiver-%e7%b1%bb%e5%9e%8b aria-hidden=true>#</a></h1><p>如果将上述 <code>SendNotification(&amp;user)</code> 改为 <code>SendNotification(user)</code>，执行时会报如下的错。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>cannot use user (type User) as type Notifier in argument to SendNotification:
+</span></span><span class=line><span class=cl>        User does not implement Notifier (Notify method has pointer receiver)
+</span></span></code></pre></div><p>上述报错的大致意思是说，<code>User</code> 没有实现 <code>Notifier</code> ，这里的关键是 <code>User</code> 的 <code>Notify()</code> 方法的 Receiver 是个指针 <code>*User</code> 。</p><p>接口的定义并没有严格规定实现者的方法 Receiver 是个 <code>Value Receiver</code> 还是 <code>Pointer Receiver</code>，不过如果定义为 <code>Pointer</code> 而使用 <code>Value</code> ，那么会导致报错。</p><p>与之相关可以参考 <a href=https://golang.org/doc/effective_go.html#pointers_vs_values>Pointers vs. Values</a> ，关键信息为：</p><blockquote><p>The rule about pointers vs. values for receivers is that value methods can be invoked on pointers and values, but pointer methods can only be invoked on pointers.</p><p>This rule arises because pointer methods can modify the receiver; invoking them on a value would cause the method to receive a copy of the value, so any modifications would be discarded. The language therefore disallows this mistake.</p></blockquote><p>也就是说，value method 可以被 pointer 或者 value 对象调用，而 pointer method 只能被 pointer 对象调用。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>那么，反过来会怎样，如果 Receiver 是 Value，函数用 Pointer 的形式调用？</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>User</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Name</span>  <span class=kt>string</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Email</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>u</span> <span class=nx>User</span><span class=p>)</span> <span class=nf>Notify</span><span class=p>()</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;User: Sending User Email To %s&lt;%s&gt;\n&#34;</span><span class=p>,</span> <span class=nx>u</span><span class=p>.</span><span class=nx>Name</span><span class=p>,</span> <span class=nx>u</span><span class=p>.</span><span class=nx>Email</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Notifier</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>Notify</span><span class=p>()</span> <span class=kt>error</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>SendNotification</span><span class=p>(</span><span class=nx>notify</span> <span class=nx>Notifier</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>notify</span><span class=p>.</span><span class=nf>Notify</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>user</span> <span class=o>:=</span> <span class=nx>User</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Name</span><span class=p>:</span>  <span class=s>&#34;AriesDevil&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Email</span><span class=p>:</span> <span class=s>&#34;ariesdevil@xxoo.com&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>SendNotification</span><span class=p>(</span><span class=nx>user</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nf>SendNotification</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>user</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>从执行代码可以看到无论是 Pointer 还是 Value 都可以正确执行。</p><a class=anchor id=原因></a><h2>原因 <a href=#%e5%8e%9f%e5%9b%a0 aria-hidden=true>#</a></h2><p>在调用某个对象的函数时，都会复制一份，包括了指针以及指，如果在函数中有修改对象中保存的值，那么指针对应的值会同步修改，而值因为是复制了一份，那么实际修改的是复制的值，并不会修改原来的值。</p><p>传值会很容易出错，而且非常难排查，当然，这可以作为语言特性的一部分，但是为了防止出错，将这部分功能作为异常。</p><a class=anchor id=比较></a><h2>比较 <a href=#%e6%af%94%e8%be%83 aria-hidden=true>#</a></h2><a class=anchor id=何时使用-pointer></a><h4>何时使用 Pointer <a href=#%e4%bd%95%e6%97%b6%e4%bd%bf%e7%94%a8-pointer aria-hidden=true>#</a></h4><p>比较常见的有几个场景：</p><ol><li>修改接收器中的成员，值传递会复制一份数据，如果修改实际操作的是复制后的对象；</li><li>如果结构体比较大，那么复制过程的成本会比较高。</li></ol><a class=anchor id=何时使用-value></a><h4>何时使用 Value <a href=#%e4%bd%95%e6%97%b6%e4%bd%bf%e7%94%a8-value aria-hidden=true>#</a></h4><ul><li>不需要编辑接收器值；</li><li>值接收器是并发安全的，而指针接收器不是并发安全的。</li></ul><p>如果某个接收器已经存在了指针，为了统一，最好是统一使用指针。</p><a class=anchor id=其它-1></a><h4>其它 <a href=#%e5%85%b6%e5%ae%83-1 aria-hidden=true>#</a></h4><ol><li>如果是 map func chan 则不需要指针，而切片只有在需要修改切片时再使用指针；</li><li>当接收器中存在类似 <code>sync.Mutex</code> 同步字段时，需要使用指针；</li></ol><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li><a href=https://research.swtch.com/interfaces>Go Data Structures: Interfaces</a> 对接口的基本介绍。</li><li><a href=https://sanyuesha.com/2017/07/22/how-to-understand-go-interface/>理解 Go interface 的 5 个关键点</a> 很好的一篇介绍 GoLang 中接口的文章。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#简单示例>简单示例</a></li><li><a href=#理解接口>理解接口</a><ul><li><a href=#变量存储>变量存储</a></li><li><a href=#类型判断>类型判断</a></li><li><a href=#空接口>空接口</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#receiver-类型>Receiver 类型</a><ul><li><a href=#示例>示例</a></li><li><a href=#原因>原因</a></li><li><a href=#比较>比较</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

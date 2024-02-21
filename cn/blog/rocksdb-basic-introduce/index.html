@@ -1,0 +1,178 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>RocksDB 基本介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="通过 CPP 开发的嵌入式 KV 数据库，源自 LevelDB 但是进行了极大的优化。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>RocksDB 基本介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2022-09-21</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a></div></div><hr><div class=content><p>通过 CPP 开发的嵌入式 KV 数据库，源自 LevelDB 但是进行了极大的优化。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>嵌入式数据库 RocksDB 是 Facebook 基于 Google 的 LevelDB 1.5 版本开发的一种嵌入式 Key-Value 存储系统，并针对闪存做了特定的优化，可以充分利用闪存的性能，相比 LevelDB 在性能上有很大的提升。</p><p>区别于 LevelDB 的特性可以参考 <a href=https://github.com/facebook/rocksdb/wiki/Features-Not-in-LevelDB>RocksDB Features that are not in LevelDB</a> 中的内容，不过如 Wiki 所示，新增的特性只是更新到 2016 为止。</p><a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>编译安装非常简单，最简单的可以只编译静态库、动态库以及一些常用的工具，也可以通过 <code>make all</code> 编译所有，如果直接使用 <code>make</code> 编译默认为 Debug 模式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>make DEBUG_LEVEL=0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>make shared_lib
+</span></span><span class=line><span class=cl>make install-shared INSTALL_PATH=/opt/rocksdb
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>make static_lib
+</span></span><span class=line><span class=cl>make install-static INSTALL_PATH=/opt/rocksdb
+</span></span><span class=line><span class=cl>make install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>make release
+</span></span></code></pre></div><p>编译完后，会在当前目录下生成 <code>librocksdb.a</code> 静态库，<code>librocksdb.so.X.X.X</code> 动态库以及部分符号链接。</p><p>在安装脚本中定义了 <code>INSTALL_PATH</code> 变量，用来定义安装路径的前缀，默认是 <code>/usr/local</code> 目录，此时会将头文件安装到 <code>/usr/local/include/rocksdb</code> 目录下，库安装到 <code>/usr/local/lib</code> 目录下。</p><p>如果如上指定了 <code>INSTALL_PATH</code> 则会安装到 <code>/opt/rocksdb</code> 目录下，那么在编译的时候就需要添加对应的头文件以及库文件路径。</p><p>当然，因为默认会安装头文件，所以手动复制安装库，例如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>cp librocksdb.so.6.4.6 /usr/lib
+</span></span><span class=line><span class=cl>ln -s librocksdb.so.6.4.6 /usr/lib/librocksdb.so.6
+</span></span><span class=line><span class=cl>ln -s librocksdb.so.6.4.6 /usr/lib/librocksdb.so
+</span></span></code></pre></div><p>除了上述的头文件、动态库、静态库之外，还有一些常用的工具吧，包括了管理、调试、压测等，例如 <code>ldb</code> <code>sst_dump</code> <code>db_stress</code> 等等，可以通过类似 <code>make ldb</code> 的命令按需编译。</p><p>注意，貌似不同的工具之间相互有依赖，如果是安装后简单测试用，可以直接使用 <code>make clean && make all</code> 进行编译。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>如下是简单写入并读取数据的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;cstdio&gt;
+</span></span><span class=line><span class=cl>#include &lt;iostream&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#include &#34;rocksdb/db.h&#34;
+</span></span><span class=line><span class=cl>#include &#34;rocksdb/slice.h&#34;
+</span></span><span class=line><span class=cl>#include &#34;rocksdb/options.h&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>using namespace rocksdb;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>        DB *db;
+</span></span><span class=line><span class=cl>        Status rc;
+</span></span><span class=line><span class=cl>        Options opt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        opt.create_if_missing = true;
+</span></span><span class=line><span class=cl>        rc = DB::Open(opt, &#34;/tmp/rocks.db&#34;, &amp;db);
+</span></span><span class=line><span class=cl>        if (!rc.ok()) {
+</span></span><span class=line><span class=cl>                std::cerr &lt;&lt; rc.ToString() &lt;&lt; std::endl;
+</span></span><span class=line><span class=cl>                return -1;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        //----- Write &amp; Read
+</span></span><span class=line><span class=cl>        Slice key(&#34;Hi&#34;);
+</span></span><span class=line><span class=cl>        Slice value(&#34;HelloWorld&#34;);
+</span></span><span class=line><span class=cl>        std::string data;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        // rc = db-&gt;Put(WriteOptions(), &#34;Hi&#34;, &#34;HelloWorld&#34;);
+</span></span><span class=line><span class=cl>        rc = db-&gt;Put(WriteOptions(), key, value);
+</span></span><span class=line><span class=cl>        if (!rc.ok()) {
+</span></span><span class=line><span class=cl>                std::cerr &lt;&lt; &#34;Put failed&#34; &lt;&lt; rc.ToString() &lt;&lt; std::endl;
+</span></span><span class=line><span class=cl>                delete db;
+</span></span><span class=line><span class=cl>                return -1;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        // rc = db-&gt;Get(ReadOptions(), &#34;Hi&#34;, &amp;data);
+</span></span><span class=line><span class=cl>        rc = db-&gt;Get(ReadOptions(), key, &amp;data);
+</span></span><span class=line><span class=cl>        if (rc.ok()) {
+</span></span><span class=line><span class=cl>                std::cout &lt;&lt; &#34;Got value &#34; &lt;&lt; data.c_str() &lt;&lt; std::endl;
+</span></span><span class=line><span class=cl>        } else {
+</span></span><span class=line><span class=cl>                std::cout &lt;&lt; &#34;Got value failed&#34; &lt;&lt; rc.ToString() &lt;&lt; std::endl;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        //----- Batch Operation
+</span></span><span class=line><span class=cl>        WriteBatch bat;
+</span></span><span class=line><span class=cl>        bat.Delete(&#34;Hi&#34;);
+</span></span><span class=line><span class=cl>        bat.Put(&#34;Hey&#34;, value);
+</span></span><span class=line><span class=cl>        rc = db-&gt;Write(WriteOptions(), &amp;bat);
+</span></span><span class=line><span class=cl>        assert(rc.ok());
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        rc = db-&gt;Get(ReadOptions(), &#34;Hi&#34;, &amp;data);
+</span></span><span class=line><span class=cl>        assert(rc.IsNotFound());
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        rc = db-&gt;Get(ReadOptions(), &#34;Hey&#34;, &amp;data);
+</span></span><span class=line><span class=cl>        assert(data == &#34;HelloWorld&#34;);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        rc = db-&gt;Delete(WriteOptions(), key);
+</span></span><span class=line><span class=cl>        if (!rc.ok()) {
+</span></span><span class=line><span class=cl>                std::cerr &lt;&lt; &#34;Delete failed&#34; &lt;&lt; rc.ToString() &lt;&lt; std::endl;
+</span></span><span class=line><span class=cl>                delete db;
+</span></span><span class=line><span class=cl>                return -1;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        delete db;
+</span></span><span class=line><span class=cl>        return 0;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>通过 <code>Options</code> 定义了打开数据库时的配置，其中的部分选项可以在运行时修改，在打开数据库之后，可以通过 <code>Put()</code> <code>Get()</code> <code>Delete()</code> 之类的接口进行操作，返回为 <code>Status</code> 类型，封装了具体的返回信息。</p><p>也可以通过 <code>WriteBatch</code> 执行批量原子操作，如果上述的 <code>Delete()</code> 和 <code>Put()</code> 操作的 Key 相同，实际上不会做任何修改操作。</p><p>可以通过如下方式进行编译。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>g++ -std=c++11 -o rocksdbtest main.cpp -lrocksdb -lpthread -ldl
+</span></span><span class=line><span class=cl>g++ -std=c++11 -o rocksdbtest main.cpp /usr/local/lib/librocksdb.a -lpthread -lz -ldl
+</span></span></code></pre></div><p>RocksDB 包含了三类文件：A) MemFile 保存在内存中是最新的数据；B) SSTFile 当 MemFile 写满之后，会写入到磁盘文件 SSTFile 中，为了方便查找，数据是顺序保存的；C) LogFile 是顺序写入的日志。</p><a class=anchor id=columnfamily></a><h1>ColumnFamily <a href=#columnfamily aria-hidden=true>#</a></h1><p>在 3.0 版本中增加了对 Column Families 的支持，每个 KV 都与唯一的列族结合，如果不指定则使用默认的 <code>default</code> 列族，实际上，就是通过列族提供一种逻辑上的数据库分片方法。</p><p>实现时，每个 ColumnFamily 有自己的 MemTable 和 SST 文件，相互独立，而 WAL、Current、Manifest 则是共享的，这样就很方便修改列族的不同属性，快速添加删除列族。</p><p>列族支持如下的一些特性：</p><ul><li>支持跨列族原子写。</li><li>提供跨列族的一致性视图。</li><li>允许对不同的列族进行不同的配置。</li><li>可以快速添加或删除列族。</li></ul><p>接着看看如何通过 API 使用列族。</p><a class=anchor id=示例-1></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b-1 aria-hidden=true>#</a></h2><p>简单的创建 ColumnFamily 并读取数据的过程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;iostream&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;rocksdb/db.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;rocksdb/options.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=k>namespace</span> <span class=n>rocksdb</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>DB</span> <span class=o>*</span><span class=n>db</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>Status</span> <span class=n>rc</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>Options</span> <span class=n>opt</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>opt</span><span class=p>.</span><span class=n>create_if_missing</span> <span class=o>=</span> <span class=nb>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>DB</span><span class=o>::</span><span class=n>Open</span><span class=p>(</span><span class=n>opt</span><span class=p>,</span> <span class=s>&#34;/tmp/rocks.db&#34;</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>db</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>ColumnFamilyHandle</span> <span class=o>*</span><span class=n>cf</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>db</span><span class=o>-&gt;</span><span class=n>CreateColumnFamily</span><span class=p>(</span><span class=n>ColumnFamilyOptions</span><span class=p>(),</span> <span class=s>&#34;NewColumnFamily&#34;</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>cf</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>db</span><span class=o>-&gt;</span><span class=n>Put</span><span class=p>(</span><span class=n>WriteOptions</span><span class=p>(),</span> <span class=n>cf</span><span class=p>,</span> <span class=s>&#34;Hi&#34;</span><span class=p>,</span> <span class=s>&#34;FooBar&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>Value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>db</span><span class=o>-&gt;</span><span class=n>Get</span><span class=p>(</span><span class=n>ReadOptions</span><span class=p>(),</span> <span class=n>cf</span><span class=p>,</span> <span class=s>&#34;Hi&#34;</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>Value</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;Got value &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>Value</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>db</span><span class=o>-&gt;</span><span class=n>DestroyColumnFamilyHandle</span><span class=p>(</span><span class=n>cf</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>delete</span> <span class=n>db</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>注意，上述的示例只能运行一次，因为创建了新的列族之后并没有删除，在打开 RocksDB 的时候，需要将所有的列族打开，否则在调用 <code>DB::Open()</code> 的时候会直接报 <code>Status::InvalidArgument()</code> 的错误。</p><a class=anchor id=使用详解></a><h2>使用详解 <a href=#%e4%bd%bf%e7%94%a8%e8%af%a6%e8%a7%a3 aria-hidden=true>#</a></h2><p>其中 <code>Options</code> 定义了 <code>RocksDB</code> 的行为，单个列族的选项可以通过 <code>ColumnFamilyOptions</code> 设置，整个 <code>RocksDB</code> 实例配置也可以在 <code>DBOptions</code> 中设置，而 <code>Options</code> 会同时继承 <code>ColumnFamilyOptions</code> 和 <code>DBOptions</code>，所以，对于只有一个列族的实例仍然可以使用 Options 配置。</p><p>在操作列族的时候，会使用到 ColumnFamilyHandle 的对象，可以将其理解为一个描述符，使用完之后需要将其删除。注意，仍然可以使用一个已经删除的列族句柄，只有当实例中所有的句柄都删除了，才会清理。</p><p>如下是打开多个列族的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;iostream&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;rocksdb/db.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;rocksdb/options.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=k>namespace</span> <span class=n>rocksdb</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>DB</span> <span class=o>*</span><span class=n>db</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>Status</span> <span class=n>rc</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>std</span><span class=o>::</span><span class=n>vector</span><span class=o>&lt;</span><span class=n>ColumnFamilyDescriptor</span><span class=o>&gt;</span> <span class=n>cfs</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>cfs</span><span class=p>.</span><span class=n>push_back</span><span class=p>(</span><span class=n>ColumnFamilyDescriptor</span><span class=p>(</span><span class=n>kDefaultColumnFamilyName</span><span class=p>,</span> <span class=n>ColumnFamilyOptions</span><span class=p>()));</span>
+</span></span><span class=line><span class=cl>        <span class=n>cfs</span><span class=p>.</span><span class=n>push_back</span><span class=p>(</span><span class=n>ColumnFamilyDescriptor</span><span class=p>(</span><span class=s>&#34;NewColumnFamily&#34;</span><span class=p>,</span> <span class=n>ColumnFamilyOptions</span><span class=p>()));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>std</span><span class=o>::</span><span class=n>vector</span><span class=o>&lt;</span><span class=n>ColumnFamilyHandle</span><span class=o>*&gt;</span> <span class=n>handles</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>DB</span><span class=o>::</span><span class=n>Open</span><span class=p>(</span><span class=n>DBOptions</span><span class=p>(),</span> <span class=s>&#34;/tmp/rocks.db&#34;</span><span class=p>,</span> <span class=n>cfs</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>handles</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>db</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>db</span><span class=o>-&gt;</span><span class=n>Put</span><span class=p>(</span><span class=n>WriteOptions</span><span class=p>(),</span> <span class=n>handles</span><span class=p>[</span><span class=mi>1</span><span class=p>],</span> <span class=s>&#34;Hi&#34;</span><span class=p>,</span> <span class=s>&#34;FooBar&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>Value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>db</span><span class=o>-&gt;</span><span class=n>Get</span><span class=p>(</span><span class=n>ReadOptions</span><span class=p>(),</span> <span class=n>handles</span><span class=p>[</span><span class=mi>1</span><span class=p>],</span> <span class=s>&#34;Hi&#34;</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>Value</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>WriteBatch</span> <span class=n>batch</span><span class=p>;</span> <span class=c1>// atomic write
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=n>batch</span><span class=p>.</span><span class=n>Put</span><span class=p>(</span><span class=n>handles</span><span class=p>[</span><span class=mi>0</span><span class=p>],</span> <span class=s>&#34;Foo&#34;</span><span class=p>,</span> <span class=s>&#34;Hello&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>batch</span><span class=p>.</span><span class=n>Put</span><span class=p>(</span><span class=n>handles</span><span class=p>[</span><span class=mi>1</span><span class=p>],</span> <span class=s>&#34;Bar&#34;</span><span class=p>,</span> <span class=s>&#34;World&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>batch</span><span class=p>.</span><span class=n>Delete</span><span class=p>(</span><span class=n>handles</span><span class=p>[</span><span class=mi>0</span><span class=p>],</span> <span class=s>&#34;Hi&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>db</span><span class=o>-&gt;</span><span class=n>Write</span><span class=p>(</span><span class=n>WriteOptions</span><span class=p>(),</span> <span class=o>&amp;</span><span class=n>batch</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>db</span><span class=o>-&gt;</span><span class=n>DropColumnFamily</span><span class=p>(</span><span class=n>handles</span><span class=p>[</span><span class=mi>1</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=n>db</span><span class=o>-&gt;</span><span class=n>Get</span><span class=p>(</span><span class=n>ReadOptions</span><span class=p>(),</span> <span class=n>handles</span><span class=p>[</span><span class=mi>1</span><span class=p>],</span> <span class=s>&#34;Bar&#34;</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>Value</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>        <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;Got value &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>Value</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=k>auto</span> <span class=nl>handle</span> <span class=p>:</span> <span class=n>handles</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=n>rc</span> <span class=o>=</span> <span class=n>db</span><span class=o>-&gt;</span><span class=n>DestroyColumnFamilyHandle</span><span class=p>(</span><span class=n>handle</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>                <span class=n>assert</span><span class=p>(</span><span class=n>rc</span><span class=p>.</span><span class=n>ok</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>delete</span> <span class=n>db</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在打开多个列族时，需要使用一个 ColumnFamilyDescriptors 类型的 Vector 来声明，该描述符中只包含了列族名称以及 ColumnFamilyOptions 选项，打开后会返回对于的句柄 Vector ，然后就可以通过句柄使用列族。</p><p>另外，如果是通过 <code>DB::OpenForReadOnly()</code> 接口以只读方式打开，那么就不需要声明所有列族，可以选择其中一个子集。</p><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><p>注意，其中的 <code>assert()</code> 一般只用在调试代码时，生产环境建议不要使用，所以其中的异常判断只是为了简化，如果需要，可以通过 <code>ToString()</code> 函数查看具体的失败原因。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li><li><a href=#示例>示例</a></li></ul></li><li><a href=#columnfamily>ColumnFamily</a><ul><li><a href=#示例-1>示例</a></li><li><a href=#使用详解>使用详解</a></li></ul></li><li><a href=#其它>其它</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

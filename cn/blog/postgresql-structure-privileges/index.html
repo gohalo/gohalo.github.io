@@ -1,0 +1,359 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>PostgreSQL 结构及权限 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="在 PostgreSQL 中，有各种各样的概念，例如，一个实例中允许创建多个数据库，每个数据库中可以创建多个 schema，每个 schema 下面可以创建多个对象，包括了表、物化视图、操作符、索引、视图、序列、函数 &amp;hellip; &amp;hellip; 等等。
+另外，PG 中还有表空间的概念，这就导致上面的概念越来越混乱。
+本文主要是理解 PostgreSQL 的逻辑结构和权限体系，快速理解和管理数据库的权限。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>PostgreSQL 结构及权限</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-08-05</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/postgresql/ role=button>postgresql</a></div></div><hr><div class=content><p>在 PostgreSQL 中，有各种各样的概念，例如，一个实例中允许创建多个数据库，每个数据库中可以创建多个 schema，每个 schema 下面可以创建多个对象，包括了表、物化视图、操作符、索引、视图、序列、函数 &mldr; &mldr; 等等。</p><p>另外，PG 中还有表空间的概念，这就导致上面的概念越来越混乱。</p><p>本文主要是理解 PostgreSQL 的逻辑结构和权限体系，快速理解和管理数据库的权限。</p><a class=anchor id=pg-结构简介></a><h1>PG 结构简介 <a href=#pg-%e7%bb%93%e6%9e%84%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>首先，介绍下 PG 中常见的几个概念，包括了 Cluster、Database、Schemas 。</p><ul><li>Cluster：抽象概念，一系列 DBs 的集合，但是不像 DBs 可以直接通过 SQL 在内部表中查看。一个集群在一个目录树下 (一般通过 <code>$PGDATA</code> 指定目录根)，通过一个 postmaster 进程提供服务。</li><li>Databases：一系列 Schemas 的集合，在一个 Cluster 中名字必须唯一。</li><li>Schemas：一系列 tables、functions、indexs、data types、operators 的集合，名称需要在一个 DB 中唯一。主要是提供了一个逻辑的命名空间，在一个 DB 中，可以通过 prefix 引用不同的 schema 。</li></ul><p>另外，需要注意的是，在一个 cluster 中，有四个系统表是在各个 DBs 中共享的：</p><ul><li>pg_group 显示用户组列表，只是用于兼容 8.1 之前的版本。</li><li>pg_database 该 cluster 中的数据库列表，默认会有 postgres、template0、template1 三个数据库。</li><li>pg_shadow 列出有效的用戶，兼容 8.1 之前的表，是 pg_authid 中 rolcanlogin 为 true 的值；另外，pg_user 是 pg_shadow 的视图，只是将口令设置成了空白。</li><li>pg_tablespace 关于 tablespaces 的列表。</li></ul><p>这也就意味着一个 Cluster 中有多个 DB，用户和用户组跨 DB 在整个 Cluster 中共享，但是数据不能共享 DB 。每次用户连接时，只能连接到一个 cluster 的某个 database，可以直接通过 ps 命令查看进程。</p><a class=anchor id=schema></a><h2>Schema <a href=#schema aria-hidden=true>#</a></h2><p>Schema 是 PG-7.3 引入的特性，在 PG 中是一个逻辑概念，一个用户可以访问他所连接数据库中的任意 schema 中的对象，只要他有权限即可。之所以又添加了 schema，主要有如下原因：</p><ol><li>允许多个用户互不干扰地使用同一个数据库，从逻辑上将 DB 分组以方便管理。</li><li>提供 database 下的命名空间隔离，这样的好处是，灵活。例如，可以创建月份的 schema，每个里面的表结构都相同。</li><li>PG 的限制是一个连接只能连接到一个数据库，这样一个连接就可以操作不同 schema 下的对象。</li></ol><p>每个客户端的连接都会存在一个搜索路径 (search path)，如果没有指定 schema，那么 PG 就会按照该路径进行搜索。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看搜索路径，如果$user的schema不存在，则会直接忽略
+</span></span><span class=line><span class=cl>postgres=# SHOW SEARCH_PATH;
+</span></span><span class=line><span class=cl>   search_path
+</span></span><span class=line><span class=cl>-----------------
+</span></span><span class=line><span class=cl> &#34;$user&#34;, public
+</span></span><span class=line><span class=cl>(1 row)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 可以修改搜索路径
+</span></span><span class=line><span class=cl>postgres=# SET SEARCH_PATH TO &#39;foo&#39;,&#39;bar&#39;,&#39;public&#39;;
+</span></span><span class=line><span class=cl>SET
+</span></span><span class=line><span class=cl>{% endhighlight %}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>另外的一些常见操作可以参考如下：
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{% highlight text %}
+</span></span><span class=line><span class=cl>----- 查询schema
+</span></span><span class=line><span class=cl>postgres=# \dn+
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建schema以及其中的表
+</span></span><span class=line><span class=cl>postgres=# CREATE SCHEMA foo;
+</span></span><span class=line><span class=cl>CREATE SCHEMA
+</span></span><span class=line><span class=cl>postgres=# CREATE TABLE foo.foobar(id INTEGER);
+</span></span><span class=line><span class=cl>CREATE TABLE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除schema，如果非空，则通过cascade强制删除
+</span></span><span class=line><span class=cl>postgres=# DROP SCHEMA foo CASCADE;
+</span></span></code></pre></div><p>除了 public 和用户创建的 schema 之外，还存在一个 <code>pg_catalog</code>，它包含了系统表所有的内建数据类型、函数、操作符，它总是搜索路径的一部分，只是没有在搜索路径中显示。</p><a class=anchor id=databases></a><h2>Databases <a href=#databases aria-hidden=true>#</a></h2><p>DB 的创建语句如下，可以指定 owner 以及 tablespace 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>CREATE DATABASE db_name
+</span></span><span class=line><span class=cl>[
+</span></span><span class=line><span class=cl>    [ WITH]
+</span></span><span class=line><span class=cl>    [ OWNER [ = ] user_name ]                     # 所属用户，默认属于创建的用户
+</span></span><span class=line><span class=cl>    [ TEMPLDATE [ =] templdate ]                  # 创建数据库需要的模板，默认template1
+</span></span><span class=line><span class=cl>    [ ENCODING [ = ] encoding ]                   # 数据库使用的编码，如utf8
+</span></span><span class=line><span class=cl>    [ LC_COLLATE [ = ] lc_collate ]               # 排序类型
+</span></span><span class=line><span class=cl>    [ LC_CTYPE [ = ] lc_ctype ]                   # 同上
+</span></span><span class=line><span class=cl>    [ TABLESPACE [ = ] tablespace ]               # 数据库的默认表空间
+</span></span><span class=line><span class=cl>    [ CONNECTION LIMIT [ = ] connection limit ]   # 数据库的最大连接数，默认为-1，禁用连接
+</span></span><span class=line><span class=cl>]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 示例
+</span></span><span class=line><span class=cl>POSTGRES=# CREATE DATABASE demodb TEMPLATE template0 ENCODING &#39;UTF8&#39; TABLESPACE ts_demo01 CONNECTION LIMIT 200;
+</span></span><span class=line><span class=cl>CREATE DATABASE
+</span></span></code></pre></div><p>如果是 superuser 可以指定不同的 OWNER ，否则使用当前的用户。TEMPLATE 则指定了复制的模版，会将该模版中定义的所有 tables、views、data types、functions、operators 复制到新的数据库目录下，默认采用 template1 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看详细信息
+</span></span><span class=line><span class=cl>postgres=# \l+
+</span></span></code></pre></div><p>在 PG 中，数据库、表、索引的关系如下：</p><ul><li>数据库：一个 PG 数据库下可以管理多个数据库，当应用连接的时候，只能连接到其中的一个数据库，而一个数据库只能属于一个实例。</li><li>表、索引：一个数据库里可以有多个表与索引，PG 称为 &ldquo;Relation&rdquo;。</li><li>数据行：在每张表中可以有很多数据行，PG 称为 &ldquo;Tuple&rdquo;。</li></ul><a class=anchor id=表空间></a><h1>表空间 <a href=#%e8%a1%a8%e7%a9%ba%e9%97%b4 aria-hidden=true>#</a></h1><p>这是 PG-8.0 引入的特性，将 DBs、tables、indexs 保存到指定的 tablespace 中，会在创建时指定数据的保存目录，也就是说表空间就是一个简单的目录，其主要用途分两个：</p><ol><li>单独扩展表空间用，一旦磁盘或分区被耗尽，可以创建一个表空间到其他磁盘或分区上面。</li><li>区分不同对象的存储位置，比如可以将冷热数据进行分别存放。</li></ol><p>与 Oracle 中的表空间被独占不同，PG 的表空间是可以被共享的，当创建了一个表空间后，这个表空间可以被多个数据库、表、索引等数据库对象使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>CREATE TABLESPACE tablespacename [ OWNER username ] LOCATION &#39;directory&#39;;
+</span></span></code></pre></div><p>创建时必须要满足如下的条件：1) superuser；2) OS 必须支持符号连接，也就是说 Windows 不支持；3) 目录必须已经存在且为空。</p><p>创建时，PG 会在后台执行一系列操作，基本流程为：1) 将目录权限修改为 700；2) 创建一个 <code>PG_VERSION</code> 文件；3) 在 <code>pg_tablespace</code> 添加一行，并新建一个 OID(object-id)；4) 在 <code>$PGDATA/pg_tblspc</code> 目录下创建一个 OID 指向的符号连接。</p><p>当在 tablespace 中创建对象时，例如 database，会先创建一个目录，然后才会在该目录下创建对象，之所以这样，是为了避免 OID 冲突。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看表空间
+</span></span><span class=line><span class=cl>postgres=# SELECT spcname, pg_tablespace_location(oid) FROM pg_tablespace;
+</span></span><span class=line><span class=cl>postgres=# \db+
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建表空间，目录需要先创建
+</span></span><span class=line><span class=cl>postgres=# CREATE TABLESPACE ts_foobar LOCATION &#39;/tmp/foobar&#39;;
+</span></span><span class=line><span class=cl>CREATE TABLESPACE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>postgres=# SELECT oid, * FROM pg_tablespace WHERE spcname = &#39;ts_foobar&#39;;
+</span></span><span class=line><span class=cl>  oid  |  spcname  | spcowner | spcacl | spcoptions
+</span></span><span class=line><span class=cl>-------+-----------+----------+--------+------------
+</span></span><span class=line><span class=cl> 16435 | ts_foobar |       10 |        |
+</span></span><span class=line><span class=cl>(1 row)
+</span></span><span class=line><span class=cl>postgres=# \db+
+</span></span><span class=line><span class=cl>                                    List of tablespaces
+</span></span><span class=line><span class=cl>    Name    |  Owner   |  Location   | Access privileges | Options |  Size   | Description
+</span></span><span class=line><span class=cl>------------+----------+-------------+-------------------+---------+---------+-------------
+</span></span><span class=line><span class=cl> pg_default | postgres |             |                   |         | 35 MB   |
+</span></span><span class=line><span class=cl> pg_global  | postgres |             |                   |         | 464 kB  |
+</span></span><span class=line><span class=cl> ts_foobar  | postgres | /tmp/foobar |                   |         | 0 bytes |
+</span></span><span class=line><span class=cl>(3 rows)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>postgres=# CREATE DATABASE mydb OWNER postgres TABLESPACE ts_foobar;
+</span></span><span class=line><span class=cl>CREATE DATABASE
+</span></span><span class=line><span class=cl>postgres=# SELECT oid, datname FROM pg_database;
+</span></span><span class=line><span class=cl>  oid  |  datname
+</span></span><span class=line><span class=cl>-------+-----------
+</span></span><span class=line><span class=cl>     1 | template1
+</span></span><span class=line><span class=cl> 12918 | template0
+</span></span><span class=line><span class=cl> 12923 | postgres
+</span></span><span class=line><span class=cl> 16439 | mydb
+</span></span><span class=line><span class=cl>(4 rows)
+</span></span><span class=line><span class=cl>postgres=# \connect mydb;
+</span></span><span class=line><span class=cl>You are now connected to database &#34;mydb&#34; as user &#34;postgres&#34;.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 在上述创建的表空间中添加表
+</span></span><span class=line><span class=cl>mydb=# CREATE TABLE foobar(x int, y varchar(30), z date) TABLESPACE ts_foobar;
+</span></span><span class=line><span class=cl>CREATE TABLE
+</span></span><span class=line><span class=cl>mydb=# INSERT INTO foobar VALUES(1, &#39;ShangHai&#39;, now()), (2, &#39;NanJing&#39;, now()), (3, &#39;HangZhou&#39;, now());
+</span></span><span class=line><span class=cl>INSERT 0 3
+</span></span><span class=line><span class=cl>mydb=# CREATE INDEX idx_foobar_x on foobar(x) TABLESPACE ts_foobar;
+</span></span><span class=line><span class=cl>CREATE INDEX
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 添加表的主键约束或是唯一键约束的时候指定表空间
+</span></span><span class=line><span class=cl>mydb=# ALTER TABLE foobar ADD CONSTRAINT uk_foobar_y UNIQUE(y) USING INDEX TABLESPACE ts_foobar;
+</span></span><span class=line><span class=cl>ALTER TABLE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>------ 查看对应的OID
+</span></span><span class=line><span class=cl>mydb=# SELECT oid FROM pg_class WHERE relname = &#39;foobar&#39;;
+</span></span><span class=line><span class=cl>  oid
+</span></span><span class=line><span class=cl>-------
+</span></span><span class=line><span class=cl> 16440
+</span></span><span class=line><span class=cl>(1 row)
+</span></span><span class=line><span class=cl>mydb=# SELECT oid FROM pg_database WHERE datname = &#39;mydb&#39;;
+</span></span><span class=line><span class=cl>  oid
+</span></span><span class=line><span class=cl>-------
+</span></span><span class=line><span class=cl> 16439
+</span></span><span class=line><span class=cl>(1 row)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看表所在文件，可以直接在目录下查找对应文件
+</span></span><span class=line><span class=cl>mydb=# SELECT pg_relation_filepath(&#39;foobar&#39;);
+</span></span><span class=line><span class=cl>             pg_relation_filepath
+</span></span><span class=line><span class=cl>----------------------------------------------
+</span></span><span class=line><span class=cl> pg_tblspc/16435/PG_9.5_201510051/16439/16440
+</span></span><span class=line><span class=cl>(1 row)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ ls -l $PGDATA/pg_tblspc
+</span></span><span class=line><span class=cl>total 0
+</span></span><span class=line><span class=cl>lrwxrwxrwx 1 postgres postgres 11 9月  27 23:04 16435 -&gt; /tmp/foobar
+</span></span><span class=line><span class=cl>total 0
+</span></span><span class=line><span class=cl>-bash-4.2$ ls /tmp/foobar/PG_9.5_201510051/ -l
+</span></span><span class=line><span class=cl>total 0
+</span></span><span class=line><span class=cl>drwx------ 2 postgres postgres   40 9月  27 23:13 13294
+</span></span><span class=line><span class=cl>drwx------ 2 postgres postgres 5400 9月  27 23:20 16439
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 也可以修改表空间名称
+</span></span><span class=line><span class=cl>postgres=# ALTER TABLESPACE ts_foobar RENAME TO ts_foobar01;
+</span></span><span class=line><span class=cl>ALTER TABLESPACE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 此时表T的表空间名称会相应发生变化
+</span></span><span class=line><span class=cl>postgres=# \d t
+</span></span><span class=line><span class=cl>              Table &#34;public.t&#34;
+</span></span><span class=line><span class=cl> Column |         Type          | Modifiers
+</span></span><span class=line><span class=cl>--------+-----------------------+-----------
+</span></span><span class=line><span class=cl> x      | integer               |
+</span></span><span class=line><span class=cl> y      | character varying(30) |
+</span></span><span class=line><span class=cl> z      | date                  |
+</span></span><span class=line><span class=cl>Indexes:
+</span></span><span class=line><span class=cl>    &#34;uk_t_y&#34; UNIQUE CONSTRAINT, btree (y), tablespace &#34;ts_foobar01&#34;
+</span></span><span class=line><span class=cl>    &#34;idx_t_x&#34; btree (x), tablespace &#34;ts_foobar01&#34;
+</span></span><span class=line><span class=cl>Tablespace: &#34;ts_foobar01&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 也可以把表、数据库在表空间上的移动
+</span></span><span class=line><span class=cl>postgres=# CREATE TABLESPACE ts_foobar02 LOCATION &#39;/tmp/foobar02&#39;;
+</span></span><span class=line><span class=cl>CREATE TABLESPACE
+</span></span><span class=line><span class=cl>postgres=# ALTER DATABASE mydb SET TABLESPACE ts_foobar02;
+</span></span><span class=line><span class=cl>ALTER TABLE
+</span></span><span class=line><span class=cl>postgres=# ALTER TABLE t SET TABLESPACE ts_foobar02;
+</span></span><span class=line><span class=cl>ALTER TABLE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改表空间的默认用户
+</span></span><span class=line><span class=cl>postgres=# ALTER TABLESPACE ts_foobar OWNER TO &#39;foobar&#39;;
+</span></span><span class=line><span class=cl>postgres=# ALTER USER foobar SET default_tablespace = &#39;ts_foobar&#39;;
+</span></span></code></pre></div><p>当创建 cluster 时，默认会创建 <code>pg_global</code>、<code>pg_default</code> 两个 tablespace，其中前者保存了 cluster-wide 相关的数据，如 <code>pg_database</code>、<code>pg_group</code> 等，当然你不能在该 tablespace 下创建对象。</p><p>后者，则保存在 <code>$PGDATA/base</code> 目录下，是系统默认表空间，可通过 <code>set default tablespace=ts-name</code> 指定为其他表空间。</p><p>要注意的是，如果创建对象时没有指定 tablespace，它会按照上一级的对象所在 tablespace 创建相应的对象。如，创建 index 时默认与 table 相同；创建 table 时默认与 schema 相同，以此类推。</p><a class=anchor id=删除表空间></a><h2>删除表空间 <a href=#%e5%88%a0%e9%99%a4%e8%a1%a8%e7%a9%ba%e9%97%b4 aria-hidden=true>#</a></h2><p>如果删除时表空间中仍然有数据库，那么会报错，此时可以通过如下方式查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>postgres=# DROP TABLESPACE ts_foobar;
+</span></span><span class=line><span class=cl>ERROR:  tablespace &#34;ts_foobar&#34; is not empty
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看那些DBs保存在了该表空间中
+</span></span><span class=line><span class=cl>SELECT d.datname, t.spcname FROM pg_database d JOIN pg_tablespace t ON d.dattablespace = t.oid
+</span></span><span class=line><span class=cl>    WHERE t.spcname = &#39;ts_foobar&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 据说这个有效的，不过DBs的信息没有保存在pg_class中
+</span></span><span class=line><span class=cl>SELECT c.relname, t.spcname FROM pg_class c JOIN pg_tablespace t ON c.reltablespace = t.oid
+</span></span><span class=line><span class=cl>    WHERE t.spcname = &#39;ts_foobar&#39;;
+</span></span></code></pre></div><a class=anchor id=tablesapce-与-schema-的区别></a><h2>tablesapce 与 schema 的区别 <a href=#tablesapce-%e4%b8%8e-schema-%e7%9a%84%e5%8c%ba%e5%88%ab aria-hidden=true>#</a></h2><p>tablespace 实际只影响到 cluster 中数据的存储位置；而 schema 则会影响到数据在 database 中的逻辑组织方式，也就是会影响到一个对象名的解析，而 tablespace 则不会。</p><p>也就是说，当创建了 tablespace 之后，实际就不需要再关心了，而 schema 则不同。</p><a class=anchor id=权限管理></a><h1>权限管理 <a href=#%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h1><p>PG 中所有的权限都和用户 (或者角色) 挂钩，超级用户是有允许任意操作对象的，而普通用户只能操作自己创建的对象。另外，public 是一个特殊角色，代表所有人，有些对象是给 public 角色赋值默认权限的，也就是默认所有人都有权限的。</p><p>除了 cluster 是通过 <code>pg_hba.conf</code> 进行权限控制外，其它对象，如 database、schema、tablespace、table 等，都是通过 grant 和 revoke 赋权或者回收的。</p><a class=anchor id=pg_hbaconf></a><h2>pg_hba.conf <a href=#pg_hbaconf aria-hidden=true>#</a></h2><p>全称为 PG Host-Based Authentication，通过该配置文件确定那些用户可以登陆到那些数据库，并包括了其认证方式。该文件在 <code>$PGDATA</code> 目录下，也可以登陆 PG 之后通过 <code>SHOW hba_file</code> 查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># TYPE   DATABASE  USER    CIDR-ADDRESS      METHOD
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TYPE         : 指定连接PG的方式
+</span></span><span class=line><span class=cl>    local        本地套接字
+</span></span><span class=line><span class=cl>    host         使用TCP/IP连接，包括SSL以及非SSL
+</span></span><span class=line><span class=cl>    hostssl      只能只用SSL
+</span></span><span class=line><span class=cl>    hostnossl    不能使用SSL
+</span></span><span class=line><span class=cl>DATABASE     : 指定的数据库名，可以指定多个数据库，通过&#39;,&#39;分割，其中all的优先级最低
+</span></span><span class=line><span class=cl>USER         : 用于指定那个用户，同样可以使用&#39;,&#39;分割
+</span></span><span class=line><span class=cl>CIDR-ADDRESS : local方式可以直接省略，其它可以使用主机或者某个网段
+</span></span><span class=line><span class=cl>METHOD       : 认证方式
+</span></span><span class=line><span class=cl>    peer         只用于本地，直接使用当前用户名作为数据库的登陆用户
+</span></span><span class=line><span class=cl>    ident        本地用户登陆认证方式，只要系统中有该用户即可，通过pg_ident.conf映射
+</span></span><span class=line><span class=cl>    md5          密码以md5方式传递给数据库
+</span></span><span class=line><span class=cl>    password     密码以明文方式传递给数据库
+</span></span><span class=line><span class=cl>    trust        不需要用户名既可以登陆
+</span></span><span class=line><span class=cl>    reject       拒绝认证
+</span></span></code></pre></div><p>接下来看看 PG 中的对象权限管理。</p><a class=anchor id=对象权限管理简介></a><h2>对象权限管理简介 <a href=#%e5%af%b9%e8%b1%a1%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h2><p>在 PG 中，对于不同的对象，可以进行配置的权限是不同的，详细内容查看 <a href=https://www.postgresql.org/docs/9.5/static/sql-grant.html>PostgreSQL Documentation - GRANT</a> 的定义。例如，数据库有 <code>CREATE</code>、<code>CONNECT</code> 等权限，而表有 <code>SELECT</code>、<code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code>、<code>TRUNCATE</code> 等权限。</p><p>另外，<code>WITH ADMIN OPTION</code> 表示被赋予权限的用户，还可以将对应的权限赋予给其他人。</p><a class=anchor id=删除角色></a><h4>删除角色 <a href=#%e5%88%a0%e9%99%a4%e8%a7%92%e8%89%b2 aria-hidden=true>#</a></h4><p>如果要删除的用户还拥有数据库对象，或者这个用户在某些数据库对象上还拥有权限时，不能删除。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 重新将某个用户的权限赋值给另外的用户，如果不知道可以赋给postgres
+</span></span><span class=line><span class=cl>REASSIGN OWNED BY &#39;olduser&#39; TO &#39;newuser&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除赋给该用户的所有权限
+</span></span><span class=line><span class=cl>DROP OWNED BY &#39;olduser&#39;;
+</span></span></code></pre></div><a class=anchor id=角色与用户的关系></a><h4>角色与用户的关系 <a href=#%e8%a7%92%e8%89%b2%e4%b8%8e%e7%94%a8%e6%88%b7%e7%9a%84%e5%85%b3%e7%b3%bb aria-hidden=true>#</a></h4><p>在 PostgreSQL 中，实际上这是两个完全相同的对象，唯一的区别是在通过 <code>CREATE USER</code> 命令创建时会默认添加 <code>LOGIN</code> 权限。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 只创建角色，则在尝试登陆的时候会报错
+</span></span><span class=line><span class=cl>postgres=# CREATE ROLE foobar1 PASSWORD &#39;kidding&#39;;
+</span></span><span class=line><span class=cl>----- 添加登陆的权限
+</span></span><span class=line><span class=cl>postgres=# ALTER ROLE foobar1 LOGIN;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建用户时，默认会添加LOGIN权限
+</span></span><span class=line><span class=cl>postgres=# CREATE USER foobar2 PASSWORD &#39;kidding&#39;;
+</span></span><span class=line><span class=cl>postgres=# CREATE ROLE foobar2 PASSWORD &#39;kidding&#39; LOGIN;
+</span></span></code></pre></div><p>在 PG 中，默认有一个 public 角色，代表所有人的意思。</p><a class=anchor id=查看权限></a><h4>查看权限 <a href=#%e6%9f%a5%e7%9c%8b%e6%9d%83%e9%99%90 aria-hidden=true>#</a></h4><p>首先介绍下对象权限的查看方式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>postgres=# SELECT relname, relacl FROM pg_class WHERE relname = &#39;object-name&#39; AND relkind=&#39;r&#39;;
+</span></span><span class=line><span class=cl>postgres=# \dp+ pg_catalog.pg_statistic;
+</span></span><span class=line><span class=cl>                                      Access privileges
+</span></span><span class=line><span class=cl>   Schema   |     Name     | Type  |     Access privileges     | Column privileges | Policies
+</span></span><span class=line><span class=cl>------------+--------------+-------+---------------------------+-------------------+----------
+</span></span><span class=line><span class=cl> pg_catalog | pg_statistic | table | postgres=arwdDxt/postgres |                   |
+</span></span></code></pre></div><p>除了上述方式之外，还有一个比较复杂的 SQL 用于查看，详细可以查看脚本中指定的内容，在此解释一下 Access privileges 的含义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>postgres=arwdDxt/postgres
+</span></span><span class=line><span class=cl>    表示postgres这个角色所拥有的权限，对于public则为空；对应的权限为arwdDxt，相应含义如下；该权限是postgres所赋于的。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>rolename=xxxx -- privileges granted to a role
+</span></span><span class=line><span class=cl>        =xxxx -- privileges granted to PUBLIC
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            r -- SELECT (&#34;read&#34;)
+</span></span><span class=line><span class=cl>            w -- UPDATE (&#34;write&#34;)
+</span></span><span class=line><span class=cl>            a -- INSERT (&#34;append&#34;)
+</span></span><span class=line><span class=cl>            d -- DELETE
+</span></span><span class=line><span class=cl>            D -- TRUNCATE
+</span></span><span class=line><span class=cl>            x -- REFERENCES
+</span></span><span class=line><span class=cl>            t -- TRIGGER
+</span></span><span class=line><span class=cl>            X -- EXECUTE
+</span></span><span class=line><span class=cl>            U -- USAGE
+</span></span><span class=line><span class=cl>            C -- CREATE
+</span></span><span class=line><span class=cl>            c -- CONNECT
+</span></span><span class=line><span class=cl>            T -- TEMPORARY
+</span></span><span class=line><span class=cl>      arwdDxt -- ALL PRIVILEGES (for tables, varies for other objects)
+</span></span><span class=line><span class=cl>            * -- grant option for preceding privilege
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        /yyyy -- role that granted this privilege
+</span></span></code></pre></div><a class=anchor id=数据库级别></a><h2>数据库级别 <a href=#%e6%95%b0%e6%8d%ae%e5%ba%93%e7%ba%a7%e5%88%ab aria-hidden=true>#</a></h2><p>数据库级别的权限，包括允许连接数据库，允许在数据库中创建schema。</p><ul><li>默认创建后，允许 public 角色 (任何人) 连接；</li><li>默认创建后，不允许除了超级用户和 owner 之外的任何人在数据库中创建 schema；</li><li>默认创建后，会自动创建名为 public 的 schema，这个 schema 的 all 权限已经赋予给 public 角色，即允许任何人在里面创建对象。</li></ul><p>这意味着，默认所有角色可以在新建的数据库中创建对象。</p><a class=anchor id=schema-级别></a><h2>schema 级别 <a href=#schema-%e7%ba%a7%e5%88%ab aria-hidden=true>#</a></h2><p>schema 级别的权限，包括允许查看 schema 中的对象，允许在 schema 中创建对象。默认情况下新建的 schema 的权限不会赋予给 public 角色，因此除了超级用户和 owner，任何人都没有权限查看 schema 中的对象或者在 schema 中新建对象。</p><a class=anchor id=schema-和-database-权限></a><h1>schema 和 database 权限 <a href=#schema-%e5%92%8c-database-%e6%9d%83%e9%99%90 aria-hidden=true>#</a></h1><p>关于 schema 使用，需要特别注意，同一个 schema 中可能会有其它用户读取，也就是说，千万不要把自己的对象创建到别人的 schema下面，那很危险。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>According to the SQL standard, the owner of a schema always owns all objects within it.
+</span></span><span class=line><span class=cl>PostgreSQL allows schemas to contain objects owned by users other than the schema owner.
+</span></span><span class=line><span class=cl>This can happen only if the schema owner grants the CREATE privilege on his schema to
+</span></span><span class=line><span class=cl>someone else, or a superuser chooses to create objects in it.
+</span></span></code></pre></div><p>如上面手册中的内容，schema 的 owner 默认是该 schema 下所有对象的 owner；同时 PG 还允许用户在别人的 schema 下创建对象，所以一个对象可能属于 &ldquo;两个&rdquo; owner；而且，如果 schema 的 owner 拥有 drop 权限，那么就悲剧了。</p><a class=anchor id=示例1></a><h3>示例1 <a href=#%e7%a4%ba%e4%be%8b1 aria-hidden=true>#</a></h3><p>r1 创建了一个 schema r1，并把这个 schema 的所有权限给了 r2；此时，r2 和超级用户 postgres 分别在 r1 这个 schema 下面创建了一个表；此时，r1 可以把 r2 和 postgres 在 schema r1 下创建的表删掉。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>postgres=# CREATE ROLE r1 LOGIN;
+</span></span><span class=line><span class=cl>CREATE ROLE
+</span></span><span class=line><span class=cl>postgres=# CREATE ROLE r2 LOGIN;
+</span></span><span class=line><span class=cl>CREATE ROLE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>postgres=# GRANT ALL ON DATABASE postgres TO r1;
+</span></span><span class=line><span class=cl>GRANT
+</span></span><span class=line><span class=cl>postgres=# GRANT ALL ON DATABASE postgres TO r2;
+</span></span><span class=line><span class=cl>GRANT
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>postgres=# \c postgres r1;
+</span></span><span class=line><span class=cl>You are now connected to database &#34;postgres&#34; as user &#34;r1&#34;.
+</span></span><span class=line><span class=cl>postgres=&gt; CREATE SCHEMA r1;
+</span></span><span class=line><span class=cl>CREATE SCHEMA
+</span></span><span class=line><span class=cl>postgres=&gt; GRANT ALL ON SCHEMA r1 TO r2;
+</span></span><span class=line><span class=cl>GRANT
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>postgres=&gt; \c postgres r2;
+</span></span><span class=line><span class=cl>You are now connected to database &#34;postgres&#34; as user &#34;r2&#34;.
+</span></span><span class=line><span class=cl>postgres=&gt; CREATE TABLE r1.t(id int);
+</span></span><span class=line><span class=cl>CREATE TABLE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>postgres=&gt; \c postgres postgres
+</span></span><span class=line><span class=cl>postgres=# CREATE TABLE r1.t1(id int);
+</span></span><span class=line><span class=cl>CREATE TABLE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>postgres=# \c postgres r1
+</span></span><span class=line><span class=cl>postgres=&gt; DROP TABLE r1.t;
+</span></span><span class=line><span class=cl>DROP TABLE
+</span></span><span class=line><span class=cl>postgres=&gt; DROP TABLE r1.t1;
+</span></span><span class=line><span class=cl>DROP TABLE
+</span></span></code></pre></div><p>r1 甚至可以直接 <code>DROP SCHEMA CASCADE</code> 来删除整个 schema。</p><a class=anchor id=示例2></a><h3>示例2 <a href=#%e7%a4%ba%e4%be%8b2 aria-hidden=true>#</a></h3><p>对于 database 的 owner 也存在这个问题，它同样具有删除 database 中任何其他用户创建的对象的权力。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-zed data-lang=zed><span class=line><span class=cl><span class=o>-----</span><span class=w> </span><span class=err>添加创建数据库的权限</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>postgres</span><span class=o>=</span><span class=err>#</span><span class=w> </span><span class=n>ALTER</span><span class=w> </span><span class=n>USER</span><span class=w> </span><span class=n>r1</span><span class=w> </span><span class=n>WITH</span><span class=w> </span><span class=n>CREATEDB</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>-----</span><span class=w> </span><span class=err>普通用户</span><span class=n>r1</span><span class=err>创建的数据库</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>postgres</span><span class=o>=</span><span class=err>#</span><span class=w> </span><span class=err>\</span><span class=n>c</span><span class=w> </span><span class=n>postgres</span><span class=w> </span><span class=n>r1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>You</span><span class=w> </span><span class=n>are</span><span class=w> </span><span class=n>now</span><span class=w> </span><span class=n>connected</span><span class=w> </span><span class=n>to</span><span class=w> </span><span class=n>database</span><span class=w> </span><span class=err>&#34;</span><span class=n>postgres</span><span class=err>&#34;</span><span class=w> </span><span class=n>as</span><span class=w> </span><span class=n>user</span><span class=w> </span><span class=err>&#34;</span><span class=n>r1</span><span class=err>&#34;</span><span class=p>.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>postgres</span><span class=o>=&gt;</span><span class=w> </span><span class=n>CREATE</span><span class=w> </span><span class=n>DATABASE</span><span class=w> </span><span class=n>db1</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>CREATE</span><span class=w> </span><span class=n>DATABASE</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>postgres</span><span class=o>=&gt;</span><span class=w> </span><span class=n>GRANT</span><span class=w> </span><span class=n>ALL</span><span class=w> </span><span class=n>ON</span><span class=w> </span><span class=n>DATABASE</span><span class=w> </span><span class=n>db1</span><span class=w> </span><span class=n>TO</span><span class=w> </span><span class=n>r2</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>GRANT</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>-----</span><span class=w> </span><span class=err>其他用户在这个数据库中创建对象</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>postgres</span><span class=o>=&gt;</span><span class=w> </span><span class=err>\</span><span class=n>c</span><span class=w> </span><span class=n>db1</span><span class=w> </span><span class=n>r2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>You</span><span class=w> </span><span class=n>are</span><span class=w> </span><span class=n>now</span><span class=w> </span><span class=n>connected</span><span class=w> </span><span class=n>to</span><span class=w> </span><span class=n>database</span><span class=w> </span><span class=err>&#34;</span><span class=n>db1</span><span class=err>&#34;</span><span class=w> </span><span class=n>as</span><span class=w> </span><span class=n>user</span><span class=w> </span><span class=err>&#34;</span><span class=n>r2</span><span class=err>&#34;</span><span class=p>.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>db1</span><span class=o>=&gt;</span><span class=w> </span><span class=n>CREATE</span><span class=w> </span><span class=n>SCHEMA</span><span class=w> </span><span class=n>r2</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>CREATE</span><span class=w> </span><span class=n>SCHEMA</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>db1</span><span class=o>=&gt;</span><span class=w> </span><span class=n>CREATE</span><span class=w> </span><span class=n>TABLE</span><span class=w> </span><span class=n>r2</span><span class=p>.</span><span class=n>t</span><span class=p>(</span><span class=n>id</span><span class=w> </span><span class=n>int</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>CREATE</span><span class=w> </span><span class=n>TABLE</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>db1</span><span class=o>=&gt;</span><span class=w> </span><span class=err>\</span><span class=n>c</span><span class=w> </span><span class=n>db1</span><span class=w> </span><span class=n>postgres</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>You</span><span class=w> </span><span class=n>are</span><span class=w> </span><span class=n>now</span><span class=w> </span><span class=n>connected</span><span class=w> </span><span class=n>to</span><span class=w> </span><span class=n>database</span><span class=w> </span><span class=err>&#34;</span><span class=n>db1</span><span class=err>&#34;</span><span class=w> </span><span class=n>as</span><span class=w> </span><span class=n>user</span><span class=w> </span><span class=err>&#34;</span><span class=n>postgres</span><span class=err>&#34;</span><span class=p>.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>db1</span><span class=o>=</span><span class=err>#</span><span class=w> </span><span class=n>CREATE</span><span class=w> </span><span class=n>TABLE</span><span class=w> </span><span class=n>t</span><span class=p>(</span><span class=n>id</span><span class=w> </span><span class=n>int</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>CREATE</span><span class=w> </span><span class=n>TABLE</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>-----</span><span class=w> </span><span class=err>数据库的</span><span class=n>OWNER</span><span class=err>不能直接删数据库中的对象</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>postgres</span><span class=o>=&gt;</span><span class=w> </span><span class=err>\</span><span class=n>c</span><span class=w> </span><span class=n>db1</span><span class=w> </span><span class=n>r1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>You</span><span class=w> </span><span class=n>are</span><span class=w> </span><span class=n>now</span><span class=w> </span><span class=n>connected</span><span class=w> </span><span class=n>to</span><span class=w> </span><span class=n>database</span><span class=w> </span><span class=err>&#34;</span><span class=n>db1</span><span class=err>&#34;</span><span class=w> </span><span class=n>as</span><span class=w> </span><span class=n>user</span><span class=w> </span><span class=err>&#34;</span><span class=n>r1</span><span class=err>&#34;</span><span class=p>.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>db1</span><span class=o>=&gt;</span><span class=w> </span><span class=n>DROP</span><span class=w> </span><span class=n>TABLE</span><span class=w> </span><span class=n>r2</span><span class=p>.</span><span class=n>t</span><span class=w> </span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>ERROR</span><span class=o>:</span><span class=w>  </span><span class=kd>permission</span><span class=w> </span><span class=n>denied</span><span class=w> </span><span class=n>for</span><span class=w> </span><span class=n>schema</span><span class=w> </span><span class=n>r2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>db1</span><span class=o>=&gt;</span><span class=w> </span><span class=n>DROP</span><span class=w> </span><span class=n>TABLE</span><span class=w> </span><span class=n>public</span><span class=p>.</span><span class=n>t</span><span class=w> </span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>ERROR</span><span class=o>:</span><span class=w>  </span><span class=n>must</span><span class=w> </span><span class=n>be</span><span class=w> </span><span class=n>owner</span><span class=w> </span><span class=n>of</span><span class=w> </span><span class=kn>relation</span><span class=w> </span><span class=n>t</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>db1</span><span class=o>=&gt;</span><span class=w> </span><span class=n>DROP</span><span class=w> </span><span class=n>SCHEMA</span><span class=w> </span><span class=n>r2</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>ERROR</span><span class=o>:</span><span class=w>  </span><span class=n>must</span><span class=w> </span><span class=n>be</span><span class=w> </span><span class=n>owner</span><span class=w> </span><span class=n>of</span><span class=w> </span><span class=n>schema</span><span class=w> </span><span class=n>r2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>db1</span><span class=o>=&gt;</span><span class=w> </span><span class=n>DROP</span><span class=w> </span><span class=n>SCHEMA</span><span class=w> </span><span class=n>public</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>ERROR</span><span class=o>:</span><span class=w>  </span><span class=n>must</span><span class=w> </span><span class=n>be</span><span class=w> </span><span class=n>owner</span><span class=w> </span><span class=n>of</span><span class=w> </span><span class=n>schema</span><span class=w> </span><span class=n>public</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>-----</span><span class=w> </span><span class=err>但是可以直接删库</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>postgres</span><span class=o>=&gt;</span><span class=w> </span><span class=n>DROP</span><span class=w> </span><span class=n>DATABASE</span><span class=w> </span><span class=n>db1</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>DROP</span><span class=w> </span><span class=n>DATABASE</span><span class=w>
+</span></span></span></code></pre></div><a class=anchor id=建议></a><h2>建议 <a href=#%e5%bb%ba%e8%ae%ae aria-hidden=true>#</a></h2><p>介于此，建议用户使用超级用户创建 schema 和 database，然后再把 schema 和 database 的读写权限给普通用户，这样就不怕被误删了，因为超级用户本来就有所有权限。</p><p>还有一种方法是创建事件触发器，当执行 DROP 命令时，只有 OWNER 和超级用户能删对应的对象。</p><a class=anchor id=只读用户设计></a><h1>只读用户设计 <a href=#%e5%8f%aa%e8%af%bb%e7%94%a8%e6%88%b7%e8%ae%be%e8%ae%a1 aria-hidden=true>#</a></h1><p>在一些企业里面，通常会在数据库中创建一些只读用户，这些只读用户可以查看某些用户的对象，但是不能修改或删除这些对象的数据。</p><p>这种用户通常可以给开发人员，运营人员使用，或者数据分析师 等角色的用户使用。</p><p>因为他们可能关注的是数据本身，并且为了防止他们误操作修改或删除线上的数据，所以限制他们的用户只有只读的权限。</p><p>为了满足本文的需求, 创建读写用户的只读影子用户</p><a class=anchor id=1-使用超级用户创建读写账号创建数据库-创建schema></a><h4>1. 使用超级用户创建读写账号，创建数据库, 创建schema <a href=#1-%e4%bd%bf%e7%94%a8%e8%b6%85%e7%ba%a7%e7%94%a8%e6%88%b7%e5%88%9b%e5%bb%ba%e8%af%bb%e5%86%99%e8%b4%a6%e5%8f%b7%e5%88%9b%e5%bb%ba%e6%95%b0%e6%8d%ae%e5%ba%93-%e5%88%9b%e5%bb%baschema aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>postgres=# CREATE ROLE appuser LOGIN;
+</span></span><span class=line><span class=cl>CREATE ROLE
+</span></span><span class=line><span class=cl>postgres=# CREATE DATABASE appdb;
+</span></span><span class=line><span class=cl>CREATE DATABASE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 使用超级用户创建schema
+</span></span><span class=line><span class=cl>postgres=# \c appdb postgres
+</span></span><span class=line><span class=cl>You are now connected to database &#34;appdb&#34; as user &#34;postgres&#34;.
+</span></span><span class=line><span class=cl>appdb=# CREATE SCHEMA appuser;
+</span></span><span class=line><span class=cl>CREATE SCHEMA
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 赋权
+</span></span><span class=line><span class=cl>appdb=# GRANT CONNECT ON DATABASE appdb TO appuser;   -- 只赋予连接权限
+</span></span><span class=line><span class=cl>GRANT
+</span></span><span class=line><span class=cl>appdb=# GRANT ALL ON SCHEMA appuser TO appuser;       -- 值赋予读和写权限
+</span></span><span class=line><span class=cl>GRANT
+</span></span></code></pre></div><a class=anchor id=2-假设该读写账号已经创建了一些对象></a><h4>2. 假设该读写账号已经创建了一些对象 <a href=#2-%e5%81%87%e8%ae%be%e8%af%a5%e8%af%bb%e5%86%99%e8%b4%a6%e5%8f%b7%e5%b7%b2%e7%bb%8f%e5%88%9b%e5%bb%ba%e4%ba%86%e4%b8%80%e4%ba%9b%e5%af%b9%e8%b1%a1 aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>postgres=# \c appdb appuser
+</span></span><span class=line><span class=cl>appdb=&gt; CREATE TABLE tbl1(id INT);
+</span></span><span class=line><span class=cl>CREATE TABLE
+</span></span><span class=line><span class=cl>appdb=&gt; CREATE TABLE tbl2(id INT);
+</span></span><span class=line><span class=cl>CREATE TABLE
+</span></span><span class=line><span class=cl>appdb=&gt; CREATE TABLE tbl3(id INT);
+</span></span><span class=line><span class=cl>CREATE TABLE
+</span></span></code></pre></div><a class=anchor id=3-创建只读影子账号></a><h4>3. 创建只读影子账号 <a href=#3-%e5%88%9b%e5%bb%ba%e5%8f%aa%e8%af%bb%e5%bd%b1%e5%ad%90%e8%b4%a6%e5%8f%b7 aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>postgres=# CREATE ROLE readonly LOGIN;
+</span></span><span class=line><span class=cl>CREATE ROLE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>postgres=# \c appdb postgres
+</span></span><span class=line><span class=cl>You are now connected to database &#34;appdb&#34; as user &#34;postgres&#34;.
+</span></span><span class=line><span class=cl>appdb=# GRANT CONNECT ON DATABASE appdb TO readonly;
+</span></span><span class=line><span class=cl>GRANT
+</span></span><span class=line><span class=cl>appdb=# GRANT USAGE ON SCHEMA appuser TO readonly;
+</span></span><span class=line><span class=cl>GRANT
+</span></span></code></pre></div><a class=anchor id=4-创建隐藏敏感信息的视图></a><h4>4. 创建隐藏敏感信息的视图 <a href=#4-%e5%88%9b%e5%bb%ba%e9%9a%90%e8%97%8f%e6%95%8f%e6%84%9f%e4%bf%a1%e6%81%af%e7%9a%84%e8%a7%86%e5%9b%be aria-hidden=true>#</a></h4><p>假设tbl2是敏感信息表，需要加密后给只读用户看</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>postgres=# \c appdb appuser
+</span></span><span class=line><span class=cl>appdb=&gt; CREATE VIEW v AS SELECT md5(id::text) FROM tbl2;
+</span></span><span class=line><span class=cl>CREATE VIEW
+</span></span></code></pre></div><a class=anchor id=5-修改已有权限></a><h4>5. 修改已有权限 <a href=#5-%e4%bf%ae%e6%94%b9%e5%b7%b2%e6%9c%89%e6%9d%83%e9%99%90 aria-hidden=true>#</a></h4><p>另外还提供了一种方法，但是一定要指定 schema，所以用户自己要注意，如果要对所有 schema 操作，需要把所有的 schema 都写进去。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>grant select on all tables in schema public,schema1,schema2,schema3 to ro;
+</span></span></code></pre></div><p>并且这种方法还有一个弊端，如果这些schema下面有其他用户创建的对象，也会被赋予，如果赋权的账号没有权限，则会报错。</p><a class=anchor id=6-回收敏感表的权限></a><h4>6. 回收敏感表的权限 <a href=#6-%e5%9b%9e%e6%94%b6%e6%95%8f%e6%84%9f%e8%a1%a8%e7%9a%84%e6%9d%83%e9%99%90 aria-hidden=true>#</a></h4><p>因为前面已经排除赋予了，所以不需要回收。</p><a class=anchor id=7-修改新建对象的默认权限></a><h4>7. 修改新建对象的默认权限 <a href=#7-%e4%bf%ae%e6%94%b9%e6%96%b0%e5%bb%ba%e5%af%b9%e8%b1%a1%e7%9a%84%e9%bb%98%e8%ae%a4%e6%9d%83%e9%99%90 aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>appdb=&gt; alter default privileges for role appuser grant select on tables to ro;
+</span></span><span class=line><span class=cl>ALTER DEFAULT PRIVILEGES
+</span></span><span class=line><span class=cl>appdb=&gt; \ddp+
+</span></span><span class=line><span class=cl>               Default access privileges
+</span></span><span class=line><span class=cl>  Owner   | Schema | Type  |     Access privileges
+</span></span><span class=line><span class=cl>----------+--------+-------+---------------------------
+</span></span><span class=line><span class=cl> appuser  |        | table | appuser=arwdDxt/appuser  +
+</span></span><span class=line><span class=cl>          |        |       | ro=r/appuser
+</span></span><span class=line><span class=cl>{% endhighlight %}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#### 8. 未来如果有新增的敏感表，先创建视图，同时回收表的权限
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{% highlight text %}
+</span></span><span class=line><span class=cl>appuser=&gt; create table tbl4(id int);
+</span></span><span class=line><span class=cl>CREATE TABLE
+</span></span><span class=line><span class=cl>appuser=&gt; create view v2 as select md5(id::text) from tbl4;
+</span></span><span class=line><span class=cl>CREATE VIEW
+</span></span><span class=line><span class=cl>appuser=&gt; revoke select on tbl4 from ro;
+</span></span><span class=line><span class=cl>REVOKE
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#pg-结构简介>PG 结构简介</a><ul><li><a href=#schema>Schema</a></li><li><a href=#databases>Databases</a></li></ul></li><li><a href=#表空间>表空间</a><ul><li><a href=#删除表空间>删除表空间</a></li><li><a href=#tablesapce-与-schema-的区别>tablesapce 与 schema 的区别</a></li></ul></li><li><a href=#权限管理>权限管理</a><ul><li><a href=#pg_hbaconf>pg_hba.conf</a></li><li><a href=#对象权限管理简介>对象权限管理简介</a></li><li><a href=#数据库级别>数据库级别</a></li><li><a href=#schema-级别>schema 级别</a></li></ul></li><li><a href=#schema-和-database-权限>schema 和 database 权限</a><ul><li></li><li><a href=#建议>建议</a></li></ul></li><li><a href=#只读用户设计>只读用户设计</a><ul><li></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

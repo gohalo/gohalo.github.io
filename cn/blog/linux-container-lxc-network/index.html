@@ -1,0 +1,82 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>LXC 网络设置相关 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="LXC 本身就是基于内核的 Namespace、Cgroup 的隔离技术，对于网络同样使用了网络上常用的虚拟技术，包括 veth、vlan、macvlan 等等。
+在此仅介绍一下 LXC 中与网络相关的使用方法。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>LXC 网络设置相关</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2015-03-08</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/container/ role=button>container</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>LXC 本身就是基于内核的 Namespace、Cgroup 的隔离技术，对于网络同样使用了网络上常用的虚拟技术，包括 veth、vlan、macvlan 等等。</p><p>在此仅介绍一下 LXC 中与网络相关的使用方法。</p><a class=anchor id=网络设置></a><h1>网络设置 <a href=#%e7%bd%91%e7%bb%9c%e8%ae%be%e7%bd%ae aria-hidden=true>#</a></h1><p>创建完容器之后，默认会将容器的配置文件保存在 <code>/var/lib/lxc/centos/config</code>，可以参考网络相关的配置，默认使用 veth，此时可以自动联网。</p><p>网络相关的设置可以查看源码中的 lxc-net 脚本，通过如下命令查看容器中的网络配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 容器中的网络设置
+</span></span><span class=line><span class=cl>[root@centos ~]# ip address show eth0
+</span></span><span class=line><span class=cl>23: eth0@if24: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
+</span></span><span class=line><span class=cl>    link/ether fe:cf:69:db:e7:3c brd ff:ff:ff:ff:ff:ff link-netnsid 0
+</span></span><span class=line><span class=cl>    inet 192.168.122.118/24 brd 192.168.122.255 scope global dynamic eth0
+</span></span><span class=line><span class=cl>       valid_lft 3542sec preferred_lft 3542sec
+</span></span><span class=line><span class=cl>    inet6 fe80::fccf:69ff:fedb:e73c/64 scope link
+</span></span><span class=line><span class=cl>       valid_lft forever preferred_lft forever
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 容器中的路由设置
+</span></span><span class=line><span class=cl>[root@centos ~]# ip route show
+</span></span><span class=line><span class=cl>default via 192.168.122.1 dev eth0
+</span></span><span class=line><span class=cl>169.254.0.0/16 dev eth0  scope link  metric 1023
+</span></span><span class=line><span class=cl>192.168.122.0/24 dev eth0  proto kernel  scope link  src 192.168.122.118
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- DNS解析地址
+</span></span><span class=line><span class=cl>[root@centos ~]# cat /etc/resolv.conf
+</span></span><span class=line><span class=cl>; generated by /usr/sbin/dhclient-script
+</span></span><span class=line><span class=cl>nameserver 192.168.122.1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 测试下能否ping通外部网络
+</span></span><span class=line><span class=cl>[root@centos ~]# ping www.hao123.com  -c 3
+</span></span><span class=line><span class=cl>PING hao123.n.shifen.com (180.149.132.3) 56(84) bytes of data.
+</span></span><span class=line><span class=cl>64 bytes from 180.149.132.3: icmp_seq=1 ttl=53 time=40.3 ms
+</span></span><span class=line><span class=cl>64 bytes from 180.149.132.3: icmp_seq=2 ttl=53 time=34.1 ms
+</span></span><span class=line><span class=cl>64 bytes from 180.149.132.3: icmp_seq=3 ttl=53 time=32.6 ms
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>--- hao123.n.shifen.com ping statistics ---
+</span></span><span class=line><span class=cl>3 packets transmitted, 3 received, 0% packet loss, time 2002ms
+</span></span><span class=line><span class=cl>rtt min/avg/max/mdev = 32.694/35.728/40.303/3.291 ms
+</span></span></code></pre></div><p>其中与网络相关的默认的配置如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>lxc.network.type = veth
+</span></span><span class=line><span class=cl>lxc.network.flags = up
+</span></span><span class=line><span class=cl>lxc.network.link = virbr0
+</span></span><span class=line><span class=cl>lxc.network.hwaddr = fe:cf:69:db:e7:3c
+</span></span></code></pre></div><p>也就是说，如上的配置文件采用的是 veth (Virtual Ethernet Interface) 模式。该模式会创建一对网络设备，其中一端在容器中，另一端会添加到 bridge (通过 lxc.network.link 指定)。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看网桥的设置
+</span></span><span class=line><span class=cl># brctl show virbr0
+</span></span><span class=line><span class=cl>bridge name     bridge id               STP enabled     interfaces
+</span></span><span class=line><span class=cl>virbr0          8000.52540054901b       yes             vethXTBOA0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看主机是否打开了路由转发
+</span></span><span class=line><span class=cl># cat /proc/sys/net/ipv4/ip_forward
+</span></span><span class=line><span class=cl>1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看iptables的SNAT设置
+</span></span><span class=line><span class=cl># iptables -nL POSTROUTING -t nat --line-number
+</span></span><span class=line><span class=cl>Chain POSTROUTING (policy ACCEPT)
+</span></span><span class=line><span class=cl>num  target     prot opt source               destination
+</span></span><span class=line><span class=cl>1    MASQUERADE  tcp  --  192.168.122.0/24    !192.168.122.0/24     masq ports: 1024-65535
+</span></span><span class=line><span class=cl>2    MASQUERADE  udp  --  192.168.122.0/24    !192.168.122.0/24     masq ports: 1024-65535
+</span></span><span class=line><span class=cl>3    MASQUERADE  all  --  192.168.122.0/24    !192.168.122.0/24
+</span></span></code></pre></div><p>veth 实际上就是模拟了一对以太网络设备，类似于一个管道，从设备的一端传入，然后从另一端传出；两个设备处在同一个广播域中，而非基于 IP 的端对端的传输。</p><a class=anchor id=empty></a><h1>empty <a href=#empty aria-hidden=true>#</a></h1><p>配置文件中相关的网络配置如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># grep network /var/lib/lxc/centos/config
+</span></span><span class=line><span class=cl>lxc.network.type = empty
+</span></span><span class=line><span class=cl>lxc.network.hwaddr = fe:cf:69:db:e7:3c
+</span></span><span class=line><span class=cl>lxc.network.flags = up
+</span></span></code></pre></div><p>此时通过 lxc-info 查看时会发现，实际上是没有联网的，不过这正好符合预期，empty 网络定义如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>empty network type creates only the loopback interface
+</span></span></code></pre></div><p>此时会创建一个 Namespace，所以在 host 上是看不到 lo 设备的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看进程ID
+</span></span><span class=line><span class=cl># ps aux | grep &#39;lxc-start -n centos&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 通过procfs查看对应的namespace
+</span></span><span class=line><span class=cl># ls -l /proc/17923/ns/
+</span></span></code></pre></div><a class=anchor id=veth></a><h1>veth <a href=#veth aria-hidden=true>#</a></h1><p>如下是对于 veth 的描述。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>a peer network device is created with one side assigned to the container and
+</span></span><span class=line><span class=cl>the other side is attached to a bridge specified by the lxc.network.link.
+</span></span></code></pre></div><p>与网络相关的配置如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># grep network /var/lib/lxc/veth01/config
+</span></span><span class=line><span class=cl>lxc.network.type = veth
+</span></span><span class=line><span class=cl>lxc.network.flags = up
+</span></span><span class=line><span class=cl>lxc.network.link = virbr0
+</span></span><span class=line><span class=cl>lxc.network.hwaddr = fe:cf:69:db:e7:3c
+</span></span></code></pre></div><a class=anchor id=phys></a><h1>phys <a href=#phys aria-hidden=true>#</a></h1><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>an already existing interface specified by the lxc.network.link is assigned to the container
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p><a href=http://containerops.org/2013/11/19/lxc-networking/>Exploring LXC Networking</a>，介绍 LXC 网络不错的文章。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#网络设置>网络设置</a></li><li><a href=#empty>empty</a></li><li><a href=#veth>veth</a></li><li><a href=#phys>phys</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

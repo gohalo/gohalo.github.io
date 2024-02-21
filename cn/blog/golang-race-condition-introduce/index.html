@@ -1,0 +1,72 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Golang 竞态检查 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Race Conditions 是最隐晦而且难以捉摸的编程错误之一，一般会在代码部署到生产之后很长时间才会发作，但是如果要通过 Golang 进行并发编程，那么就会很容易遇到。
+Go 的并发机制使得编写干净并发代码变得容易，但它们并不能防止竞态条件。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Golang 竞态检查</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-03-08</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><p>Race Conditions 是最隐晦而且难以捉摸的编程错误之一，一般会在代码部署到生产之后很长时间才会发作，但是如果要通过 Golang 进行并发编程，那么就会很容易遇到。</p><p>Go 的并发机制使得编写干净并发代码变得容易，但它们并不能防止竞态条件。</p><a class=anchor id=示例></a><h1>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h1><p>当两个协程同时访问相同的变量并且访问中的至少一个是写入时，就会发生数据竞争。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=o>:=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>a</span> <span class=p>=</span> <span class=mi>2</span>
+</span></span><span class=line><span class=cl>        <span class=p>}()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;a is &#34;</span><span class=p>,</span> <span class=nx>a</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>time</span><span class=p>.</span><span class=nf>Sleep</span><span class=p>(</span><span class=mi>1</span> <span class=o>*</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>这里 main 和另一个匿名协程，都会访问 a 变量，并且有对 a 的写操作，所以会触发竞态条件。</p><a class=anchor id=使用方式></a><h1>使用方式 <a href=#%e4%bd%bf%e7%94%a8%e6%96%b9%e5%bc%8f aria-hidden=true>#</a></h1><p>在 Golang 中自带的 race 的检测，在命令行中，可以使用 <code>-race</code> 参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go test -race mypkg    
+</span></span><span class=line><span class=cl>$ go run -race mysrc.go 
+</span></span><span class=line><span class=cl>$ go build -race mycmd   
+</span></span><span class=line><span class=cl>$ go install -race mypkg 
+</span></span></code></pre></div><a class=anchor id=环境变量></a><h2>环境变量 <a href=#%e7%8e%af%e5%a2%83%e5%8f%98%e9%87%8f aria-hidden=true>#</a></h2><p>另外，还可以使用环境变量 <code>GORACE</code> 来设置一些参数，其格式为：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>GORACE=&#34;option1=val1 option2=val2&#34;
+</span></span></code></pre></div><p>可选的参数有：</p><ul><li><code>log_path</code> 输出结果的写入路径，默认 stderr ；</li><li><code>exitcode</code> 在检测到race后退出时的状态码，默认为 66 ；</li><li><code>strip_path_prefix</code> 输出结果中去掉文件夹前缀，这样更简洁，默认空字符串；</li><li><code>history_size</code> 每个协程的访问记录保存大小，可设置为 <code>32K * 2 ** history_size</code>，默认是 1 ；</li><li><code>halt_on_error</code> 是否程序在触发了第一次 data race 就退出，默认是 0 ；</li></ul><p>增加 <code>history_size</code> 大小可以避免出现 <code>failed to restore the stack</code> 的错误，但是代价是增加内存使用量。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ GORACE=&#34;strip_path_prefix=/tmp/test/&#34; go run -race
+</span></span><span class=line><span class=cl>a is  1
+</span></span><span class=line><span class=cl>==================
+</span></span><span class=line><span class=cl>WARNING: DATA RACE
+</span></span><span class=line><span class=cl>Write at 0x00c4200a4010 by goroutine 6:
+</span></span><span class=line><span class=cl>  main.main.func1()
+</span></span><span class=line><span class=cl>      main.go:11 +0x38
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Previous read at 0x00c4200a4010 by main goroutine:
+</span></span><span class=line><span class=cl>  main.main()
+</span></span><span class=line><span class=cl>      main.go:13 +0x88
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Goroutine 6 (running) created at:
+</span></span><span class=line><span class=cl>  main.main()
+</span></span><span class=line><span class=cl>      main.go:10 +0x7a
+</span></span><span class=line><span class=cl>==================
+</span></span><span class=line><span class=cl>Found 1 data race(s)
+</span></span><span class=line><span class=cl>exit status 66
+</span></span></code></pre></div><p>从报告可以看到一处 data race，在 <code>main.go:11</code> 处有协程 #6 对 <code>0x00c4200a4010</code> 的写入，在 <code>main.go:13</code> 处有 <code>main goroutine</code> 对同一变量 <code>0x00c4200a4010</code> 的读取操作。</p><a class=anchor id=规避手段></a><h1>规避手段 <a href=#%e8%a7%84%e9%81%bf%e6%89%8b%e6%ae%b5 aria-hidden=true>#</a></h1><p>遇到 race 后的解决办法一般来说有三种：channels、锁和原子操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=o>:=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>        <span class=nx>done</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>,</span> <span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>a</span> <span class=p>=</span> <span class=mi>2</span>
+</span></span><span class=line><span class=cl>                <span class=nx>done</span> <span class=o>&lt;-</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>        <span class=p>}()</span>
+</span></span><span class=line><span class=cl>        <span class=o>&lt;-</span><span class=nx>done</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;a is &#34;</span><span class=p>,</span> <span class=nx>a</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>time</span><span class=p>.</span><span class=nf>Sleep</span><span class=p>(</span><span class=mi>1</span> <span class=o>*</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述是通过管道来保证数据同步。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li><a href=https://blog.golang.org/race-detector>Introducing the Go Race Detector</a></li><li><a href=https://github.com/google/sanitizers/wiki/ThreadSanitizerAlgorithm>Thread Sanitizer Algorithm Introduce</a></li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#示例>示例</a></li><li><a href=#使用方式>使用方式</a><ul><li><a href=#环境变量>环境变量</a></li></ul></li><li><a href=#规避手段>规避手段</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

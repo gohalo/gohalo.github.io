@@ -1,0 +1,139 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 用户管理 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="MySQL 权限管理系统的主要功能是证实连接到一台给定主机的用户，并且赋予该用户在数据库上的相关权限，在认证的时候是通过用户名+主机名定义。
+在此，简单介绍下 MySQL 的权限管理，以及设置相应的用户管理。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL 用户管理</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-03-24</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a></div></div><hr><div class=content><p>MySQL 权限管理系统的主要功能是证实连接到一台给定主机的用户，并且赋予该用户在数据库上的相关权限，在认证的时候是通过用户名+主机名定义。</p><p>在此，简单介绍下 MySQL 的权限管理，以及设置相应的用户管理。</p><p><img alt=mysql src=images/account-logo.png class="mx-auto d-block"></p><a class=anchor id=权限管理></a><h1>权限管理 <a href=#%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h1><p>简单介绍一些用户管理的操作。</p><a class=anchor id=常用操作></a><h2>常用操作 <a href=#%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><p>在设置权限时可以使用通配符，其中 <code>%</code> 表示可以匹配任意长度字符， <code>_</code> 表示可以匹配单字符，常见的操作列举如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看帮助
+</span></span><span class=line><span class=cl>mysql&gt; help account management;
+</span></span><span class=line><span class=cl>mysql&gt; help create user;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 常用操作
+</span></span><span class=line><span class=cl>mysql&gt; SELECT current_user();                                        ← 查看当前用户
+</span></span><span class=line><span class=cl>mysql&gt; SELECT user,host,password FROM mysql.user;                    ← 查看用户信息
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GRANTS;                                                  ← 当前用户权限，会生成SQL语句
+</span></span><span class=line><span class=cl>mysql&gt; CREATE USER &#39;user&#39;@&#39;host&#39; IDENTIFIED BY &#39;password&#39;;           ← 创建用户
+</span></span><span class=line><span class=cl>mysql&gt; DROP USER &#39;user&#39;@&#39;host&#39;;                                      ← 删除用户
+</span></span><span class=line><span class=cl>mysql&gt; RENAME USER &#39;user&#39;@&#39;host&#39; TO &#39;fool&#39;@&#39;host&#39;;                   ← 修改用户名
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改密码
+</span></span><span class=line><span class=cl>mysql&gt; ALTER USER &#39;root&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;new-password&#39;;   ← 修改密码(recommand)
+</span></span><span class=line><span class=cl>mysql&gt; SET PASSWORD FOR &#39;root&#39;@&#39;localhost&#39;=PASSWORD(&#39;new-password&#39;); ← 修改密码
+</span></span><span class=line><span class=cl>mysql&gt; UPDATE mysql.user SET password=PASSWORD(&#39;new-password&#39;)
+</span></span><span class=line><span class=cl>       WHERE USER=&#39;root&#39; AND Host=&#39;127.0.0.1&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; UPDATE mysql.user SET password=&#39;&#39; WHERE user=&#39;root&#39;;          ← 清除密码
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH PRIVILEGES;
+</span></span><span class=line><span class=cl>$ mysqladmin -uROOT -pOLD_PASSWD password NEW_PASSWD                 ← 通过mysqladmin修改
+</span></span><span class=line><span class=cl>$ mysqladmin -uROOT -p flush-privileges
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 权限管理
+</span></span><span class=line><span class=cl>mysql&gt; GRANT ALL ON *.* TO &#39;user&#39;@&#39;%&#39; [IDENTIFIED BY &#39;password&#39;];
+</span></span><span class=line><span class=cl>mysql&gt; GRANT ALL PRIVILIGES ON [TABLE | DATABASE] student,course TO user1,user2;
+</span></span><span class=line><span class=cl>mysql&gt; GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY, ALTER,
+</span></span><span class=line><span class=cl>       DROP, REFERENCES, INDEX, CREATE VIEW, SHOW VIEW, CREATE ROUTINE,
+</span></span><span class=line><span class=cl>       ALTER ROUTINE, EXECUTE
+</span></span><span class=line><span class=cl>       ON db.tbl TO &#39;user&#39;@&#39;host&#39; [IDENTIFIED BY &#39;password&#39;];
+</span></span><span class=line><span class=cl>mysql&gt; GRANT ALL ON sampdb.* TO PUBLIC WITH GRANT OPTION;            ← 所有人，可以授权给其他人
+</span></span><span class=line><span class=cl>mysql&gt; GRANT UPDATE(col),SELECT ON TABLE tbl TO user;                ← 针对列赋值
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GRANTS [FOR &#39;user&#39;@&#39;host&#39;];                              ← 查看权限信息
+</span></span><span class=line><span class=cl>mysql&gt; REVOKE ALL ON *.* FROM &#39;user&#39;@&#39;host&#39;;                         ← 撤销权限
+</span></span><span class=line><span class=cl>mysql&gt; REVOKE SELECT(user, host), UPDATE(host) ON db.tbl FROM &#39;user&#39;@&#39;%&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看用户或者密码为空的用户
+</span></span><span class=line><span class=cl>mysql&gt; SELECT user, host, password FROM mysql.user
+</span></span><span class=line><span class=cl>       WHERE (user IS NULL OR user=&#39;&#39;) OR (password IS NULL OR password=&#39;&#39;);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 重命名用户
+</span></span><span class=line><span class=cl>mysql&gt; RENAME USER &#39;user1&#39;@&#39;%&#39; TO &#39;user2&#39;@&#39;%&#39;;
+</span></span></code></pre></div><p><code>WITH GRANT OPTION</code> 表示可以将被授予的权力再次授权给其他人；实际上，在上述操作中，如下的步骤是相同的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; CREATE USER &#39;user&#39; IDENTIFIED BY &#39;password&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; GRANT privileges TO &#39;user&#39;@&#39;host&#39; [WITH GRANT OPTION];
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH PRIVILEGS;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; GRANT privileges  TO &#39;user&#39;@&#39;host&#39; IDENTIFIED BY &#39;password&#39; [WITH GRANT OPTION];
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH PRIVILEGS;
+</span></span></code></pre></div><p>也就是将创建用户和授权是否分开处理。</p><a class=anchor id=取消grnat></a><h3>取消GRNAT <a href=#%e5%8f%96%e6%b6%88grnat aria-hidden=true>#</a></h3><p>默认 root 是有 GRANT 权限，为了安全考虑可以手动取消其权限。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; UPDATE mysql.user SET grant_priv=&#39;N&#39; WHERE user=&#39;ROOT&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH PRIVILEGES;
+</span></span></code></pre></div><p>注意，修改权限后需要重新登录生效！</p><a class=anchor id=用户设置></a><h1>用户设置 <a href=#%e7%94%a8%e6%88%b7%e8%ae%be%e7%bd%ae aria-hidden=true>#</a></h1><p>为了最小化用户权限，通常可以设置四类：</p><ul><li><code>monitor</code> 对内部表的只读权限，用于监控系统采集监控数据；</li><li><code>readonly</code> 业务表的只读权限，比如用于运营、开发排查问题等；</li><li><code>admin</code> 基本是最高权限，一些运维人员使用的帐号，例如建表、帐号管理等操作；</li><li><code>foobar</code> 业务帐号，也就是应用使用的帐号，业务业务表有增删改查的权限。</li></ul><p>接下来，我们看看如何管理这些帐号。</p><a class=anchor id=monitor></a><h2>monitor <a href=#monitor aria-hidden=true>#</a></h2><p>创建完用户之后，默认是有 <code>information_schema</code> 库的读权限的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; CREATE USER &#39;monitor&#39;@&#39;%&#39; IDENTIFIED BY &#39;password&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GRANTS FOR &#39;monitor&#39;@&#39;%&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; GRANT SELECT ON performance_schema.* TO &#39;monitor&#39;@&#39;%&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; GRANT SELECT ON mysql.* TO &#39;monitor&#39;@&#39;%&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; REVOKE SELECT ON mysql.* FROM &#39;monitor&#39;@&#39;%&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; REVOKE SELECT ON performance_schema.* FROM &#39;monitor&#39;@&#39;%&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; DROP USER &#39;monitor&#39;@&#39;%&#39;;
+</span></span></code></pre></div><a class=anchor id=readonly></a><h2>readonly <a href=#readonly aria-hidden=true>#</a></h2><p>与 <code>monitor</code> 用户相同，不过是针对的业务数据库授权。</p><a class=anchor id=admin></a><h2>admin <a href=#admin aria-hidden=true>#</a></h2><p>只针对管理平面的机器设置权限，也就是指定 IP 地址。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; CREATE USER &#39;admin&#39;@&#39;IP&#39; IDENTIFIED BY &#39;password&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; GRANT ALL PRIVILEGES ON *.* TO &#39;admin&#39;@&#39;IP&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; REVOKE ALL PRIVILEGES ON *.* FROM &#39;admin&#39;@&#39;IP&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; DROP USER &#39;admin&#39;@&#39;IP&#39;;
+</span></span></code></pre></div><a class=anchor id=root></a><h2>root <a href=#root aria-hidden=true>#</a></h2><p>保留只允许本地登陆的 root 用户，Always have a plan B 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; GRANT ALL PRIVILEGES ON *.* TO &#39;root&#39;@&#39;localhost&#39; WITH GRANT OPTION;
+</span></span></code></pre></div><p>Plan C 是免密码登陆。</p><a class=anchor id=加固插件></a><h1>加固插件 <a href=#%e5%8a%a0%e5%9b%ba%e6%8f%92%e4%bb%b6 aria-hidden=true>#</a></h1><a class=anchor id=密码复杂度检查></a><h2>密码复杂度检查 <a href=#%e5%af%86%e7%a0%81%e5%a4%8d%e6%9d%82%e5%ba%a6%e6%a3%80%e6%9f%a5 aria-hidden=true>#</a></h2><p>提供了一个插件，可以用于密码的加固，可以采用如下的其中一个方式加载。</p><ol><li>参数启动时指定 <code>--plugin-load='validate_password.so'</code>；</li><li>在配置文件 <code>my.cnf</code> 中的 <code>mysqld</code> 段添加 <code>plugin-load=validate_password.so</code> ，同时为了防止插件在 MySQL 运行时的时候被卸载可以同时添加 <code>validate-password=FORCE_PLUS_PERMANENT</code> ；</li><li>登陆直接安装/卸载插件插件 <code>INSTALL PLUGIN validate_password SONAME 'validate_password.so';</code> 以及 <code>UNINSTALL PLUGIN validate_password;</code> 。</li></ol><p>注意：安装和卸载语句是不记录 binlog 的如果是复制环境，需要在主备库分别进行操作才可。</p><a class=anchor id=使用简介></a><h2>使用简介 <a href=#%e4%bd%bf%e7%94%a8%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h2><p>当修改 MySQL 的账号密码时，会检查当前的是密码策略如果不符合预定义的策略，不符合则返回 <code>ER_NOT_VALID_PASSWORD</code> 错误，相关的语句有 <code>CREATE USER</code>、<code>GRANT</code>、<code>SET PASSWORD</code> 。</p><p>可以通过 <code>VALIDATE_PASSWORD_STRENGTH()</code> 函数对密码强度进行检查，从 <code>0</code> 到 <code>100</code> 依次表示从弱到强；当然，需要提前加载插件，否则只会返回 <code>0</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SELECT VALIDATE_PASSWORD_STRENGTH(&#39;123&#39;);
+</span></span><span class=line><span class=cl>mysql&gt; SELECT VALIDATE_PASSWORD_STRENGTH(&#39;123_abc&#39;);
+</span></span><span class=line><span class=cl>mysql&gt; SELECT VALIDATE_PASSWORD_STRENGTH(&#39;123_abc_ABC&#39;);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;validate_password%&#39;;
+</span></span><span class=line><span class=cl>+--------------------------------------+--------+
+</span></span><span class=line><span class=cl>| Variable_name                        | Value  |
+</span></span><span class=line><span class=cl>+--------------------------------------+--------+
+</span></span><span class=line><span class=cl>| validate_password_dictionary_file    |        |  验证密码的目录路径
+</span></span><span class=line><span class=cl>| validate_password_length             | 8      |  密码的最小长度
+</span></span><span class=line><span class=cl>| validate_password_mixed_case_count   | 1      |  至少有一个大写和小写的字符
+</span></span><span class=line><span class=cl>| validate_password_number_count       | 1      |  至少要有一个数字字符
+</span></span><span class=line><span class=cl>| validate_password_policy             | MEDIUM |  密码安全策略LOW,MEDIUM,STRONG
+</span></span><span class=line><span class=cl>| validate_password_special_char_count | 1      |  至少包含一个特殊字符
+</span></span><span class=line><span class=cl>+--------------------------------------+--------+
+</span></span><span class=line><span class=cl>6 rows in set (0.02 sec)
+</span></span></code></pre></div><p>其中 <code>LOW</code> 表示只限制长度；<code>MEDIUM</code> 则为长度，字符，数字，大小写，特殊字符；<code>STRONG</code> 则在之前的基础上增加字典目录。</p><a class=anchor id=使用密码插件登陆></a><h1>使用密码插件登陆 <a href=#%e4%bd%bf%e7%94%a8%e5%af%86%e7%a0%81%e6%8f%92%e4%bb%b6%e7%99%bb%e9%99%86 aria-hidden=true>#</a></h1><p>MySQL 提供了 <code>mysql_config_editor</code> 工具，用于加密用户密码，并提供了免密码登陆能力，适用于 <code>mysql</code>、<code>mysqladmin</code>、<code>mysqldump</code> 等常用命令。</p><p>该工具提供了 <code>set</code>、<code>remove</code>、<code>print</code>、<code>reset</code>，如下简单介绍其使用方法：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1. 创建MySQL测试账号密码
+</span></span><span class=line><span class=cl>mysql&gt; CREATE USER &#39;mysqldba&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;NEW-123_password&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; DROP USER &#39;mysqldba&#39;@&#39;localhost&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2. 创建/删除/查看加密文件，此时会生成一个~/.mylogin.cnf加密二进制文件
+</span></span><span class=line><span class=cl>$ mysql_config_editor set --login-path=mysqldba --host=192.30.16.136 \
+</span></span><span class=line><span class=cl>  --user=mysqldba --password=&#39;NEW-123_password&#39;
+</span></span><span class=line><span class=cl>$ mysql_config_editor print --all
+</span></span><span class=line><span class=cl>$ mysql_config_editor print --login-path=mysqldba
+</span></span><span class=line><span class=cl>$ mysql_config_editor remove --login-path=mysqldba
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ mysql --login-path=mysqldba
+</span></span></code></pre></div><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><p>在此，主要列举一些常见的用户相关操作。</p><a class=anchor id=重置-root-用户密码></a><h2>重置 root 用户密码 <a href=#%e9%87%8d%e7%bd%ae-root-%e7%94%a8%e6%88%b7%e5%af%86%e7%a0%81 aria-hidden=true>#</a></h2><p>如果忘记了 <code>root</code> 用户，可以通过如下方法进行更改。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1. 停止mysql服务器
+</span></span><span class=line><span class=cl># systemctl stop mysqld
+</span></span><span class=line><span class=cl># /opt/mysql-5.7/bin/mysqladmin -uroot -p&#39;init-password&#39; shutdown
+</span></span><span class=line><span class=cl>Shutting down MySQL..     done
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2. 获取跳过认证的启动参数
+</span></span><span class=line><span class=cl># mysqld --help --verbose | grep &#39;skip-grant-tables&#39; -A1
+</span></span><span class=line><span class=cl>    --skip-grant-tables Start without grant tables. This gives all users FULL
+</span></span><span class=line><span class=cl>                          ACCESS to all tables.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 3. 启动服务器，跳过认证
+</span></span><span class=line><span class=cl># mysqld --skip-grant-tables --user=mysql &amp;
+</span></span><span class=line><span class=cl>[1] 10209
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 4. 取消密码
+</span></span><span class=line><span class=cl>mysql&gt; UPDATE mysql.user SET password=&#39;&#39; WHERE user=&#39;root&#39;;
+</span></span><span class=line><span class=cl>Query OK, 2 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>Rows matched: 2  Changed: 2  Warnings: 0
+</span></span></code></pre></div><p>然后正常重启即可，空密码登陆，再设置好密码。</p><a class=anchor id=密码存储></a><h2>密码存储 <a href=#%e5%af%86%e7%a0%81%e5%ad%98%e5%82%a8 aria-hidden=true>#</a></h2><p>MySQL 把所有用户的用户名和密码的密文存放在 <code>mysql.user</code> 表中，而 <code>5.7</code> 将原有的 <code>password</code> 字段替换为了 <code>authentication_string</code> 字段，如果使用 <code>mysql_native_password</code> 插件，则结果相同。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SELECT user,plugin,authentication_string FROM mysql.user;
+</span></span><span class=line><span class=cl>+-----------+-----------------------+-------------------------------------------+
+</span></span><span class=line><span class=cl>| user      | plugin                | authentication_string                     |
+</span></span><span class=line><span class=cl>+-----------+-----------------------+-------------------------------------------+
+</span></span><span class=line><span class=cl>| root      | mysql_native_password | *4A82FDF1D80BA7470BA2E17FEEFD5A53D5D3B762 |
+</span></span><span class=line><span class=cl>| mysql.sys | mysql_native_password | *THISISNOTAVALIDPASSWORDTHATCANBEUSEDHERE |
+</span></span><span class=line><span class=cl>| mysync    | mysql_native_password | *09A25204677367FC91363E3AE2F5BEFE4602EA70 |
+</span></span><span class=line><span class=cl>+-----------+-----------------------+-------------------------------------------+
+</span></span><span class=line><span class=cl>3 rows in set (0.00 sec)
+</span></span></code></pre></div><p>一般来说密文是通过不可逆加密算法得到的，这样即使敏感信息泄漏，除了暴力破解是无法快速从密文直接得到明文的。</p><p>MySQL 使用了两次 <code>SHA1</code>，以及夹杂一次 <code>unhex</code> 的方式对用户密码进行了加密；算法的具体公式可以通过如下方式表示：<code>password_str = concat('*', sha1(unhex(sha1(password))))</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SELECT PASSWORD(&#39;password&#39;),UPPER(CONCAT(&#39;*&#39;,SHA1(UNHEX(SHA1(&#39;password&#39;)))));
+</span></span><span class=line><span class=cl>+-------------------------------------------+--------------------------------------------------+
+</span></span><span class=line><span class=cl>| PASSWORD(&#39;password&#39;)                      | UPPER(CONCAT(&#39;*&#39;,SHA1(UNHEX(SHA1(&#39;password&#39;))))) |
+</span></span><span class=line><span class=cl>+-------------------------------------------+--------------------------------------------------+
+</span></span><span class=line><span class=cl>| *2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19 | *2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19        |
+</span></span><span class=line><span class=cl>+-------------------------------------------+--------------------------------------------------+
+</span></span><span class=line><span class=cl>1 row in set, 1 warning (0.00 sec)
+</span></span></code></pre></div><p>其实 MySQL 在 <code>5.6</code> 以前，对安全性的重视度非常低，甚至可以从 <code>binlog</code> 中直接通过 <code>mysqlbinlog</code> 将密码解密出来；<code>5.7</code> 之后在 <code>binlog</code> 中对密码进行了加密处理。</p><p>不过 <code>CHANGE MASTER TO</code> 命令仍会将密码明文保存在 <code>master.info</code> 文件中。</p><a class=anchor id=其它-1></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83-1 aria-hidden=true>#</a></h1><p>创建 MySQL 账号密码时，如果在配置文件中使用了 bind-address 选项，而且有多个 IP 地址，那么需要注意绑定的 IP 地址，否则会报 <code>ERROR 2003 (HY000): Can't connect to MySQL server on 'IP' (111)</code> 。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>官方文档 <a href=http://dev.mysql.com/doc/refman/en/security.html>MySQL Reference Manual - Security</a>，主要是与安全相关的内容，包括了用户管理。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#权限管理>权限管理</a><ul><li><a href=#常用操作>常用操作</a></li></ul></li><li><a href=#用户设置>用户设置</a><ul><li><a href=#monitor>monitor</a></li><li><a href=#readonly>readonly</a></li><li><a href=#admin>admin</a></li><li><a href=#root>root</a></li></ul></li><li><a href=#加固插件>加固插件</a><ul><li><a href=#密码复杂度检查>密码复杂度检查</a></li><li><a href=#使用简介>使用简介</a></li></ul></li><li><a href=#使用密码插件登陆>使用密码插件登陆</a></li><li><a href=#其它>其它</a><ul><li><a href=#重置-root-用户密码>重置 root 用户密码</a></li><li><a href=#密码存储>密码存储</a></li></ul></li><li><a href=#其它-1>其它</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

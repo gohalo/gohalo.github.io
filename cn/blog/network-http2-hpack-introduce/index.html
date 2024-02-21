@@ -1,0 +1,103 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>HTTP2 HPACK 介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Google 直接在 HTTP1.X 的基础上设计了 SPDY 协议，对头部使用 deflate 算法进行压缩，一并解决了多路复用和优先级等问题。而 HTTP2 的实现就是参考了 SPDY 协议，但是专门为头部压缩设计了一套压缩算法，就是这里的 HPACK 。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>HTTP2 HPACK 介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-11-16</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/network/ role=button>network</a></div></div><hr><div class=content><p>Google 直接在 HTTP1.X 的基础上设计了 SPDY 协议，对头部使用 deflate 算法进行压缩，一并解决了多路复用和优先级等问题。而 HTTP2 的实现就是参考了 SPDY 协议，但是专门为头部压缩设计了一套压缩算法，就是这里的 HPACK 。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>目前分别对应两个协议为 <a href=https://www.rfc-editor.org/rfc/rfc7540.txt>HTTP2 RFC7540</a> 以及 <a href=https://www.rfc-editor.org/rfc/rfc7541.txt>HPACK RFC7541</a>，其中 HPACK 主要是为了解决 HTTP1.X 中被诟病的无意义且重复的头部。</p><a class=anchor id=详解></a><h1>详解 <a href=#%e8%af%a6%e8%a7%a3 aria-hidden=true>#</a></h1><p>简单的说，HPACK 使用 2 个索引表(静态、动态索引表)来把头部映射到索引值，并对不存在的头部使用 huffman 编码，并动态缓存到索引，从而达到压缩头部的效果。</p><p>头部的内容包括了 <code>Header Name</code> 和 <code>Header Value</code> 两部分，不同的类型包含了不同的内容。</p><a class=anchor id=静态索引表></a><h2>静态索引表 <a href=#%e9%9d%99%e6%80%81%e7%b4%a2%e5%bc%95%e8%a1%a8 aria-hidden=true>#</a></h2><p>预先定义好的内容，只有固定的几十个值，如果要发送的值符合静态表时，用对应的 Index 替换即可，这样就大大压缩了头部的大小，如果遇到不在静态表中的值，就会用到动态表。</p><p>详细可以参考协议中的 <code>Static Table Definition</code> 部分的介绍，如下是部分示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>+-------+-----------------------------+---------------+
+</span></span><span class=line><span class=cl>| Index | Header Name                 | Header Value  |
+</span></span><span class=line><span class=cl>+-------+-----------------------------+---------------+
+</span></span><span class=line><span class=cl>| 1     | :authority                  |               |
+</span></span><span class=line><span class=cl>| 2     | :method                     | GET           |
+</span></span><span class=line><span class=cl>| 3     | :method                     | POST          |
+</span></span><span class=line><span class=cl>| 4     | :path                       | /             |
+</span></span><span class=line><span class=cl>| 5     | :path                       | /index.html   |
+</span></span><span class=line><span class=cl>| 6     | :scheme                     | http          |
+</span></span><span class=line><span class=cl>| 7     | :scheme                     | https         |
+</span></span><span class=line><span class=cl>| 8     | :status                     | 200           |
+</span></span><span class=line><span class=cl>| 9     | :status                     | 204           |
+</span></span><span class=line><span class=cl>| 10    | :status                     | 206           |
+</span></span><span class=line><span class=cl>| 11    | :status                     | 304           |
+</span></span><span class=line><span class=cl>| 12    | :status                     | 400           |
+</span></span><span class=line><span class=cl>| 13    | :status                     | 404           |
+</span></span><span class=line><span class=cl>| 14    | :status                     | 500           |
+</span></span><span class=line><span class=cl>| 15    | accept-charset              |               |
+</span></span><span class=line><span class=cl>| 16    | accept-encoding             | gzip, deflate |
+</span></span><span class=line><span class=cl>| 17    | accept-language             |               |
+</span></span><span class=line><span class=cl>| 18    | accept-ranges               |               |
+</span></span><span class=line><span class=cl>| 19    | accept                      |               |
+</span></span><span class=line><span class=cl>| 20    | access-control-allow-origin |               |
+</span></span><span class=line><span class=cl>| 21    | age                         |               |
+</span></span><span class=line><span class=cl>| 22    | allow                       |               |
+</span></span><span class=line><span class=cl>| 23    | authorization               |               |
+</span></span><span class=line><span class=cl>| 24    | cache-control               |               |
+</span></span><span class=line><span class=cl>| 25    | content-disposition         |               |
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                     ... ...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>| 60    | via                         |               |
+</span></span><span class=line><span class=cl>| 61    | www-authenticate            |               |
+</span></span><span class=line><span class=cl>+-------+-----------------------------+---------------+
+</span></span></code></pre></div><a class=anchor id=动态索引></a><h2>动态索引 <a href=#%e5%8a%a8%e6%80%81%e7%b4%a2%e5%bc%95 aria-hidden=true>#</a></h2><p>动态表是一个由先进先出的队列维护的有空间限制的表，同样维护的是头部与对应的索引。每个动态表只针对一个连接，每个连接的压缩解压缩的上下文有且仅有一个动态表。</p><p>那么动态表就是，当一个头部没有出现过的时候，会把他插入动态表中，下次同名的值就可能会在表中查到到索引并替换掉头部。</p><a class=anchor id=数据格式></a><h1>数据格式 <a href=#%e6%95%b0%e6%8d%ae%e6%a0%bc%e5%bc%8f aria-hidden=true>#</a></h1><p>基本的数据类型包括了两种：无符号整形(用来标示索引、字符串长度)、字符串长度。</p><a class=anchor id=数字表示></a><h2>数字表示 <a href=#%e6%95%b0%e5%ad%97%e8%a1%a8%e7%a4%ba aria-hidden=true>#</a></h2><p>编码时通过前面的几位 <code>prefix</code> 标示不同类型的报文，所以对于数值来说有如下的解析方法：</p><ul><li>剩余字节足够表示数值，那么直接使用。</li><li>如果不足，则依次增加 8bit ，其中第一位标示是否结束。</li></ul><p>示例如下。</p><a class=anchor id=用-5-位前缀表示-10></a><h5>用 5 位前缀表示 10 <a href=#%e7%94%a8-5-%e4%bd%8d%e5%89%8d%e7%bc%80%e8%a1%a8%e7%a4%ba-10 aria-hidden=true>#</a></h5><p>这里限制位数为 5，由于 10 小于 <code>2^5-1</code> 可以直接表示为 <code>01010</code> ，那么结果为：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0   1   2   3   4   5   6   7
+</span></span><span class=line><span class=cl>+---+---+---+---+---+---+---+---+
+</span></span><span class=line><span class=cl>| X | X | X | 0 | 1 | 0 | 1 | 0 |   10 stored on 5 bits
+</span></span><span class=line><span class=cl>+---+---+---+---+---+---+---+---
+</span></span></code></pre></div><a class=anchor id=用-5-位前缀表示-1337></a><h5>用 5 位前缀表示 1337 <a href=#%e7%94%a8-5-%e4%bd%8d%e5%89%8d%e7%bc%80%e8%a1%a8%e7%a4%ba-1337 aria-hidden=true>#</a></h5><p>因为 <code>1337>2^5-1</code> 那么前 5 位只能表示到 31 ，剩余 <code>1337-31 = 13061</code>；接下来 <code>1306>2^7 =128</code>，因为八位字节第一位是标志位，所以表示范围只有 <code>2^7-1</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl> 0   1   2   3   4   5   6   7
+</span></span><span class=line><span class=cl>+---+---+---+---+---+---+---+---+
+</span></span><span class=line><span class=cl>| X | X | X | 1 | 1 | 1 | 1 | 1 |  Prefix = 31, I = 1306
+</span></span><span class=line><span class=cl>| 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 |  1306&gt;=128, encode(154), I=1306/128
+</span></span><span class=line><span class=cl>| 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 |  10&lt;128, encode(10), done
+</span></span><span class=line><span class=cl>+---+---+---+---+---+---+---+---+
+</span></span></code></pre></div><a class=anchor id=字符串编码></a><h2>字符串编码 <a href=#%e5%ad%97%e7%ac%a6%e4%b8%b2%e7%bc%96%e7%a0%81 aria-hidden=true>#</a></h2><p>有了无符号整数编码的基础，接着可以对字符串进行编码，如下所示:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>  0   1   2   3   4   5   6   7
+</span></span><span class=line><span class=cl>+---+---+---+---+---+---+---+---+
+</span></span><span class=line><span class=cl>| H |    String Length (7+)     |
+</span></span><span class=line><span class=cl>+---+---------------------------+
+</span></span><span class=line><span class=cl>|  String Data (Length octets)  |
+</span></span><span class=line><span class=cl>+-------------------------------+
+</span></span></code></pre></div><a class=anchor id=索引表使用></a><h1>索引表使用 <a href=#%e7%b4%a2%e5%bc%95%e8%a1%a8%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h1><p>静态索引表和动态索引表是联合使用的，某些场景下，动态索引表可以转换成类似静态索引表的场景，如下会有详细的介绍。</p><p>关于静态索引表可以在规范中直接搜索 <code>Static Table Definition</code> 即可，在处理索引表时，包括了三种场景类型：A) name 和 value 都确定，例如 <code>:method: GET</code>、<code>:status:200</code> ；B) 只有 Name 确定，例如 <code>:authority</code>、<code>cookie</code> 等；C) Name 和 Value 都不在静态索引中。</p><p>动态索引表最初是一个空表，当每次解压头部的时候，就可能会添加新的条目，而且允许有完全相同的 Name-Value 对，在添加完动态索引表之后，那么下次的请求就可以直接引用了，从而后续的压缩会更高。</p><p>需要更新动态索引表的包括了上述的后面两种场景。注意，为了防止解压时内存占用过大，动态索引表的大小是有限制的。</p><a class=anchor id=场景-a></a><h4>场景 A <a href=#%e5%9c%ba%e6%99%af-a aria-hidden=true>#</a></h4><p>预定义字段中有 Name 以及 Value 的值，那么二进制数据格式如下所示，第一位固定为 1 后面 7 位为映射的索引值。</p><p>可以在静态索引表和动态索引表。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>     0   1   2   3   4   5   6   7
+</span></span><span class=line><span class=cl>   +---+---+---+---+---+---+---+---+
+</span></span><span class=line><span class=cl>   | 1 |        Index (7+)         |
+</span></span><span class=line><span class=cl>   +---+---------------------------+
+</span></span></code></pre></div><p>注意，索引表是从 1 开始编码的，如果出现 0 那么则认为是错误的。</p><a class=anchor id=场景-b></a><h4>场景 B <a href=#%e5%9c%ba%e6%99%af-b aria-hidden=true>#</a></h4><p>也就是在静态索引表中有 Name 但是没有 Value 的值，报文的格式如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl> 0   1   2   3   4   5   6   7
+</span></span><span class=line><span class=cl>+---+---+---+---+---+---+---+---+
+</span></span><span class=line><span class=cl>| 0 | 1 |      Index (6+)       |
+</span></span><span class=line><span class=cl>+---+---+-----------------------+
+</span></span><span class=line><span class=cl>| H |     Value Length (7+)     |
+</span></span><span class=line><span class=cl>+---+---------------------------+
+</span></span><span class=line><span class=cl>| Value String (Length octets)  |
+</span></span><span class=line><span class=cl>+-------------------------------+
+</span></span></code></pre></div><p>此时，前两位固定为 <code>01</code>，后 6 位表示索引值，取到对应的 Name ，例如 <code>01010000</code> 对应的索引为 32 对应了静态表中的 Name 是 cookie ，接下来就是使用字符串表示法表示对应的 Value 字段，解码之后，这个字段就被加到动态表中，下次编码的时候会直接使用情况类似静态索引的方法。</p><p>另外有一种类似的场景，就是 Name 在索引空间，但是 Value 不在且不需要更新动态表，此时前四位固定为 0000，其它情况与上述一致。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0   1   2   3   4   5   6   7
+</span></span><span class=line><span class=cl>+---+---+---+---+---+---+---+---+
+</span></span><span class=line><span class=cl>| 0 | 0 | 0 | 0 |  Index (4+)   |
+</span></span><span class=line><span class=cl>+---+---+-----------------------+
+</span></span><span class=line><span class=cl>| H |     Value Length (7+)     |
+</span></span><span class=line><span class=cl>+---+---------------------------+
+</span></span><span class=line><span class=cl>| Value String (Length octets)  |
+</span></span><span class=line><span class=cl>+-------------------------------+
+</span></span></code></pre></div><p>还有一种，是严格不需要更新的报文，其前四位是 <code>0001</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0   1   2   3   4   5   6   7
+</span></span><span class=line><span class=cl>+---+---+---+---+---+---+---+---+
+</span></span><span class=line><span class=cl>| 0 | 0 | 0 | 1 |  Index (4+)   |
+</span></span><span class=line><span class=cl>+---+---+-----------------------+
+</span></span><span class=line><span class=cl>| H |     Value Length (7+)     |
+</span></span><span class=line><span class=cl>+---+---------------------------+
+</span></span><span class=line><span class=cl>| Value String (Length octets)  |
+</span></span><span class=line><span class=cl>+-------------------------------+
+</span></span></code></pre></div><a class=anchor id=场景-c></a><h4>场景 C <a href=#%e5%9c%ba%e6%99%af-c aria-hidden=true>#</a></h4><p>Name 和 Value 都不在索引空间，且需要更新动态表。这与场景 B 类似，只需要将 Name 的字符串表示补充上即可，并且把 Index 值设置为 0 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl> 0   1   2   3   4   5   6   7
+</span></span><span class=line><span class=cl>+---+---+---+---+---+---+---+---+
+</span></span><span class=line><span class=cl>| 0 | 1 |           0           |
+</span></span><span class=line><span class=cl>+---+---+-----------------------+
+</span></span><span class=line><span class=cl>| H |     Name Length (7+)      |
+</span></span><span class=line><span class=cl>+---+---------------------------+
+</span></span><span class=line><span class=cl>|  Name String (Length octets)  |
+</span></span><span class=line><span class=cl>+---+---------------------------+
+</span></span><span class=line><span class=cl>| H |     Value Length (7+)     |
+</span></span><span class=line><span class=cl>+---+---------------------------+
+</span></span><span class=line><span class=cl>| Value String (Length octets)  |
+</span></span><span class=line><span class=cl>+-------------------------------+
+</span></span></code></pre></div><p>同样，有一种 Name 和 Value 都不在索引空间，且不需要更新动态表，此时前 4 位是 0 ，其它与上述相同。</p><p>还有一种严格不需要更新的，此时前 4 位是 <code>0001</code> 。</p><p>简言之，需要更新的前两位是 <code>01</code> ，不需要更新的 <code>00</code> ，严格不需要更新的是第 3、4 位是 <code>01</code> 。</p><a class=anchor id=其它></a><h3>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h3><p>关于不需要更新和绝对不允许更新区别如下：</p><ul><li>不需要更新，本次的发送过程不更新该字段到动态表，如果有多次转发，那么并不对转发做要求；</li><li>绝对不允许更新，如果这个请求被多次转发才到目标，那么转发的所有中间对于该字段也必须采用相同的处理方案。</li></ul><a class=anchor id=压缩></a><h1>压缩 <a href=#%e5%8e%8b%e7%bc%a9 aria-hidden=true>#</a></h1><p>简单来说，gzip 是一种数据格式，在原始数据前增加了 10 字节的头信息；尾部增加了校验码和长度字节，仅使用 deflate 算法对数据部分进行了压缩。</p><p>deflate 是一种压缩算法，是 huffman 编码的一种加强，也就是说 deflate 是最基础的算法，gzip 在 deflate 的 raw data 前增加了 10 个字节的 gzheader，尾部添加了 8 个字节的校验字节（可选 crc32 和 adler32） 和长度标识字节。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#详解>详解</a><ul><li><a href=#静态索引表>静态索引表</a></li><li><a href=#动态索引>动态索引</a></li></ul></li><li><a href=#数据格式>数据格式</a><ul><li><a href=#数字表示>数字表示</a></li><li><a href=#字符串编码>字符串编码</a></li></ul></li><li><a href=#索引表使用>索引表使用</a><ul><li></li></ul></li><li><a href=#压缩>压缩</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

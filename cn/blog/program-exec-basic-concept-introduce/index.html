@@ -1,0 +1,150 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>程序简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="可执行二进制文件在编译以及加载过程中都有统一的格式，不同的平台其格式略有不同，这还只是在磁盘上的保存方式，而加载到内存中又不相同。
+这里简单介绍。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>程序简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2014-08-01</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>可执行二进制文件在编译以及加载过程中都有统一的格式，不同的平台其格式略有不同，这还只是在磁盘上的保存方式，而加载到内存中又不相同。</p><p>这里简单介绍。</p><a class=anchor id=目标文件></a><h1>目标文件 <a href=#%e7%9b%ae%e6%a0%87%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h1><p>所谓的目标文件，严格来说是编译器编译完后，还没有进行链接的文件，但通常采用和可执行文件相同的存储格式，也包括了动态链接库 <code>(Dynamic Linking Library)</code> 和静态链接库 <code>(Statci Linking Library)</code> 。</p><p>通常来说，在 Windows 平台下会采用 <code>Portable Executable, PE</code> 格式，而在 Linux 平台下则会采用 <code>Executable Linkale Format, ELF</code>，它们都是 <code>Common File Format, COFF</code> 的变种。</p><p>对于文件的类型可以通过 <code>file</code> 命令进行查看，常见的类型包括了：</p><ul><li>可重定位文件(Relocatable File)<br>主要包含了代码和数据，主要用来链接成可执行文件或共享目标文件，如 <code>.o</code> 文件。</li><li>可执行文件(Executable File)<br>主要是可以直接执行的程序，如 <code>/bin/bash</code> 。</li><li>共享目标文件(Shared Object File)<br>包含了代码和数据，常见的有动态和静态链接库，如 <code>/lib64/libc-2.17.so</code> 。</li><li>核心转储文件(Core Dump File)<br>进程意外终止时，系统将该进程的地址空间的内容及终止时的一些其他信息转储到该文件中。</li></ul><p>如下介绍时使用 ELF 格式。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>假设有如下的程序。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>puts</span><span class=p>(</span><span class=s>&#34;Hello World.&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>首先是可重定向文件或者目标文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gcc -c main.c
+</span></span><span class=line><span class=cl>$ file main.o
+</span></span><span class=line><span class=cl>main.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
+</span></span></code></pre></div><p>然后，编译成二进制文件，如下的部分内容省略。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gcc -o main main.c
+</span></span><span class=line><span class=cl>$ file main
+</span></span><span class=line><span class=cl>main: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, ... ...
+</span></span></code></pre></div><p>也可以生成动态库，一般不会将 <code>main()</code> 函数放到动态库中使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gcc -c -fPIC main.c
+</span></span><span class=line><span class=cl>$ gcc -fpic -shared -Wl,-soname,libtest.so.0 -o libtest.so.0.0 main.o
+</span></span><span class=line><span class=cl>$ file libtest.so.0.0
+</span></span><span class=line><span class=cl>libtest.so.0.0: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, ... ...
+</span></span></code></pre></div><p>关于 ELF 的文件格式，详细可以参考 <a href=/cn/blog/program-elf-details/>ELF 详解</a> 中的介绍。</p><a class=anchor id=查看符号></a><h2>查看符号 <a href=#%e6%9f%a5%e7%9c%8b%e7%ac%a6%e5%8f%b7 aria-hidden=true>#</a></h2><p>所谓的符号 (Symbols) 其实包含了函数以及变量的名称。</p><p>有时候可能需要查看一个库中到底有哪些函数，<code>nm</code> 命令可以打印出库中的涉及到的所有符号，库既可以是静态的也可以是动态的。</p><p><code>nm</code> 列出的符号有很多，常见的有三种：</p><ul><li>在库中被调用，但并没有在库中定义(表明需要其他库支持)，用U表示；</li><li>库中定义的函数，用T表示，这是最常见的；</li><li>所谓的“弱态”符号，它们虽然在库中被定义，但是可能被其他库中的同名符号覆盖，用W表示。</li></ul><p>例如，希望知道上文提到的 <code>hello</code> 库中是否定义了 <code>printf()</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ nm libhello.so
+</span></span></code></pre></div><p>发现其中没有 <code>printf()</code> 的定义，取而代之的是 <code>puts()</code> 函数，而且为 <code>U</code> ，表示符号 <code>puts</code> 被引用，但是并没有在函数内定义，由此可以推断，要正常使用 <code>hello</code> 库，必须有其它库支持，再使用 <code>ldd</code> 命令查看 <code>hello</code> 依赖于哪些库：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ ldd -v hello
+</span></span><span class=line><span class=cl>$ readelf -d hello     直接使用readelf
+</span></span></code></pre></div><p>每行 <code>=></code> 前面的，为动态链接程序所需的动态链接库的名字；而 <code>=></code> 后面的，则是运行时系统实际调用的动态链接库的名字。所需的动态链接库在系统中不存在时，<code>=></code> 后面将显示 <code>"not found"</code>，括号所括的数字为虚拟的执行地址。</p><a class=anchor id=段-segment></a><h1>段 Segment <a href=#%e6%ae%b5-segment aria-hidden=true>#</a></h1><p>目标文件通过段进行存储，在 Windows 中可以通过 <code>Process Explorer</code> 查看相关信息，Linux 可以通过 <code>objdump</code> 查看，如下以Linux 为例。</p><p>在 Linux 中大致会有如下的 5 种数据区：</p><ul><li>BSS 用来存放程序中未初始化的全局/静态变量的一块内存区域，属于静态内存分配。</li><li>DATA 保存已经初始化的全局变量，属于静态内存分配。</li><li>TEXT 用来存放真正执行的代码，大小在编译后已经确定，一般是只读，也包含了一些只读常量，例如常量字符串。</li><li>HEAP 保存堆的内容，一般是通过 <code>malloc()</code> 动态分配的内存。</li><li>STACK 栈空间，包括了函数的调用栈，以及存放程序临时创建的局部变量。</li></ul><p>其中 BSS 是 Block Started by Symbol 的简称，由操作系统初始化清零，而 DATA 则是由程序初始化，从而造成了上述的差别。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>addr       contents                   comments
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>High  +-----------------+  ---
+</span></span><span class=line><span class=cl> |    |    arguments    |   |   command-line arguments and
+</span></span><span class=line><span class=cl> |    |   environments  |   |   environments variables
+</span></span><span class=line><span class=cl> |    +-----------------+  ---
+</span></span><span class=line><span class=cl> |    |      stack      |   |
+</span></span><span class=line><span class=cl> |    +-----------------+   |
+</span></span><span class=line><span class=cl> |    |      v v v      |   |
+</span></span><span class=line><span class=cl> |    ~                 ~   |
+</span></span><span class=line><span class=cl> |    |      ^ ^ ^      |   |
+</span></span><span class=line><span class=cl> |    +-----------------+   |
+</span></span><span class=line><span class=cl> |    |      heap       |   |
+</span></span><span class=line><span class=cl> |    +-----------------+  ---
+</span></span><span class=line><span class=cl> |    |      bss        |   |   initialized to zero by exec
+</span></span><span class=line><span class=cl> |    +-----------------+  ---
+</span></span><span class=line><span class=cl> |    |      data       |   |
+</span></span><span class=line><span class=cl> |    +-----------------+   |   initialized from program file by exec
+</span></span><span class=line><span class=cl> V    |      text       |   |
+</span></span><span class=line><span class=cl>Low   +-----------------+  ---
+</span></span></code></pre></div><p>如上只是基本分类，一般是在运行时的状态，在存储时，一般称为 Section ，而且在存储时，还会存在其它的段，如 <code>.rodata</code> <code>.comment</code> 等。</p><p>可以通过如下程序查看进程在运行时各个段的地址。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cm>/* main.c */</span>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>char</span> <span class=n>bss</span><span class=p>[</span><span class=mi>1024</span><span class=p>];</span>     <span class=c1>// 未初始化全局变量，在BSS段
+</span></span></span><span class=line><span class=cl><span class=c1>//int data = 0;            // 初始化为0全局变量，在BSS段
+</span></span></span><span class=line><span class=cl><span class=c1>//static int data = 0;     // 初始化为0静态全局变量，在BSS段
+</span></span></span><span class=line><span class=cl><span class=c1>//int data = 1234;         // 已初始化全局变量，在DATA段
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>static</span> <span class=kt>int</span> <span class=n>data</span> <span class=o>=</span> <span class=mi>1234</span><span class=p>;</span>    <span class=c1>// 已初始化静态全局变量，在DATA段
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>static</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>text</span> <span class=o>=</span> <span class=s>&#34;foobar&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>void</span> <span class=nf>foobar</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Hi foobar</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//static int bss = 0;          // 已初始化为0的静态局部变量，在BSS段
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>//static int bss;              // 未初始化的静态局部变量，在BSS段
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>//static int data = 123;       // 已初始化静态局部变量，在DATA段
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>//char *ptr = &#34;Hello World!&#34;;  // 局部变量，ptr存在在栈中，而指向的字符串则是在字符常量区
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>int</span> <span class=n>stack</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>                 <span class=c1>// 局部变量，存在在栈中
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>char</span> <span class=o>*</span><span class=n>heap</span> <span class=o>=</span> <span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=p>)</span><span class=nf>malloc</span><span class=p>(</span><span class=mi>1000</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Address of various segments:</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;     Text Segment: %p</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>foobar</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;       RO Segment: %p</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>text</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;     Data Segment: %p</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>data</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;              BSS: %p</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>bss</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;    Stack Segment: %p</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>stack</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;     Heap Segment: %p</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>heap</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>注意，目前的程序一般都会有多个这样的段，所以基本上无法确认每个段的边界。</p><p>另外一个比较有意思的场景是，通过 <code>int array[1024 * 1024] = {0}</code> 编译的二进制文件会较小，而 <code>int array[1024 * 1024] = {0x55}</code> 至少包含 4M 的初始化数据，即使除了第一之外都是 0 。</p><a class=anchor id=示例程序></a><h2>示例程序 <a href=#%e7%a4%ba%e4%be%8b%e7%a8%8b%e5%ba%8f aria-hidden=true>#</a></h2><p>如上示例通过 <code>gcc -c main.c</code> 编译生成目标文件 <code>main.o</code>，然后通过 <code>objdump -h</code> 查看头部信息，也可以通过 <code>-x</code> 参数查看更详细的信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ objdump -h main.o
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>main.o:     file format elf64-x86-64
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Sections:
+</span></span><span class=line><span class=cl>Idx Name          Size      VMA               LMA               File off  Algn
+</span></span><span class=line><span class=cl>  0 .text         000000c0  0000000000000000  0000000000000000  00000040  2**0
+</span></span><span class=line><span class=cl>                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+</span></span><span class=line><span class=cl>  1 .data         00000010  0000000000000000  0000000000000000  00000100  2**3
+</span></span><span class=line><span class=cl>                  CONTENTS, ALLOC, LOAD, RELOC, DATA
+</span></span><span class=line><span class=cl>  2 .bss          00000400  0000000000000000  0000000000000000  00000120  2**5
+</span></span><span class=line><span class=cl>                  ALLOC
+</span></span><span class=line><span class=cl>  3 .rodata       000000b8  0000000000000000  0000000000000000  00000120  2**0
+</span></span><span class=line><span class=cl>                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+</span></span><span class=line><span class=cl>  4 .comment      0000002d  0000000000000000  0000000000000000  000001d8  2**0
+</span></span><span class=line><span class=cl>                  CONTENTS, READONLY
+</span></span><span class=line><span class=cl>  5 .note.GNU-stack 00000000  0000000000000000  0000000000000000  00000205  2**0
+</span></span><span class=line><span class=cl>                  CONTENTS, READONLY
+</span></span><span class=line><span class=cl>  6 .eh_frame     00000058  0000000000000000  0000000000000000  00000208  2**3
+</span></span><span class=line><span class=cl>                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, DATA
+</span></span></code></pre></div><p>数据段 <code>.data</code> 用来保存已经初始化了的全局变量和局部静态变量，如上述的 <code>data</code> 。</p><p>只读数据段 <code>.rodata</code> 主要用于保存常量，如 <code>printf()</code> 中的字符串和 <code>const</code> 类型的变量，该段在加载时也会将其设置为只读。</p><p><code>BSS</code> 段保存了未初始化的全局变量和局部静态变量，如上述 <code>bss</code> 。</p><p><code>.text</code> 为代码段，<code>.data</code> 保存含初始值的变量，<code>.bss</code> 只保存了变量的符号。</p><a class=anchor id=添加一个段></a><h2>添加一个段 <a href=#%e6%b7%bb%e5%8a%a0%e4%b8%80%e4%b8%aa%e6%ae%b5 aria-hidden=true>#</a></h2><p>将以个二进制文件，如图片、MP3 音乐等作为目标文件的一个段。如下所示，此时可以直接声明 <code>_binary_example_png_start</code> 和 <code>_binary_example_png_end</code> 并使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ objcopy -I binary -O elf32-i386 -B i386 example.png image.o
+</span></span><span class=line><span class=cl>$ objdump -ht image.o
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>image.o:     file format elf32-i386
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Sections:
+</span></span><span class=line><span class=cl>Idx Name          Size      VMA       LMA       File off  Algn
+</span></span><span class=line><span class=cl>  0 .data         000293d6  00000000  00000000  00000034  2**0
+</span></span><span class=line><span class=cl>                  CONTENTS, ALLOC, LOAD, DATA
+</span></span><span class=line><span class=cl>SYMBOL TABLE:
+</span></span><span class=line><span class=cl>00000000 l    d  .data	00000000 .data
+</span></span><span class=line><span class=cl>00000000 g       .data	00000000 _binary_example_png_start
+</span></span><span class=line><span class=cl>000293d6 g       .data	00000000 _binary_example_png_end
+</span></span><span class=line><span class=cl>000293d6 g       *ABS*	00000000 _binary_example_png_size
+</span></span></code></pre></div><p>如果在编译时想将某个函数或者变量放置在一个段里，可以通过如下的方式进行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=nf>__attribute__</span><span class=p>((</span><span class=nf>section</span><span class=p>(</span><span class=s>&#34;FOO&#34;</span><span class=p>)))</span> <span class=kt>int</span> <span class=n>global</span> <span class=o>=</span> <span class=mi>42</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=nf>__attribute__</span><span class=p>((</span><span class=nf>section</span><span class=p>(</span><span class=s>&#34;BAR&#34;</span><span class=p>)))</span> <span class=kt>void</span> <span class=nf>foo</span><span class=p>()</span> <span class=p>{</span> <span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><p>容易出错的几个知识点。</p><a class=anchor id=栈变量地址></a><h2>栈变量地址 <a href=#%e6%a0%88%e5%8f%98%e9%87%8f%e5%9c%b0%e5%9d%80 aria-hidden=true>#</a></h2><p>关键是当函数调用返回时，对应的内存地址是否被销毁，其中静态内存的生命周期与程序运行声明周期相同。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>char</span> <span class=o>*</span><span class=nf>get_string</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//char str[] = &#34;Hello World!&#34;;      // 栈地址，完成函数调用会释放，结果无法预测
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>//char *str = &#34;Hello World!&#34;;       // 指向字符串常量(静态内存)，函数返回仍可访问
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=k>static</span> <span class=kt>char</span> <span class=n>str</span><span class=p>[]</span> <span class=o>=</span> <span class=s>&#34;Hello World!&#34;</span><span class=p>;</span> <span class=c1>// 静态内存，函数退出通用可以访问
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=k>return</span> <span class=n>str</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nf>puts</span><span class=p>(</span><span class=nf>get_string</span><span class=p>());</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>还有一种是判断地址是否相同，使用 <code>char []</code> 时，定义的是一个保存在栈中的局部变量，地址不同；而使用 <code>char *</code> 指向的实际是一个常量地址，所以相等。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>//char str1[] = &#34;Hi!&#34;; // 两个不同的栈地址
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>//char str2[] = &#34;Hi!&#34;;
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>	<span class=kt>char</span> <span class=o>*</span><span class=n>str1</span> <span class=o>=</span> <span class=s>&#34;Hi!&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>char</span> <span class=o>*</span><span class=n>str2</span> <span class=o>=</span> <span class=s>&#34;Hi!&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>str1</span> <span class=o>==</span> <span class=n>str2</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#目标文件>目标文件</a><ul><li><a href=#示例>示例</a></li><li><a href=#查看符号>查看符号</a></li></ul></li><li><a href=#段-segment>段 Segment</a><ul><li><a href=#示例程序>示例程序</a></li><li><a href=#添加一个段>添加一个段</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#栈变量地址>栈变量地址</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

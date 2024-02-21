@@ -1,0 +1,391 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Greenlet Gevent | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="对于服务器端的编程，从多进程，到多线程，再到异步回调，再到现在比较流行的协程的方式。对于 Python 来说，支持多进程；由于存在 GIL，实际对于线程会有性能影响。
+对于 Python 协程在此介绍一下 greenlet 的实现。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Greenlet Gevent</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2014-09-04</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/python/ role=button>python</a></div></div><hr><div class=content><p>对于服务器端的编程，从多进程，到多线程，再到异步回调，再到现在比较流行的协程的方式。对于 Python 来说，支持多进程；由于存在 GIL，实际对于线程会有性能影响。</p><p>对于 Python 协程在此介绍一下 greenlet 的实现。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>在 CentOS 中，可以通过如下方式安装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># pip install greenlet
+</span></span></code></pre></div><p>如下是简单的测试函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>from</span> <span class=nn>greenlet</span> <span class=kn>import</span> <span class=n>greenlet</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>test1</span><span class=p>(</span><span class=n>arg</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span> <span class=mi>12</span><span class=p>,</span> <span class=n>arg</span>
+</span></span><span class=line><span class=cl>    <span class=n>gr2</span><span class=o>.</span><span class=n>switch</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span> <span class=mi>34</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>test2</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span> <span class=mi>56</span>
+</span></span><span class=line><span class=cl>    <span class=n>gr1</span><span class=o>.</span><span class=n>switch</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span> <span class=mi>78</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>gr1</span> <span class=o>=</span> <span class=n>greenlet</span><span class=p>(</span><span class=n>test1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>gr2</span> <span class=o>=</span> <span class=n>greenlet</span><span class=p>(</span><span class=n>test2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>gr1</span><span class=o>.</span><span class=n>switch</span><span class=p>(</span><span class=s2>&#34;foo bar&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># OUTPUT:</span>
+</span></span><span class=line><span class=cl><span class=c1># 12 foo bar</span>
+</span></span><span class=line><span class=cl><span class=c1># 56</span>
+</span></span><span class=line><span class=cl><span class=c1># 34</span>
+</span></span></code></pre></div><a class=anchor id=greenlet-入门></a><h2>greenlet 入门 <a href=#greenlet-%e5%85%a5%e9%97%a8 aria-hidden=true>#</a></h2><p>首先查看如下的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>from</span> <span class=nn>greenlet</span> <span class=kn>import</span> <span class=n>greenlet</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>foo</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span> <span class=s2>&#34;coroutine foo&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=n>gr2</span> <span class=o>=</span> <span class=n>greenlet</span><span class=p>(</span><span class=n>bar</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>value</span> <span class=o>=</span> <span class=n>gr2</span><span class=o>.</span><span class=n>switch</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span> <span class=n>value</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>bar</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span> <span class=s2>&#34;coroutine bar&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=s2>&#34;bar return value&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>gr1</span> <span class=o>=</span> <span class=n>greenlet</span><span class=p>(</span><span class=n>foo</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>gr1</span><span class=o>.</span><span class=n>switch</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># OUTPUT:</span>
+</span></span><span class=line><span class=cl><span class=c1># coroutine foo</span>
+</span></span><span class=line><span class=cl><span class=c1># coroutine bar</span>
+</span></span><span class=line><span class=cl><span class=c1># bar return value</span>
+</span></span></code></pre></div><p>首先创建了一个名称为 gr1 的 greenlet 协程，然后调用 switch() 方法，让这个协程开始执行，也就是开始执行 foo() 函数。在 foo() 函数中，打印字符串，新建另外一个协程，并切换过去执行 &mldr; &mldr;</p><p>上述的例子基本和同步执行没有任何区别，接着修改下上述的代码，如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>from</span> <span class=nn>greenlet</span> <span class=kn>import</span> <span class=n>greenlet</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>foo</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span> <span class=s2>&#34;coroutine foo&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=n>ret</span> <span class=o>=</span> <span class=n>gr2</span><span class=o>.</span><span class=n>switch</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span> <span class=s2>&#34;coroutine end&#34;</span><span class=p>,</span> <span class=n>ret</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>bar</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span> <span class=s2>&#34;coroutine bar&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=s2>&#34;coroutine bar return value&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>gr1</span> <span class=o>=</span> <span class=n>greenlet</span><span class=p>(</span><span class=n>foo</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>gr2</span> <span class=o>=</span> <span class=n>greenlet</span><span class=p>(</span><span class=n>bar</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>out</span> <span class=o>=</span> <span class=n>gr1</span><span class=o>.</span><span class=n>switch</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=nb>print</span> <span class=n>out</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># OUTPUT:</span>
+</span></span><span class=line><span class=cl><span class=c1># coroutine foo</span>
+</span></span><span class=line><span class=cl><span class=c1># coroutine bar</span>
+</span></span><span class=line><span class=cl><span class=c1># coroutine bar return value</span>
+</span></span></code></pre></div><p>可以看到，当协程 gr2 执行完 bar() 函数之后，将参数返回到了最外层，而没有返回到 foo() 中，而且可以看到 foo() 最后一行程序没有执行。So, WHY ???</p><a class=anchor id=greenlent-层次关系></a><h1>greenlent 层次关系 <a href=#greenlent-%e5%b1%82%e6%ac%a1%e5%85%b3%e7%b3%bb aria-hidden=true>#</a></h1><p>上述的程序，主要是和 greenlet 的层次关系了相关。在 greenlet 模块的初始话的时候，就会先建立一个最顶层的 greenlet 对象，他属于 greenlet 层次关系中的 root 节点。</p><p>在创建 greenlet 的时候，如果在构造函数中并没有指明 parent 对象，那么构建出来的 greenlet 对象将会默认将当前环境所在的 greenlet 作为 parent，当这个 greenlet 对象执行完成之后，将会调度其 parent 继续执行，而且会将返回参数也传递过去。</p><p>而在上述代码中，gr1 和 gr2 他们两个的 parent 都默认设置为了初始化建立的 greenlet 对象，所以在 gr2 执行完之后，并没有返回到 gr1 的 foo 函数中，而是直接返回到了最外层。</p><a class=anchor id=源码解析></a><h1>源码解析 <a href=#%e6%ba%90%e7%a0%81%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h1><p>Greenlet 是通过 C 语言实现的，也就是说，实际上是 C 语言实现的一个模块，首先看看一个简单的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;Python.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>add</span><span class=p>(</span><span class=kt>int</span> <span class=n>arg1</span><span class=p>,</span> <span class=kt>int</span> <span class=n>arg2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>arg1</span> <span class=o>+</span> <span class=n>arg2</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>PyObject</span><span class=o>*</span> <span class=nf>wrap_add</span><span class=p>(</span><span class=n>PyObject</span> <span class=o>*</span><span class=n>self</span><span class=p>,</span> <span class=n>PyObject</span> <span class=o>*</span><span class=n>args</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//Convert the python input objects into C objects
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>int</span> <span class=n>arg1</span><span class=p>,</span> <span class=n>arg2</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span><span class=p>(</span><span class=o>!</span><span class=nf>PyArg_ParseTuple</span><span class=p>(</span><span class=n>args</span><span class=p>,</span> <span class=s>&#34;ii&#34;</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>arg1</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>arg2</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//Call c function
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>int</span> <span class=n>result</span> <span class=o>=</span> <span class=nf>add</span><span class=p>(</span><span class=n>arg1</span><span class=p>,</span><span class=n>arg2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>//wrap the result from c function to python object.
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>return</span> <span class=p>(</span><span class=n>PyObject</span><span class=o>*</span><span class=p>)</span><span class=nf>Py_BuildValue</span><span class=p>(</span><span class=s>&#34;i&#34;</span><span class=p>,</span> <span class=n>result</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// define the PyMethodDef methods
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>static</span> <span class=n>PyMethodDef</span> <span class=n>wrap_methods</span><span class=p>[]</span> <span class=o>=</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span><span class=s>&#34;add&#34;</span><span class=p>,</span> <span class=n>wrap_add</span><span class=p>,</span> <span class=n>METH_VARARGS</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span><span class=nb>NULL</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// initilization function
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>PyMODINIT_FUNC</span> <span class=nf>initfoobar</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>Py_InitModule</span><span class=p>(</span><span class=s>&#34;foobar&#34;</span><span class=p>,</span> <span class=n>wrap_methods</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>注意 C 文件名 foobar.c 和 PyMODINIT_FUNC initfoobar(void) 以及 Py_InitModule(&ldquo;foobar&rdquo;) 中的部分必须一致。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gcc -fpic -c -I /usr/include/python2.7 foobar.c
+</span></span><span class=line><span class=cl>$ gcc -shared -o foobar.so foobar.o
+</span></span><span class=line><span class=cl>$ python
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; import foobar
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; foobar.add(1,2)
+</span></span></code></pre></div><p>每个 greenlet 其实就是一个函数以及保存这个函数执行时的上下文，对于函数来说上下文也就是其 stack；同一个进程的所有的 greenlets 共用操作系统分配的用户栈。</p><a class=anchor id=模块初始化></a><h1>模块初始化 <a href=#%e6%a8%a1%e5%9d%97%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h1><p>首先，在导入模块的时候，会调用初始化函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>PyMODINIT_FUNC initgreenlet(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    PyObject* m = NULL;
+</span></span><span class=line><span class=cl>    char** p = NULL;
+</span></span><span class=line><span class=cl>    PyObject *c_api_object;
+</span></span><span class=line><span class=cl>    static void *_PyGreenlet_API[PyGreenlet_API_pointers];
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    GREENLET_NOINLINE_INIT();
+</span></span><span class=line><span class=cl>    m = Py_InitModule(&#34;greenlet&#34;, GreenMethods); // 初始化greenlet模块
+</span></span><span class=line><span class=cl>    if (m == NULL) {
+</span></span><span class=line><span class=cl>        INITERROR;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    if (PyModule_AddStringConstant(m, &#34;__version__&#34;, GREENLET_VERSION) &lt; 0) {
+</span></span><span class=line><span class=cl>        INITERROR;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    ts_curkey = PyString_InternFromString(&#34;__greenlet_ts_curkey&#34;);
+</span></span><span class=line><span class=cl>    ts_delkey = PyString_InternFromString(&#34;__greenlet_ts_delkey&#34;);
+</span></span><span class=line><span class=cl>    if (ts_curkey == NULL || ts_delkey == NULL) {
+</span></span><span class=line><span class=cl>        INITERROR;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    if (PyType_Ready(&amp;PyGreenlet_Type) &lt; 0) {
+</span></span><span class=line><span class=cl>        INITERROR;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    PyExc_GreenletError = PyErr_NewException(&#34;greenlet.error&#34;, NULL, NULL);
+</span></span><span class=line><span class=cl>    if (PyExc_GreenletError == NULL) {
+</span></span><span class=line><span class=cl>        INITERROR;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    PyExc_GreenletExit = PyErr_NewException(&#34;greenlet.GreenletExit&#34;, NULL, NULL);
+</span></span><span class=line><span class=cl>    if (PyExc_GreenletExit == NULL) {
+</span></span><span class=line><span class=cl>        INITERROR;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    ts_empty_tuple = PyTuple_New(0);
+</span></span><span class=line><span class=cl>    if (ts_empty_tuple == NULL) {
+</span></span><span class=line><span class=cl>        INITERROR;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    ts_empty_dict = PyDict_New();
+</span></span><span class=line><span class=cl>    if (ts_empty_dict == NULL) {
+</span></span><span class=line><span class=cl>        INITERROR;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // 1. 创建root greenlet对象，首先会将ts_current创建为main greenlet
+</span></span><span class=line><span class=cl>    ts_current = green_create_main();
+</span></span><span class=line><span class=cl>    if (ts_current == NULL) {
+</span></span><span class=line><span class=cl>        INITERROR;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    Py_INCREF(&amp;PyGreenlet_Type);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // 2. 为当前的模块添加属性，如下的这个是比较重要的，也就是greenlet的构造结构
+</span></span><span class=line><span class=cl>    PyModule_AddObject(m, &#34;greenlet&#34;, (PyObject*) &amp;PyGreenlet_Type);
+</span></span><span class=line><span class=cl>    Py_INCREF(PyExc_GreenletError);
+</span></span><span class=line><span class=cl>    PyModule_AddObject(m, &#34;error&#34;, PyExc_GreenletError);
+</span></span><span class=line><span class=cl>    Py_INCREF(PyExc_GreenletExit);
+</span></span><span class=line><span class=cl>    PyModule_AddObject(m, &#34;GreenletExit&#34;, PyExc_GreenletExit);
+</span></span><span class=line><span class=cl>    PyModule_AddObject(m, &#34;GREENLET_USE_GC&#34;, PyBool_FromLong(GREENLET_USE_GC));
+</span></span><span class=line><span class=cl>    PyModule_AddObject(m, &#34;GREENLET_USE_TRACING&#34;, PyBool_FromLong(GREENLET_USE_TRACING));
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    /* also publish module-level data as attributes of the greentype. */
+</span></span><span class=line><span class=cl>    for (p=copy_on_greentype; *p; p++) {
+</span></span><span class=line><span class=cl>        PyObject* o = PyObject_GetAttrString(m, *p);
+</span></span><span class=line><span class=cl>        if (!o) continue;
+</span></span><span class=line><span class=cl>        PyDict_SetItemString(PyGreenlet_Type.tp_dict, *p, o);
+</span></span><span class=line><span class=cl>        Py_DECREF(o);
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    /* Expose C API ... ... */
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>代码挺长，不过其实就是 1) 初始化；2) 创建默认的最顶层的 greenlet 对象，而且将 ts_current 这个全局变量指向它；3) 将 greenlet 模块添加到当前的 namespace 。</p><p>接下来看看这个初始化创建的顶层的 greenlet 对象是怎么创建的，其中创建顶层 greenlet 对象，栈底部为 -1，顶部为 1 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>static</span> <span class=n>PyGreenlet</span><span class=o>*</span> <span class=nf>green_create_main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>PyGreenlet</span><span class=o>*</span> <span class=n>gmain</span><span class=p>;</span>  <span class=c1>//待会创建的顶层的greenlet的引用
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>//创建一个字典对象
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>PyObject</span><span class=o>*</span> <span class=n>dict</span> <span class=o>=</span> <span class=nf>PyThreadState_GetDict</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>dict</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=nf>PyErr_Occurred</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>            <span class=nf>PyErr_NoMemory</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 为当前线程创建main greenlet对象
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>gmain</span> <span class=o>=</span> <span class=p>(</span><span class=n>PyGreenlet</span><span class=o>*</span><span class=p>)</span> <span class=nf>PyType_GenericAlloc</span><span class=p>(</span><span class=o>&amp;</span><span class=n>PyGreenlet_Type</span><span class=p>,</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>gmain</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>gmain</span><span class=o>-&gt;</span><span class=n>stack_start</span> <span class=o>=</span> <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=mi>1</span><span class=p>;</span> <span class=c1>// 栈顶设置为1
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>gmain</span><span class=o>-&gt;</span><span class=n>stack_stop</span> <span class=o>=</span> <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span> <span class=c1>// 栈底设置为-1，char*是无符号，可以保证这个是最大值
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>gmain</span><span class=o>-&gt;</span><span class=n>run_info</span> <span class=o>=</span> <span class=n>dict</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>Py_INCREF</span><span class=p>(</span><span class=n>dict</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>gmain</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述参数中，将 stack_stop 设置为 -1，因为是无符号，所以 -1 其实是最大值。在该函数中，其实最重要的就是设置了两个值：stack_stop、stack_start，其中后者为栈顶，保存了当前最新的栈内容。</p><a class=anchor id=结构体定义></a><h1>结构体定义 <a href=#%e7%bb%93%e6%9e%84%e4%bd%93%e5%ae%9a%e4%b9%89 aria-hidden=true>#</a></h1><p>接下来看看 greenlet 的真正结构体在头文件中的定义，如下所示。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cm>/**
+</span></span></span><span class=line><span class=cl><span class=cm> * States:
+</span></span></span><span class=line><span class=cl><span class=cm> * stack_stop == NULL &amp;&amp; stack_start == NULL:  did not start yet
+</span></span></span><span class=line><span class=cl><span class=cm> * stack_stop != NULL &amp;&amp; stack_start == NULL:  already finished
+</span></span></span><span class=line><span class=cl><span class=cm> * stack_stop != NULL &amp;&amp; stack_start != NULL:  active
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span> <span class=k>struct</span> <span class=n>_greenlet</span> <span class=p>{</span> <span class=c1>// 协程对应的C结构体
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>PyObject_HEAD</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span><span class=o>*</span> <span class=n>stack_start</span><span class=p>;</span>             <span class=c1>// 栈顶，NULL标示已经结束了或未开始
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>char</span><span class=o>*</span> <span class=n>stack_stop</span><span class=p>;</span>              <span class=c1>// 栈底
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>char</span><span class=o>*</span> <span class=n>stack_copy</span><span class=p>;</span>              <span class=c1>// 栈保存到的内存地址
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>intptr_t</span> <span class=n>stack_saved</span><span class=p>;</span>          <span class=c1>// 栈保存在外面的大小
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>struct</span> <span class=n>_greenlet</span><span class=o>*</span> <span class=n>stack_prev</span><span class=p>;</span>  <span class=c1>// 栈之间的上下层关系
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>struct</span> <span class=n>_greenlet</span><span class=o>*</span> <span class=n>parent</span><span class=p>;</span>      <span class=c1>// 父对象，构成greenlet对象的层次关系
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>PyObject</span><span class=o>*</span> <span class=n>run_info</span><span class=p>;</span>            <span class=c1>// 对应的run对象（函数）
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>struct</span> <span class=n>_frame</span><span class=o>*</span> <span class=n>top_frame</span><span class=p>;</span>      <span class=c1>// 这里可以理解为主要是控制python程序计数器
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>int</span> <span class=n>recursion_depth</span><span class=p>;</span>           <span class=c1>// 栈深度
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>PyObject</span><span class=o>*</span> <span class=n>weakreflist</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>PyObject</span><span class=o>*</span> <span class=n>exc_type</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>PyObject</span><span class=o>*</span> <span class=n>exc_value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>PyObject</span><span class=o>*</span> <span class=n>exc_traceback</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>PyObject</span><span class=o>*</span> <span class=n>dict</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span> <span class=n>PyGreenlet</span><span class=p>;</span>
+</span></span></code></pre></div><p>其中 stack_start、stack_stop 分别指向当前协程栈的顶部和底部，当前栈的内容从栈顶出、入栈；另外，如上所示，可以通过这几个标志位的值来判断当前 greenlet 对象的状态。</p><p>另外，通过如下的结构体定义 C 语言与 Python 的对应关系，其中包括了相应的方法，例如 <code>__init__()</code>、<code>__new__()</code> 等。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=n>PyTypeObject</span> <span class=n>PyGreenlet_Type</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>PyVarObject_HEAD_INIT</span><span class=p>(</span><span class=nb>NULL</span><span class=p>,</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;greenlet.greenlet&#34;</span><span class=p>,</span>                <span class=cm>/* tp_name */</span>
+</span></span><span class=line><span class=cl>    <span class=k>sizeof</span><span class=p>(</span><span class=n>PyGreenlet</span><span class=p>),</span>                 <span class=cm>/* tp_basicsize */</span>
+</span></span><span class=line><span class=cl>    <span class=mi>0</span><span class=p>,</span>                                  <span class=cm>/* tp_itemsize */</span>
+</span></span><span class=line><span class=cl>    <span class=p>(</span><span class=n>destructor</span><span class=p>)</span><span class=n>green_dealloc</span><span class=p>,</span>          <span class=cm>/* tp_dealloc */</span>
+</span></span><span class=line><span class=cl>    <span class=o>&amp;</span><span class=n>green_as_number</span><span class=p>,</span>                   <span class=cm>/* tp_as _number*/</span>
+</span></span><span class=line><span class=cl>    <span class=n>Py_TPFLAGS_DEFAULT</span> <span class=o>|</span> <span class=n>Py_TPFLAGS_BASETYPE</span> <span class=o>|</span> <span class=n>GREENLET_GC_FLAGS</span><span class=p>,</span>   <span class=cm>/* tp_flags */</span>
+</span></span><span class=line><span class=cl>    <span class=p>(</span><span class=n>traverseproc</span><span class=p>)</span><span class=n>GREENLET_tp_traverse</span><span class=p>,</span> <span class=cm>/* tp_traverse */</span>
+</span></span><span class=line><span class=cl>    <span class=p>(</span><span class=n>inquiry</span><span class=p>)</span><span class=n>GREENLET_tp_clear</span><span class=p>,</span>         <span class=cm>/* tp_clear */</span>
+</span></span><span class=line><span class=cl>    <span class=mi>0</span><span class=p>,</span>                                  <span class=cm>/* tp_richcompare */</span>
+</span></span><span class=line><span class=cl>    <span class=nf>offsetof</span><span class=p>(</span><span class=n>PyGreenlet</span><span class=p>,</span> <span class=n>weakreflist</span><span class=p>),</span>  <span class=cm>/* tp_weaklistoffset */</span>
+</span></span><span class=line><span class=cl>    <span class=n>green_methods</span><span class=p>,</span>                      <span class=cm>/* tp_methods, 对象方法的定义 */</span>
+</span></span><span class=line><span class=cl>    <span class=n>green_getsets</span><span class=p>,</span>                      <span class=cm>/* tp_getset, 属性方法 */</span>
+</span></span><span class=line><span class=cl>    <span class=nf>offsetof</span><span class=p>(</span><span class=n>PyGreenlet</span><span class=p>,</span> <span class=n>dict</span><span class=p>),</span>         <span class=cm>/* tp_dictoffset，这个对象的dict的偏移 */</span>
+</span></span><span class=line><span class=cl>    <span class=p>(</span><span class=n>initproc</span><span class=p>)</span><span class=n>green_init</span><span class=p>,</span>               <span class=cm>/* tp_init，初始化，这里主要是设置run以及parent */</span>
+</span></span><span class=line><span class=cl>    <span class=n>GREENLET_tp_alloc</span><span class=p>,</span>                  <span class=cm>/* tp_alloc，内存分配，其实也就是分配sizeof(PyGreenlet)的大小 */</span>
+</span></span><span class=line><span class=cl>    <span class=n>green_new</span><span class=p>,</span>                          <span class=cm>/* tp_new, 构造函数，这里会将parent默认的设置为全局的greenlet */</span>
+</span></span><span class=line><span class=cl>    <span class=n>GREENLET_tp_free</span><span class=p>,</span>                   <span class=cm>/* tp_free，释放 */</span>
+</span></span><span class=line><span class=cl>    <span class=p>(</span><span class=n>inquiry</span><span class=p>)</span><span class=n>GREENLET_tp_is_gc</span><span class=p>,</span>         <span class=cm>/* tp_is_gc */</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></div><a class=anchor id=初始化></a><h2>初始化 <a href=#%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h2><p>上述的结构体中，包含了构造、初始化函数，Python 函数在执行时，分别调用 <code>__new__()</code>、<code>__init__()</code> 函数，在此也就分别对应了 <code>green_new()</code> 和 <code>green_init()</code> 函数；接下来，我们依次查看这两个函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>// 创建一个gr对象，默认将parent指向当前环境所属的gr对象，如果构造函数中指定，则会在init设置
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>static</span> <span class=n>PyObject</span><span class=o>*</span> <span class=nf>green_new</span><span class=p>(</span><span class=n>PyTypeObject</span> <span class=o>*</span><span class=n>type</span><span class=p>,</span> <span class=n>PyObject</span> <span class=o>*</span><span class=n>args</span><span class=p>,</span> <span class=n>PyObject</span> <span class=o>*</span><span class=n>kwds</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 先用基本对象来构造
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>PyObject</span><span class=o>*</span> <span class=n>o</span> <span class=o>=</span> <span class=n>PyBaseObject_Type</span><span class=p>.</span><span class=nf>tp_new</span><span class=p>(</span><span class=n>type</span><span class=p>,</span> <span class=n>ts_empty_tuple</span><span class=p>,</span> <span class=n>ts_empty_dict</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>o</span> <span class=o>!=</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>STATE_OK</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nf>Py_DECREF</span><span class=p>(</span><span class=n>o</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Py_INCREF</span><span class=p>(</span><span class=n>ts_current</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// 默认将parent设置为ts_current，意味着新建gr的parent就是创建gr的对象
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=p>((</span><span class=n>PyGreenlet</span><span class=o>*</span><span class=p>)</span> <span class=n>o</span><span class=p>)</span><span class=o>-&gt;</span><span class=n>parent</span> <span class=o>=</span> <span class=n>ts_current</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>o</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在该函数中，非常清楚，首先构造父类，接着将当前 greenlet 设置未默认的 parent，也就是说假如在 A 中创建另外一个 greenlet B，则会将 B 的 parent 设置为 A；如果初始化时传入 parent 参数，则会在后面的 init 函数中设置。</p><p>接下来看看 <code>__init__()</code> 函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>// 主要是检查设置run以及parent
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>static</span> <span class=kt>int</span> <span class=nf>green_init</span><span class=p>(</span><span class=n>PyGreenlet</span> <span class=o>*</span><span class=n>self</span><span class=p>,</span> <span class=n>PyObject</span> <span class=o>*</span><span class=n>args</span><span class=p>,</span> <span class=n>PyObject</span> <span class=o>*</span><span class=n>kwargs</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>PyObject</span> <span class=o>*</span><span class=n>run</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>PyObject</span><span class=o>*</span> <span class=n>nparent</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>static</span> <span class=kt>char</span> <span class=o>*</span><span class=n>kwlist</span><span class=p>[]</span> <span class=o>=</span> <span class=p>{</span><span class=s>&#34;run&#34;</span><span class=p>,</span> <span class=s>&#34;parent&#34;</span><span class=p>,</span> <span class=mi>0</span><span class=p>};</span> <span class=c1>// 查看两个对象是否存在
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=nf>PyArg_ParseTupleAndKeywords</span><span class=p>(</span><span class=n>args</span><span class=p>,</span> <span class=n>kwargs</span><span class=p>,</span> <span class=s>&#34;|OO:green&#34;</span><span class=p>,</span> <span class=n>kwlist</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                     <span class=o>&amp;</span><span class=n>run</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>nparent</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>run</span> <span class=o>!=</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>  <span class=c1>// run对象必须存在，否则需要进行设置
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=k>if</span> <span class=p>(</span><span class=nf>green_setrun</span><span class=p>(</span><span class=n>self</span><span class=p>,</span> <span class=n>run</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>nparent</span> <span class=o>!=</span> <span class=nb>NULL</span> <span class=o>&amp;&amp;</span> <span class=n>nparent</span> <span class=o>!=</span> <span class=n>Py_None</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nf>green_setparent</span><span class=p>(</span><span class=n>self</span><span class=p>,</span> <span class=n>nparent</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span> <span class=c1>// 判断parent链是否正常
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// 在初始化的时候可以没有parent
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>这里初始化函数主要是设置构造的时候传递进来的执行函数，也就是 run 对象，然后就如果有传递 parent 的话，将会将这个 greenlet 对象的 parent 设置为传递进来的 greenlet 对象。</p><a class=anchor id=任务切换></a><h2>任务切换 <a href=#%e4%bb%bb%e5%8a%a1%e5%88%87%e6%8d%a2 aria-hidden=true>#</a></h2><p><code>gr1.switch("foo")</code> 实际会调用 <code>green_switch()</code> 函数，最终调用 <code>g_switch()</code>，实际的入参是 <code>target=gr1、args="foo"</code>，函数的实现如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>// 第一个参数是执行switch的greenlet对象，第二参数是参数数组，第三个是关键字参数
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>static</span> <span class=n>PyObject</span><span class=o>*</span> <span class=nf>green_switch</span><span class=p>(</span><span class=n>PyGreenlet</span><span class=o>*</span> <span class=n>self</span><span class=p>,</span> <span class=n>PyObject</span><span class=o>*</span> <span class=n>args</span><span class=p>,</span> <span class=n>PyObject</span><span class=o>*</span> <span class=n>kwargs</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>Py_INCREF</span><span class=p>(</span><span class=n>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>Py_XINCREF</span><span class=p>(</span><span class=n>kwargs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 实际是调用g_switch方法来进行栈的切换
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>return</span> <span class=nf>single_result</span><span class=p>(</span><span class=nf>g_switch</span><span class=p>(</span><span class=n>self</span><span class=p>,</span> <span class=n>args</span><span class=p>,</span> <span class=n>kwargs</span><span class=p>));</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>接着看看 g_switch() 函数的实现。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>static</span> <span class=n>PyObject</span><span class=o>*</span> <span class=nf>g_switch</span><span class=p>(</span><span class=n>PyGreenlet</span><span class=o>*</span> <span class=n>target</span><span class=p>,</span> <span class=n>PyObject</span><span class=o>*</span> <span class=n>args</span><span class=p>,</span> <span class=n>PyObject</span><span class=o>*</span> <span class=n>kwargs</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=cm>/* _consumes_ a reference to the args tuple and kwargs dict,
+</span></span></span><span class=line><span class=cl><span class=cm>       and return a new tuple reference */</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>err</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>PyObject</span><span class=o>*</span> <span class=n>run_info</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* check ts_current */</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>STATE_OK</span><span class=p>)</span> <span class=p>{</span>     <span class=c1>// 查看当前gr状态，如果有异常则减少参数的引用计数，并返回
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nf>Py_XDECREF</span><span class=p>(</span><span class=n>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Py_XDECREF</span><span class=p>(</span><span class=n>kwargs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 1. 获取运行信息
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>run_info</span> <span class=o>=</span> <span class=nf>green_statedict</span><span class=p>(</span><span class=n>target</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>run_info</span> <span class=o>==</span> <span class=nb>NULL</span> <span class=o>||</span> <span class=n>run_info</span> <span class=o>!=</span> <span class=n>ts_current</span><span class=o>-&gt;</span><span class=n>run_info</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Py_XDECREF</span><span class=p>(</span><span class=n>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Py_XDECREF</span><span class=p>(</span><span class=n>kwargs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>PyErr_SetString</span><span class=p>(</span><span class=n>PyExc_GreenletError</span><span class=p>,</span> <span class=n>run_info</span>
+</span></span><span class=line><span class=cl>                <span class=o>?</span> <span class=s>&#34;cannot switch to a different thread&#34;</span>
+</span></span><span class=line><span class=cl>                <span class=o>:</span> <span class=s>&#34;cannot switch to a garbage collected greenlet&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>ts_passaround_args</span> <span class=o>=</span> <span class=n>args</span><span class=p>;</span>      <span class=c1>// 保存switch传进来的参数
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>ts_passaround_kwargs</span> <span class=o>=</span> <span class=n>kwargs</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* find the real target by ignoring dead greenlets,
+</span></span></span><span class=line><span class=cl><span class=cm>       and if necessary starting a greenlet. */</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 2. 找到真正需要指定的greenlet
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>while</span> <span class=p>(</span><span class=n>target</span><span class=p>)</span> <span class=p>{</span>  <span class=c1>// 通过parent引用向上遍历，只要找到一个可用的就停止
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=k>if</span> <span class=p>(</span><span class=nf>PyGreenlet_ACTIVE</span><span class=p>(</span><span class=n>target</span><span class=p>))</span> <span class=p>{</span>   <span class=c1>// 找到一个可用的greenlet，start!=NULL
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=n>ts_target</span> <span class=o>=</span> <span class=n>target</span><span class=p>;</span>            <span class=c1>// 指向运行的greenlet
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=n>err</span> <span class=o>=</span> <span class=nf>g_switchstack</span><span class=p>();</span>         <span class=c1>// 切换到这个栈，里面会调用slp_switch方法，用汇编实现
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=nf>PyGreenlet_STARTED</span><span class=p>(</span><span class=n>target</span><span class=p>))</span> <span class=p>{</span> <span class=c1>// 如果都没有启动，那么需要初始化，stop!=NULL
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=kt>void</span><span class=o>*</span> <span class=n>dummymarker</span><span class=p>;</span>             <span class=c1>// 通过该对象地址来分割新创建栈，用来做新栈的底部
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=n>ts_target</span> <span class=o>=</span> <span class=n>target</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=n>err</span> <span class=o>=</span> <span class=nf>g_initialstub</span><span class=p>(</span><span class=o>&amp;</span><span class=n>dummymarker</span><span class=p>);</span> <span class=c1>// 对于没有启动的协程，这里需要进行初始化
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=k>if</span> <span class=p>(</span><span class=n>err</span> <span class=o>==</span> <span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>continue</span><span class=p>;</span> <span class=cm>/* retry the switch */</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>            <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=n>target</span> <span class=o>=</span> <span class=n>target</span><span class=o>-&gt;</span><span class=n>parent</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* For a very short time, immediately after the &#39;atomic&#39;
+</span></span></span><span class=line><span class=cl><span class=cm>       g_switchstack() call, global variables are in a known state.
+</span></span></span><span class=line><span class=cl><span class=cm>       We need to save everything we need, before it is destroyed
+</span></span></span><span class=line><span class=cl><span class=cm>       by calls into arbitrary Python code. */</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>//这里处理switch返回参数，这里
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>//这里可以看出来，其实switch的返回值也是通过ts_passaround_args，ts_passaround_kwargs这两个全局变量来传递的
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>args</span> <span class=o>=</span> <span class=n>ts_passaround_args</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>ts_passaround_args</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>kwargs</span> <span class=o>=</span> <span class=n>ts_passaround_kwargs</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>ts_passaround_kwargs</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>err</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>   <span class=c1>//如果在栈的切换的时候出现了错误
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=cm>/* Turn switch errors into switch throws */</span>
+</span></span><span class=line><span class=cl>        <span class=nf>assert</span><span class=p>(</span><span class=n>ts_origin</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Py_CLEAR</span><span class=p>(</span><span class=n>kwargs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Py_CLEAR</span><span class=p>(</span><span class=n>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>PyGreenlet</span> <span class=o>*</span><span class=n>origin</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>origin</span> <span class=o>=</span> <span class=n>ts_origin</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>ts_origin</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Py_DECREF</span><span class=p>(</span><span class=n>origin</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* We need to figure out what values to pass to the target greenlet
+</span></span></span><span class=line><span class=cl><span class=cm>       based on the arguments that have been passed to greenlet.switch(). If
+</span></span></span><span class=line><span class=cl><span class=cm>       switch() was just passed an arg tuple, then we&#39;ll just return that.
+</span></span></span><span class=line><span class=cl><span class=cm>       If only keyword arguments were passed, then we&#39;ll pass the keyword
+</span></span></span><span class=line><span class=cl><span class=cm>       argument dict. Otherwise, we&#39;ll create a tuple of (args, kwargs) and
+</span></span></span><span class=line><span class=cl><span class=cm>       return both. */</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>kwargs</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span>  <span class=c1>//没有关键字参数，那么直接返回参数列表
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>args</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=nf>PyDict_Size</span><span class=p>(</span><span class=n>kwargs</span><span class=p>)</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Py_DECREF</span><span class=p>(</span><span class=n>kwargs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>args</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=nf>PySequence_Length</span><span class=p>(</span><span class=n>args</span><span class=p>)</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Py_DECREF</span><span class=p>(</span><span class=n>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>kwargs</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>else</span>  <span class=c1>//两种参数都有
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>PyObject</span> <span class=o>*</span><span class=n>tuple</span> <span class=o>=</span> <span class=nf>PyTuple_New</span><span class=p>(</span><span class=mi>2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>tuple</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nf>Py_DECREF</span><span class=p>(</span><span class=n>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=nf>Py_DECREF</span><span class=p>(</span><span class=n>kwargs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nf>PyTuple_SET_ITEM</span><span class=p>(</span><span class=n>tuple</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=n>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>PyTuple_SET_ITEM</span><span class=p>(</span><span class=n>tuple</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=n>kwargs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>tuple</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>源码可以从 <a href=https://github.com/python-greenlet/greenlet>github-greenlet</a> 下载，或者从 <a href=https://pypi.python.org/pypi/greenlet>Lightweight in-process concurrent programming</a>，以及帮助文档 <a href=http://greenlet.readthedocs.io/en/latest/>greenlet: Lightweight concurrent programming</a> 。</p><p>可以参考官方文档 <a href=http://sdiehl.github.io/gevent-tutorial/>gevent For the Working Python Developer</a>，或者 <a href=http://xlambda.com/gevent-tutorial/>gevent程序员值南</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li><li><a href=#greenlet-入门>greenlet 入门</a></li></ul></li><li><a href=#greenlent-层次关系>greenlent 层次关系</a></li><li><a href=#源码解析>源码解析</a></li><li><a href=#模块初始化>模块初始化</a></li><li><a href=#结构体定义>结构体定义</a><ul><li><a href=#初始化>初始化</a></li><li><a href=#任务切换>任务切换</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

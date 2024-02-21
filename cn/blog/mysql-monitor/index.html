@@ -1,0 +1,189 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 监控指标 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="为了排查问题，对数据库的监控是必不可少的，在此介绍下 MySQL 中的常用监控指标。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL 监控指标</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-10-11</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/monitor/ role=button>monitor</a></div></div><hr><div class=content><p>为了排查问题，对数据库的监控是必不可少的，在此介绍下 MySQL 中的常用监控指标。</p><p><img alt="Monitor Logo" src=images/monitor-logo.png class="mx-auto d-block"></p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>MySQL 有多个分支版本，常见的有 MySQL、Percona、MariaDB，各个版本所对应的监控项也会有些区别，在此仅介绍一些通用的监控项。</p><p>通常，监控项的源码是在 <code>mysql/mysqld.cc</code> 文件中定义，其内容如下所示。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>SHOW_VAR status_vars[]= {
+</span></span><span class=line><span class=cl>    {&#34;Aborted_clients&#34;,          (char*) &amp;aborted_threads,        SHOW_LONG},
+</span></span><span class=line><span class=cl>    {&#34;Aborted_connects&#34;,         (char*) &amp;aborted_connects,       SHOW_LONG},
+</span></span><span class=line><span class=cl>    {&#34;Acl&#34;,                      (char*) acl_statistics,          SHOW_ARRAY},
+</span></span><span class=line><span class=cl>    // ... ...
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></div><a class=anchor id=监控></a><h1>监控 <a href=#%e7%9b%91%e6%8e%a7 aria-hidden=true>#</a></h1><p>对于数据库，通常可以主动监控以下四个与性能及资源利用率相关的指标：</p><ul><li>查询吞吐量</li><li>查询执行性能</li><li>连接情况</li><li>缓冲池使用情况</li></ul><a class=anchor id=吞吐量></a><h2>吞吐量 <a href=#%e5%90%9e%e5%90%90%e9%87%8f aria-hidden=true>#</a></h2><p>在 MySQL 中有各种针对不同命令的统计，其监控项指标以 <code>Com_XXX</code> 方式命名，其中比较常用的统计项包括了 TPS/QPS。</p><p>而 MySQL 与 QPS 相关的包括了三个监控项，分别为 <code>Queries</code>、<code>Questions</code>、<code>Com_select</code>，一般会采用 <code>Com_select</code> 作为采集项；对于 TPS，一般认为是 <code>Com_insert + Com_update + Com_delete</code> 三个统计项的和。</p><a class=anchor id=queries-和-questioins-区别></a><h3>Queries 和 Questioins 区别 <a href=#queries-%e5%92%8c-questioins-%e5%8c%ba%e5%88%ab aria-hidden=true>#</a></h3><p>如下是 <a href=http://dev.mysql.com/doc/refman/en/server-status-variables.html>Server Status Variables</a> 中对这两个值的介绍。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Queries : The number of statements executed by the server. This variable
+</span></span><span class=line><span class=cl>includes statements executed within stored programs, unlike the Questions
+</span></span><span class=line><span class=cl>variable. It does not count COM_PING or COM_STATISTICS commands.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Questions : The number of statements executed by the server. This includes
+</span></span><span class=line><span class=cl>only statements sent to the server by clients and not statements executed
+</span></span><span class=line><span class=cl>within stored programs, unlike the Queries variable. This variable does
+</span></span><span class=line><span class=cl>not count COM_PING, COM_STATISTICS, COM_STMT_PREPARE, COM_STMT_CLOSE, or
+</span></span><span class=line><span class=cl>COM_STMT_RESET commands.
+</span></span></code></pre></div><p>也就是说，如果不使用 prepared statements ，那么两者的区别是 Questions 会将存储过程作为一个语句；而 Queries 会统计存储过程中的各个执行的语句。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW STATUS LIKE &#34;questions&#34;;        ← 查看本连接执行的查询SQL数
+</span></span><span class=line><span class=cl>+---------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name | Value |
+</span></span><span class=line><span class=cl>+---------------+-------+
+</span></span><span class=line><span class=cl>| Questions     | 2     |
+</span></span><span class=line><span class=cl>+---------------+-------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW STATUS LIKE &#34;queries&#34;;
+</span></span><span class=line><span class=cl>+---------------+----------+
+</span></span><span class=line><span class=cl>| Variable_name | Value    |
+</span></span><span class=line><span class=cl>+---------------+----------+
+</span></span><span class=line><span class=cl>| Queries       | 21241470 |
+</span></span><span class=line><span class=cl>+---------------+----------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span></code></pre></div><p>上述的 questions 是会话级别的，当然可以通过 global 查看全局的变量。</p><p>另外，MySQL 会在执行 SQL 之前开始增加上述的统计计数；而当前正在执行的 SQL 数量则可以通过 threads_running 查看。</p><a class=anchor id=总结></a><h3>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Questions        已执行的由客户端发出的语句
+</span></span><span class=line><span class=cl>Com_select       执行SELECT语句的数量，通常也就是QPS
+</span></span><span class=line><span class=cl>Writes           Com_insert+Com_update+Com_delete，也就是TPS
+</span></span></code></pre></div><a class=anchor id=执行性能></a><h2>执行性能 <a href=#%e6%89%a7%e8%a1%8c%e6%80%a7%e8%83%bd aria-hidden=true>#</a></h2><p>目前，有几种方式可以用来查看 MySQL 的执行性能问题，可以参考如下。</p><a class=anchor id=performance_schema></a><h3>performance_schema <a href=#performance_schema aria-hidden=true>#</a></h3><p>在 <code>events_statements_summary_by_digest</code> 表中保存了许多关键指标，均以微秒为单位，该表会忽略数值、规范化空格与大小写。</p><p>如果要以微秒为单位查看各个 database 的平均运行时间，或者出现的错误语句总数，可以通过如下方式查看：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SELECT schema_name, SUM(count_star) count, \
+</span></span><span class=line><span class=cl>       ROUND((SUM(sum_timer_wait)/SUM(count_star))/1000000) AS avg_microsec \
+</span></span><span class=line><span class=cl>       FROM performance_schema.events_statements_summary_by_digest
+</span></span><span class=line><span class=cl>       WHERE schema_name IS NOT NULL GROUP BY schema_name;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SELECT schema_name, SUM(sum_errors) err_count \
+</span></span><span class=line><span class=cl>       FROM performance_schema.events_statements_summary_by_digest \
+</span></span><span class=line><span class=cl>       WHERE schema_name IS NOT NULL GROUP BY schema_name;
+</span></span></code></pre></div><a class=anchor id=sys></a><h3>sys <a href=#sys aria-hidden=true>#</a></h3><p>sys 存储引擎默认在 5.7.7 中添加，对于 5.6 可以手动安装，详细可以参考 <a href=https://github.com/mysql/mysql-sys>github - sys schema</a> 。</p><a class=anchor id=慢查询></a><h3>慢查询 <a href=#%e6%85%a2%e6%9f%a5%e8%af%a2 aria-hidden=true>#</a></h3><p>MySQL 提供了一个 <code>Slow_queries</code> 计数器，当查询的执行时间超过 <code>long_query_time</code> 参数指定的值之后，该计数器就会增加，默认设置为 10 秒。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;long_query_time&#39;;
+</span></span><span class=line><span class=cl>+-----------------+-----------+
+</span></span><span class=line><span class=cl>| Variable_name   | Value     |
+</span></span><span class=line><span class=cl>+-----------------+-----------+
+</span></span><span class=line><span class=cl>| long_query_time | 10.000000 |
+</span></span><span class=line><span class=cl>+-----------------+-----------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL long_query_time = 5;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span></code></pre></div><p>需要注意的是，需要关闭会话然后重新连接之后，才能使该参数生效。</p><a class=anchor id=总结-1></a><h3>总结 <a href=#%e6%80%bb%e7%bb%93-1 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Slow_queries         慢查询的数量
+</span></span></code></pre></div><p>其它的一些比较适合发现性能问题后用于排查。</p><a class=anchor id=连接情况></a><h2>连接情况 <a href=#%e8%bf%9e%e6%8e%a5%e6%83%85%e5%86%b5 aria-hidden=true>#</a></h2><p>监控客户端连接情况相当重要，因为一旦可用连接耗尽，新的客户端连接就会遭到拒绝，MySQL 默认的连接数限制为 151，可通过下面的方法在配置文件中进行设置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>max_connections = 200
+</span></span></code></pre></div><p>通过如下方法查询和临时设置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;max_connections&#39;;
+</span></span><span class=line><span class=cl>+-----------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name   | Value |
+</span></span><span class=line><span class=cl>+-----------------+-------+
+</span></span><span class=line><span class=cl>| max_connections | 151   |
+</span></span><span class=line><span class=cl>+-----------------+-------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL max_connections = 200;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span></code></pre></div><p>通常 Linux 可以处理 500~1000 个连接，如果 RAM 资源足够，可处理 1W+ 个连接，而 Windows 由于采用 Posix 兼容层，能处理的连接数一般不超过 2048 个。</p><a class=anchor id=监控连接使用率></a><h3>监控连接使用率 <a href=#%e7%9b%91%e6%8e%a7%e8%bf%9e%e6%8e%a5%e4%bd%bf%e7%94%a8%e7%8e%87 aria-hidden=true>#</a></h3><p>如果采用每个连接一个线程的方式，可以通过 <code>Threads_connected</code> 查看，监控该指标与先前设置的连接限制，可以确保服务器拥有足够的容量处理新的连接。</p><p>另外，通过 <code>Threads_running</code> 指标，可以查看正在处理请求的线程，可以用来判断那些连接被占用但是却没有处理任何请求。</p><p>如果达到 <code>max_connections</code> 就会拒绝新的连接请求，<code>Connection_errors_max_connections</code> 指标就会开始增加，同时，追踪所有失败连接尝试的 <code>Aborted_connects</code> 指标也会开始增加。</p><p>另外，通过 <code>Connection_errors_internal</code> 这个指标，可以用来监控来自服务器本身导致的错误，例如内存不足。</p><a class=anchor id=总结-2></a><h3>总结 <a href=#%e6%80%bb%e7%bb%93-2 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Threads_connected                   已经建立的连接
+</span></span><span class=line><span class=cl>Threads_running                     正在运行的连接
+</span></span><span class=line><span class=cl>Connection_errors_internal          由于服务器内部本身导致的错误
+</span></span><span class=line><span class=cl>Aborted_connects                    尝试与服务器建立连接但是失败的次数
+</span></span><span class=line><span class=cl>Connection_errors_max_connections   由于到达最大连接数导致的错误
+</span></span></code></pre></div><a class=anchor id=缓冲池使用情况></a><h2>缓冲池使用情况 <a href=#%e7%bc%93%e5%86%b2%e6%b1%a0%e4%bd%bf%e7%94%a8%e6%83%85%e5%86%b5 aria-hidden=true>#</a></h2><p>InnoDB 使用一片内存区域作为缓冲区，用来缓存数据表与索引数据，缓冲区太小可能会导致数据库性能下滑，磁盘 I/O 攀升。</p><p>默认值一般是 <code>128MiB</code>，建议将其设置为物理内存的 <code>80%</code>；不过需要注意的是，InnoDB 可能会使用超过缓冲池 <code>10%</code>，如果耗尽内存，则会使用分页，从而使数据库性能受损。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>SHOW GLOBAL VARIABLES LIKE &#34;innodb_buffer_pool_chunk_size&#34;;
+</span></span><span class=line><span class=cl>SHOW GLOBAL VARIABLES LIKE &#34;innodb_buffer_pool_instances&#34;;
+</span></span></code></pre></div><p>如果 <code>innodb_buffer_pool_chunk_size</code> 查询没有返回结果，则表示在你使用的 MySQL 版本中此参数无法更改，其值为 <code>128MiB</code>，实际参数为 <code>innodb_buffer_pool_size</code> 。</p><p>在服务器启动时，你可以这样设置缓冲池的大小以及实例的数量：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ mysqld --innodb_buffer_pool_size=8G --innodb_buffer_pool_instances=16
+</span></span></code></pre></div><a class=anchor id=监控指标></a><h3>监控指标 <a href=#%e7%9b%91%e6%8e%a7%e6%8c%87%e6%a0%87 aria-hidden=true>#</a></h3><p><code>Innodb_buffer_pool_read_requests</code> 记录了读取请求的数量，而 <code>Innodb_buffer_pool_reads</code> 记录了缓冲池无法满足，因而只能从磁盘读取的请求数量，也就是说，如果 <code>Innodb_buffer_pool_reads</code> 的值开始增加，意味着数据库性能大有问题。</p><p>缓存的使用率和命中率可以通过如下方法计算：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(Innodb_buffer_pool_pages_total - Innodb_buffer_pool_pages_free) /
+</span></span><span class=line><span class=cl>    Innodb_buffer_pool_pages_total * 100%
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>(Innodb_buffer_pool_read_requests - Innodb_buffer_pool_reads) /
+</span></span><span class=line><span class=cl>    Innodb_buffer_pool_read_requests * 100%
+</span></span></code></pre></div><p>如果数据库从磁盘进行大量读取，而缓冲池还有许多闲置空间，这可能是因为缓存最近才清理过，还处于预热阶段。</p><a class=anchor id=总结-3></a><h3>总结 <a href=#%e6%80%bb%e7%bb%93-3 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Innodb_buffer_pool_pages_total          BP中总页面数
+</span></span><span class=line><span class=cl>Buffer pool utilization                 BP中页面的使用率
+</span></span><span class=line><span class=cl>Innodb_buffer_pool_read_requests        BP的读请求
+</span></span><span class=line><span class=cl>Innodb_buffer_pool_reads                需要读取磁盘的请求数
+</span></span></code></pre></div><a class=anchor id=响应时间></a><h1>响应时间 <a href=#%e5%93%8d%e5%ba%94%e6%97%b6%e9%97%b4 aria-hidden=true>#</a></h1><p>&ldquo;响应时间&rdquo; (Response Time, RT) 在数据库应用中，尤其是 OLTP 的场景，非常重要，但官方版本中一直没有加上这个统计功能。开始使用的是 tcpdump+mk-query-digest，再后来 tcprstat，很快 Percona 提供了响应时间统计插件。</p><p>对于 MariaDB 也存在类似的方式，可以通过如下的方式安装、测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1. 查看是否存在插件
+</span></span><span class=line><span class=cl>$ ls /opt/mariadb/lib/plugin | grep response
+</span></span><span class=line><span class=cl>query_response_time.so
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2. 安装插件
+</span></span><span class=line><span class=cl>mysql&gt; INSTALL PLUGIN query_response_time_audit SONAME &#39;query_response_time.so&#39;;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; INSTALL PLUGIN query_response_time SONAME &#39;query_response_time.so&#39;;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 3. 打开统计功能
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL query_response_time_stats = &#39;ON&#39;;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL query_response_time_flush = &#39;ON&#39;;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 4. 查看统计值
+</span></span><span class=line><span class=cl>mysql&gt; SHOW QUERY_RESPONSE_TIME;
+</span></span><span class=line><span class=cl>mysql&gt; SELECT * FROM information_schema.query_response_time;
+</span></span><span class=line><span class=cl>+----------------+-------+----------------+
+</span></span><span class=line><span class=cl>| Time           | Count | Total          |
+</span></span><span class=line><span class=cl>+----------------+-------+----------------+
+</span></span><span class=line><span class=cl>|       0.000001 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>|       0.000010 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>|       0.000100 |     1 |       0.000089 |
+</span></span><span class=line><span class=cl>|       0.001000 |    14 |       0.010173 |
+</span></span><span class=line><span class=cl>|       0.010000 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>|       0.100000 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>|       1.000000 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>|      10.000000 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>|     100.000000 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>|    1000.000000 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>|   10000.000000 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>|  100000.000000 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>| 1000000.000000 |     0 |       0.000000 |
+</span></span><span class=line><span class=cl>| TOO LONG       |     0 | TOO LONG       |
+</span></span><span class=line><span class=cl>+----------------+-------+----------------+
+</span></span><span class=line><span class=cl>14 rows in set (0.00 sec)
+</span></span></code></pre></div><p>默认的时间统计区间是按照基数 10 增长的，也就是说默认的区间如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(0;10^-6], (10^-6;10^-5], (10^-5;10^-4], ..., (10^-1;10^1], (10^1; 10^2], ...
+</span></span></code></pre></div><p>可以通过修改参数 <code>query_response_time_range_base</code> 来缩小时间区间，默认该是 10，实际的统计时间区间如上，可以修改为 2，则区间如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(0;2^-19], (2^-19;2^-18], (2^-18;2^-17], ..., (2^-1; 2^1], (2^1; 2^2], ...
+</span></span></code></pre></div><p>第一个区间总是最接近 <code>0.000001</code> 的区间开始；最后区间是到最接近且小于 <code>10000000</code> 处结束。</p><p>当然，有些比较从网上摘录的不错 SQL，可以根据自己需求修改。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>SELECT
+</span></span><span class=line><span class=cl>    case TRIM(time)
+</span></span><span class=line><span class=cl>        when &#39;0.000001&#39; then &#39;&lt;  1us&#39;
+</span></span><span class=line><span class=cl>        when &#39;0.000010&#39; then &#39;&lt; 10us&#39;
+</span></span><span class=line><span class=cl>        when &#39;0.000100&#39; then &#39;&lt;100us&#39;
+</span></span><span class=line><span class=cl>        when &#39;0.001000&#39; then &#39;&lt;  1ms&#39;
+</span></span><span class=line><span class=cl>        when &#39;0.010000&#39; then &#39;&lt; 10ms&#39;
+</span></span><span class=line><span class=cl>        when &#39;0.100000&#39; then &#39;&lt;100ms&#39;
+</span></span><span class=line><span class=cl>        when &#39;1.000000&#39; then &#39;&lt;   1s&#39;
+</span></span><span class=line><span class=cl>        when &#39;10.000000&#39; then &#39;&lt;  10s&#39;
+</span></span><span class=line><span class=cl>        when &#39;100.000000&#39; then &#39;&lt;100s&#39;
+</span></span><span class=line><span class=cl>        else &#39;&gt;100s&#39;
+</span></span><span class=line><span class=cl>    END as `RT area`,
+</span></span><span class=line><span class=cl>    CONCAT(ROUND(100*count/query_count,2),&#34;%&#34;) as percent,
+</span></span><span class=line><span class=cl>    count
+</span></span><span class=line><span class=cl>FROM(
+</span></span><span class=line><span class=cl>    SELECT
+</span></span><span class=line><span class=cl>        c.count,
+</span></span><span class=line><span class=cl>        c.time,
+</span></span><span class=line><span class=cl>        (
+</span></span><span class=line><span class=cl>            SELECT SUM(a.count)
+</span></span><span class=line><span class=cl>            FROM INFORMATION_SCHEMA.QUERY_RESPONSE_TIME as a
+</span></span><span class=line><span class=cl>            WHERE a.count != 0
+</span></span><span class=line><span class=cl>        ) as query_count
+</span></span><span class=line><span class=cl>    FROM INFORMATION_SCHEMA.QUERY_RESPONSE_TIME as c
+</span></span><span class=line><span class=cl>    WHERE c.count &gt; 0
+</span></span><span class=line><span class=cl>) d;
+</span></span></code></pre></div><a class=anchor id=其它监控项></a><h1>其它监控项 <a href=#%e5%85%b6%e5%ae%83%e7%9b%91%e6%8e%a7%e9%a1%b9 aria-hidden=true>#</a></h1><p>除了上述的监控项，常见的还有如下常用的方法。</p><a class=anchor id=1-是否可用></a><h3>1. 是否可用 <a href=#1-%e6%98%af%e5%90%a6%e5%8f%af%e7%94%a8 aria-hidden=true>#</a></h3><p>可以使用如下几条命令来查看当前 MySQL 服务是否处于运行状态。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysqladmin -h 127.1 -u root -pnew-password ping
+</span></span><span class=line><span class=cl>mysqladmin -h 127.1 -u root -pnew-password status
+</span></span></code></pre></div><a class=anchor id=2-用户管理></a><h3>2. 用户管理 <a href=#2-%e7%94%a8%e6%88%b7%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h3><p>严禁对用户的 <code>host</code> 部分采用 <code>%</code>，除非你想从世界任何一个地方登陆；默认不要使用 <code>GRANT ALL ON *.*</code> 给用户过度赋权。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; CREATE USER &#39;user&#39; IDENTIFIED BY &#39;password&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; GRANT privileges TO &#39;user&#39;@&#39;host&#39; [WITH GRANT OPTION];
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH PRIVILEGS;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; GRANT privileges  TO &#39;user&#39;@&#39;host&#39; IDENTIFIED BY &#39;password&#39; [WITH GRANT OPTION];
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH PRIVILEGS;
+</span></span></code></pre></div><a class=anchor id=3-连接数是否正常></a><h3>3. 连接数是否正常 <a href=#3-%e8%bf%9e%e6%8e%a5%e6%95%b0%e6%98%af%e5%90%a6%e6%ad%a3%e5%b8%b8 aria-hidden=true>#</a></h3><p>主要查看客户是否有由于没正确关闭连接而死掉的连接，有多少失败的连接，是否有恶意连接等。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看连接数，root会看到所有，其它用户只能看到自己的连接
+</span></span><span class=line><span class=cl>mysql&gt; SHOW FULL PROCESSLIST;
+</span></span><span class=line><span class=cl>$ mysqladmin -h host -u user -p processlist
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 当前失败连接数
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GLOBAL STATUS LIKE &#39;aborted_connects&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 由于客户没有正确关闭连接而死掉的连接数
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GLOBAL STATUS LIKE &#39;aborted_clients&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 最大连接数
+</span></span><span class=line><span class=cl>mysql&gt; SHOW CLOBAL VARIABLES LIKE &#39;max_connections&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GLOBAL STATUS LIKE &#39;max_connections&#39;;
+</span></span></code></pre></div><a class=anchor id=4-慢查询日志></a><h3>4. 慢查询日志 <a href=#4-%e6%85%a2%e6%9f%a5%e8%af%a2%e6%97%a5%e5%bf%97 aria-hidden=true>#</a></h3><p>慢查询日志对 SQL 调优来说是非常重要的，它记录了超过指定时间 <code>long_query_time</code> 的查询语句；一般只在需要时开启。</p><a class=anchor id=myisam></a><h1>MyISAM <a href=#myisam aria-hidden=true>#</a></h1><p>在对 MyISAM 存储引擎调优时，很多文章推荐使用 Key_read_requests 和 Key_reads 的比例作为调优的参考，来设置 key_buffer_size 参数的值，而实际上这是错误的，详细可以参考 <a href=https://www.percona.com/blog/2010/02/28/why-you-should-ignore-mysqls-key-cache-hit-ratio/>Why you should ignore MySQL&rsquo;s key cache hit ratio</a> 这篇文章。</p><p>简单介绍如下。</p><a class=anchor id=rate-vs-ratio></a><h2>rate VS. ratio <a href=#rate-vs-ratio aria-hidden=true>#</a></h2><p>首先需要注意的是，这里有两个重要的概念：<code>miss rate</code> 一般是每秒 miss 的数目；<code>miss ratio</code> 表示从磁盘读取和从 cache 读取的比例，该参数没有单位。</p><p>如下的两个参数可以通过 <code>SHOW GLOBAL STATUS</code> 命令查看，官方文档的解释如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Key_read_requests
+</span></span><span class=line><span class=cl>The number of requests to read a key block from the cache.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Key_reads
+</span></span><span class=line><span class=cl>The number of physical reads of a key block from disk.
+</span></span></code></pre></div><p>也就是说，两者分别对应了：A) 从缓存读取索引的请求次数；B) 从磁盘读取索引的请求次数。</p><blockquote><p>NOTE: 实际上，<code>Key_reads</code> 统计的并非严格意义上的读磁盘，严格来说应该是发送系统请求的次数。如果文件系统中有缓存的话，实际耗时就是系统调用，并没有磁盘读取的耗时。</p></blockquote><p>很多人认为 <code>Key_reads/Key_read_requests</code> 越小越好，否则就应该增大 <code>key_buffer_size</code> 的设置，但通过计数器的比例来调优有两个问题：</p><ol><li>比例并不显示数量的绝对值大小，并不知道总共的请求有多少；</li><li>计数器并没有考虑时间因素。</li></ol><p>假设有两台机器，其 miss ratio 分别为 <code>23%</code> 和 <code>0.1%</code>，因为没有读的请求量，很难判断那台机器需要进行调优。比如，前者是 23/100，后者则是 10K/10M 。</p><a class=anchor id=参数指标></a><h2>参数指标 <a href=#%e5%8f%82%e6%95%b0%e6%8c%87%e6%a0%87 aria-hidden=true>#</a></h2><p>虽说 <code>Key_read_requests</code> 大比小好，但是对于系统调优而言，更有意义的应该是单位时间内的 <code>Key_reads</code>，通常可以通过 <code>Key_reads/Uptime</code> 计算；该参数可以通过如下命令得到：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ mysqladmin ext -ri10 | grep Key_reads
+</span></span></code></pre></div><p>其中第一行表示的是系统启动后的总请求，在此可以忽略，下面的每行数值都表示 10 秒内的数据变化，这样就可以大致评估每秒有多少的磁盘请求，而且可以根据你的磁盘性能进行评估是否合理。</p><blockquote><p>NOTE: 命令里的 mysqladmin ext 其实就是 mysqladmin extended-status，你甚至可以简写成 mysqladmin e 。</p></blockquote><a class=anchor id=结论></a><h2>结论 <a href=#%e7%bb%93%e8%ae%ba aria-hidden=true>#</a></h2><p>通过 <code>Key_reads / Uptime</code> 替换 <code>Key_reads / Key_read_requests</code> 。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>可以参考官方文档 <a href=http://dev.mysql.com/doc/refman/en/server-status-variables.html>Reference Manual - Server Status Variables</a>，主要介绍各个监控项的含义。</li><li><a href=https://www.datadoghq.com/blog/monitoring-mysql-performance-metrics/>Monitoring MySQL performance metrics</a>，一篇很不错的介绍 MySQL 监控项文章，包括上述的吞吐量、执行性能、链接情况、缓冲池使用情况等。</li><li><a href=https://www.percona.com/blog/2010/02/28/why-you-should-ignore-mysqls-key-cache-hit-ratio/>Why you should ignore MySQL&rsquo;s key cache hit ratio</a> 这篇文章介绍了 MyISAM 缓存的调优，其中的思想其它参数也可以考虑。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#监控>监控</a><ul><li><a href=#吞吐量>吞吐量</a></li><li><a href=#执行性能>执行性能</a></li><li><a href=#连接情况>连接情况</a></li><li><a href=#缓冲池使用情况>缓冲池使用情况</a></li></ul></li><li><a href=#响应时间>响应时间</a></li><li><a href=#其它监控项>其它监控项</a><ul><li></li></ul></li><li><a href=#myisam>MyISAM</a><ul><li><a href=#rate-vs-ratio>rate VS. ratio</a></li><li><a href=#参数指标>参数指标</a></li><li><a href=#结论>结论</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

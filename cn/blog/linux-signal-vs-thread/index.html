@@ -1,0 +1,160 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 信号 VS. 线程 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="在开发多线程应用时，考虑到线程安全，一般会通过 pthread_mutex() 去保护全局变量。如果应用中使用了信号，信号在被处理后应用程序还将正常运行，那么此时就需要正确的处理。
+一般来说，需要在指定的线程中以同步的方式处理，以避免由于处理异步信号而给程序运行带来的不确定性风险。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 信号 VS. 线程</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-06-07</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kernel/ role=button>kernel</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kernel/ role=button>kernel</a></div></div><hr><div class=content><p>在开发多线程应用时，考虑到线程安全，一般会通过 <code>pthread_mutex()</code> 去保护全局变量。如果应用中使用了信号，信号在被处理后应用程序还将正常运行，那么此时就需要正确的处理。</p><p>一般来说，需要在指定的线程中以同步的方式处理，以避免由于处理异步信号而给程序运行带来的不确定性风险。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>在 Linux 环境中，每个进程都有自己的 Signal Mask，以及对应的 Signal Action ，这个行为集合决定了进程该如何处理信号。那么对于多线程来说：</p><ul><li>信号发生时，哪个线程会收到信号？</li><li>每个线程是否都有自己的 mask 及 action ？</li><li>每个线程能按自己的方式处理信号么？</li></ul><a class=anchor id=信号如何接收></a><h2>信号如何接收 <a href=#%e4%bf%a1%e5%8f%b7%e5%a6%82%e4%bd%95%e6%8e%a5%e6%94%b6 aria-hidden=true>#</a></h2><p>这要是情况而定，场景如下：</p><ul><li>如果是异常信号 (例如 SIGPIPE、SIGEGV 等)，则只有产生异常的线程收到并处理；</li><li>如果是用 <code>pthread_kill()</code> 产生的内部信号，则只有 <code>pthread_kill()</code> 参数中指定的目标线程收到并处理；</li><li>如果是外部使用 <code>kill</code> 命令产生信号 (如 SIGINT、SIGHUP 等)，则会遍历所有线程，直到找到一个不阻塞该信号的线程来处理 (一般是从主线程找起，而且只有一个线程能收到信号) 。</li><li>可以向指定的线程发送信号，该信号会被对应的线程处理，前提是该线程未阻塞对应的信号，如果阻塞则选择下一个未阻塞的线程。</li></ul><p>可以使用 kill + 线程 ID 向指定的线程发送信号，这也就意味着，如果线程没有阻塞改信号，那么就可以正常处理。</p><a class=anchor id=是否有独立-mask-和-action></a><h2>是否有独立 mask 和 action <a href=#%e6%98%af%e5%90%a6%e6%9c%89%e7%8b%ac%e7%ab%8b-mask-%e5%92%8c-action aria-hidden=true>#</a></h2><p>子线程的 mask 是会从主线程继承而来，每个线程都有自己独立的 Signal Mask，但所有线程共享进程的 Signal Action 。</p><p>这意味着，可以在线程中调用 <code>pthread_sigmask()</code> 来决定本线程阻塞哪些信号；但你不能调用 <code>sigaction()</code> 来指定单个线程的信号处理方式。</p><p>如果在某个线程中调用了 <code>sigaction()</code> 处理某个信号，那么这个进程中的未阻塞这个信号的线程在收到这个信号都会按同一种方式处理这个信号。</p><a class=anchor id=示例></a><h1>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h1><p>如果有多个线程为阻塞信号，那么我们无法确定那个线程会接收信号，但是可以默认将所有线程屏蔽，然后选择某个线程 (例如主进程) 做信号处理。</p><p>这里重点测试下外部发送 kill 信号到进程的场景。</p><a class=anchor id=信号屏蔽></a><h2>信号屏蔽 <a href=#%e4%bf%a1%e5%8f%b7%e5%b1%8f%e8%94%bd aria-hidden=true>#</a></h2><p>在 Linux 多线程应用中，可以通过 <code>pthread_sigmask()</code> 设置本线程的信号掩码，除了 SIGSEGV SIGKILL SIGSTOP 无法被阻塞外都可以阻塞；当接着调用 <code>pthread_create()</code> 创建新线程时，此线程的信号掩码会被新创建的线程继承。</p><p>可通过 <code>sigprocmask()</code> 或者 <code>pthread_sigmask()</code> 屏蔽信号，如果是线程之前屏蔽，那么新创建的线程会继承屏蔽后的信号；如果是创建之后设置，那么只会影响到新的线程。</p><ol><li>不屏蔽信号，此时主线程会接收到信号 (一般进程接收到信号后发送到主线程)，打印日志信息，但是不会直接退出，需要等待线程休眠 60s 之后；</li><li>通过 <code>pthread_sigmask()</code> 屏蔽信号，此时主线程信号被屏蔽，交由其它线程处理，在 <code>sleep()</code> 时被中断而直接退出。</li></ol><p>示例代码如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;pthread.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/syscall.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define gettid()    syscall(__NR_gettid)
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define log_info(fmt, args...)  do {                                    \
+</span></span></span><span class=line><span class=cl><span class=cp>	printf(&#34;[%ld] %ld info : &#34; fmt, gettid(), time(NULL), ## args); \
+</span></span></span><span class=line><span class=cl><span class=cp>} while(0)
+</span></span></span><span class=line><span class=cl><span class=cp>#define log_error(fmt, args...) do {                                    \
+</span></span></span><span class=line><span class=cl><span class=cp>	printf(&#34;[%ld] %ld error: &#34; fmt, gettid(), time(NULL), ## args); \
+</span></span></span><span class=line><span class=cl><span class=cp>} while(0)
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define THD_NUMS   10
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>sighandler</span><span class=p>(</span><span class=kt>int</span> <span class=n>signo</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>log_info</span><span class=p>(</span><span class=s>&#34;Thread %lu received signo %d.</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>gettid</span><span class=p>(),</span> <span class=n>signo</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=o>*</span><span class=nf>thr1_fn</span><span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=n>arg</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=n>arg</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>log_info</span><span class=p>(</span><span class=s>&#34;Worker thread started.</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>while</span> <span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=nf>sleep</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span><span class=p>,</span> <span class=n>rc</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>sigset_t</span> <span class=n>bset</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>sigaction</span> <span class=n>action</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>pthread_t</span> <span class=n>thds</span><span class=p>[</span><span class=n>THD_NUMS</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>sigemptyset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>bset</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>sigaddset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>bset</span><span class=p>,</span> <span class=n>SIGINT</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=cp>#if 1
+</span></span></span><span class=line><span class=cl><span class=cp></span>    <span class=k>if</span> <span class=p>(</span><span class=nf>pthread_sigmask</span><span class=p>(</span><span class=n>SIG_BLOCK</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>bset</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>!=</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>log_error</span><span class=p>(</span><span class=s>&#34;Set pthread mask failed.&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=cp>#else
+</span></span></span><span class=line><span class=cl><span class=cp></span>    <span class=k>if</span> <span class=p>(</span><span class=nf>sigprocmask</span><span class=p>(</span><span class=n>SIG_BLOCK</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>bset</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>!=</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>log_error</span><span class=p>(</span><span class=s>&#34;Set process mask failed.&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl>    <span class=cm>/* register but still blocked now */</span>
+</span></span><span class=line><span class=cl>    <span class=n>action</span><span class=p>.</span><span class=n>sa_flags</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>action</span><span class=p>.</span><span class=n>sa_handler</span> <span class=o>=</span> <span class=n>sighandler</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>sigaction</span><span class=p>(</span><span class=n>SIGINT</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>action</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>log_info</span><span class=p>(</span><span class=s>&#34;Main thread started.</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>THD_NUMS</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=nf>pthread_create</span><span class=p>(</span><span class=o>&amp;</span><span class=n>thds</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=nb>NULL</span><span class=p>,</span> <span class=n>thr1_fn</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>rc</span> <span class=o>!=</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nf>log_error</span><span class=p>(</span><span class=s>&#34;Create thread failed, %s.</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>rc</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>            <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* only accpet SIGINT in main thread */</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=nf>pthread_sigmask</span><span class=p>(</span><span class=n>SIG_UNBLOCK</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>bset</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>!=</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>log_error</span><span class=p>(</span><span class=s>&#34;Set pthread mask failed.&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>THD_NUMS</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nf>pthread_join</span><span class=p>(</span><span class=n>thds</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=最佳实践></a><h1>最佳实践 <a href=#%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5 aria-hidden=true>#</a></h1><p>在 <code>POSIX.1</code> 规范定义了 <code>sigwait()</code> <code>sigwaitinfo()</code> 和 <code>pthread_sigmask()</code> 等接口，可以实现：A) 以同步的方式处理异步信号；B) 在指定线程中处理信号。</p><p>进程中，可以通过 <code>kill(getpid(), signo)</code> 将信号发送到进程，而线程中则可以通过调用 <code>pthread_kill(pthread_t thread, int sig)</code> 将信号发送给指定的线程，则线号处理函数会在此指定线程的上下文背景中执行。</p><a class=anchor id=sigwait></a><h2>SigWait <a href=#sigwait aria-hidden=true>#</a></h2><p><code>sigwait()</code> 提供了一种等待指定信号到来，并以串行的方式从信号队列中取出信号进行处理的机制，如果新产生的信号不在指定的信号集内，则 <code>sigwait()</code> 继续等待。</p><p>其中的测试程序如下，用来测试 sigwait 在信号处理时的一些规则。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>#include &lt;errno.h&gt;
+</span></span><span class=line><span class=cl>#include &lt;signal.h&gt;
+</span></span><span class=line><span class=cl>#include &lt;unistd.h&gt;
+</span></span><span class=line><span class=cl>#include &lt;string.h&gt;
+</span></span><span class=line><span class=cl>#include &lt;pthread.h&gt;
+</span></span><span class=line><span class=cl>#include &lt;sys/types.h&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>void* sigmgr_thread()
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	int sig;
+</span></span><span class=line><span class=cl>	sigset_t waitset;
+</span></span><span class=line><span class=cl>	pthread_t ppid = pthread_self();
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	pthread_detach(ppid);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	sigemptyset(&amp;waitset);
+</span></span><span class=line><span class=cl>	sigaddset(&amp;waitset, SIGRTMIN);
+</span></span><span class=line><span class=cl>	sigaddset(&amp;waitset, SIGRTMIN + 2);
+</span></span><span class=line><span class=cl>	sigaddset(&amp;waitset, SIGRTMAX);
+</span></span><span class=line><span class=cl>	sigaddset(&amp;waitset, SIGUSR1);
+</span></span><span class=line><span class=cl>	sigaddset(&amp;waitset, SIGUSR2);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	while (1)  {
+</span></span><span class=line><span class=cl>		if (sigwait(&amp;waitset, &amp;sig) &lt; 0) {
+</span></span><span class=line><span class=cl>			fprintf(stderr, &#34;sigwaitinfo() failed, %s\n&#34;, strerror(errno));
+</span></span><span class=line><span class=cl>			continue;
+</span></span><span class=line><span class=cl>		}
+</span></span><span class=line><span class=cl>		fprintf(stdout, &#34;Receive signal. %d\n&#34;, sig);
+</span></span><span class=line><span class=cl>	}
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int main()
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	sigset_t bset, oset;
+</span></span><span class=line><span class=cl>	pid_t pid = getpid();
+</span></span><span class=line><span class=cl>	pthread_t ppid;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	sigemptyset(&amp;bset);
+</span></span><span class=line><span class=cl>	sigaddset(&amp;bset, SIGRTMIN);
+</span></span><span class=line><span class=cl>	sigaddset(&amp;bset, SIGRTMIN + 2);
+</span></span><span class=line><span class=cl>	sigaddset(&amp;bset, SIGRTMAX);
+</span></span><span class=line><span class=cl>	sigaddset(&amp;bset, SIGUSR1);
+</span></span><span class=line><span class=cl>	sigaddset(&amp;bset, SIGUSR2);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	if (pthread_sigmask(SIG_BLOCK, &amp;bset, &amp;oset) != 0)
+</span></span><span class=line><span class=cl>		fprintf(stderr, &#34;Set pthread mask failed\n&#34;);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	kill(pid, SIGRTMAX);
+</span></span><span class=line><span class=cl>	kill(pid, SIGRTMAX);
+</span></span><span class=line><span class=cl>	kill(pid, SIGRTMIN + 2);
+</span></span><span class=line><span class=cl>	kill(pid, SIGRTMIN);
+</span></span><span class=line><span class=cl>	kill(pid, SIGRTMIN + 2);
+</span></span><span class=line><span class=cl>	kill(pid, SIGRTMIN);
+</span></span><span class=line><span class=cl>	kill(pid, SIGUSR2);
+</span></span><span class=line><span class=cl>	kill(pid, SIGUSR2);
+</span></span><span class=line><span class=cl>	kill(pid, SIGUSR1);
+</span></span><span class=line><span class=cl>	kill(pid, SIGUSR1);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	pthread_create(&amp;ppid, NULL, sigmgr_thread, NULL);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	sleep(1);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	return 0;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>可以得到如下的结论。</p><ul><li>对于非实时信号，相同信号不能在信号队列中排队；对于实时信号，相同信号可以在信号队列中排队。</li><li>如果信号队列中有多个实时以及非实时信号排队，实时信号并不会先于非实时信号被取出，信号数字小的会先被取出。</li></ul><p>如 <code>SIGUSR1(10)</code> 会先于 <code>SIGUSR2(12)</code>，<code>SIGRTMIN(34)</code> 会先于 <code>SIGRTMAX(64)</code>， 非实时信号因为其信号数字小而先于实时信号被取出。</p><p>另外，<code>sigwaitinfo()</code> 以及 <code>sigtimedwait()</code> 也提供了与 <code>sigwait()</code> 函数相似的功能。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#信号如何接收>信号如何接收</a></li><li><a href=#是否有独立-mask-和-action>是否有独立 mask 和 action</a></li></ul></li><li><a href=#示例>示例</a><ul><li><a href=#信号屏蔽>信号屏蔽</a></li></ul></li><li><a href=#最佳实践>最佳实践</a><ul><li><a href=#sigwait>SigWait</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,308 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>InnoDB 存储空间 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="InnoDB 表空间 (table space) 用来组织存储保存的数据，本文中对表空间管理进行分析。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>InnoDB 存储空间</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-07-23</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/innodb/ role=button>innodb</a></div></div><hr><div class=content><p>InnoDB 表空间 (table space) 用来组织存储保存的数据，本文中对表空间管理进行分析。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>InnoDB 实现的表空间是在文件系统之上又构建的一层逻辑存储的空间管理，每个表空间在逻辑上划分为了如下的几层结构，依次包括 <code>table space</code>、<code>segment inode</code>、<code>extent</code>、<code>page</code>、<code>record</code> 。</p><p><img alt="innodb files" src=images/innodb-tablespace.png class="mx-auto d-block"></p><p>如图所示，InnoDB 最小读写单位是 Page；为了高效管理，又将连续的 64 个页称为 <code>extent</code>，而且在一个表空间中，通常是以 <code>extent</code> 为单位进行资源分配。</p><p>除此之外，还在 extents 上层添加了一个 <code>segment inode</code> 管理，最多可以管理 <code>256</code> 个 <code>extents</code>。如果 page 采用默认的 <code>16K</code>，那么对应的 <code>extent</code> 大小为 <code>64*16K=1M</code>，而 <code>segment</code> 对应 <code>256M</code> 。</p><a class=anchor id=参数设置></a><h2>参数设置 <a href=#%e5%8f%82%e6%95%b0%e8%ae%be%e7%bd%ae aria-hidden=true>#</a></h2><p>首先确认几个与表空间管理相关的参数，也就是打开独立表空间，且采用默认的页大小为 16K 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;innodb_file_per_table&#39;;
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name         | Value |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| innodb_file_per_table | ON    |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>1 row in set (0.01 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;innodb_page_size&#39;;
+</span></span><span class=line><span class=cl>+------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name    | Value |
+</span></span><span class=line><span class=cl>+------------------+-------+
+</span></span><span class=line><span class=cl>| innodb_page_size | 16384 |
+</span></span><span class=line><span class=cl>+------------------+-------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span></code></pre></div><a class=anchor id=工具></a><h2>工具 <a href=#%e5%b7%a5%e5%85%b7 aria-hidden=true>#</a></h2><p>在查看表空间时可以使用几个常用的工具，可以参考 innodb_page_info 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看每个页的详细信息
+</span></span><span class=line><span class=cl>$ innodb_page_info -v dept_emp.ibd
+</span></span></code></pre></div><a class=anchor id=文件格式详解></a><h1>文件格式详解 <a href=#%e6%96%87%e4%bb%b6%e6%a0%bc%e5%bc%8f%e8%af%a6%e8%a7%a3 aria-hidden=true>#</a></h1><p>InnoDB 的存储文件格式如上图所示，我们直接从大到小介绍其结构，依次从 <code>space file -> segment -> extent -> page -> row</code> 逐一介绍。</p><a class=anchor id=space-file-格式></a><h2>Space File 格式 <a href=#space-file-%e6%a0%bc%e5%bc%8f aria-hidden=true>#</a></h2><p>Space File 主要包括了两类：系统空间 (system space) 和 表空间 (Per-table space files)。一个表空间文件，实际就是一系列 Pages 的组合 (最大 2<sup>32</sup>)，为了方便管理，你可以理解为做了三级的划分，分别是 <code>segment</code>、<code>extent</code>、<code>page</code> 。</p><p>其基本结构如下所示：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0 KiB   +---------------------------------------------------+
+</span></span><span class=line><span class=cl>        |   FSP_HDR: Filespace Header / Extent Descriptor   |
+</span></span><span class=line><span class=cl>16 KiB  +---------------------------------------------------+
+</span></span><span class=line><span class=cl>        |       IBUF_BITMAP: Insert Buffer Bookeeping       |
+</span></span><span class=line><span class=cl>32 KiB  +---------------------------------------------------+
+</span></span><span class=line><span class=cl>        |           INODE: Index Node Information           |
+</span></span><span class=line><span class=cl>48 KiB  +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |    |                                                   |
+</span></span><span class=line><span class=cl>   |    ~                  More pages ...                   ~
+</span></span><span class=line><span class=cl>   v    |                                                   |
+</span></span><span class=line><span class=cl>256 MiB +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |    |   XDES: Extent descriptor for next 16,384 pages   |
+</span></span><span class=line><span class=cl>   |    +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |    |  IBUF_BITMAP: IBUF Bitmap for next 16,384 pages   |
+</span></span><span class=line><span class=cl>   |    +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |    |                                                   |
+</span></span><span class=line><span class=cl>   |    ~                  More pages ...                   ~
+</span></span><span class=line><span class=cl>   v    |                                                   |
+</span></span><span class=line><span class=cl>512 MiB +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |    |   XDES: Extent descriptor for next 16,384 pages   |
+</span></span><span class=line><span class=cl>   |    +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |    |  IBUF_BITMAP: IBUF Bitmap for next 16,384 pages   |
+</span></span><span class=line><span class=cl>   |    +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |    |                                                   |
+</span></span><span class=line><span class=cl>   |    ~                  More pages ...                   ~
+</span></span><span class=line><span class=cl>   |    |                                                   |
+</span></span><span class=line><span class=cl>   v    +---------------------------------------------------+
+</span></span></code></pre></div><p>对于 <code>Page0</code> 肯定是 <code>File SPace HeaDeR</code>，其中维护了 <code>extent</code> 相关的信息，例如那些是空闲的、满的、有碎片的 (fragmented)。在 <code>FSP_HDR</code> 页中，只能维护 <code>256</code> 个 <code>extent</code> 相关的信息 (16,384 pages==256MiB)，这也就导致每隔 256M 都需要有一个 XDES 来管理接下来的 extent 元信息。</p><a class=anchor id=系统空间></a><h3>系统空间 <a href=#%e7%b3%bb%e7%bb%9f%e7%a9%ba%e9%97%b4 aria-hidden=true>#</a></h3><p>在系统空间中的固定位置保存了与 InnoDB 相关的关键信息，其中的 <code>FSP_HDR</code>、<code>IBUF_BITMAP</code>、<code>INODE</code> 三个页都是相同的，只是之后的页会有区别。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0 KiB    +---------------------------------------------------+
+</span></span><span class=line><span class=cl>         |   FSP_HDR: Filespace Header / Extent Descriptor   |
+</span></span><span class=line><span class=cl>16 KiB   +---------------------------------------------------+
+</span></span><span class=line><span class=cl>         |       IBUF_BITMAP: Insert Buffer Bookeeping       |
+</span></span><span class=line><span class=cl>32 KiB   +---------------------------------------------------+
+</span></span><span class=line><span class=cl>         |           INODE: Index Node Information           |
+</span></span><span class=line><span class=cl>48 KiB   +---------------------------------------------------+
+</span></span><span class=line><span class=cl>         |             SYS: Insert Buffer Header             |
+</span></span><span class=line><span class=cl>64 KiB   +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |            INDEX: Insert Buffer Header            |
+</span></span><span class=line><span class=cl>   |     +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |        TRX_SYS: Transaction System Header         |
+</span></span><span class=line><span class=cl>   |     +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |           SYS: First Rollback Segment             |
+</span></span><span class=line><span class=cl>   |     +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |           SYS: Data Dictionary Header             |
+</span></span><span class=line><span class=cl>   |     +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |                                                   |
+</span></span><span class=line><span class=cl>   |     ~                  More pages ...                   ~
+</span></span><span class=line><span class=cl>   v     |                                                   |
+</span></span><span class=line><span class=cl>Page 64  +---------------------------------------------------+
+</span></span><span class=line><span class=cl>         |      Double Write Buffer Block 1 (64 pages)       |
+</span></span><span class=line><span class=cl>Page 128 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>         |      Double Write Buffer Block 2 (64 pages)       |
+</span></span><span class=line><span class=cl>Page 192 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |                                                   |
+</span></span><span class=line><span class=cl>   |     ~                  More pages ...                   ~
+</span></span><span class=line><span class=cl>   |     |                                                   |
+</span></span><span class=line><span class=cl>   v     +---------------------------------------------------+
+</span></span></code></pre></div><a class=anchor id=表空间-per-table-space-files></a><h3>表空间 Per-table Space Files <a href=#%e8%a1%a8%e7%a9%ba%e9%97%b4-per-table-space-files aria-hidden=true>#</a></h3><p>这需要打开 <code>innodb_file_per_table</code> 变量之后才会生效。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0 KiB    +---------------------------------------------------+
+</span></span><span class=line><span class=cl>         |   FSP_HDR: Filespace Header / Extent Descriptor   |
+</span></span><span class=line><span class=cl>16 KiB   +---------------------------------------------------+
+</span></span><span class=line><span class=cl>         |       IBUF_BITMAP: Insert Buffer Bookeeping       |
+</span></span><span class=line><span class=cl>32 KiB   +---------------------------------------------------+
+</span></span><span class=line><span class=cl>         |           INODE: Index Node Information           |
+</span></span><span class=line><span class=cl>48 KiB   +---------------------------------------------------+
+</span></span><span class=line><span class=cl>         |         INDEX: Root page of first index           |
+</span></span><span class=line><span class=cl>64 KiB   +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |        INDEX: Root page of second index           |
+</span></span><span class=line><span class=cl>   |     +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |              INDEX: Node pages ...                |
+</span></span><span class=line><span class=cl>   |     +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |              INDEX: Leaf pages ...                |
+</span></span><span class=line><span class=cl>   |     +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |     ALLOCATED: Reserved bu unused pages ...       |
+</span></span><span class=line><span class=cl>   |     +---------------------------------------------------+
+</span></span><span class=line><span class=cl>   |     |                                                   |
+</span></span><span class=line><span class=cl>   |     ~                  More pages ...                   ~
+</span></span><span class=line><span class=cl>   |     |                                                   |
+</span></span><span class=line><span class=cl>   v     +---------------------------------------------------+
+</span></span></code></pre></div><a class=anchor id=segment></a><h2>Segment <a href=#segment aria-hidden=true>#</a></h2><p>在 <code>segment</code> 中保存了与 <code>extent</code> 相关的元数据，实际上是在空间文件的固定位置保存了 <code>extent</code> 的元数据信息，其格式为 <code>FSP_HDR/XDES</code>，其结构也非常简单，在 Page Body 中保存了 256 个 extent descriptors 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>00000 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |                  FIL header (38)                  |
+</span></span><span class=line><span class=cl>00038 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |   FSP Header (zero-filled for XDES pages) (112)   |
+</span></span><span class=line><span class=cl>00150 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |     XDES Entry   0 (pages     0 ~    63) (40)     |
+</span></span><span class=line><span class=cl>00190 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |     XDES Entry   1 (pages    64 ~   127) (40)     |
+</span></span><span class=line><span class=cl>00230 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |     XDES Entry   2 (pages   128 ~   191) (40)     |
+</span></span><span class=line><span class=cl>00270 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |     XDES Entry   3 (pages   192 ~   255) (40)     |
+</span></span><span class=line><span class=cl>00310 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |                                                   |
+</span></span><span class=line><span class=cl>      ~                    ... ...                        ~
+</span></span><span class=line><span class=cl>      |                                                   |
+</span></span><span class=line><span class=cl>10310 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |     XDES Entry 254 (pages 16256 ~ 16319) (40)     |
+</span></span><span class=line><span class=cl>10350 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |     XDES Entry 255 (pages 16320 ~ 16383) (40)     |
+</span></span><span class=line><span class=cl>10390 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |                                                   |
+</span></span><span class=line><span class=cl>      ~            (Empty Space: 5,986 bytes)             ~
+</span></span><span class=line><span class=cl>      |                                                   |
+</span></span><span class=line><span class=cl>16376 +---------------------------------------------------+
+</span></span><span class=line><span class=cl>      |                   FIL Trailer (8)                 |
+</span></span><span class=line><span class=cl>16384 +---------------------------------------------------+
+</span></span></code></pre></div><p>该页的类型同样在 <code>fil0fil.h</code> 中定义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#define FIL_PAGE_INODE      3   /*!&lt; Index node */
+</span></span></code></pre></div><p>该类型的页定义为 <code>inode</code>，这与文件系统中的 <code>inode</code> 概念有点混淆，实际上与文件系统中的概念完全不同，在 InnoDB 中只是描述了与 extent 相关的信息。</p><a class=anchor id=extents-and-extent-descriptors></a><h2>Extents and extent descriptors <a href=#extents-and-extent-descriptors aria-hidden=true>#</a></h2><p><code>extent</code> 是为了更加方便的管理 <code>page</code>，也可以称为簇或者区，对于 <code>16KiB</code> 大小的 <code>page</code> 一个 <code>extent</code> 管理 <code>64</code> 个，其定义在 <code>fsp0types.h</code> 文件中定义，不同大小的页，对应的 <code>extent</code> 也有所不同。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cm>/** File space extent size in pages
+</span></span></span><span class=line><span class=cl><span class=cm>page size | file space extent size
+</span></span></span><span class=line><span class=cl><span class=cm>----------+-----------------------
+</span></span></span><span class=line><span class=cl><span class=cm>   4 KiB  | 256 pages = 1 MiB
+</span></span></span><span class=line><span class=cl><span class=cm>   8 KiB  | 128 pages = 1 MiB
+</span></span></span><span class=line><span class=cl><span class=cm>  16 KiB  |  64 pages = 1 MiB
+</span></span></span><span class=line><span class=cl><span class=cm>  32 KiB  |  64 pages = 2 MiB
+</span></span></span><span class=line><span class=cl><span class=cm>  64 KiB  |  64 pages = 4 MiB
+</span></span></span><span class=line><span class=cl><span class=cm>*/</span>
+</span></span><span class=line><span class=cl><span class=cm>/** File space extent size (one megabyte if default two or four if not) in pages */</span>
+</span></span><span class=line><span class=cl><span class=cp>#define FSP_EXTENT_SIZE     ((UNIV_PAGE_SIZE &lt;= (16384) ?   \
+</span></span></span><span class=line><span class=cl><span class=cp>                (1048576U / UNIV_PAGE_SIZE) :   \
+</span></span></span><span class=line><span class=cl><span class=cp>                ((UNIV_PAGE_SIZE &lt;= (32768)) ?  \
+</span></span></span><span class=line><span class=cl><span class=cp>                (2097152U / UNIV_PAGE_SIZE) :   \
+</span></span></span><span class=line><span class=cl><span class=cp>                (4194304U / UNIV_PAGE_SIZE))))
+</span></span></span></code></pre></div><p>extent 是通过一个叫簇描述符 (extent descriptor) 来表示的，对应了上述的 <code>XDES Entry</code>，详细格式如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>N    +------------------------------------+
+</span></span><span class=line><span class=cl>     |        File Segment ID (8)         |
+</span></span><span class=line><span class=cl>N+8  +------------------------------------+
+</span></span><span class=line><span class=cl>     |    List node for XDES list (12)    |
+</span></span><span class=line><span class=cl>N+20 +------------------------------------+
+</span></span><span class=line><span class=cl>     |            State (4)               |
+</span></span><span class=line><span class=cl>N+24 +------------------------------------+
+</span></span><span class=line><span class=cl>     |      Page State Bitmap (16)        |
+</span></span><span class=line><span class=cl>     |  2 bits per page, 1=free, 2=clean  |
+</span></span><span class=line><span class=cl>N+40 +------------------------------------+
+</span></span></code></pre></div><p>详细的宏定义在 <code>fsp0fsp.h</code> 头文件中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cp>#define XDES_ID                            0
+</span></span></span><span class=line><span class=cl><span class=cp>#define XDES_FLST_NODE                     8
+</span></span></span><span class=line><span class=cl><span class=cp>#define XDES_STATE      (FLST_NODE_SIZE + 8)
+</span></span></span><span class=line><span class=cl><span class=cp>#define XDES_BITMAP    (FLST_NODE_SIZE + 12)
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define XDES_SIZE (XDES_BITMAP + UT_BITS_IN_BYTES(FSP_EXTENT_SIZE * XDES_BITS_PER_PAGE))
+</span></span></span></code></pre></div><p>每个 <code>extent descriptor</code> 会管理 <code>64</code> 个 <code>pages</code>，最后的 <code>16Bytes</code> 用来标识这 <code>64</code> 个 <code>page</code> 的状态，如空闲、半空闲，主要目的是为了能够快速从这 <code>64</code> 个 <code>page</code> 中找到空闲的 <code>page</code>。</p><a class=anchor id=page></a><h2>Page <a href=#page aria-hidden=true>#</a></h2><p>页是 InnoDB 中的最小的逻辑存储单位，很多基本操作都是以页为单位进行，在 <code>include/univ.i</code> 文件中通过宏指定，默认大小是 <code>16K</code>。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cp>#define UNIV_PAGE_SIZE      ((ulint) srv_page_size)
+</span></span></span></code></pre></div><p>而变量 <code>srv_page_size</code> 的大小，实际对应了 <code>innodb_page_size</code> 参数。与页相关的宏定义基本都在 <code>fil0fil.h</code> 头文件中，其中定义了多种页类型，其中比较常见的举例如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cp>#define FIL_PAGE_INDEX      17855    </span><span class=c1>// 数据索引页
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#define FIL_PAGE_UNDO_LOG   2        </span><span class=c1>// 事务回滚日志页
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#define FIL_PAGE_INODE      3        </span><span class=c1>// inode页，用来管理segment
+</span></span></span></code></pre></div><p>如上所述，默认每个页的大小为 <code>16K=16384Byte</code>，每个页通过一个 <code>int32</code> 类型的值标识其在表空间中页的偏移量，也就是说默认的表空间最大是 2<sup>32</sup> x 16 KiB = 64 TiB 。</p><a class=anchor id=页格式></a><h3>页格式 <a href=#%e9%a1%b5%e6%a0%bc%e5%bc%8f aria-hidden=true>#</a></h3><p>所有 page 的格式都是相同的，由 <code>page_header</code>、<code>page_body</code>、<code>page_trailer</code> 三部分组成。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>00000 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |      FIL header (38) FIL_PAGE_DATA        |
+</span></span><span class=line><span class=cl>00038 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |    Body, other headers and page data,     |
+</span></span><span class=line><span class=cl>      |        depending on page type.            |
+</span></span><span class=line><span class=cl>      |                                           |
+</span></span><span class=line><span class=cl>      |     Total usable space: 16,338 bytes      |
+</span></span><span class=line><span class=cl>      |                                           |
+</span></span><span class=line><span class=cl>16376 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |    FIL Trailer (8) FIL_PAGE_DATA_END      |
+</span></span><span class=line><span class=cl>16384 +-------------------------------------------+
+</span></span></code></pre></div><p>如上，包括了 page 的头信息，占 38 个字节，像页类型这样的元数据信息会保存在该字段中；page trailer 也就是页末尾的最后 8 个字节；剩余中间的部分作为 page body，也即页的实体信息，对这部分来说不同的页类型包含了不同的内容。</p><p>而对应页内各个 field 的大小，是在 <code>fil0fil.h</code> 头文件中通过宏进行定义。需要注意的是，很大一部分宏，实际定义的是在页内的偏移量，可以参考其注释。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cp>#define FIL_PAGE_DATA       38  </span><span class=cm>/*!&lt; start of the data on the page */</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#define FIL_PAGE_DATA_END   8   </span><span class=cm>/*!&lt; size of the page trailer */</span><span class=cp>
+</span></span></span></code></pre></div><p>页中其它的偏移量同样在 <code>fil0fil.h</code> 头文件中定义。</p><a class=anchor id=headertailer></a><h3>Header+Tailer <a href=#headertailer aria-hidden=true>#</a></h3><p>其中，Header 和 Tailer 中保存元信息的详细内容如下所示：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>00000 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |                 Checksum (4)              |
+</span></span><span class=line><span class=cl>00004 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |          Offset (Page Number) (4)         |
+</span></span><span class=line><span class=cl>00008 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |          Previous Page Number (4)         |
+</span></span><span class=line><span class=cl>00012 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |            Next Page Number (4)           |
+</span></span><span class=line><span class=cl>00016 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |     LSN for last page modification (8)    |
+</span></span><span class=line><span class=cl>00024 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |               Page Type (2)               |
+</span></span><span class=line><span class=cl>00026 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |     Flush LSN OR version+checksum (8)     |
+</span></span><span class=line><span class=cl>00034 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |               Space ID (4)                |
+</span></span><span class=line><span class=cl>00038 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |                                           |
+</span></span><span class=line><span class=cl>      ~                 ... ...                   ~
+</span></span><span class=line><span class=cl>      |                                           |
+</span></span><span class=line><span class=cl>16376 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |          Old-style Checksum (4)           |
+</span></span><span class=line><span class=cl>16380 +-------------------------------------------+
+</span></span><span class=line><span class=cl>      |          Low 32 bit of LSN (4)            |
+</span></span><span class=line><span class=cl>16384 +-------------------------------------------+
+</span></span></code></pre></div><p>在 Page Header 中，各个字段的占用空间以及大致的含义如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>FIL_PAGE_SPACE_OR_CHKSUM    # 4，对于大于4.0.14的版本，存储的为checksum，否则为0
+</span></span><span class=line><span class=cl>FIL_PAGE_OFFSET             # 4，页号page no，一般是在表空间的物理偏移量
+</span></span><span class=line><span class=cl>FIL_PAGE_PREV               # 4，前一页的page no，B+tree的叶子节点是通过链表串起来，很多类型的页不需要该值
+</span></span><span class=line><span class=cl>FIL_PAGE_NEXT               # 4，后一页的page no
+</span></span><span class=line><span class=cl>FIL_PAGE_LSN                # 8，更改记录时最大的redo log lsn，一般用在redo log恢复时使用
+</span></span><span class=line><span class=cl>FIL_PAGE_TYPE               # 2，page的类型
+</span></span><span class=line><span class=cl>FIL_PAGE_FILE_FLUSH_LSN     # 8，space文件最后被flush是的redo log lsn，只在第一页中设置
+</span></span><span class=line><span class=cl>FIL_PAGE_SPACE_ID           # 4，最后被归档的archive log file序号，同样只在space的第一个页中被设置
+</span></span></code></pre></div><p>这里的页号 (page no) 实际上是相对于整个表空间的偏移量，表空间可以包含有多个文件，而这个页号是连续的。在各个页的头部中，还保存了前后页的 page no，从而形成了类似双像链表的结构。</p><p>不同类型的页对应 body 部分的数据结构是不同的，因此需要根据 header 中的页类型来解析该页的数据。另外，页号会在页初始化完成之后赋值，可以用来校验通过偏移量读取的页是否正确。</p><p>对于 tailer 来说，高 4 位是用来存储 FIL_PAGE_LSN 的部分信息，低 4 位用来表示 page 页中数据老的 checksum 信息。</p><a class=anchor id=checksum></a><h3>checksum <a href=#checksum aria-hidden=true>#</a></h3><p>在 5.6.3 中，引入了 <a href=http://dev.mysql.com/doc/refman/en/innodb-parameters.html#sysvar_innodb_checksum_algorithm>innodb_checksum_algorithm</a> 这一变量，用于设置 checksum 的计算方式，默认采用的是 INNODB 。其中 checksum 分别在 header 和 tailer 保存，在 tailer 中保存的是老的方式，后面将会被取消掉。</p><a class=anchor id=index></a><h1>Index <a href=#index aria-hidden=true>#</a></h1><p>在 InnoDB 中，所有的都是通过 Index 表示，包括主表和索引表，该类型的页同样在 <code>fil0fil.h</code> 中定义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#define FIL_PAGE_INDEX      17855   /*!&lt; B-tree node */
+</span></span></code></pre></div><p>该页的结构如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>00000 +-------------------------------+
+</span></span><span class=line><span class=cl>      |       FIL header (38)         |
+</span></span><span class=line><span class=cl>00038 +-------------------------------+
+</span></span><span class=line><span class=cl>      |      INDEX Header (36)        |
+</span></span><span class=line><span class=cl>00074 +-------------------------------+
+</span></span><span class=line><span class=cl>      |       FSEG Header (20)        |
+</span></span><span class=line><span class=cl>00094 +-------------------------------+
+</span></span><span class=line><span class=cl>      |     System Records (26)       |
+</span></span><span class=line><span class=cl>00120 +-------------------------------+
+</span></span><span class=line><span class=cl>      |                               |
+</span></span><span class=line><span class=cl>      ~        User Records           ~
+</span></span><span class=line><span class=cl>      |                               |
+</span></span><span class=line><span class=cl>      +-------------------------------+
+</span></span><span class=line><span class=cl> Top  |         Free Space            |
+</span></span><span class=line><span class=cl>      +-------------------------------+
+</span></span><span class=line><span class=cl>      |                               |
+</span></span><span class=line><span class=cl>      ~       Page Directory          ~
+</span></span><span class=line><span class=cl>      |                               |
+</span></span><span class=line><span class=cl>16376 +-------------------------------+
+</span></span><span class=line><span class=cl>      |       FIL Trailer (8)         |
+</span></span><span class=line><span class=cl>16384 +-------------------------------+
+</span></span></code></pre></div><a class=anchor id=index-header></a><h3>Index Header <a href=#index-header aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>38 +-------------------------------+
+</span></span><span class=line><span class=cl>   |  Number of Directory Slots (2)
+</span></span><span class=line><span class=cl>40 +-------------------------------+
+</span></span><span class=line><span class=cl>   | Heap Top Positon (2)          |
+</span></span><span class=line><span class=cl>42 +-------------------------------+
+</span></span><span class=line><span class=cl>   | Number of Heap Records / Format Flag (2)
+</span></span><span class=line><span class=cl>44 +-------------------------------+
+</span></span></code></pre></div><a class=anchor id=system-records></a><h3>System Records <a href=#system-records aria-hidden=true>#</a></h3><p>每个 INDEX 页都包含两个被称为 <code>infimum</code> 和 <code>supremum</code> 的系统记录，而且其偏移量是固定的，分别为 <code>offset 99</code> 以及 <code>offset 112</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>094 +------------------------------------+
+</span></span><span class=line><span class=cl>    |       Info Flags (4 bits)          |
+</span></span><span class=line><span class=cl>    +------------------------------------+
+</span></span><span class=line><span class=cl>    |  Number of Records Owned (4 bits)  |
+</span></span><span class=line><span class=cl>095 +------------------------------------+
+</span></span><span class=line><span class=cl>    |          Order (13 bits)           |
+</span></span><span class=line><span class=cl>    +------------------------------------+
+</span></span><span class=line><span class=cl>    |        Record Type (3 bits)        |
+</span></span><span class=line><span class=cl>097 +------------------------------------+
+</span></span><span class=line><span class=cl>    |       Next Record Offset (2)       |
+</span></span><span class=line><span class=cl>099 +------------------------------------+
+</span></span><span class=line><span class=cl>    |           &#34;infimum\0&#34; (8)          |
+</span></span><span class=line><span class=cl>107 +------------------------------------+
+</span></span><span class=line><span class=cl>    |       Info Flags (4 bits)          |
+</span></span><span class=line><span class=cl>    +------------------------------------+
+</span></span><span class=line><span class=cl>    |  Number of Records Owned (4 bits)  |
+</span></span><span class=line><span class=cl>108 +------------------------------------+
+</span></span><span class=line><span class=cl>    |          Order (13 bits)           |
+</span></span><span class=line><span class=cl>    +------------------------------------+
+</span></span><span class=line><span class=cl>    |        Record Type (3 bits)        |
+</span></span><span class=line><span class=cl>110 +------------------------------------+
+</span></span><span class=line><span class=cl>    |       Next Record Offset (2)       |
+</span></span><span class=line><span class=cl>112 +------------------------------------+
+</span></span><span class=line><span class=cl>    |           &#34;supremum\0&#34; (8)         |
+</span></span><span class=line><span class=cl>120 +------------------------------------+
+</span></span></code></pre></div><a class=anchor id=record></a><h1>Record <a href=#record aria-hidden=true>#</a></h1><p>记录头信息如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>094 +------------------------------------+
+</span></span><span class=line><span class=cl>    |       Info Flags (4 bits)          |
+</span></span><span class=line><span class=cl>    +------------------------------------+
+</span></span><span class=line><span class=cl>    |  Number of Records Owned (4 bits)  |
+</span></span><span class=line><span class=cl>095 +------------------------------------+
+</span></span><span class=line><span class=cl>    |          Order (13 bits)           |
+</span></span><span class=line><span class=cl>    +------------------------------------+
+</span></span><span class=line><span class=cl>    |        Record Type (3 bits)        |
+</span></span><span class=line><span class=cl>097 +------------------------------------+
+</span></span><span class=line><span class=cl>    |       Next Record Offset (2)       |
+</span></span><span class=line><span class=cl>099 +------------------------------------+
+</span></span><span class=line><span class=cl>    |           &#34;infimum\0&#34; (8)          |
+</span></span><span class=line><span class=cl>107 +------------------------------------+
+</span></span><span class=line><span class=cl>    |       Info Flags (4 bits)          |
+</span></span><span class=line><span class=cl>    +------------------------------------+
+</span></span><span class=line><span class=cl>    |  Number of Records Owned (4 bits)  |
+</span></span><span class=line><span class=cl>108 +------------------------------------+
+</span></span><span class=line><span class=cl>    |          Order (13 bits)           |
+</span></span><span class=line><span class=cl>    +------------------------------------+
+</span></span><span class=line><span class=cl>    |        Record Type (3 bits)        |
+</span></span><span class=line><span class=cl>110 +------------------------------------+
+</span></span><span class=line><span class=cl>    |       Next Record Offset (2)       |
+</span></span><span class=line><span class=cl>112 +------------------------------------+
+</span></span><span class=line><span class=cl>    |   Next Record Offset (2)           |
+</span></span><span class=line><span class=cl>N   +------------------------------------+
+</span></span></code></pre></div><p>其中 <code>index page body</code> 由 5 部分组成：<code>body header</code>、<code>recorders</code>、<code>free recorders</code>、<code>free heap</code> 和 <code>page directory</code>，其中 <code>body header</code> 的结构定义如下：</p><a class=anchor id=实践></a><h1>实践 <a href=#%e5%ae%9e%e8%b7%b5 aria-hidden=true>#</a></h1><p>如上，介绍了 InnoDB 存储的数据格式，接下来实际查看下；本文中在测试的时候，使用的工具可以参考 <a href=https://github.com/jeremycole/innodb_ruby>innodb_ruby</a> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 新建表
+</span></span><span class=line><span class=cl>mysql&gt; create table test.foobar (id int);
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.05 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 新建之后，直接查看状态
+</span></span><span class=line><span class=cl>$ innodb_space -f test/foobar.ibd space-page-type-regions
+</span></span><span class=line><span class=cl>start       end         count       type
+</span></span><span class=line><span class=cl>0           0           1           FSP_HDR
+</span></span><span class=line><span class=cl>1           1           1           IBUF_BITMAP
+</span></span><span class=line><span class=cl>2           2           1           INODE
+</span></span><span class=line><span class=cl>3           3           1           INDEX
+</span></span><span class=line><span class=cl>4           5           2           FREE (ALLOCATED)
+</span></span></code></pre></div><p>此时，只分配了标准的空间页，总共 6 Pages，包括了 FSP_HDR、IBUF_BITMAP、INODE、ROOT INDEX page，而且还有两个已经分配的未使用的页。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>关于 InnoDB 的文件格式，详细内容可以参考 Jeremy Cole 的一系列文章 <a href=https://blog.jcole.us/innodb/>InnoDB internals, structures, and behavior</a> ，对文件存储格式讲解的十分详细。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#参数设置>参数设置</a></li><li><a href=#工具>工具</a></li></ul></li><li><a href=#文件格式详解>文件格式详解</a><ul><li><a href=#space-file-格式>Space File 格式</a></li><li><a href=#segment>Segment</a></li><li><a href=#extents-and-extent-descriptors>Extents and extent descriptors</a></li><li><a href=#page>Page</a></li></ul></li><li><a href=#index>Index</a><ul><li></li></ul></li><li><a href=#record>Record</a></li><li><a href=#实践>实践</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

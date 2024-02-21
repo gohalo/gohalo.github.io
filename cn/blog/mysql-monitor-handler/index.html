@@ -1,0 +1,361 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL Handler 监控 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="在 MySQL 中有很多的 handler_* 类型的监控，接下来我们就看看这些监控项。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL Handler 监控</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-04-14</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/monitor/ role=button>monitor</a></div></div><hr><div class=content><p>在 MySQL 中有很多的 <code>handler_*</code> 类型的监控，接下来我们就看看这些监控项。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>通过 <code>SHOW GLOBAL STATUS</code> 命令查看时，其中有一部分是 <code>Handler_*</code> 类型的监控，显示了数据库处理 SQL 语句的状态，对于调试 SQL 语句有很大意义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW GLOBAL STATUS LIKE &#39;handler_%&#39;;
+</span></span><span class=line><span class=cl>+----------------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name              | Value |
+</span></span><span class=line><span class=cl>+----------------------------+-------+
+</span></span><span class=line><span class=cl>| Handler_commit             | 65    |
+</span></span><span class=line><span class=cl>| Handler_delete             | 0     |
+</span></span><span class=line><span class=cl>| Handler_discover           | 0     |
+</span></span><span class=line><span class=cl>| Handler_external_lock      | 347   |
+</span></span><span class=line><span class=cl>| Handler_mrr_init           | 0     |
+</span></span><span class=line><span class=cl>| Handler_prepare            | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_first         | 22    |
+</span></span><span class=line><span class=cl>| Handler_read_key           | 50    |
+</span></span><span class=line><span class=cl>| Handler_read_last          | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_next          | 4     |
+</span></span><span class=line><span class=cl>| Handler_read_prev          | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_rnd           | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_rnd_next      | 3620  |
+</span></span><span class=line><span class=cl>| Handler_rollback           | 0     |
+</span></span><span class=line><span class=cl>| Handler_savepoint          | 0     |
+</span></span><span class=line><span class=cl>| Handler_savepoint_rollback | 0     |
+</span></span><span class=line><span class=cl>| Handler_update             | 0     |
+</span></span><span class=line><span class=cl>| Handler_write              | 2402  |
+</span></span><span class=line><span class=cl>+----------------------------+-------+
+</span></span><span class=line><span class=cl>18 rows in set (0.02 sec)
+</span></span></code></pre></div><p>不同的发行版本可能会有些区别，其中在 MySQL 上的查询如下，而在 MariaDB 的发行版本中，实际上还有 <code>Handler_read_rnd_deleted</code> 一项的；在源码 <code>sql/mysqld.cc</code> 中有如下内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=n>SHOW_VAR</span> <span class=n>status_vars</span><span class=p>[]</span><span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_commit&#34;</span><span class=p>,</span>           <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_commit_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_delete&#34;</span><span class=p>,</span>           <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_delete_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_discover&#34;</span><span class=p>,</span>         <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_discover_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_external_lock&#34;</span><span class=p>,</span>    <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_external_lock_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_mrr_init&#34;</span><span class=p>,</span>         <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_multi_range_read_init_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span> <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_prepare&#34;</span><span class=p>,</span>          <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_prepare_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_first&#34;</span><span class=p>,</span>       <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_first_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_key&#34;</span><span class=p>,</span>         <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_key_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_last&#34;</span><span class=p>,</span>        <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_last_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_next&#34;</span><span class=p>,</span>        <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_next_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_prev&#34;</span><span class=p>,</span>        <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_prev_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_rnd&#34;</span><span class=p>,</span>         <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_rnd_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_rnd_next&#34;</span><span class=p>,</span>    <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_rnd_next_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_rollback&#34;</span><span class=p>,</span>         <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_rollback_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_savepoint&#34;</span><span class=p>,</span>        <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_savepoint_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_savepoint_rollback&#34;</span><span class=p>,(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_savepoint_rollback_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span> <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_update&#34;</span><span class=p>,</span>           <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_update_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_write&#34;</span><span class=p>,</span>            <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_write_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>         <span class=n>SHOW_LONGLONG_STATUS</span><span class=p>,</span>    <span class=n>SHOW_SCOPE_ALL</span><span class=p>},</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></div><p>如下，仅介绍下与 <code>Handler_read_*</code> 相关的内容。</p><a class=anchor id=handler_read_></a><h1>Handler_read_* <a href=#handler_read_ aria-hidden=true>#</a></h1><p>这里的监控项是处理 SELECT 语句相关。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_first&#34;</span><span class=p>,</span>       <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_first_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_key&#34;</span><span class=p>,</span>         <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_key_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_last&#34;</span><span class=p>,</span>        <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_last_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_next&#34;</span><span class=p>,</span>        <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_next_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_prev&#34;</span><span class=p>,</span>        <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_prev_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_rnd&#34;</span><span class=p>,</span>         <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_rnd_count</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span><span class=s>&#34;Handler_read_rnd_next&#34;</span><span class=p>,</span>    <span class=p>(</span><span class=kt>char</span><span class=o>*</span><span class=p>)</span> <span class=n>offsetof</span><span class=p>(</span><span class=n>STATUS_VAR</span><span class=p>,</span> <span class=n>ha_read_rnd_next_count</span><span class=p>),</span>
+</span></span></code></pre></div><p>其中，前五个统计项的含义如下所示。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Handler_read_first    : 读索引的第一项
+</span></span><span class=line><span class=cl>Handler_read_key      : 读索引的某一项
+</span></span><span class=line><span class=cl>Handler_read_next     : 读索引的下一项
+</span></span><span class=line><span class=cl>Handler_read_last     : 读索引的最后第一项
+</span></span><span class=line><span class=cl>Handler_read_prev     : 读索引的前一项
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>有四种组合
+</span></span><span class=line><span class=cl>1. Handler_read_first、Handler_read_next  组合应该是索引覆盖扫描
+</span></span><span class=line><span class=cl>2. Handler_read_key                       基于索引取值
+</span></span><span class=line><span class=cl>3. Handler_read_key、Handler_read_next    组合应该是索引范围扫描
+</span></span><span class=line><span class=cl>4. Handler_read_last、Handler_read_prev   组合应该是索引范围扫描（orde by desc）
+</span></span></code></pre></div><p>索引项之间都是有顺序的，所以才有 first, last, next, prev 等等；而后两个是对数据文件的计数器。</p><p>为了进行测试，假设，有如下的数据。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=line><span class=cl><span class=k>CREATE</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=n>test</span><span class=w> </span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>id</span><span class=w>    </span><span class=nb>INT</span><span class=w> </span><span class=n>UNSIGNED</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>NULL</span><span class=w> </span><span class=n>AUTO_INCREMENT</span><span class=w> </span><span class=k>PRIMARY</span><span class=w> </span><span class=k>KEY</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>data</span><span class=w>  </span><span class=nb>VARCHAR</span><span class=p>(</span><span class=mi>32</span><span class=p>),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>ts</span><span class=w>    </span><span class=k>TIMESTAMP</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>KEY</span><span class=w> </span><span class=n>idx_data</span><span class=w> </span><span class=p>(</span><span class=k>data</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>INSERT</span><span class=w> </span><span class=k>INTO</span><span class=w> </span><span class=n>test</span><span class=w> </span><span class=k>VALUES</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>(</span><span class=k>NULL</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;abc&#39;</span><span class=p>,</span><span class=w> </span><span class=n>NOW</span><span class=p>()),</span><span class=w> </span><span class=p>(</span><span class=k>NULL</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;abc&#39;</span><span class=p>,</span><span class=w> </span><span class=n>NOW</span><span class=p>()),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>(</span><span class=k>NULL</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;abd&#39;</span><span class=p>,</span><span class=w> </span><span class=n>NOW</span><span class=p>()),</span><span class=w> </span><span class=p>(</span><span class=k>NULL</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;acd&#39;</span><span class=p>,</span><span class=w> </span><span class=n>NOW</span><span class=p>()),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>(</span><span class=k>NULL</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;def&#39;</span><span class=p>,</span><span class=w> </span><span class=n>NOW</span><span class=p>()),</span><span class=w> </span><span class=p>(</span><span class=k>NULL</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;pqr&#39;</span><span class=p>,</span><span class=w> </span><span class=n>NOW</span><span class=p>()),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>(</span><span class=k>NULL</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;stu&#39;</span><span class=p>,</span><span class=w> </span><span class=n>NOW</span><span class=p>()),</span><span class=w> </span><span class=p>(</span><span class=k>NULL</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;vwx&#39;</span><span class=p>,</span><span class=w> </span><span class=n>NOW</span><span class=p>()),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>(</span><span class=k>NULL</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;yza&#39;</span><span class=p>,</span><span class=w> </span><span class=n>NOW</span><span class=p>()),</span><span class=w> </span><span class=p>(</span><span class=k>NULL</span><span class=p>,</span><span class=w> </span><span class=s1>&#39;def&#39;</span><span class=p>,</span><span class=w> </span><span class=n>NOW</span><span class=p>());</span><span class=w>
+</span></span></span></code></pre></div><p>在下面的测试里，每次执行SQL时按照如下过程执行：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>FLUSH STATUS;
+</span></span><span class=line><span class=cl>SELECT ...;
+</span></span><span class=line><span class=cl>SHOW SESSION STATUS LIKE &#39;Handler_read%&#39;;
+</span></span><span class=line><span class=cl>EXPLAIN SELECT ...;
+</span></span></code></pre></div><a class=anchor id=handler_read_first></a><h2>handler_read_first <a href=#handler_read_first aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>The number of times the first entry was read from an index. If this value
+</span></span><span class=line><span class=cl>is high, it suggests that the server is doing a lot of full index scans;
+</span></span><span class=line><span class=cl>for example, SELECT col1 FROM foo, assuming that col1 is indexed.
+</span></span></code></pre></div><p>说明 SQL 是在做一个全索引扫描，注意是全索引(也可以是主健)，而不是部分，所以说如果存在 WHERE 语句，这个参数是不会变的。如果这个监控的数值很大，说明查询都是在索引里完成的，而不是数据文件里；不过仍是做一次完整的扫描。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>+----------+     +----+----+
+</span></span><span class=line><span class=cl>| Table    |     | Index   |
+</span></span><span class=line><span class=cl>|          |     |    |    |
+</span></span><span class=line><span class=cl>|          |     |    |    |
+</span></span><span class=line><span class=cl>|          |     |    |    |
+</span></span><span class=line><span class=cl>|          |     |    |    |
+</span></span><span class=line><span class=cl>|          |     |    v    |
+</span></span><span class=line><span class=cl>|          |     |         |
+</span></span><span class=line><span class=cl>|          |     |         |
+</span></span><span class=line><span class=cl>+----------+     +---------+
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH STATUS;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SELECT data FROM test;
+</span></span><span class=line><span class=cl>10 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SESSION STATUS LIKE &#39;Handler_read%&#39;;
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name         | Value |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Handler_read_first    | 1     |  会从索引的第一条记录开始读取
+</span></span><span class=line><span class=cl>| Handler_read_key      | 1     |  也就是对应了第一条
+</span></span><span class=line><span class=cl>| Handler_read_next     | 10    |  加上通过key读取的，实际读取了11条记录
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>7 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; EXPLAIN SELECT data FROM test;
+</span></span><span class=line><span class=cl>+------+-------------+-------+-------+---------------+----------+---------+------+------+-------------+
+</span></span><span class=line><span class=cl>| id   | select_type | table | type  | possible_keys | key      | key_len | ref  | rows | Extra       |
+</span></span><span class=line><span class=cl>+------+-------------+-------+-------+---------------+----------+---------+------+------+-------------+
+</span></span><span class=line><span class=cl>|    1 | SIMPLE      | test  | index | NULL          | idx_data | 35      | NULL |   10 | Using index |
+</span></span><span class=line><span class=cl>+------+-------------+-------+-------+---------------+----------+---------+------+------+-------------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span></code></pre></div><p>也就是说，在上述的查询中，是一次全索引查询，也就是执行了 10 次索引查询。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SELECT data FROM test WHERE data BETWEEN &#39;A&#39; AND &#39;O&#39;;
+</span></span><span class=line><span class=cl>6 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SESSION STATUS LIKE &#39;Handler_read%&#39;;
+</span></span><span class=line><span class=cl>+--------------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name            | Value |
+</span></span><span class=line><span class=cl>+--------------------------+-------+
+</span></span><span class=line><span class=cl>| Handler_read_first       | 0     |  不会读取索引的第一条记录
+</span></span><span class=line><span class=cl>| Handler_read_key         | 1     |  但是会通过索引读取&#39;A&#39;所在位置
+</span></span><span class=line><span class=cl>| Handler_read_next        | 6     |  加上通过key读取的，实际读取了7条记录
+</span></span><span class=line><span class=cl>+--------------------------+-------+
+</span></span><span class=line><span class=cl>7 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; EXPLAIN SELECT data FROM test WHERE data BETWEEN &#39;A&#39; AND &#39;O&#39;;
+</span></span><span class=line><span class=cl>+------+-------------+-------+-------+----------+---------+------+------+--------------------------+
+</span></span><span class=line><span class=cl>| id   | select_type | table | type  | key      | key_len | ref  | rows | Extra                    |
+</span></span><span class=line><span class=cl>+------+-------------+-------+-------+----------+---------+------+------+--------------------------+
+</span></span><span class=line><span class=cl>|    1 | SIMPLE      | test  | range | idx_data | 35      | NULL |    6 | Using where; Using index |
+</span></span><span class=line><span class=cl>+------+-------------+-------+-------+----------+---------+------+------+--------------------------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span></code></pre></div><p>上述的查询实际上没有从 <code>Handler_read_first</code> 开始；另外，执行如下的 SQL，均未读取 first 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SELECT data FROM test WHERE data &lt; &#39;O&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; SELECT data FROM test WHERE data LIKE &#39;a%&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; SELECT data FROM test WHERE data IN (&#39;abc&#39;, &#39;abd&#39;, &#39;acd&#39;);
+</span></span></code></pre></div><p>通常来说，如果不是完全的全索引扫描，一般 read_first 不会增加。</p><a class=anchor id=handler_read_key></a><h2>handler_read_key <a href=#handler_read_key aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>The number of requests to read a row based on a key. If this value is high,
+</span></span><span class=line><span class=cl>it is a good indication that your tables are properly indexed for your queries.
+</span></span></code></pre></div><p>此选项数值如果很高，那么恭喜你，你的系统高效的使用了索引，一切运转良好。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>+-------------+          +-------+
+</span></span><span class=line><span class=cl>| Table       |          | Index |
+</span></span><span class=line><span class=cl>|             | &lt;------  |       | &lt;--+
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>+-------------+          +-------+
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH STATUS;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SELECT data FROM test WHERE data = &#39;abc&#39;;
+</span></span><span class=line><span class=cl>2 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SESSION STATUS LIKE &#39;Handler_read%&#39;;
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name         | Value |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Handler_read_first    | 0     |  不会读取第一条记录
+</span></span><span class=line><span class=cl>| Handler_read_key      | 1     |  通过索引找到第一条记录
+</span></span><span class=line><span class=cl>| Handler_read_next     | 2     |  遍厉，会读取最后一条记录以判断是否满足条件
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>7 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; EXPLAIN SELECT data FROM test WHERE data = &#39;abc&#39;;
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+----------+---------+-------+------+----------+-------------+
+</span></span><span class=line><span class=cl>| id | select_type | table | type | possible_keys | key      | key_len | ref   | rows | filtered | Extra       |
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+----------+---------+-------+------+----------+-------------+
+</span></span><span class=line><span class=cl>|  1 | SIMPLE      | test  | ref  | idx_data      | idx_data | 35      | const |    2 |   100.00 | Using index |
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+----------+---------+-------+------+----------+-------------+
+</span></span><span class=line><span class=cl>1 row in set, 1 warning (0.00 sec)
+</span></span></code></pre></div><a class=anchor id=handler_read_next></a><h2>handler_read_next <a href=#handler_read_next aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>The number of requests to read the next row in key order. This value
+</span></span><span class=line><span class=cl>is incremented if you are querying an index column with a range
+</span></span><span class=line><span class=cl>constraint or if you are doing an index scan.
+</span></span></code></pre></div><p>此选项表明在进行索引扫描时，按照索引从数据文件里取数据的次数，示例的话可以参考上面的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>+-------------+          +-------+
+</span></span><span class=line><span class=cl>| Table       |          | Index |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             | &lt;------  |   +   |
+</span></span><span class=line><span class=cl>|             | &lt;------  |   |   |
+</span></span><span class=line><span class=cl>|             | &lt;------  |   v   |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>+-------------+          +-------+
+</span></span></code></pre></div><a class=anchor id=handler_read_prev></a><h2>handler_read_prev <a href=#handler_read_prev aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>The number of requests to read the previous row in key order. This read
+</span></span><span class=line><span class=cl>method is mainly used to optimize ORDER BY ... DESC.
+</span></span></code></pre></div><p>此选项表明在进行索引扫描时，按照索引倒序从数据文件里取数据的次数，一般就是 <code>ORDER BY ... DESC</code>。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>+-------------+          +-------+
+</span></span><span class=line><span class=cl>| Table       |          | Index |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             | &lt;------  |   ^   |
+</span></span><span class=line><span class=cl>|             | &lt;------  |   |   |
+</span></span><span class=line><span class=cl>|             | &lt;------  |   +   |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>+-------------+          +-------+
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH STATUS;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SELECT data FROM test ORDER BY data DESC;
+</span></span><span class=line><span class=cl>10 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SESSION STATUS LIKE &#39;Handler_read%&#39;;
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name         | Value |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Handler_read_first    | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_key      | 1     |  通过索引读取
+</span></span><span class=line><span class=cl>| Handler_read_last     | 1     |  读取最后一条记录
+</span></span><span class=line><span class=cl>| Handler_read_next     | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_prev     | 10    |  利用索引逆序读，加上读取最后一条记录实际读取了11条
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>7 rows in set (0.02 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; EXPLAIN SELECT data FROM test ORDER BY data DESC;
+</span></span><span class=line><span class=cl>+----+-------------+-------+-------+---------------+----------+---------+------+------+----------+-------------+
+</span></span><span class=line><span class=cl>| id | select_type | table | type  | possible_keys | key      | key_len | ref  | rows | filtered | Extra       |
+</span></span><span class=line><span class=cl>+----+-------------+-------+-------+---------------+----------+---------+------+------+----------+-------------+
+</span></span><span class=line><span class=cl>|  1 | SIMPLE      | test  | index | NULL          | idx_data | 35      | NULL |   10 |   100.00 | Using index |
+</span></span><span class=line><span class=cl>+----+-------------+-------+-------+---------------+----------+---------+------+------+----------+-------------+
+</span></span><span class=line><span class=cl>1 row in set, 1 warning (0.01 sec)
+</span></span></code></pre></div><a class=anchor id=handler_read_last></a><h2>handler_read_last <a href=#handler_read_last aria-hidden=true>#</a></h2><p>与 <code>handler_read_first</code> 类似，例如逆序读取最后一条记录，在此不做过多介绍了。</p><a class=anchor id=handler_read_rnd></a><h2>handler_read_rnd <a href=#handler_read_rnd aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>The number of requests to read a row based on a fixed position. This value
+</span></span><span class=line><span class=cl>is high if you are doing a lot of queries that require sorting of the result.
+</span></span><span class=line><span class=cl>You probably have a lot of queries that require MySQL to scan entire tables
+</span></span><span class=line><span class=cl>or you have joins that don&#39;t use keys properly.
+</span></span></code></pre></div><p>简单的说，就是查询直接操作了数据文件，很多时候表现为没有使用索引(可能时全表扫描)、文件排序、JOIN 使用不当。</p><p>测试时，需要修改下上述的表结构。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; ALTER TABLE test ADD COLUMN file_sort text;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.13 sec)
+</span></span><span class=line><span class=cl>Records: 0  Duplicates: 0  Warnings: 0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>UPDATE test SET file_sort = &#39;abcdefghijklmnopqrstuvwxyz&#39; WHERE id = 1;
+</span></span><span class=line><span class=cl>UPDATE test SET file_sort = &#39;bcdefghijklmnopqrstuvwxyza&#39; WHERE id = 2;
+</span></span><span class=line><span class=cl>UPDATE test SET file_sort = &#39;cdefghijklmnopqrstuvwxyzab&#39; WHERE id = 3;
+</span></span><span class=line><span class=cl>UPDATE test SET file_sort = &#39;defghijklmnopqrstuvwxyzabc&#39; WHERE id = 4;
+</span></span><span class=line><span class=cl>UPDATE test SET file_sort = &#39;efghijklmnopqrstuvwxyzabcd&#39; WHERE id = 5;
+</span></span><span class=line><span class=cl>UPDATE test SET file_sort = &#39;fghijklmnopqrstuvwxyzabcde&#39; WHERE id = 6;
+</span></span><span class=line><span class=cl>UPDATE test SET file_sort = &#39;ghijklmnopqrstuvwxyzabcdef&#39; WHERE id = 7;
+</span></span><span class=line><span class=cl>UPDATE test SET file_sort = &#39;hijklmnopqrstuvwxyzabcdefg&#39; WHERE id = 8;
+</span></span><span class=line><span class=cl>UPDATE test SET file_sort = &#39;ijklmnopqrstuvwxyzabcdefgh&#39; WHERE id = 9;
+</span></span><span class=line><span class=cl>UPDATE test SET file_sort = &#39;jklmnopqrstuvwxyzabcdefghi&#39; WHERE id = 10;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH STATUS;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SELECT * FROM test ORDER BY file_sort ASC;
+</span></span><span class=line><span class=cl>10 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SESSION STATUS LIKE &#39;Handler_read%&#39;;
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name         | Value |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Handler_read_first    | 1     |
+</span></span><span class=line><span class=cl>| Handler_read_key      | 11    |
+</span></span><span class=line><span class=cl>| Handler_read_last     | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_next     | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_prev     | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_rnd      | 10    |
+</span></span><span class=line><span class=cl>| Handler_read_rnd_next | 11    |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>7 rows in set (0.01 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; EXPLAIN SELECT * FROM test ORDER BY file_sort ASC;
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+------+---------+------+------+----------+----------------+
+</span></span><span class=line><span class=cl>| id | select_type | table | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra          |
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+------+---------+------+------+----------+----------------+
+</span></span><span class=line><span class=cl>|  1 | SIMPLE      | test  | ALL  | NULL          | NULL | NULL    | NULL |   10 |   100.00 | Using filesort |
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+------+---------+------+------+----------+----------------+
+</span></span><span class=line><span class=cl>1 row in set, 1 warning (0.00 sec)
+</span></span></code></pre></div><p><strong>注意</strong>：这里的性能会变得非常差，所以一定要尽量避免。</p><a class=anchor id=handler_read_rnd_next></a><h2>handler_read_rnd_next <a href=#handler_read_rnd_next aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>The number of requests to read the next row in the data file. This value
+</span></span><span class=line><span class=cl>is high if you are doing a lot of table scans. Generally this suggests
+</span></span><span class=line><span class=cl>that your tables are not properly indexed or that your queries are not
+</span></span><span class=line><span class=cl>written to take advantage of the indexes you have.
+</span></span></code></pre></div><p>此选项表明在进行数据文件扫描时，从数据文件里取数据的次数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>+------+------+          +-------+
+</span></span><span class=line><span class=cl>| Table|      |          | Index |
+</span></span><span class=line><span class=cl>|      |      |          |       |
+</span></span><span class=line><span class=cl>|      |      |          |       |
+</span></span><span class=line><span class=cl>|      |      |          |       |
+</span></span><span class=line><span class=cl>|      |      |          |       |
+</span></span><span class=line><span class=cl>|      v      |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>|             |          |       |
+</span></span><span class=line><span class=cl>+-------------+          +-------+
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SELECT * FROM test;
+</span></span><span class=line><span class=cl>10 rows in set
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SESSION STATUS LIKE &#39;Handler_read%&#39;;
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name         | Value |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Handler_read_first    | 1     |
+</span></span><span class=line><span class=cl>| Handler_read_key      | 1     |
+</span></span><span class=line><span class=cl>| Handler_read_prev     | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_rnd      | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_rnd_next | 11    |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>7 rows in set (0.02 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; EXPLAIN SELECT * FROM test;
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+------+---------+------+------+----------+-------+
+</span></span><span class=line><span class=cl>| id | select_type | table | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra |
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+------+---------+------+------+----------+-------+
+</span></span><span class=line><span class=cl>|  1 | SIMPLE      | test  | ALL  | NULL          | NULL | NULL    | NULL |   10 |   100.00 | NULL  |
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+------+---------+------+------+----------+-------+
+</span></span><span class=line><span class=cl>1 row in set, 1 warning (0.00 sec)
+</span></span></code></pre></div><p>另外，再看如下的一个示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SELECT * FROM test WHERE ts = &#39;2008-01-18 17:33:39&#39;;
+</span></span><span class=line><span class=cl>Empty set (0.01 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW SESSION STATUS LIKE &#39;Handler_read%&#39;;
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name         | Value |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>| Handler_read_first    | 1     |
+</span></span><span class=line><span class=cl>| Handler_read_key      | 1     |
+</span></span><span class=line><span class=cl>| Handler_read_rnd      | 0     |
+</span></span><span class=line><span class=cl>| Handler_read_rnd_next | 11    |
+</span></span><span class=line><span class=cl>+-----------------------+-------+
+</span></span><span class=line><span class=cl>7 rows in set (0.01 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; EXPLAIN SELECT * FROM test WHERE ts = &#39;2008-01-18 17:33:39&#39;;
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+------+---------+------+------+----------+-------------+
+</span></span><span class=line><span class=cl>| id | select_type | table | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+------+---------+------+------+----------+-------------+
+</span></span><span class=line><span class=cl>|  1 | SIMPLE      | test  | ALL  | NULL          | NULL | NULL    | NULL |   10 |    10.00 | Using where |
+</span></span><span class=line><span class=cl>+----+-------------+-------+------+---------------+------+---------+------+------+----------+-------------+
+</span></span><span class=line><span class=cl>1 row in set, 1 warning (0.00 sec)
+</span></span></code></pre></div><a class=anchor id=总结></a><h2>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h2><p>不同平台，不同版本的 MySQL，在运行上面例子的时候，<code>Handler_read_*</code> 的数值可能会有所不同，这并不要紧，关键是你要意识到 <code>Handler_read_*</code> 可以协助你理解 MySQL 处理查询的过程。</p><p>其中，<code>Handler_read_rnd</code> 和 <code>Handler_read_rnd_next</code> 是越低越好，如果很高，应该进行索引相关的调优；而 <code>Handler_read_key</code> 的数值是越高越好，越高代表使用索引的读很高；其它的计数器，要具体情况具体分析。</p><p>另外需要注意的是，不只有 SELECT 语句，UPDATE、DELETE 等语句也需要先查询，所以也会影响上述参数。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>上述的内容其中很大一部分是参考 <a href=http://www.fromdual.ch/mysql-handler-read-status-variables>The handler_read_* status variables</a>。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#handler_read_>Handler_read_*</a><ul><li><a href=#handler_read_first>handler_read_first</a></li><li><a href=#handler_read_key>handler_read_key</a></li><li><a href=#handler_read_next>handler_read_next</a></li><li><a href=#handler_read_prev>handler_read_prev</a></li><li><a href=#handler_read_last>handler_read_last</a></li><li><a href=#handler_read_rnd>handler_read_rnd</a></li><li><a href=#handler_read_rnd_next>handler_read_rnd_next</a></li><li><a href=#总结>总结</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

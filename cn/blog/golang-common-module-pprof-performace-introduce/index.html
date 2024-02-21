@@ -1,0 +1,106 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>GoLang pprof 模块介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="GoLang 提供了非常强大的代码性能分析工具 pprof，可以非常方便的分析代码运行性能，同时非常直观。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>GoLang pprof 模块介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-08-05</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><p>GoLang 提供了非常强大的代码性能分析工具 pprof，可以非常方便的分析代码运行性能，同时非常直观。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>监控代码性能的有两个包 <code>net/http/pprof</code> 以及 <code>runtime/pprof</code> ，其中前者是以 HTTP 的方式将数据暴露出来，实际上其内部封装的仍然是 <code>runtime/pprof</code> 。</p><p>另外，在 <code>go test</code> 工具中，同时也封装了 <code>runtime/pprof</code> 这个包，可以通过类似 <code>-cpuprofile=cpu.prof</code> <code>-memprofile=mem.prof</code> 的参数指定。</p><p>使用过程分成了两步，首先需要运行代码收集相关的性能数据，然后通过相关的工具对数据进行分析，查找程序运行的瓶颈点。</p><a class=anchor id=runtimepprof></a><h2>runtime/pprof <a href=#runtimepprof aria-hidden=true>#</a></h2><p>对于 <code>runtime/pprof</code> 这个库，在 <a href=https://golang.org/pkg/runtime/pprof/>runtime/pprof</a> 中展示了相关的使用方式，这里简单借助斐波纳契数列介绍其使用方法。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;flag&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;runtime/pprof&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=nx>cpuprofile</span> <span class=p>=</span> <span class=nx>flag</span><span class=p>.</span><span class=nf>String</span><span class=p>(</span><span class=s>&#34;cpuprofile&#34;</span><span class=p>,</span> <span class=s>&#34;&#34;</span><span class=p>,</span> <span class=s>&#34;write cpu profile to file.&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>fibonacci</span><span class=p>(</span><span class=nx>num</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>int</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>num</span> <span class=p>&lt;</span> <span class=mi>2</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nf>fibonacci</span><span class=p>(</span><span class=nx>num</span><span class=o>-</span><span class=mi>1</span><span class=p>)</span> <span class=o>+</span> <span class=nf>fibonacci</span><span class=p>(</span><span class=nx>num</span><span class=o>-</span><span class=mi>2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>flag</span><span class=p>.</span><span class=nf>Parse</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=o>*</span><span class=nx>cpuprofile</span> <span class=o>!=</span> <span class=s>&#34;&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>f</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>os</span><span class=p>.</span><span class=nf>Create</span><span class=p>(</span><span class=o>*</span><span class=nx>cpuprofile</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=s>&#34;could not create CPU profile: &#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=k>defer</span> <span class=nx>f</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>pprof</span><span class=p>.</span><span class=nf>StartCPUProfile</span><span class=p>(</span><span class=nx>f</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=s>&#34;could not start CPU profile: &#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=k>defer</span> <span class=nx>pprof</span><span class=p>.</span><span class=nf>StopCPUProfile</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>i</span> <span class=p>&lt;</span> <span class=mi>30</span><span class=p>;</span> <span class=nx>i</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>nums</span> <span class=o>:=</span> <span class=nf>fibonacci</span><span class=p>(</span><span class=nx>i</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>nums</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在编译完上述的代码之后，可以通过 <code>--cpuprofile</code> 参数指定输出的 CPU 性能采集文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go build fibonacci.go
+</span></span><span class=line><span class=cl>$ ./fibonacci --cpuprofile=fibonacci.prof
+</span></span><span class=line><span class=cl>$ go tool pprof fibonacci fibonacci.prof
+</span></span><span class=line><span class=cl>File: fibonacci
+</span></span><span class=line><span class=cl>Type: cpu
+</span></span><span class=line><span class=cl>Time: Apr 1, 2020 at 11:32am (CST)
+</span></span><span class=line><span class=cl>Duration: 200.49ms, Total samples = 10ms ( 4.99%)
+</span></span><span class=line><span class=cl>Entering interactive mode (type &#34;help&#34; for commands, &#34;o&#34; for options)
+</span></span><span class=line><span class=cl>(pprof) top  # 也可以使用topN命令，N表示显示多少个top信息
+</span></span><span class=line><span class=cl>Showing nodes accounting for 10ms, 100% of 10ms total
+</span></span><span class=line><span class=cl>      flat  flat%   sum%        cum   cum%
+</span></span><span class=line><span class=cl>      10ms   100%   100%       10ms   100%  main.fibonacci
+</span></span><span class=line><span class=cl>         0     0%   100%       10ms   100%  main.main
+</span></span><span class=line><span class=cl>         0     0%   100%       10ms   100%  runtime.main
+</span></span><span class=line><span class=cl>(pprof) list fibonacci # 查看函数采样
+</span></span></code></pre></div><a class=anchor id=nethttppprof></a><h2>net/http/pprof <a href=#nethttppprof aria-hidden=true>#</a></h2><p>对于标准的 <code>http</code> 来说，只需要引入包即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;net/http&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nx>_</span> <span class=s>&#34;net/http/pprof&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>(){</span>
+</span></span><span class=line><span class=cl>	<span class=nx>http</span><span class=p>.</span><span class=nf>HandleFunc</span><span class=p>(</span><span class=s>&#34;/&#34;</span><span class=p>,</span> <span class=kd>func</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>r</span> <span class=o>*</span><span class=nx>http</span><span class=p>.</span><span class=nx>Request</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>w</span><span class=p>.</span><span class=nf>Write</span><span class=p>([]</span><span class=nb>byte</span><span class=p>(</span><span class=s>&#34;ok&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=p>})</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>http</span><span class=p>.</span><span class=nf>ListenAndServe</span><span class=p>(</span><span class=s>&#34;:10108&#34;</span><span class=p>,</span> <span class=kc>nil</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=内存泄漏排查></a><h1>内存泄漏排查 <a href=#%e5%86%85%e5%ad%98%e6%b3%84%e6%bc%8f%e6%8e%92%e6%9f%a5 aria-hidden=true>#</a></h1><p>在 GoLang 引入了协程之后，在有效提高性能的同时，因为各个协程之间是软限制的协作关系，导致了协程泄漏的风险，而且大部分 Go 中的内存泄漏都是因为协程的泄漏引起的，因为对于常规的对象都可以通过 gc 进行回收。</p><p>通过 <code>go tool pprof http://localhost:6060/debug/pprof/heap</code> 直接访问栈内存信息。</p><a class=anchor id=top></a><h2>top <a href=#top aria-hidden=true>#</a></h2><p>默认按指标大小列出前 10 个函数，比如内存是按内存占用多少，CPU 是按执行时间多少。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(pprof) top
+</span></span><span class=line><span class=cl>Showing nodes accounting for 520.61MB, 99.90% of 521.11MB total
+</span></span><span class=line><span class=cl>Dropped 9 nodes (cum &lt;= 2.61MB)
+</span></span><span class=line><span class=cl>      flat  flat%   sum%        cum   cum%
+</span></span><span class=line><span class=cl>  520.61MB 99.90% 99.90%   520.61MB 99.90%  main.main
+</span></span><span class=line><span class=cl>         0     0% 99.90%   520.61MB 99.90%  runtime.main
+</span></span></code></pre></div><p>默认 <code>top</code> 命令会列出前 5 个统计数据，各个列的含义如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>flat   本函数占用的内存量。
+</span></span><span class=line><span class=cl>flat%  本函数内存占使用中内存总量的百分比。
+</span></span><span class=line><span class=cl>sum%   前面每一行flat百分比的和，比如第2行的99.90%其实是99.90%+0%。
+</span></span><span class=line><span class=cl>cum    累计量，假设main函数调用了foobar函数，那么函数foobar的内存占用量也会被统计进来。
+</span></span><span class=line><span class=cl>cum%   累计量占总量的百分比。
+</span></span></code></pre></div><a class=anchor id=list></a><h2>list <a href=#list aria-hidden=true>#</a></h2><p>确认某个函数中资源的开销，可以具体到某一行的数据，如果函数名不明确，会进行模糊匹配，比如 <code>list main</code> 会列出 <code>main.main</code> 和 <code>runtime.main</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(pprof) list main.main
+</span></span><span class=line><span class=cl>Total: 521.11MB
+</span></span><span class=line><span class=cl>ROUTINE ======================== main.main in /tmp/foobar/main.go
+</span></span><span class=line><span class=cl>  520.61MB   520.61MB (flat, cum) 99.90% of Total
+</span></span><span class=line><span class=cl>         .          .     18:   }()
+</span></span><span class=line><span class=cl>         .          .     19:
+</span></span><span class=line><span class=cl>         .          .     20:   tick := time.Tick(time.Second / 100)
+</span></span><span class=line><span class=cl>         .          .     21:   var buf []byte
+</span></span><span class=line><span class=cl>         .          .     22:   for range tick {
+</span></span><span class=line><span class=cl>  520.61MB   520.61MB     23:           buf = append(buf, make([]byte, 1024*1024)...)
+</span></span><span class=line><span class=cl>         .          .     24:   }
+</span></span><span class=line><span class=cl>         .          .     25:}
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li><a href=https://dave.cheney.net/high-performance-go-workshop/dotgo-paris.html>High Performance Go Workshop</a> 绝对是经典。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#runtimepprof>runtime/pprof</a></li><li><a href=#nethttppprof>net/http/pprof</a></li></ul></li><li><a href=#内存泄漏排查>内存泄漏排查</a><ul><li><a href=#top>top</a></li><li><a href=#list>list</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

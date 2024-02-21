@@ -1,0 +1,170 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 信号安全 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="最近遇到比较奇葩的问题，在信号处理函数中，为了方便查看收到的是何信号，会打印相关的日志，不过也因此在连续收到信号时导致死锁。
+这里简单排查下原因，以及如何进行规避。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 信号安全</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-04-05</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kernel/ role=button>kernel</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>最近遇到比较奇葩的问题，在信号处理函数中，为了方便查看收到的是何信号，会打印相关的日志，不过也因此在连续收到信号时导致死锁。</p><p>这里简单排查下原因，以及如何进行规避。</p><a class=anchor id=检查当前调用栈></a><h1>检查当前调用栈 <a href=#%e6%a3%80%e6%9f%a5%e5%bd%93%e5%89%8d%e8%b0%83%e7%94%a8%e6%a0%88 aria-hidden=true>#</a></h1><p>查看当前的调用栈。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 通过pstack查看
+</span></span><span class=line><span class=cl>$ pstack PID
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 通过gdb连接过去
+</span></span><span class=line><span class=cl>$ gdb attach PID
+</span></span><span class=line><span class=cl>(gdb) info thread    各线程的栈信息
+</span></span><span class=line><span class=cl>(gdb) thread apply all backtrace 所有线程的栈信息，类似于pstack命令
+</span></span><span class=line><span class=cl>(gdb) thread 5       切换到某个线程
+</span></span><span class=line><span class=cl>(gdb) where          查看当前栈信息
+</span></span><span class=line><span class=cl>#0  0x0000003d1a80d4c4 in __lll_lock_wait () from /lib64/libpthread.so.0
+</span></span><span class=line><span class=cl>#1  0x0000003d1a808e1a in _L_lock_1034 () from /lib64/libpthread.so.0
+</span></span><span class=line><span class=cl>#2  0x0000003d1a808cdc in pthread_mutex_lock () from /lib64/libpthread.so.0
+</span></span><span class=line><span class=cl>#3  0x0000000000400a9b in func1 () at lock.cpp:18
+</span></span><span class=line><span class=cl>#4  0x0000000000400ad7 in thread1 (arg=0x0) at lock.cpp:43
+</span></span><span class=line><span class=cl>#5  0x0000003d1a80673d in start_thread () from /lib64/libpthread.so.0
+</span></span><span class=line><span class=cl>#6  0x0000003d19cd40cd in clone () from /lib64/libc.so.6
+</span></span><span class=line><span class=cl>(gdb) frame 3        切换到加锁API函数的上一层
+</span></span><span class=line><span class=cl>(gdb) print your_mutex  查看锁信息
+</span></span></code></pre></div><p>如果线程阻塞的栈不变，一般为 <code>__lll_lock_wait()</code> 或者 <code>__lll_lock_wait_private()</code> ，那么基本可以确定是由于发生了死锁导致。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>如下是一个可能发生死锁的示例程序。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;time.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>int_handler</span><span class=p>(</span><span class=kt>int</span> <span class=n>signum</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>time_t</span> <span class=n>tt</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=n>timestr</span><span class=p>[</span><span class=mi>12</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>tm</span> <span class=n>timenow</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>time</span><span class=p>(</span><span class=o>&amp;</span><span class=n>tt</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>localtime_r</span><span class=p>(</span><span class=o>&amp;</span><span class=n>tt</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>timenow</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>strftime</span><span class=p>(</span><span class=n>timestr</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>timestr</span><span class=p>),</span> <span class=s>&#34;%m%d-%H%M%S&#34;</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>timenow</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%s Got a int signal %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>timestr</span><span class=p>,</span> <span class=n>signum</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>quit_handler</span><span class=p>(</span><span class=kt>int</span> <span class=n>signum</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%ld Got a quit signal %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>time</span><span class=p>(</span><span class=nb>NULL</span><span class=p>),</span> <span class=n>signum</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>time_t</span> <span class=n>now</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>tm</span> <span class=n>ltime</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>signal</span><span class=p>(</span><span class=n>SIGINT</span><span class=p>,</span> <span class=n>int_handler</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>signal</span><span class=p>(</span><span class=n>SIGQUIT</span><span class=p>,</span> <span class=n>quit_handler</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>now</span> <span class=o>=</span> <span class=nf>time</span><span class=p>(</span><span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>while</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nf>localtime_r</span><span class=p>(</span><span class=o>&amp;</span><span class=n>now</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>ltime</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>可以连续发送多次信号进行测试，或者使用如下命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>while true; do pid=`pidof your-program`; if [ -n &#34;$pid&#34; ]; then kill $pid; sleep 0.01; else sleep 1; fi; done
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>while true; do ./daemon/your-program; echo &#34;start&#34; ; done
+</span></span></code></pre></div><a class=anchor id=localtime死锁></a><h1>localtime死锁 <a href=#localtime%e6%ad%bb%e9%94%81 aria-hidden=true>#</a></h1><p>简单来说，对应的堆栈为。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#0  0x0000003f6d4f805e in __lll_lock_wait_private () from /lib64/libc.so.6
+</span></span><span class=line><span class=cl>#1  0x0000003f6d49dcad in _L_lock_2164 () from /lib64/libc.so.6
+</span></span><span class=line><span class=cl>#2  0x0000003f6d49da67 in __tz_convert () from /lib64/libc.so.6
+</span></span></code></pre></div><a class=anchor id=源码解析></a><h2>源码解析 <a href=#%e6%ba%90%e7%a0%81%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h2><p>实际上在 <a href=https://github.com/bminor/glibc/blob/09533208febe923479261a27b7691abef297d604/time/localtime.c>time/localtime.c</a> 对该函数有如下的实现：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>/* Return the `struct tm&#39; representation of *T in local time,
+</span></span><span class=line><span class=cl>   using *TP to store the result.  */
+</span></span><span class=line><span class=cl>struct tm *
+</span></span><span class=line><span class=cl>__localtime_r (const time_t *t, struct tm *tp)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  return __tz_convert (t, 1, tp);
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>weak_alias (__localtime_r, localtime_r)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>/* Return the `struct tm&#39; representation of *T in local time.  */
+</span></span><span class=line><span class=cl>struct tm *
+</span></span><span class=line><span class=cl>localtime (const time_t *t)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  return __tz_convert (t, 1, &amp;_tmbuf);
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>libc_hidden_def (localtime)
+</span></span></code></pre></div><p>也就是说，无论 <code>localtime()</code> 还是 <code>localtime_r()</code> 都是调用 <code>__tz_convert()</code> 完成实际功能，该函数的实现在 <code>time/tzset.c</code> 文件中。</p><p>其中有一部分代码是通过 <code>__libc_lock_lock (tzset_lock);</code> 加锁后的处理，而该锁是通过 <code>__libc_lock_define_initialized (static, tzset_lock)</code> 定义的 static 全局变量。</p><p><code>localtime()</code> 和 <code>localtime_r()</code> 的实现都通过加锁实现了访问，但是 <code>localtime()</code> 同时会使用一个全局变量，所以后者不是线程安全的。</p><p>但这两个函数都不是信号安全的，如果在信号处理函数中使用，就要考虑到死锁的情况。比如，程序调用 <code>localtime_r()</code>，加锁后信号发生，信号处理函数中也调用 <code>localtime_r()</code> 的话，会因为获取不到锁所以一直阻塞。</p><a class=anchor id=死锁场景></a><h2>死锁场景 <a href=#%e6%ad%bb%e9%94%81%e5%9c%ba%e6%99%af aria-hidden=true>#</a></h2><p>最常见的是，也就是上述的，在日志打印时间调用了 <code>localtime()</code> 函数，而在信号处理函数中同时会打印日志，那么就可能会出现这一问题。</p><p>如果使用的是多进程，各个 localtime() 的调用都是安全的，另外，还有一个场景，是在多线程中同时 <code>fork()</code> 子进程。</p><p>后面的场景中，因为变量是共享的，那么如果多线程 <code>fork()</code> 子进程，而此时的某个线程在该函数的加锁阶段，子进程以 COW 方式共享主进程的内存空间，所以对应 <code>localtime()</code> 的锁也是被占用的情况，那么就可能导致子进程一直阻塞。</p><a class=anchor id=解决方案></a><h2>解决方案 <a href=#%e8%a7%a3%e5%86%b3%e6%96%b9%e6%a1%88 aria-hidden=true>#</a></h2><p>对于部分场景，如果我们对锁有控制权，那么就可以在调用 <code>fork()</code> 创建子进程前，通过 glibc 库提供的函数 <code>pthead_atfork()</code> 加解锁，达到一致状态。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;pthread.h&gt;
+</span></span><span class=line><span class=cl>int pthread_atfork(void (*prepare)(void), void (*parent)(void), void (*child)(void));
+</span></span></code></pre></div><p>简单来说，创建子进程前在父进程中会调用 prepare 函数；创建子进程成功后，父进程会调用 parent 而子进程会调用 child 。这样，可以在 prepare 中释放所有的锁，parent 中按需要进行加锁。</p><p>由于没有办法操作 localtime 使用的锁，所以上述方式行不通。这样，只能是选择折中的办法，例如日志可以通过定时更新时间缓存的方式执行。</p><a class=anchor id=关于-pthread_atfork></a><h2>关于 pthread_atfork() <a href=#%e5%85%b3%e4%ba%8e-pthread_atfork aria-hidden=true>#</a></h2><p>当父进程有多线程时，子进程继承父进程所有的互斥量、读写锁和条件变量的状态，如果父进程中的线程占有锁 (任一线程)，那么子进程同样占有这些锁，当尝试重新获取锁时会导致一直阻塞。</p><p>如果子进程马上调用 exec 类函数，老的地址空间被丢弃，所以锁的状态无关紧要；否则，就需要清除锁的状态。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;wait.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;pthread.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>pthread_mutex_t</span> <span class=n>mutex</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=o>*</span><span class=nf>another</span><span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=n>arg</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=n>arg</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Sub-thread lock</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>pthread_mutex_lock</span><span class=p>(</span><span class=o>&amp;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Sub-thread locking</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>sleep</span><span class=p>(</span><span class=mi>2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>pthread_mutex_unlock</span><span class=p>(</span><span class=o>&amp;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Sub-thread unlock</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>child</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>pthread_mutex_unlock</span><span class=p>(</span><span class=o>&amp;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>pthread_t</span> <span class=n>tid</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>pthread_mutex_init</span><span class=p>(</span><span class=o>&amp;</span><span class=n>mutex</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>pthread_create</span><span class=p>(</span><span class=o>&amp;</span><span class=n>tid</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>,</span> <span class=n>another</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>sleep</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span> <span class=cm>/* Just ensure the thread got mutex */</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>pthread_atfork</span><span class=p>(</span><span class=nb>NULL</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>,</span> <span class=n>child</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>pid</span> <span class=o>=</span> <span class=nf>fork</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span><span class=p>(</span><span class=n>pid</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>pthread_join</span><span class=p>(</span><span class=n>tid</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>pthread_mutex_destroy</span><span class=p>(</span><span class=o>&amp;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=n>pid</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span> <span class=cm>/* child */</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Sub-process lock</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>pthread_mutex_lock</span><span class=p>(</span><span class=o>&amp;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Sub-process locking</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>pthread_mutex_unlock</span><span class=p>(</span><span class=o>&amp;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Sub-process unlock</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>wait</span><span class=p>(</span><span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nf>pthread_join</span><span class=p>(</span><span class=n>tid</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>pthread_mutex_destroy</span><span class=p>(</span><span class=o>&amp;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Main routine exit</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>为了解决上述的死锁问题，需要在 <code>fork()</code> 调用前加入 <code>pthread_atfork()</code> 对应的代码。</p><p>一般使用的方式是，在 prepare 中执行加锁，在 parent 和 child 中实现解锁，这样可以保证在进入子进程前已经获得了锁，而在子进程中释放锁。</p><p>测试发现，锁可以多次释放，因此可以在进入子进程时把锁都释放掉。</p><a class=anchor id=线程安全信号安全></a><h1>线程安全、信号安全 <a href=#%e7%ba%bf%e7%a8%8b%e5%ae%89%e5%85%a8%e4%bf%a1%e5%8f%b7%e5%ae%89%e5%85%a8 aria-hidden=true>#</a></h1><p>一般来说线程是操作系统调度的最小单元，进程是资源分配的最小单元；一个进程可以派生多个线程，这些线程独立运行共享进程资源，那么在使用共享资源时，就需要考虑避免竞争条件、死锁、互斥等。</p><a class=anchor id=线程安全-thread-safe></a><h2>线程安全 Thread-Safe <a href=#%e7%ba%bf%e7%a8%8b%e5%ae%89%e5%85%a8-thread-safe aria-hidden=true>#</a></h2><p>在多线程 (单线程不存在) 并发执行场景中，如果一个函数可以安全地被多个线程并发调用，可以说这个函数是线程安全的。也就是说，一个线程安全的函数允许任意地被任意的线程调用，其它开发只需要关注业务逻辑。</p><p>有时候很难判断一个是否线程安全，不过如果有如下几条，那么说明这个函数是线程不安全的：</p><ol><li>函数中访问、分配全局变量和堆。</li><li>使用了其他线程不安全的函数或者变量。</li></ol><p>因此在编写线程安全函数时，要注意两点：</p><ol><li>减少对临界资源的依赖，尽量避免访问全局变量、静态变量或其它共享资源，如果必须要使用则需要添加互斥锁；</li><li>线程安全的函数所调用到的函数也应该是线程安全的，如果调用了非线程安全函数，同样需要加互斥锁保护。</li></ol><a class=anchor id=可重入-re-entrant></a><h2>可重入 Re-entrant <a href=#%e5%8f%af%e9%87%8d%e5%85%a5-re-entrant aria-hidden=true>#</a></h2><p>一个函数想要成为可重入的函数，必须满足下列要求：</p><ul><li>不能使用静态或者全局的非常量数据</li><li>不能够返回地址给静态或者全局的非常量数据</li><li>函数使用的数据由调用者提供</li><li>不能够依赖于单一资源的锁</li><li>不能够调用非可重入的函数</li></ul><p>在 <a href=http://pubs.opengroup.org/onlinepubs/000095399/basedefs/xbd_chap03.html>OpenGroup Definitions</a> 中有对上述三个概念的介绍。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Reentrant Function
+</span></span><span class=line><span class=cl>A function whose effect, when called by two or more threads, is guaranteed to be as if
+</span></span><span class=line><span class=cl>the threads each executed the function one after another in an undefined order, even if
+</span></span><span class=line><span class=cl>the actual execution is interleaved.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Thread-Safe
+</span></span><span class=line><span class=cl>A function that may be safely invoked concurrently by multiple threads. Each function
+</span></span><span class=line><span class=cl>defined in the System Interfaces volume of IEEE Std 1003.1-2001 is thread-safe unless
+</span></span><span class=line><span class=cl>explicitly stated otherwise. Examples are any &#34;pure&#34; function, a function which holds
+</span></span><span class=line><span class=cl>a mutex locked while it is accessing static storage, or objects shared among threads.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Async-Signal-Safe Function
+</span></span><span class=line><span class=cl>A function that may be invoked, without restriction, from signal-catching functions.
+</span></span><span class=line><span class=cl>No function is async-signal-safe unless explicitly described as such.
+</span></span></code></pre></div><p>简单来说：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Reentrant:
+</span></span><span class=line><span class=cl>   不使用全局变量；
+</span></span><span class=line><span class=cl>   不调用non-reentrant函数。
+</span></span><span class=line><span class=cl>Thread-safe:
+</span></span><span class=line><span class=cl>   可以访问全局变量，不过需要加锁
+</span></span><span class=line><span class=cl>   每次调用它返回不同的结果也没关系
+</span></span><span class=line><span class=cl>Async-Signal-Safe:
+</span></span><span class=line><span class=cl>   只有几个固定的函数是 signal-safe 的，可以通过 man 7 signal 查看；
+</span></span><span class=line><span class=cl>   使用了锁的一定不是信号安全的，除非屏蔽了信号；
+</span></span></code></pre></div><p>可重入函数一定是线程安全的，也是异步信号安全。</p><p>Nginx、MySQL 都分别实现了一堆的格式化函数，如 <code>ngx_vslprintf()</code>、<code>my_safe_snprintf()</code>，同时 Nginx 中的时间是定时更新的。</p><a class=anchor id=总结></a><h1>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h1><p>总结一下，这种有全局锁的函数都不是信号安全的，比如 localtime()、gmttime()、free()、malloc() 等，但是无法使用 pthread_atfork() 来清理，因此在多线程中使用 fork 需要谨慎。</p><p>关于信号安全的函数可以通过 <code>man 7 signal</code> 查看。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#检查当前调用栈>检查当前调用栈</a><ul><li><a href=#示例>示例</a></li></ul></li><li><a href=#localtime死锁>localtime死锁</a><ul><li><a href=#源码解析>源码解析</a></li><li><a href=#死锁场景>死锁场景</a></li><li><a href=#解决方案>解决方案</a></li><li><a href=#关于-pthread_atfork>关于 pthread_atfork()</a></li></ul></li><li><a href=#线程安全信号安全>线程安全、信号安全</a><ul><li><a href=#线程安全-thread-safe>线程安全 Thread-Safe</a></li><li><a href=#可重入-re-entrant>可重入 Re-entrant</a></li></ul></li><li><a href=#总结>总结</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

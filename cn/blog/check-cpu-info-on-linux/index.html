@@ -1,0 +1,117 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>如何在 Linux 中查看 CPU 信息 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="现在 CPU 一般是多核，甚至包括了现在的手机，而每个核又包含了缓存，那么，在 Linux 上如何通过命令查看当前 CPU 的信息呢？例如，常见的型号、时钟频率、核数等等，在这篇文章里会详细介绍。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>如何在 Linux 中查看 CPU 信息</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2020-05-29</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/monitor/ role=button>monitor</a></div></div><hr><div class=content><p>现在 CPU 一般是多核，甚至包括了现在的手机，而每个核又包含了缓存，那么，在 Linux 上如何通过命令查看当前 CPU 的信息呢？例如，常见的型号、时钟频率、核数等等，在这篇文章里会详细介绍。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>查看不同的信息使用的命令也略有区别，例如最基本的 CPU 供应商、CPU 型号、时钟频率、核数、L1~3 缓存配置等，还有 CPU 的能力，例如硬件虚拟化、MMX、SSE 等。</p><p>当然，获取不同的信息使用的命令也略有区别，这里仅介绍一些常用的命令。</p><a class=anchor id=proccpuinfo></a><h1>/proc/cpuinfo <a href=#proccpuinfo aria-hidden=true>#</a></h1><p>包含了 CPU 相关的基本信息，信息是按照逻辑核展示的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>processor       : 0
+</span></span><span class=line><span class=cl>vendor_id       : GenuineIntel
+</span></span><span class=line><span class=cl>cpu family      : 6
+</span></span><span class=line><span class=cl>model           : 78
+</span></span><span class=line><span class=cl>model name      : Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz
+</span></span><span class=line><span class=cl>stepping        : 3
+</span></span><span class=line><span class=cl>microcode       : 0xd6
+</span></span><span class=line><span class=cl>cpu MHz         : 2721.118
+</span></span><span class=line><span class=cl>cache size      : 3072 KB
+</span></span><span class=line><span class=cl>physical id     : 0
+</span></span><span class=line><span class=cl>siblings        : 4
+</span></span><span class=line><span class=cl>core id         : 0
+</span></span><span class=line><span class=cl>cpu cores       : 2
+</span></span><span class=line><span class=cl>apicid          : 0
+</span></span><span class=line><span class=cl>initial apicid  : 0
+</span></span><span class=line><span class=cl>fpu             : yes
+</span></span><span class=line><span class=cl>fpu_exception   : yes
+</span></span><span class=line><span class=cl>cpuid level     : 22
+</span></span><span class=line><span class=cl>wp              : yes
+</span></span><span class=line><span class=cl>flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb invpcid_single pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp md_clear flush_l1d
+</span></span><span class=line><span class=cl>bugs            : cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs itlb_multihit srbds
+</span></span><span class=line><span class=cl>bogomips        : 4800.00
+</span></span><span class=line><span class=cl>clflush size    : 64
+</span></span><span class=line><span class=cl>cache_alignment : 64
+</span></span><span class=line><span class=cl>address sizes   : 39 bits physical, 48 bits virtual
+</span></span><span class=line><span class=cl>power management:
+</span></span></code></pre></div><a class=anchor id=lscpu></a><h1>lscpu <a href=#lscpu aria-hidden=true>#</a></h1><p>对于 <code>/proc/cpuinfo</code> 中的内容比较分散，每个核的大部分内容都是相同的，而 <code>lscpu</code> 命令提供了一个更加友好的格式统计方式，例如 CPU、核数等信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Architecture:        x86_64
+</span></span><span class=line><span class=cl>CPU op-mode(s):      32-bit, 64-bit
+</span></span><span class=line><span class=cl>Byte Order:          Little Endian
+</span></span><span class=line><span class=cl>CPU(s):              4
+</span></span><span class=line><span class=cl>On-line CPU(s) list: 0-3
+</span></span><span class=line><span class=cl>Thread(s) per core:  2
+</span></span><span class=line><span class=cl>Core(s) per socket:  2
+</span></span><span class=line><span class=cl>Socket(s):           1
+</span></span><span class=line><span class=cl>NUMA node(s):        1
+</span></span><span class=line><span class=cl>Vendor ID:           GenuineIntel
+</span></span><span class=line><span class=cl>CPU family:          6
+</span></span><span class=line><span class=cl>Model:               78
+</span></span><span class=line><span class=cl>Model name:          Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz
+</span></span><span class=line><span class=cl>Stepping:            3
+</span></span><span class=line><span class=cl>CPU MHz:             2511.447
+</span></span><span class=line><span class=cl>CPU max MHz:         2800.0000
+</span></span><span class=line><span class=cl>CPU min MHz:         400.0000
+</span></span><span class=line><span class=cl>BogoMIPS:            4800.00
+</span></span><span class=line><span class=cl>Virtualization:      VT-x
+</span></span><span class=line><span class=cl>L1d cache:           32K
+</span></span><span class=line><span class=cl>L1i cache:           32K
+</span></span><span class=line><span class=cl>L2 cache:            256K
+</span></span><span class=line><span class=cl>L3 cache:            3072K
+</span></span><span class=line><span class=cl>NUMA node0 CPU(s):   0-3
+</span></span><span class=line><span class=cl>Flags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb invpcid_single pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp md_clear flush_l1d
+</span></span></code></pre></div><a class=anchor id=cpuid></a><h1>cpuid <a href=#cpuid aria-hidden=true>#</a></h1><p>有点 CPU 专用的信息收集工具，可以通过 <a href=https://en.wikipedia.org/wiki/CPUID>CPUID</a> 功能获取详细的 CPU 硬件信息，包括了 CPU 类型、扩展指令、缓存信息等等。</p><p>对于 CentOS 需要从 EPEL 库中安装，默认是不会安装的，直接通过 <code>yum install cpuid</code> 即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>CPU 0:
+</span></span><span class=line><span class=cl>   vendor_id = &#34;GenuineIntel&#34;
+</span></span><span class=line><span class=cl>   version information (1/eax):
+</span></span><span class=line><span class=cl>      processor type  = primary processor (0)
+</span></span><span class=line><span class=cl>      family          = 0x6 (6)
+</span></span><span class=line><span class=cl>      model           = 0xe (14)
+</span></span><span class=line><span class=cl>      stepping id     = 0x3 (3)
+</span></span><span class=line><span class=cl>      extended family = 0x0 (0)
+</span></span><span class=line><span class=cl>      extended model  = 0x4 (4)
+</span></span><span class=line><span class=cl>      (family synth)  = 0x6 (6)
+</span></span><span class=line><span class=cl>      (model synth)   = 0x4e (78)
+</span></span><span class=line><span class=cl>      (simple synth)  = Intel Core (unknown type) (Skylake D0) {Skylake}, 14nm
+</span></span><span class=line><span class=cl>   miscellaneous (1/ebx):
+</span></span><span class=line><span class=cl>      process local APIC physical ID = 0x0 (0)
+</span></span><span class=line><span class=cl>      maximum IDs for CPUs in pkg    = 0x10 (16)
+</span></span><span class=line><span class=cl>      CLFLUSH line size              = 0x8 (8)
+</span></span><span class=line><span class=cl>      brand index                    = 0x0 (0)
+</span></span><span class=line><span class=cl>... ...
+</span></span></code></pre></div><a class=anchor id=dmidecode></a><h1>dmidecode <a href=#dmidecode aria-hidden=true>#</a></h1><p>该命令会从 BIOS 的 DMI 接口数据收集关于系统硬件的具体信息，所以不会仅限于 CPU 信息。其中与 CPU 相关的信息包括了 CPU 类型、版本、核心总数、L1/L2/L3 缓存配置等等。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>Processor Information
+</span></span><span class=line><span class=cl>        Socket Designation: U3E1
+</span></span><span class=line><span class=cl>        Type: Central Processor
+</span></span><span class=line><span class=cl>        Family: Core i5
+</span></span><span class=line><span class=cl>        Manufacturer: Intel(R) Corporation
+</span></span><span class=line><span class=cl>        ID: E3 06 04 00 FF FB EB BF
+</span></span><span class=line><span class=cl>        Signature: Type 0, Family 6, Model 78, Stepping 3
+</span></span><span class=line><span class=cl>        Flags:
+</span></span><span class=line><span class=cl>                FPU (Floating-point unit on-chip)
+</span></span><span class=line><span class=cl>                VME (Virtual mode extension)
+</span></span><span class=line><span class=cl>                DE (Debugging extension)
+</span></span><span class=line><span class=cl>                PSE (Page size extension)
+</span></span><span class=line><span class=cl>                TSC (Time stamp counter)
+</span></span><span class=line><span class=cl>                MSR (Model specific registers)
+</span></span><span class=line><span class=cl>                PAE (Physical address extension)
+</span></span><span class=line><span class=cl>                MCE (Machine check exception)
+</span></span><span class=line><span class=cl>                CX8 (CMPXCHG8 instruction supported)
+</span></span><span class=line><span class=cl>... ...
+</span></span></code></pre></div><a class=anchor id=lshw></a><h1>lshw <a href=#lshw aria-hidden=true>#</a></h1><p>与 <code>dmidecode</code> 命令类似，也是一个综合性硬件查询工具，同样是在 BIOS 里查询 DMI 信息，包括了总核心数和可用核心数，不过会遗漏一些信息，例如 L1/L2/L3 缓存配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># lshw -class processor
+</span></span><span class=line><span class=cl>  *-cpu
+</span></span><span class=line><span class=cl>       description: CPU
+</span></span><span class=line><span class=cl>       product: Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz
+</span></span><span class=line><span class=cl>       vendor: Intel Corp.
+</span></span><span class=line><span class=cl>       physical id: 7
+</span></span><span class=line><span class=cl>       bus info: cpu@0
+</span></span><span class=line><span class=cl>       version: Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz
+</span></span><span class=line><span class=cl>       serial: None
+</span></span><span class=line><span class=cl>       slot: U3E1
+</span></span><span class=line><span class=cl>       size: 2752MHz
+</span></span><span class=line><span class=cl>       capacity: 4005MHz
+</span></span><span class=line><span class=cl>       width: 64 bits
+</span></span><span class=line><span class=cl>       clock: 100MHz
+</span></span><span class=line><span class=cl>       capabilities: lm fpu fpu_exception wp vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp x86-64 constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb invpcid_single pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp md_clear flush_l1d cpufreq
+</span></span><span class=line><span class=cl>       configuration: cores=2 enabledcores=2 threads=4
+</span></span></code></pre></div><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><ul><li>HardInfo 一个 GUI 的图形界面，可以用来查看硬件信息。</li><li>numactl 用来查看 NUMA 和 CPU 的布局策略，也就是 NUMA 的拓扑结构信息。</li><li>x86info 展示基于 x86 架构的 CPU 信息。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#proccpuinfo>/proc/cpuinfo</a></li><li><a href=#lscpu>lscpu</a></li><li><a href=#cpuid>cpuid</a></li><li><a href=#dmidecode>dmidecode</a></li><li><a href=#lshw>lshw</a></li><li><a href=#其它>其它</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

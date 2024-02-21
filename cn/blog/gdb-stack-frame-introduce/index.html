@@ -1,34 +1,37 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>GDB 栈帧简介 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="栈是一块内存空间，会从高地址向低地址增长，同时在函数调用过程中，会通过栈寄存器来维护栈帧相关的内容。函数运行时，栈帧 (Stack Frame) 非常重要，包含了函数的局部变量以及函数调用之间的传参。
-"><link rel=canonical href=https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/","url":"https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/","name":"GDB 栈帧简介","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2017-10-05T21:19:12CET","dateModified":"2017-10-05T21:19:12CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"GDB 栈帧简介","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/"},"datePublished":"2017-10-05T21:19:12CET","dateModified":"2017-10-05T21:19:12CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/gdb-stack-frame-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"GDB 栈帧简介"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
-<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
-<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
-<span>页面目录</span>
-<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#寄存器>寄存器</a></li><li><a href=#函数传参>函数传参</a><ul><li><a href=#汇编>汇编</a></li><li><a href=#寄存器-1>寄存器</a></li></ul></li><li><a href=#获取中断号>获取中断号</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#寄存器>寄存器</a></li><li><a href=#函数传参>函数传参</a><ul><li><a href=#汇编>汇编</a></li><li><a href=#寄存器-1>寄存器</a></li></ul></li><li><a href=#获取中断号>获取中断号</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>GDB 栈帧简介</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2017-10-05</span>
-<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/program/ role=button>program</a>
-<a class="btn btn-light" href=https://gohalo.github.io/tags/c/cpp/ role=button>c/cpp</a></div></div><hr><div class=content-body><p>栈是一块内存空间，会从高地址向低地址增长，同时在函数调用过程中，会通过栈寄存器来维护栈帧相关的内容。函数运行时，栈帧 (Stack Frame) 非常重要，包含了函数的局部变量以及函数调用之间的传参。</p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>这里的介绍都是以 x86_64 为基础，而栈帧的操作大部分是与寄存器相关，不同的架构使用寄存器的方式略有区别。</p><pre tabindex=0><code>addr       contents       running          access           comments
-
-High  +-----------------+
- |    |   ~ StackTop ~  |
- |    +-----------------+ -----
- |    |    rbp(start)   |   |
- |    +-----------------+   |(main)
- |    |  ARGS9 ~ ARGS7  |   V     16(%rbp) ~ 32(%rbp) &lt;- caller将参数压栈
- |    +-----------------+ -----
- |    |  ReturnAddress  |   |          8(%rbp)        &lt;- call指令默认压栈操作
- |    +-----------------+   |
- |    |    rbp(main)    |   |           (%rbp)        &lt;- callee负责保存上个函数栈基址方便恢复
- |    +-----------------+ -----
- |    +  ARGS6 ~ ARGS0  +   |
- |    +-----------------+   | (foobar)
- V    |  LocalVariable  |   V         -4(%rbp)
-Low   +-----------------+ -----
-</code></pre><p>栈帧的格式基本如下所示，<code>$rsp</code> 寄存器保存了当前栈的地址，可以通过 <code>pushq</code> <code>popq</code> <code>call</code> 等指令进行隐式操作，通过 <code>$rbp</code> 保存栈帧的地址，并进行相对寻址。</p><h1 id=寄存器>寄存器 <a href=#%e5%af%84%e5%ad%98%e5%99%a8 class=anchor aria-hidden=true>#</a></h1><p>在测试阶段，通常不会开启优化，所以，直接查看变量即可。对于线上的代码，通常需要开启代码优化，因此需要在调试时注意寄存器的使用情况。</p><pre tabindex=0><code>$rip                                  指令寄存器，指向当前执行的代码位置
-$rsp                                  栈指针寄存器，指向当前栈顶，可以通过pushq popq进行自动操作
-$rbp                                  栈帧指针，用来标示当前栈帧的起始位置；
-
-$rax $rbx $rcx $rdx $rsi $rdi $rbp    通用寄存器
-$r8 $r9 $r10 $r11 $r12 $r13 $r14 $r15
-</code></pre><p><code>%rdi</code> <code>%rsi</code> <code>%rdx</code> <code>%rcx</code> <code>%r8</code> <code>%r9</code> 六个寄存器用于存储函数调用的前六个参数，超过则通过栈传递；<code>%rax</code> 用来返回结果。</p><p>另外，需要区分 &ldquo;Caller Save&rdquo; 以及 &ldquo;Callee Save&rdquo; 寄存器，在某个函数中，会使用到通用寄存器，那么在子函数中这些寄存器的值可能被覆盖，所以需要确定寄存器的保存方式。</p><h1 id=函数传参>函数传参 <a href=#%e5%87%bd%e6%95%b0%e4%bc%a0%e5%8f%82 class=anchor aria-hidden=true>#</a></h1><p>在具体的 CPU 硬件中，函数的运行需要借助硬件的栈 (Stack) 能力，为了保证各个模块的函数直接可以相互调用，那么就需要遵守 Calling Convention，这也是 ABI (Application Binary Interface) 的一部分。</p><p>详细的可以通过 <code>man syscall</code> 查看，如下的示例中，都是以如下函数作为测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=nf>foobar</span><span class=p>(</span><span class=kt>int</span> <span class=n>a</span><span class=p>,</span> <span class=kt>int</span> <span class=n>b</span><span class=p>,</span> <span class=kt>int</span> <span class=n>c</span><span class=p>,</span> <span class=kt>int</span> <span class=n>d</span><span class=p>,</span> <span class=kt>int</span> <span class=n>e</span><span class=p>,</span> <span class=kt>int</span> <span class=n>f</span><span class=p>,</span> <span class=kt>int</span> <span class=n>g</span><span class=p>,</span> <span class=kt>int</span> <span class=n>h</span><span class=p>,</span> <span class=kt>int</span> <span class=n>i</span><span class=p>)</span>
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>GDB 栈帧简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="栈是一块内存空间，会从高地址向低地址增长，同时在函数调用过程中，会通过栈寄存器来维护栈帧相关的内容。函数运行时，栈帧 (Stack Frame) 非常重要，包含了函数的局部变量以及函数调用之间的传参。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>GDB 栈帧简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-10-05</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/c/cpp/ role=button>c/cpp</a></div></div><hr><div class=content><p>栈是一块内存空间，会从高地址向低地址增长，同时在函数调用过程中，会通过栈寄存器来维护栈帧相关的内容。函数运行时，栈帧 (Stack Frame) 非常重要，包含了函数的局部变量以及函数调用之间的传参。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>这里的介绍都是以 x86_64 为基础，而栈帧的操作大部分是与寄存器相关，不同的架构使用寄存器的方式略有区别。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>addr       contents       running          access           comments
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>High  +-----------------+
+</span></span><span class=line><span class=cl> |    |   ~ StackTop ~  |
+</span></span><span class=line><span class=cl> |    +-----------------+ -----
+</span></span><span class=line><span class=cl> |    |    rbp(start)   |   |
+</span></span><span class=line><span class=cl> |    +-----------------+   |(main)
+</span></span><span class=line><span class=cl> |    |  ARGS9 ~ ARGS7  |   V     16(%rbp) ~ 32(%rbp) &lt;- caller将参数压栈
+</span></span><span class=line><span class=cl> |    +-----------------+ -----
+</span></span><span class=line><span class=cl> |    |  ReturnAddress  |   |          8(%rbp)        &lt;- call指令默认压栈操作
+</span></span><span class=line><span class=cl> |    +-----------------+   |
+</span></span><span class=line><span class=cl> |    |    rbp(main)    |   |           (%rbp)        &lt;- callee负责保存上个函数栈基址方便恢复
+</span></span><span class=line><span class=cl> |    +-----------------+ -----
+</span></span><span class=line><span class=cl> |    +  ARGS6 ~ ARGS0  +   |
+</span></span><span class=line><span class=cl> |    +-----------------+   | (foobar)
+</span></span><span class=line><span class=cl> V    |  LocalVariable  |   V         -4(%rbp)
+</span></span><span class=line><span class=cl>Low   +-----------------+ -----
+</span></span></code></pre></div><p>栈帧的格式基本如下所示，<code>$rsp</code> 寄存器保存了当前栈的地址，可以通过 <code>pushq</code> <code>popq</code> <code>call</code> 等指令进行隐式操作，通过 <code>$rbp</code> 保存栈帧的地址，并进行相对寻址。</p><p>如果是多线程，可以通过 <code>thread apply all backtrace</code> 命令查看所有线程的栈。</p><a class=anchor id=寄存器></a><h1>寄存器 <a href=#%e5%af%84%e5%ad%98%e5%99%a8 aria-hidden=true>#</a></h1><p>在测试阶段，通常不会开启优化，所以，直接查看变量即可。对于线上的代码，通常需要开启代码优化，因此需要在调试时注意寄存器的使用情况。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$rip                                  指令寄存器，指向当前执行的代码位置
+</span></span><span class=line><span class=cl>$rsp                                  栈指针寄存器，指向当前栈顶，可以通过pushq popq进行自动操作
+</span></span><span class=line><span class=cl>$rbp                                  栈帧指针，用来标示当前栈帧的起始位置；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$rax $rbx $rcx $rdx $rsi $rdi $rbp    通用寄存器
+</span></span><span class=line><span class=cl>$r8 $r9 $r10 $r11 $r12 $r13 $r14 $r15
+</span></span></code></pre></div><p><code>%rdi</code> <code>%rsi</code> <code>%rdx</code> <code>%rcx</code> <code>%r8</code> <code>%r9</code> 六个寄存器用于存储函数调用的前六个参数，超过则通过栈传递；<code>%rax</code> 用来返回结果。</p><p>另外，需要区分 &ldquo;Caller Save&rdquo; 以及 &ldquo;Callee Save&rdquo; 寄存器，在某个函数中，会使用到通用寄存器，那么在子函数中这些寄存器的值可能被覆盖，所以需要确定寄存器的保存方式。</p><a class=anchor id=函数传参></a><h1>函数传参 <a href=#%e5%87%bd%e6%95%b0%e4%bc%a0%e5%8f%82 aria-hidden=true>#</a></h1><p>在具体的 CPU 硬件中，函数的运行需要借助硬件的栈 (Stack) 能力，为了保证各个模块的函数直接可以相互调用，那么就需要遵守 Calling Convention，这也是 ABI (Application Binary Interface) 的一部分。</p><p>详细的可以通过 <code>man syscall</code> 查看，如下的示例中，都是以如下函数作为测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=nf>foobar</span><span class=p>(</span><span class=kt>int</span> <span class=n>a</span><span class=p>,</span> <span class=kt>int</span> <span class=n>b</span><span class=p>,</span> <span class=kt>int</span> <span class=n>c</span><span class=p>,</span> <span class=kt>int</span> <span class=n>d</span><span class=p>,</span> <span class=kt>int</span> <span class=n>e</span><span class=p>,</span> <span class=kt>int</span> <span class=n>f</span><span class=p>,</span> <span class=kt>int</span> <span class=n>g</span><span class=p>,</span> <span class=kt>int</span> <span class=n>h</span><span class=p>,</span> <span class=kt>int</span> <span class=n>i</span><span class=p>)</span>
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>a</span> <span class=o>+</span> <span class=n>b</span> <span class=o>+</span> <span class=n>c</span> <span class=o>+</span> <span class=n>d</span> <span class=o>+</span> <span class=n>e</span> <span class=o>+</span> <span class=n>f</span> <span class=o>+</span> <span class=n>g</span> <span class=o>+</span> <span class=n>h</span> <span class=o>+</span> <span class=n>i</span><span class=p>;</span>
 </span></span><span class=line><span class=cl><span class=p>}</span>
@@ -37,70 +40,70 @@ $r8 $r9 $r10 $r11 $r12 $r13 $r14 $r15
 </span></span><span class=line><span class=cl><span class=p>{</span>
 </span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nf>foobar</span><span class=p>(</span><span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>3</span><span class=p>,</span> <span class=mi>4</span><span class=p>,</span> <span class=mi>5</span><span class=p>,</span> <span class=mi>6</span><span class=p>,</span> <span class=mi>7</span><span class=p>,</span> <span class=mi>8</span><span class=p>,</span> <span class=mi>9</span><span class=p>);</span>
 </span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><h2 id=汇编>汇编 <a href=#%e6%b1%87%e7%bc%96 class=anchor aria-hidden=true>#</a></h2><p>可以通过 <code>gcc -S main.c</code> 查看对应的汇编代码。</p><pre tabindex=0><code>foobar:
-	pushq   %rbp              # 保存上次的栈
-	movq    %rsp, %rbp        # 同时使用rbp进行栈的快速操作
-	movl    %edi, -4(%rbp)    # 将通过寄存器传递的参数保存在栈中
-	movl    %esi, -8(%rbp)
-	movl    %edx, -12(%rbp)
-	movl    %ecx, -16(%rbp)
-	movl    %r8d, -20(%rbp)
-	movl    %r9d, -24(%rbp)   # 到此为止
-	movl    -8(%rbp), %eax    # 开始加法计算，edx保存了计算结果
-	movl    -4(%rbp), %edx
-	addl    %eax, %edx
-	movl    -12(%rbp), %eax
-	addl    %eax, %edx
-	movl    -16(%rbp), %eax
-	addl    %eax, %edx
-	movl    -20(%rbp), %eax
-	addl    %eax, %edx
-	movl    -24(%rbp), %eax
-	addl    %eax, %edx
-	movl    16(%rbp), %eax    # 这里是通过栈传递的参数
-	addl    %eax, %edx
-	movl    24(%rbp), %eax
-	addl    %eax, %edx
-	movl    32(%rbp), %eax
-	addl    %edx, %eax        # 计算最后一次加法同时将结果保存在eax中
-	popq    %rbp              # 恢复main的栈
-	ret
-
-main:
-	pushq %rbp                # 将$rsp减一个指针长度(8Bytes)，并将$rbp的值写入到rsp指向的地址处
-	movq　%rsp, %rbp          # 将$rsp赋值给rbp寄存器，完成main栈帧的保存
-	subq  $24, %rsp           # 需要通过栈传递三个参数，每个参数占用8Bytes(实际有效的是高4Bytes)
-
-	movl  $9, 16(%rsp)
-	movl  $8, 8(%rsp)
-	movl  $7, (%rsp)
-
-	movl  $6, %r9d            # 剩余的6个参数通过寄存器进行传递
-	movl  $5, %r8d
-	movl  $4, %ecx
-	movl  $3, %edx
-	movl  $2, %esi
-	movl  $1, %edi
-	call  foobar              # 将地址添加到栈顶
-	leave
-</code></pre><p>一般 Linux 下会优先将参数压到寄存器中，只有当寄存器不够所有的参数时，才会将入参压到栈上，一般入参的压栈顺序为 <code>$rdi</code> <code>$rsi</code> <code>$rdx</code> <code>$rcx</code> <code>$r8</code> <code>$r9</code> ，返回值通过 <code>$rax</code> 传递。</p><p>如上的示例中，第 7 8 9 个参数会通过栈进行传递，也就是从 <code>$rsp</code> 向下的地址</p><p>另外，可以看到函数的入参方式是从右到左。</p><p>从汇编看，完成一个函数调用关键执行就是 <code>call</code> <code>pushq</code> <code>popq</code> <code>ret</code> <code>leave</code> 等指令。</p><h2 id=寄存器-1>寄存器 <a href=#%e5%af%84%e5%ad%98%e5%99%a8-1 class=anchor aria-hidden=true>#</a></h2><p>可以通过如下方式验证上面的内容。</p><pre tabindex=0><code>(gdb) info registers      # 可以简写为i r
-rax            0xe      14
-rbx            0x0      0
-rcx            0x4      4
-rdx            0x3      3
-rsi            0x2      2
-rdi            0x1      1
-rbp            0x7fffffffe0c0   0x7fffffffe0c0
-rsp            0x7fffffffe0c0   0x7fffffffe0c0
-r8             0x5      5
-r9             0x6      6
-... ...
-
-(gdb) x/10xw 0x7fffffffe0c0
-0x7fffffffe0c0: 0xffffe0f0      0x00007fff      0x004005cd      0x00000000
-0x7fffffffe0d0: 0x00000007      0x00000000      0x00000008      0x00000000
-0x7fffffffe0e0: 0x00000009      0x00007fff
-</code></pre><p>如上为小端地址，所以包括了 <code>$rbp</code> 地址 <code>0x7fffffffe0f0</code> ，返回地址为 <code>0x4005cd</code> ，以及参数 7 8 9 。因为，入参为 4 字节，所以高位实际上是无效的，可能含有脏数据。</p><p>另外，可以直接通过 <code>info frame</code> 查看当前栈的信息，包括了参数信息。</p><h1 id=获取中断号>获取中断号 <a href=#%e8%8e%b7%e5%8f%96%e4%b8%ad%e6%96%ad%e5%8f%b7 class=anchor aria-hidden=true>#</a></h1><p>有些时候会在中断处发生死锁，但是很难确认中断号是多少，例如如下的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></code></pre></div><a class=anchor id=汇编></a><h2>汇编 <a href=#%e6%b1%87%e7%bc%96 aria-hidden=true>#</a></h2><p>可以通过 <code>gcc -S main.c</code> 查看对应的汇编代码。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>foobar:
+</span></span><span class=line><span class=cl>	pushq   %rbp              # 保存上次的栈
+</span></span><span class=line><span class=cl>	movq    %rsp, %rbp        # 同时使用rbp进行栈的快速操作
+</span></span><span class=line><span class=cl>	movl    %edi, -4(%rbp)    # 将通过寄存器传递的参数保存在栈中
+</span></span><span class=line><span class=cl>	movl    %esi, -8(%rbp)
+</span></span><span class=line><span class=cl>	movl    %edx, -12(%rbp)
+</span></span><span class=line><span class=cl>	movl    %ecx, -16(%rbp)
+</span></span><span class=line><span class=cl>	movl    %r8d, -20(%rbp)
+</span></span><span class=line><span class=cl>	movl    %r9d, -24(%rbp)   # 到此为止
+</span></span><span class=line><span class=cl>	movl    -8(%rbp), %eax    # 开始加法计算，edx保存了计算结果
+</span></span><span class=line><span class=cl>	movl    -4(%rbp), %edx
+</span></span><span class=line><span class=cl>	addl    %eax, %edx
+</span></span><span class=line><span class=cl>	movl    -12(%rbp), %eax
+</span></span><span class=line><span class=cl>	addl    %eax, %edx
+</span></span><span class=line><span class=cl>	movl    -16(%rbp), %eax
+</span></span><span class=line><span class=cl>	addl    %eax, %edx
+</span></span><span class=line><span class=cl>	movl    -20(%rbp), %eax
+</span></span><span class=line><span class=cl>	addl    %eax, %edx
+</span></span><span class=line><span class=cl>	movl    -24(%rbp), %eax
+</span></span><span class=line><span class=cl>	addl    %eax, %edx
+</span></span><span class=line><span class=cl>	movl    16(%rbp), %eax    # 这里是通过栈传递的参数
+</span></span><span class=line><span class=cl>	addl    %eax, %edx
+</span></span><span class=line><span class=cl>	movl    24(%rbp), %eax
+</span></span><span class=line><span class=cl>	addl    %eax, %edx
+</span></span><span class=line><span class=cl>	movl    32(%rbp), %eax
+</span></span><span class=line><span class=cl>	addl    %edx, %eax        # 计算最后一次加法同时将结果保存在eax中
+</span></span><span class=line><span class=cl>	popq    %rbp              # 恢复main的栈
+</span></span><span class=line><span class=cl>	ret
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>main:
+</span></span><span class=line><span class=cl>	pushq %rbp                # 将$rsp减一个指针长度(8Bytes)，并将$rbp的值写入到rsp指向的地址处
+</span></span><span class=line><span class=cl>	movq　%rsp, %rbp          # 将$rsp赋值给rbp寄存器，完成main栈帧的保存
+</span></span><span class=line><span class=cl>	subq  $24, %rsp           # 需要通过栈传递三个参数，每个参数占用8Bytes(实际有效的是高4Bytes)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	movl  $9, 16(%rsp)
+</span></span><span class=line><span class=cl>	movl  $8, 8(%rsp)
+</span></span><span class=line><span class=cl>	movl  $7, (%rsp)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	movl  $6, %r9d            # 剩余的6个参数通过寄存器进行传递
+</span></span><span class=line><span class=cl>	movl  $5, %r8d
+</span></span><span class=line><span class=cl>	movl  $4, %ecx
+</span></span><span class=line><span class=cl>	movl  $3, %edx
+</span></span><span class=line><span class=cl>	movl  $2, %esi
+</span></span><span class=line><span class=cl>	movl  $1, %edi
+</span></span><span class=line><span class=cl>	call  foobar              # 将地址添加到栈顶
+</span></span><span class=line><span class=cl>	leave
+</span></span></code></pre></div><p>一般 Linux 下会优先将参数压到寄存器中，只有当寄存器不够所有的参数时，才会将入参压到栈上，一般入参的压栈顺序为 <code>$rdi</code> <code>$rsi</code> <code>$rdx</code> <code>$rcx</code> <code>$r8</code> <code>$r9</code> ，返回值通过 <code>$rax</code> 传递。</p><p>如上的示例中，第 7 8 9 个参数会通过栈进行传递，也就是从 <code>$rsp</code> 向下的地址</p><p>另外，可以看到函数的入参方式是从右到左。</p><p>从汇编看，完成一个函数调用关键执行就是 <code>call</code> <code>pushq</code> <code>popq</code> <code>ret</code> <code>leave</code> 等指令。</p><a class=anchor id=寄存器-1></a><h2>寄存器 <a href=#%e5%af%84%e5%ad%98%e5%99%a8-1 aria-hidden=true>#</a></h2><p>可以通过如下方式验证上面的内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(gdb) info registers      # 可以简写为i r
+</span></span><span class=line><span class=cl>rax            0xe      14
+</span></span><span class=line><span class=cl>rbx            0x0      0
+</span></span><span class=line><span class=cl>rcx            0x4      4
+</span></span><span class=line><span class=cl>rdx            0x3      3
+</span></span><span class=line><span class=cl>rsi            0x2      2
+</span></span><span class=line><span class=cl>rdi            0x1      1
+</span></span><span class=line><span class=cl>rbp            0x7fffffffe0c0   0x7fffffffe0c0
+</span></span><span class=line><span class=cl>rsp            0x7fffffffe0c0   0x7fffffffe0c0
+</span></span><span class=line><span class=cl>r8             0x5      5
+</span></span><span class=line><span class=cl>r9             0x6      6
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>(gdb) x/10xw 0x7fffffffe0c0
+</span></span><span class=line><span class=cl>0x7fffffffe0c0: 0xffffe0f0      0x00007fff      0x004005cd      0x00000000
+</span></span><span class=line><span class=cl>0x7fffffffe0d0: 0x00000007      0x00000000      0x00000008      0x00000000
+</span></span><span class=line><span class=cl>0x7fffffffe0e0: 0x00000009      0x00007fff
+</span></span></code></pre></div><p>如上为小端地址，所以包括了 <code>$rbp</code> 地址 <code>0x7fffffffe0f0</code> ，返回地址为 <code>0x4005cd</code> ，以及参数 7 8 9 。因为，入参为 4 字节，所以高位实际上是无效的，可能含有脏数据。</p><p>另外，可以直接通过 <code>info frame</code> 查看当前栈的信息，包括了参数信息。</p><a class=anchor id=获取中断号></a><h1>获取中断号 <a href=#%e8%8e%b7%e5%8f%96%e4%b8%ad%e6%96%ad%e5%8f%b7 aria-hidden=true>#</a></h1><p>有些时候会在中断处发生死锁，但是很难确认中断号是多少，例如如下的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
 </span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;errno.h&gt;</span><span class=cp>
 </span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
 </span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
@@ -127,9 +130,11 @@ r9             0x6      6
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
 </span></span><span class=line><span class=cl><span class=p>}</span>
-</span></span></code></pre></div><p>通过 <code>gcc -o foobar foobar.c -O0 -g</code> 进行编译，如果使用 <code>-O2</code> 或者默认，有可能设置的断点地址不匹配。</p><p>有的时候，如果存在信号不安全的函数，那么就可能会发生死锁，而此时通过 gdb 获取栈时，会发现在某个栈帧处，有如下的信息。</p><pre tabindex=0><code>(gdb) bt
-#0  0x00000000004004dc in foo ()
-#1  0x00000000004004f8 in signal_handler ()
-#2  &lt;signal handler called&gt;
-#3  0x000000000040050d in main ()
-</code></pre><p>但是没有提供具体的参数信息，主要是如果要 gdb 打印信息，那么必须要知道参数个数、各个参数大小等信息。</p><p>不过还好，我们知道信号处理函数的入参及其大小，也就是只有一个用来标示那个信号的参数，可以直接切换到 <code>frame 1</code> ，然后通过上述方式查看。</p><p>如果是多线程，同时又使用了信号的同步机制，那么就可能会在不同的线程中出现多个信号处理。</p></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/c-linux-network-socket-program/>Linux C 网络编程</a></li><li><a class=text-body href=/cn/blog/cpp-constructor-destructor/>C++ 构造析构函数详细分析</a></li><li><a class=text-body href=/cn/blog/gdb-python-script/>GDB Python 脚本</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
+</span></span></code></pre></div><p>通过 <code>gcc -o foobar foobar.c -O0 -g</code> 进行编译，如果使用 <code>-O2</code> 或者默认，有可能设置的断点地址不匹配。</p><p>有的时候，如果存在信号不安全的函数，那么就可能会发生死锁，而此时通过 gdb 获取栈时，会发现在某个栈帧处，有如下的信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(gdb) bt
+</span></span><span class=line><span class=cl>#0  0x00000000004004dc in foo ()
+</span></span><span class=line><span class=cl>#1  0x00000000004004f8 in signal_handler ()
+</span></span><span class=line><span class=cl>#2  &lt;signal handler called&gt;
+</span></span><span class=line><span class=cl>#3  0x000000000040050d in main ()
+</span></span></code></pre></div><p>但是没有提供具体的参数信息，主要是如果要 gdb 打印信息，那么必须要知道参数个数、各个参数大小等信息。</p><p>不过还好，我们知道信号处理函数的入参及其大小，也就是只有一个用来标示那个信号的参数，可以直接切换到 <code>frame 1</code> ，然后通过上述方式查看。</p><p>如果是多线程，同时又使用了信号的同步机制，那么就可能会在不同的线程中出现多个信号处理。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#寄存器>寄存器</a></li><li><a href=#函数传参>函数传参</a><ul><li><a href=#汇编>汇编</a></li><li><a href=#寄存器-1>寄存器</a></li></ul></li><li><a href=#获取中断号>获取中断号</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

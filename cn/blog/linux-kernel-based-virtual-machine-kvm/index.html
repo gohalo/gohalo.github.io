@@ -1,0 +1,152 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>KVM 虚拟平台 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="全虚拟化最简单通俗的理解是，在一台机器上可以运行不同的平台 (例如Linux、Windows等)，不过其对应的仍然是 x86_64 架构。另外，如果允许在机器上可以运行不同的架构(例如x86_64、PowerPC、ARM等)，那么这种的虚拟化方式称为硬件仿真。
+这里简单介绍下 Linux 中 KVM 的使用方式。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>KVM 虚拟平台</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2020-07-16</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kvm/ role=button>kvm</a></div></div><hr><div class=content><p>全虚拟化最简单通俗的理解是，在一台机器上可以运行不同的平台 (例如Linux、Windows等)，不过其对应的仍然是 x86_64 架构。另外，如果允许在机器上可以运行不同的架构(例如x86_64、PowerPC、ARM等)，那么这种的虚拟化方式称为硬件仿真。</p><p>这里简单介绍下 Linux 中 KVM 的使用方式。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>Kernel-based Virtual Machine, KVM 是一款基于 Linux 内核的虚拟机，安装了 <code>kvm.ko</code> 内核模块后，直接将 Linux 内核改变成了一个 <code>Hypervisor</code>，此时宿主机上仍然可以运行进程，同时可以创建虚拟机，不过每个虚机就是运行在 Linux 内核之上的一个系统进程，可以随时使用 <code>kill</code> 命令杀死。</p><p>最初，Linux 内核只有用户、内核态，在引入了 KVM 模块之后，也就引入了 <code>guest</code> 模式，此模式只负责非 <code>IO</code> 类操作或者说是非特权指令操作，如算术运行。在 Guest 模式中，可以直接运行到物理 CPU 的 <code>ring 3</code> 上，但一旦有 IO 调用或者需要特权指令，就需要从用户态到内核态的调用。</p><a class=anchor id=基本组件></a><h2>基本组件 <a href=#%e5%9f%ba%e6%9c%ac%e7%bb%84%e4%bb%b6 aria-hidden=true>#</a></h2><p>在使用时，一般包含了 KVM、QEMU、libvirt 三部分。</p><p><img alt="kvm qemu arch" src=images/qemu-libvirtd-arch.jpg class="mx-auto d-block"></p><p>简单介绍各个模块常用的功能。</p><ul><li>KVM 就是 Linux 的内核模块，利用 CPU 的硬件辅助虚拟化技术 Intel-VT/AMD-V 以及内存相关 Intel-EPT/AMD-RVI 技术，这样 Guest OS 的 CPU 指令可以直接运行，大大提高了速度。</li><li>QEMU 其中 KVM 模块不能模拟 IO 设备，通常使用 QEMU 来模拟 IO 设备，包括网卡、磁盘等，这样 KVM 加上 QEMU 之后就能实现真正意义上服务器虚拟化。</li><li>libvirt 目前使用最为广泛的对 KVM 虚拟机进行管理的工具和 API，通过 libvirtd 的后台程序，可以被本地的 virsh 命令行调用。</li></ul><p>其实 QEMU 完全可以模拟机器指令，所以，在 x86_64 平台上可以模拟 ARM 指令，只是通过 KVM 允许 CPU 指令直接运行，这样要快很多。</p><p>在 Linux 中使用时，KVM 通过 <code>/dev/kvm</code> 暴露接口，用户态程序可以通过 <code>ioctl()</code> 函数来访问这个接口。</p><a class=anchor id=总结></a><h2>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h2><p>各个模块调用流程如下。</p><p><img alt="kvm qemu process" src=images/qemu-libvirtd-process.jpg class="mx-auto d-block"></p><p>在运行的时候，包括了内核态和用户态，内核模块主要负责虚拟机的创建、虚拟内存分配、VCPU 寄存器的读写以及 VCPU 的运行；而 QEMU 用于模拟虚拟机的用户空间组件，提供 IO 设备模型，访问外设的途径。</p><p>KVM 所使用的方法是通过简单地加载内核模块而将 Linux 内核转换为一个系统管理程序，该模块会导出了一个名为 <code>/dev/kvm</code> 的设备，可以启用内核的 <code>guest</code> 模式。</p><p>通过 <code>/dev/kvm</code> 设备，可以使 VM 的地址空间独立于内核以及其 VM 的地址空间。</p><a class=anchor id=准备环境></a><h1>准备环境 <a href=#%e5%87%86%e5%a4%87%e7%8e%af%e5%a2%83 aria-hidden=true>#</a></h1><p>先看看在 Linux 中如何配置 KVM 环境。</p><a class=anchor id=检查硬件支持></a><h2>检查硬件支持 <a href=#%e6%a3%80%e6%9f%a5%e7%a1%ac%e4%bb%b6%e6%94%af%e6%8c%81 aria-hidden=true>#</a></h2><p>KVM 是基于 x86 虚拟化扩展 (Intel VT 或者 AMD-V) 技术的虚拟机软件，所以查看 CPU 是否支持 VT 技术，就可以判断是否支持 KVM 。在 <code>/proc/cpuinfo</code> 中，如果有 vmx(Intel) 或 svm(AMD) 字样，就说明 CPU 支持。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ egrep -q &#39;vmx|svm&#39; /proc/cpuinfo &amp;&amp; echo yes || echo no
+</span></span></code></pre></div><p>为了避免不必要的权限错误，可以暂时关闭 SELinux，也就是将 <code>/etc/sysconfig/selinux</code> 配置文件中的 <code>SELinux=enforcing</code> 修改为 <code>SELinux=disabled</code> 。</p><a class=anchor id=安装软件包></a><h2>安装软件包 <a href=#%e5%ae%89%e8%a3%85%e8%bd%af%e4%bb%b6%e5%8c%85 aria-hidden=true>#</a></h2><p>安装如下基础软件包，其中 CentOS7 需要安装 <code>bridge-utils</code> 包。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># yum -y install bridge-utils qemu-kvm libvirt virt-install
+</span></span><span class=line><span class=cl># apt -y install bridge-utils qemu-kvm virtinst libvirt-daemon-system
+</span></span></code></pre></div><p>其中各个包的使用用途如下。</p><ul><li><code>qemu-kvm</code> 主要的 KVM 程序包；</li><li><code>virt-install</code> <code>virtinst</code> 基于 libvirt 服务的虚拟机创建命令，主要使用命令行；</li><li><code>libvirt</code> 工具包，提供 libvirt 服务；</li><li><code>libvirt-client</code> 为虚拟客户机提供的 C 语言工具包；</li><li><code>virt-top</code> 虚拟机统计命令，类似于 top 命令，可以显示当前虚拟机的资源使用情况；</li><li><code>bridge-utils</code> 创建和管理桥接设备的工具；</li><li><code>virt-viewer</code> 通过VNC连接连接到已配置好的虚拟机；</li><li><code>virt-manager</code> 一个GUI虚拟机管理工具；</li></ul><p>确认内核是否加载了 KVM 模块，如果没有，可以使用 <code>modprobe kvm</code> 来加载。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># lsmod |grep kvm
+</span></span><span class=line><span class=cl>kvm_intel             170181  0
+</span></span><span class=line><span class=cl>kvm                   554609  1 kvm_intel
+</span></span><span class=line><span class=cl>irqbypass              13503  1 kvm
+</span></span></code></pre></div><p>然后，通过 <code>systemctl start libvirtd</code> 命令启动 <code>libvirtd</code> 服务，否则会报 <code>failed to connect to the hypervisor</code> 的错误；然后用 <code>virt-host-validate</code> 检查环境是否准备好。</p><a class=anchor id=网络设备></a><h2>网络设备 <a href=#%e7%bd%91%e7%bb%9c%e8%ae%be%e5%a4%87 aria-hidden=true>#</a></h2><p>当安装完 KVM 之后，一般会自动创建 <code>virbr0</code> 网桥设备，通常是用于测试环境，可以通过 <code>ip addr</code> 命令查看，如果不存在，那么可以通过 <code>systemctl restart NetworkManager</code> 命令重启下网络。</p><p>同时需要确保 <code>vhost_net</code> 模块已经加载到内核，命令如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># modprobe vhost_net
+</span></span><span class=line><span class=cl># echo vhost_net | tee -a /etc/modules
+</span></span><span class=line><span class=cl># lsmod | grep vhost
+</span></span></code></pre></div><p>如果要虚拟机访问网络，那么就将网桥链接到物理网卡。</p><a class=anchor id=常用命令></a><h2>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h2><p>每个虚拟机会在 <code>/etc/libvirt/qemu</code> 目录下生成一个配置文件 (运行时使用的是 <code>/run/libvirt/qemu</code> 中的内容)，包括了 CPU、磁盘的配置信息等，可以直接进行修改，或者通过 <code>virsh edit XXX</code> 修改。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 确认各个版本号
+</span></span><span class=line><span class=cl>$ virsh --version
+</span></span><span class=line><span class=cl>$ virt-install --version
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看虚拟机列表，需要root执行，通过--all查看所有，--inactive未运行虚拟机
+</span></span><span class=line><span class=cl>$ virsh list --all
+</span></span><span class=line><span class=cl>  Id    Name                           State
+</span></span><span class=line><span class=cl> ----------------------------------------------------
+</span></span><span class=line><span class=cl>  7     centos7                        running
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 连接到虚拟机，通过 Ctrl-] 退出
+</span></span><span class=line><span class=cl>$ virsh console centos7
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 虚拟机信息
+</span></span><span class=line><span class=cl>$ virsh dominfo &lt;VIRT-MACHINE&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 虚拟机的分区信息
+</span></span><span class=line><span class=cl>$ virt-df &lt;VIRT-MACHINE&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除虚拟机
+</span></span><span class=line><span class=cl>$ virsh shutdown centos7             ← 关机
+</span></span><span class=line><span class=cl>$ virsh destroy centos7              ← 强制关机
+</span></span><span class=line><span class=cl>$ virsh undefine centos7             ← 只删除配置文件，磁盘文件未删除
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 虚拟机其它操作
+</span></span><span class=line><span class=cl>$ virsh start centos7                ← 开机
+</span></span><span class=line><span class=cl>$ virsh reboot centos7               ← 重启
+</span></span><span class=line><span class=cl>$ virsh suspend centos7              ← 挂起
+</span></span><span class=line><span class=cl>$ virsh resume centos7               ← 恢复
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 设置/关闭开机自动启动
+</span></span><span class=line><span class=cl>$ virsh autostart centos7
+</span></span><span class=line><span class=cl>$ virsh autostart --disable centos7
+</span></span></code></pre></div><a class=anchor id=彻底清理虚拟机></a><h2>彻底清理虚拟机 <a href=#%e5%bd%bb%e5%ba%95%e6%b8%85%e7%90%86%e8%99%9a%e6%8b%9f%e6%9c%ba aria-hidden=true>#</a></h2><p>在 KVM 中，通过 undefine 删除虚拟机即可，不过此时虚拟机的磁盘文件依然存在，支持对 KVM 来说这个虚拟机已经清理了配置，不能再直接启动了。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看虚拟机所使用的磁盘文件
+</span></span><span class=line><span class=cl># virsh dumpxml vm-name | grep &#39;source file&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 关闭虚拟机，也可以强制关闭
+</span></span><span class=line><span class=cl># virsh shutdown vm-name
+</span></span><span class=line><span class=cl># virsh destroy vm-name
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 检查虚拟机是否做过快照，如果有则先删除快照
+</span></span><span class=line><span class=cl># virsh snapshot-list --domain vm-name
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 假设有快照 3sep2016u1，则先删除
+</span></span><span class=line><span class=cl># virsh snapshot-delete --domain vm-name --snapshotname 3sep2016u1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除虚拟机
+</span></span><span class=line><span class=cl># virsh undefine vm-name
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 根据上述的配置来删除磁盘文件
+</span></span><span class=line><span class=cl># rm -f /var/lib/libvirt/images/vm-name.img
+</span></span></code></pre></div><a class=anchor id=安装操作系统></a><h1>安装操作系统 <a href=#%e5%ae%89%e8%a3%85%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f aria-hidden=true>#</a></h1><p>这里使用直接安装 CentOS、Puppy，直接从官方下载相关的安装包，然后执行如下命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装CentOS7
+</span></span><span class=line><span class=cl># virt-install --virt-type=kvm --name=centos7 --vcpus=2 --memory=4096 \
+</span></span><span class=line><span class=cl>    --location=CentOS-7-x86_64-Minimal-2009.iso                       \
+</span></span><span class=line><span class=cl>    --disk path=centos7.qcow2,size=40,format=qcow2                    \
+</span></span><span class=line><span class=cl>    --network bridge=virbr0 --graphics none --extra-args=&#39;console=ttyS0&#39; --force
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># virt-install --virt-type=kvm --name=puppy --vcpus=2 --memory=4096   \
+</span></span><span class=line><span class=cl>    --cdrom=fossapup64-9.5.iso                                        \
+</span></span><span class=line><span class=cl>    --disk path=puppy.qcow2,size=40,format=qcow2                      \
+</span></span><span class=line><span class=cl>    --network bridge=virbr0 --graphics spice
+</span></span></code></pre></div><p>安装 Puppy 时必须要通过 <code>--cdrom</code> 选项加载，否则会报错。常用参数介绍如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 通用参数
+</span></span><span class=line><span class=cl>-n NAME, --name=NAME
+</span></span><span class=line><span class=cl>    虚拟机名称，需全局惟一
+</span></span><span class=line><span class=cl>-r MEMORY, --ram=MEMORY
+</span></span><span class=line><span class=cl>    内存大小，单位为MB
+</span></span><span class=line><span class=cl>--vcpus=VCPUS[,maxvcpus=MAX][,sockets=#][,cores=#][,threads=#]
+</span></span><span class=line><span class=cl>    CPU个数及相关配置
+</span></span><span class=line><span class=cl>--cpu=CPU
+</span></span><span class=line><span class=cl>    CPU模式及特性，可以使用qemu-kvm -cpu ?来获取支持模式
+</span></span><span class=line><span class=cl>--os-type=DISTRO_TYPE
+</span></span><span class=line><span class=cl>    操作系统类型，如linux、unix或windows等
+</span></span><span class=line><span class=cl>-v, --hvm
+</span></span><span class=line><span class=cl>    当物理机同时支持完全虚拟化和半虚拟化时，指定使用完全虚拟化
+</span></span><span class=line><span class=cl>-p, --paravirt
+</span></span><span class=line><span class=cl>    使用半虚拟化
+</span></span><span class=line><span class=cl>--virt-type
+</span></span><span class=line><span class=cl>    使用的hypervisor，如kvm、qemu、xen等，可选列表通过virsh capabilities查看
+</span></span><span class=line><span class=cl>--graphics TYPE,opt1=val1,opt2=val2
+</span></span><span class=line><span class=cl>    图形显示相关配置，不会配置硬件，仅指定虚拟机启动后对其进行访问的接口
+</span></span><span class=line><span class=cl>    TYPE 显示类型，可以为vnc、sdl、spice或none等，默认为vnc:port
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 启动方式
+</span></span><span class=line><span class=cl>-c CDROM, --cdrom=CDROM
+</span></span><span class=line><span class=cl>    光盘安装介质
+</span></span><span class=line><span class=cl>-l LOCATION, --location=LOCATION
+</span></span><span class=line><span class=cl>    安装源URL，支持FTP、HTTP及NFS等，如ftp://172.16.0.1/pub
+</span></span><span class=line><span class=cl>--pxe
+</span></span><span class=line><span class=cl>    基于PXE完成安装
+</span></span><span class=line><span class=cl>--livecd
+</span></span><span class=line><span class=cl>    把光盘当作LiveCD
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 磁盘设置
+</span></span><span class=line><span class=cl>--disk=DISKOPTS
+</span></span><span class=line><span class=cl>    存储设备及其属性；格式为--disk /some/storage/path,opt1=val1,opt2=val2
+</span></span><span class=line><span class=cl>    常用选项有：
+</span></span><span class=line><span class=cl>        device 设备类型，如cdrom、disk或floppy等，默认为disk；
+</span></span><span class=line><span class=cl>        bus    磁盘总结类型，其值可以为ide、scsi、usb、virtio或xen；
+</span></span><span class=line><span class=cl>        perms  访问权限，如rw、ro或sh(共享的可读写)，默认为rw；
+</span></span><span class=line><span class=cl>        size   新建磁盘映像的大小，单位为GB；
+</span></span><span class=line><span class=cl>        cache  缓存模型，其值有none、writethrouth(缓存读)及writeback(缓存读写)；
+</span></span><span class=line><span class=cl>        format 磁盘映像格式，如raw、qcow2、vmdk等；
+</span></span><span class=line><span class=cl>        sparse 磁盘映像使用稀疏格式，即不立即分配指定大小的空间；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 网络设置
+</span></span><span class=line><span class=cl>-w NETWORK, --network=NETWORK,opt1=val1,opt2=val2
+</span></span><span class=line><span class=cl>    将虚拟机连入宿主机的网络中，其中NETWORK可以为
+</span></span><span class=line><span class=cl>    bridge=BRIDGE 连接至名为&#34;BRIDEG&#34;的桥设备
+</span></span><span class=line><span class=cl>    network=NAME  连接至名为&#34;NAME&#34;的网络
+</span></span></code></pre></div><p>此时会启动一个 <code>qemu-kvm</code> 进程，然后，最终会进入到一个终端安装界面，可以按需配置，例如时区、安装目录、root 用户密码等等，安装完成后重启即可。</p><a class=anchor id=vnc></a><h1>VNC <a href=#vnc aria-hidden=true>#</a></h1><p>这里并非在虚拟机内部安装 <code>VNC</code> 服务器，默认使用 <code>SPICE</code> 协议。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 修改配置文件
+</span></span><span class=line><span class=cl># cat /etc/libvirt/qemu.conf
+</span></span><span class=line><span class=cl>vnc_listen = &#34;0.0.0.0&#34;
+</span></span></code></pre></div><p>默认绑定在 <code>127.0.0.1</code> 地址上，修改这里的配置后就无需在安装 KVM 虚拟机时指定 <code>vnc_listen</code> 参数了。另外，在虚拟主机上有很多个虚拟机的时候，需要指定每个虚拟机的端口，否则将会很乱。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 修改虚拟机的配置文件
+</span></span><span class=line><span class=cl># virsh edit centos7
+</span></span><span class=line><span class=cl>&lt;graphics type=&#39;vnc&#39; port=&#39;5916&#39; autoport=&#39;no&#39; listen=&#39;0.0.0.0&#39;&gt;
+</span></span><span class=line><span class=cl>    &lt;listen type=&#39;address&#39; address=&#39;0.0.0.0&#39;/&gt;
+</span></span><span class=line><span class=cl>&lt;/graphics&gt;
+</span></span></code></pre></div><p>启动虚拟机可以查看其监听端口。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># netstat -tunlp | grep 5916
+</span></span><span class=line><span class=cl># ss -al | grep 5916
+</span></span></code></pre></div><p>然后可以通过 Console 或者 VNC 客户端进行连接。</p><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><a class=anchor id=问题排查></a><h2>问题排查 <a href=#%e9%97%ae%e9%a2%98%e6%8e%92%e6%9f%a5 aria-hidden=true>#</a></h2><p>整理一些常见的异常排查方法。</p><a class=anchor id=已经在使用></a><h3>已经在使用 <a href=#%e5%b7%b2%e7%bb%8f%e5%9c%a8%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h3><p>报错信息为 <code>Guest name 'XXX' is already in use</code> ，一般是因为之前的虚拟机相关文件没有彻底清理掉，和 XEN 的半虚拟化不同，其中 XEN 只需要删除配置文件即可，而 KVM 需要执行如下的命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># virsh undefine &lt;VIRT-NAME&gt;
+</span></span></code></pre></div><a class=anchor id=权限问题></a><h3>权限问题 <a href=#%e6%9d%83%e9%99%90%e9%97%ae%e9%a2%98 aria-hidden=true>#</a></h3><p>默认使用 qemu 用户创建相关文件，所以需要确保目录权限，或者也可以修改 <code>/etc/libvirt/qemu.conf</code> 配置文件的如下内容，直接使用 root 用户。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>user = &#34;root&#34;
+</span></span><span class=line><span class=cl>group = &#34;root&#34;
+</span></span></code></pre></div><p>然后重启 <code>systemctl restart libvirtd</code> 。</p><a class=anchor id=环境检查></a><h3>环境检查 <a href=#%e7%8e%af%e5%a2%83%e6%a3%80%e6%9f%a5 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 检查虚拟机环境是否准备好
+</span></span><span class=line><span class=cl># virt-host-validate
+</span></span></code></pre></div><p>可能会出现如下的错误 <code>IOMMU appears to be disabled in kernel</code> ，此时需要通过如下方式进行设置。修改配置 <code>/etc/default/grub</code> 中 <code>GRUB_CMDLINE_LINUX</code> 选项，添加 <code>intel_iommu=on</code> 内容。</p><p>接着通过 <code>grub2-mkconfig -o /boot/grub2/grub.cfg</code> 更新 grub2 ，然后重启。</p><a class=anchor id=virt-viewer></a><h2>virt-viewer <a href=#virt-viewer aria-hidden=true>#</a></h2><p>可以通过 VNC 链接到 KVM 虚拟机。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># virt-viewer --connect qemu:///system --wait puppy 2&gt;/dev/null &amp;
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#基本组件>基本组件</a></li><li><a href=#总结>总结</a></li></ul></li><li><a href=#准备环境>准备环境</a><ul><li><a href=#检查硬件支持>检查硬件支持</a></li><li><a href=#安装软件包>安装软件包</a></li><li><a href=#网络设备>网络设备</a></li><li><a href=#常用命令>常用命令</a></li><li><a href=#彻底清理虚拟机>彻底清理虚拟机</a></li></ul></li><li><a href=#安装操作系统>安装操作系统</a></li><li><a href=#vnc>VNC</a></li><li><a href=#其它>其它</a><ul><li><a href=#问题排查>问题排查</a></li><li><a href=#virt-viewer>virt-viewer</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

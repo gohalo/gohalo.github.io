@@ -1,0 +1,293 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>GoLang 网络编程 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Golang 对 TCP 做了很好的抽象，而且提供了很高的性能，其底层的 netpoller 通过非阻塞的 IO 多路复用实现，然后再结合协程的调度，使得用户在编程时实际是阻塞接口。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>GoLang 网络编程</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-10-14</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/network/ role=button>network</a></div></div><hr><div class=content><p>Golang 对 TCP 做了很好的抽象，而且提供了很高的性能，其底层的 netpoller 通过非阻塞的 IO 多路复用实现，然后再结合协程的调度，使得用户在编程时实际是阻塞接口。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><a class=anchor id=异常处理></a><h2>异常处理 <a href=#%e5%bc%82%e5%b8%b8%e5%a4%84%e7%90%86 aria-hidden=true>#</a></h2><p>Golang 中的 error 类型是一个内建的 interface 类型。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=kt>error</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>Error</span><span class=p>()</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如果要准确判断不同的错误类型，那么只需要根据类型断言出其错误类型即可。</p><p>在标准的网络库中，其错误类型被统一封装为 <code>net.Error</code> 类型，其实现在 <code>net/net.go</code> 中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Error</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>error</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Timeout</span><span class=p>()</span> <span class=kt>bool</span>   <span class=c1>// Is the error a timeout?
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nf>Temporary</span><span class=p>()</span> <span class=kt>bool</span> <span class=c1>// Is the error temporary?
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>在此基础上，还封装了类似 <code>net.OpError</code> <code>net.ParseError</code> <code>net.AddrError</code> 等类型的错误，而应用程序可以通过 <code>Temporary()</code> 接口判断是否为致命的错误。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>c</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>l</span><span class=p>.</span><span class=nf>Accept</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>e</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>err</span><span class=p>.(</span><span class=nx>net</span><span class=p>.</span><span class=nx>Error</span><span class=p>);</span> <span class=nx>ok</span> <span class=o>&amp;&amp;</span> <span class=nx>e</span><span class=p>.</span><span class=nf>Temporary</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>logs</span><span class=p>.</span><span class=nf>Error</span><span class=p>(</span><span class=s>&#34;accept temporary error: &#34;</span><span class=p>,</span> <span class=nx>e</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=k>continue</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;accept failed:&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>break</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;io&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;net&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>l</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>net</span><span class=p>.</span><span class=nf>Listen</span><span class=p>(</span><span class=s>&#34;tcp&#34;</span><span class=p>,</span> <span class=s>&#34;:8080&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;listen failed:&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>defer</span> <span class=nx>l</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;listening on &#39;:8080&#39;&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>c</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>l</span><span class=p>.</span><span class=nf>Accept</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=k>if</span> <span class=nx>e</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>err</span><span class=p>.(</span><span class=nx>net</span><span class=p>.</span><span class=nx>Error</span><span class=p>);</span> <span class=nx>ok</span> <span class=o>&amp;&amp;</span> <span class=nx>e</span><span class=p>.</span><span class=nf>Temporary</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                                <span class=nx>logs</span><span class=p>.</span><span class=nf>Error</span><span class=p>(</span><span class=s>&#34;accept temporary error: &#34;</span><span class=p>,</span> <span class=nx>e</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                                <span class=k>continue</span>
+</span></span><span class=line><span class=cl>                        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;accept failed:&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                        <span class=k>break</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;accept client %s(R) -&gt; %s(L)\n&#34;</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nf>RemoteAddr</span><span class=p>(),</span> <span class=nx>c</span><span class=p>.</span><span class=nf>LocalAddr</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>                <span class=c1>// handle connections in a new goroutine.
+</span></span></span><span class=line><span class=cl><span class=c1></span>                <span class=k>go</span> <span class=nf>handleRequest</span><span class=p>(</span><span class=nx>c</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>handleRequest</span><span class=p>(</span><span class=nx>conn</span> <span class=nx>net</span><span class=p>.</span><span class=nx>Conn</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>defer</span> <span class=nx>conn</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>io</span><span class=p>.</span><span class=nf>Copy</span><span class=p>(</span><span class=nx>conn</span><span class=p>,</span> <span class=nx>conn</span><span class=p>)</span> <span class=c1>// echo
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;net&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;strconv&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//c, err := net.Dial(&#34;tcp&#34;, &#34;localhost:8080&#34;)
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>c</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>net</span><span class=p>.</span><span class=nf>DialTimeout</span><span class=p>(</span><span class=s>&#34;tcp&#34;</span><span class=p>,</span> <span class=s>&#34;localhost:8080&#34;</span><span class=p>,</span> <span class=mi>2</span><span class=o>*</span><span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;connect failed:&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>defer</span> <span class=nx>c</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Connecting to &#39;localhost:8080&#39;&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>done</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>string</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>handleWrite</span><span class=p>(</span><span class=nx>c</span><span class=p>,</span> <span class=nx>done</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>handleRead</span><span class=p>(</span><span class=nx>c</span><span class=p>,</span> <span class=nx>done</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=o>&lt;-</span><span class=nx>done</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=o>&lt;-</span><span class=nx>done</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>handleWrite</span><span class=p>(</span><span class=nx>conn</span> <span class=nx>net</span><span class=p>.</span><span class=nx>Conn</span><span class=p>,</span> <span class=nx>done</span> <span class=kd>chan</span> <span class=kt>string</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>10</span><span class=p>;</span> <span class=nx>i</span> <span class=p>&gt;</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>i</span><span class=o>--</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>_</span><span class=p>,</span> <span class=nx>e</span> <span class=o>:=</span> <span class=nx>conn</span><span class=p>.</span><span class=nf>Write</span><span class=p>([]</span><span class=nb>byte</span><span class=p>(</span><span class=s>&#34;hello &#34;</span> <span class=o>+</span> <span class=nx>strconv</span><span class=p>.</span><span class=nf>Itoa</span><span class=p>(</span><span class=nx>i</span><span class=p>)</span> <span class=o>+</span> <span class=s>&#34;\r\n&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>e</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;send message failed:&#34;</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nf>Error</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>                        <span class=k>break</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>done</span> <span class=o>&lt;-</span> <span class=s>&#34;Sent&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>handleRead</span><span class=p>(</span><span class=nx>conn</span> <span class=nx>net</span><span class=p>.</span><span class=nx>Conn</span><span class=p>,</span> <span class=nx>done</span> <span class=kd>chan</span> <span class=kt>string</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>buf</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=mi>1024</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>reqLen</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>conn</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>buf</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;read message failed:&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nb>string</span><span class=p>(</span><span class=nx>buf</span><span class=p>[:</span><span class=nx>reqLen</span><span class=o>-</span><span class=mi>1</span><span class=p>]))</span>
+</span></span><span class=line><span class=cl>        <span class=nx>done</span> <span class=o>&lt;-</span> <span class=s>&#34;Read&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如上代码的 Client 端会通过管道做数据同步，也就是通过两次 <code>&lt;-done</code> 等待两个协程退出。</p><p>上述的退出方式简单，但是不太灵活，如果要增加协程，那么修改会比较麻烦，建议可以通过 <code>sync</code> 包中的 <code>WaitGroup</code> 来处理。</p><a class=anchor id=二进制协议></a><h1>二进制协议 <a href=#%e4%ba%8c%e8%bf%9b%e5%88%b6%e5%8d%8f%e8%ae%ae aria-hidden=true>#</a></h1><p>GoLang 提供了一个带缓冲区的 IO 标准库，可以降低对网络或者磁盘的 IO 操作频率。</p><p>其中，还提供了一个 Scanner 扫描器，可以将接受到的数据流进行切割。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;bufio&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;strings&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>input</span> <span class=o>:=</span> <span class=s>&#34;foo  bar   baz&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>s</span> <span class=o>:=</span> <span class=nx>bufio</span><span class=p>.</span><span class=nf>NewScanner</span><span class=p>(</span><span class=nx>strings</span><span class=p>.</span><span class=nf>NewReader</span><span class=p>(</span><span class=nx>input</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>        <span class=nx>s</span><span class=p>.</span><span class=nf>Split</span><span class=p>(</span><span class=nx>bufio</span><span class=p>.</span><span class=nx>ScanWords</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>s</span><span class=p>.</span><span class=nf>Scan</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>s</span><span class=p>.</span><span class=nf>Text</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>注意，如果内存中保存的是字符串或者是 bytes 切片，可以首先考虑使用 <code>bytes.Split()</code> 或是 <code>strings.Split()</code> 这样的工具集。</p><p>最终触发扫描的是在 <code>Scan()</code> 函数中，会根据 <code>Split()</code> 函数进行切割，该函数会返回三个值。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Split</span><span class=p>(</span><span class=nx>data</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>,</span> <span class=nx>atEOF</span> <span class=kt>bool</span><span class=p>)</span> <span class=p>(</span><span class=nx>advance</span> <span class=kt>int</span><span class=p>,</span> <span class=nx>token</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>,</span> <span class=nx>err</span> <span class=kt>error</span><span class=p>)</span>
+</span></span></code></pre></div><p>分别用来表示，已经处理的字节数，通过 <code>Text()</code> 返回的数据，异常信息。</p><p>注意，如果 <code>token</code> 为 nil 那么实际只是单纯的继续读取并处理函数。</p><p>例如，常见的场景有：</p><ul><li>需要更多的值 <code>0, nil, nil</code></li><li>如果发生了异常，可以返回 <code>0, nil, errors.New("message")</code> ，具体的错误信息通过 <code>Err()</code> 接口获取。</li></ul><p>另外，默认的最大 Buffer 是 <code>bufio.MaxScanTokenSize</code> 一般为 64K ，如果超过了这个范围，则会报 <code>token too long</code> 的异常。</p><p>如果大小不满足，可以在创建的时候指定。</p><a class=anchor id=示例-1></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b-1 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;bufio&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;bytes&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;encoding/binary&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;errors&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;io&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Header</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Magic</span>  <span class=p>[</span><span class=mi>4</span><span class=p>]</span><span class=kt>byte</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Type</span>   <span class=kt>uint16</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Length</span> <span class=kt>uint32</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Package</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Header</span>
+</span></span><span class=line><span class=cl>        <span class=nx>TagLen</span>  <span class=kt>int16</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Tag</span>     <span class=p>[]</span><span class=kt>byte</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Message</span> <span class=p>[]</span><span class=kt>byte</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>const</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=nx>PKG_S_HDR</span>   <span class=p>=</span> <span class=mi>10</span>
+</span></span><span class=line><span class=cl>        <span class=nx>PKG_S_EXTRA</span> <span class=p>=</span> <span class=mi>2</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>Package</span><span class=p>)</span> <span class=nf>Pack</span><span class=p>(</span><span class=nx>w</span> <span class=nx>io</span><span class=p>.</span><span class=nx>Writer</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>binary</span><span class=p>.</span><span class=nf>Write</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>binary</span><span class=p>.</span><span class=nx>LittleEndian</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>Header</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>binary</span><span class=p>.</span><span class=nf>Write</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>binary</span><span class=p>.</span><span class=nx>LittleEndian</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>TagLen</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>binary</span><span class=p>.</span><span class=nf>Write</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>binary</span><span class=p>.</span><span class=nx>LittleEndian</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>Tag</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>binary</span><span class=p>.</span><span class=nf>Write</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>binary</span><span class=p>.</span><span class=nx>LittleEndian</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>Message</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>Package</span><span class=p>)</span> <span class=nf>UnPack</span><span class=p>(</span><span class=nx>w</span> <span class=nx>io</span><span class=p>.</span><span class=nx>Reader</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>binary</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>binary</span><span class=p>.</span><span class=nx>LittleEndian</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>Header</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>binary</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>binary</span><span class=p>.</span><span class=nx>LittleEndian</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>TagLen</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>p</span><span class=p>.</span><span class=nx>Tag</span> <span class=p>=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=nx>p</span><span class=p>.</span><span class=nx>TagLen</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>binary</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>binary</span><span class=p>.</span><span class=nx>LittleEndian</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>Tag</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>p</span><span class=p>.</span><span class=nx>Message</span> <span class=p>=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=nb>int</span><span class=p>(</span><span class=nx>p</span><span class=p>.</span><span class=nx>Length</span><span class=p>)</span><span class=o>-</span><span class=nb>int</span><span class=p>(</span><span class=nx>p</span><span class=p>.</span><span class=nx>TagLen</span><span class=p>)</span><span class=o>-</span><span class=nx>PKG_S_EXTRA</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>binary</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>binary</span><span class=p>.</span><span class=nx>LittleEndian</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>Message</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>Package</span><span class=p>)</span> <span class=nf>DumpToFile</span><span class=p>(</span><span class=nx>buff</span> <span class=nx>bytes</span><span class=p>.</span><span class=nx>Buffer</span><span class=p>,</span> <span class=nx>f</span> <span class=kt>string</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>file</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>os</span><span class=p>.</span><span class=nf>OpenFile</span><span class=p>(</span><span class=nx>f</span><span class=p>,</span> <span class=nx>os</span><span class=p>.</span><span class=nx>O_CREATE</span><span class=p>|</span><span class=nx>os</span><span class=p>.</span><span class=nx>O_RDWR</span><span class=p>|</span><span class=nx>os</span><span class=p>.</span><span class=nx>O_TRUNC</span><span class=p>,</span> <span class=mo>0644</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>defer</span> <span class=nx>file</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>nwritten</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>file</span><span class=p>.</span><span class=nf>Write</span><span class=p>(</span><span class=nx>buff</span><span class=p>.</span><span class=nf>Bytes</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Body length %d bytes, total write %d bytes\n&#34;</span><span class=p>,</span> <span class=nx>p</span><span class=p>.</span><span class=nx>Length</span><span class=p>,</span> <span class=nx>nwritten</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>Package</span><span class=p>)</span> <span class=nf>String</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;[Magic]%s [Length]%d [Type]0x%x [Tag]%s [Message]%s&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=nx>p</span><span class=p>.</span><span class=nx>Magic</span><span class=p>,</span> <span class=nx>p</span><span class=p>.</span><span class=nx>Length</span><span class=p>,</span> <span class=nx>p</span><span class=p>.</span><span class=nx>Type</span><span class=p>,</span> <span class=nx>p</span><span class=p>.</span><span class=nx>Tag</span><span class=p>,</span> <span class=nx>p</span><span class=p>.</span><span class=nx>Message</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>split</span><span class=p>(</span><span class=nx>data</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>,</span> <span class=nx>atEOF</span> <span class=kt>bool</span><span class=p>)</span> <span class=p>(</span><span class=nx>advance</span> <span class=kt>int</span><span class=p>,</span> <span class=nx>token</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>,</span> <span class=nx>err</span> <span class=kt>error</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>hdr</span> <span class=nx>Header</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>atEOF</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=mi>0</span><span class=p>,</span> <span class=kc>nil</span><span class=p>,</span> <span class=nx>io</span><span class=p>.</span><span class=nx>EOF</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nb>len</span><span class=p>(</span><span class=nx>data</span><span class=p>)</span> <span class=p>&lt;</span> <span class=nx>PKG_S_HDR</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=mi>0</span><span class=p>,</span> <span class=kc>nil</span><span class=p>,</span> <span class=kc>nil</span> <span class=c1>// need more data
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>!</span><span class=nx>bytes</span><span class=p>.</span><span class=nf>Equal</span><span class=p>(</span><span class=nx>data</span><span class=p>[:</span><span class=mi>4</span><span class=p>],</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>{</span><span class=sc>&#39;A&#39;</span><span class=p>,</span> <span class=sc>&#39;G&#39;</span><span class=p>,</span> <span class=sc>&#39;V&#39;</span><span class=p>,</span> <span class=sc>&#39;1&#39;</span><span class=p>})</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=mi>0</span><span class=p>,</span> <span class=kc>nil</span><span class=p>,</span> <span class=nx>errors</span><span class=p>.</span><span class=nf>New</span><span class=p>(</span><span class=s>&#34;invalid header&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>binary</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>bytes</span><span class=p>.</span><span class=nf>NewBuffer</span><span class=p>(</span><span class=nx>data</span><span class=p>),</span> <span class=nx>binary</span><span class=p>.</span><span class=nx>LittleEndian</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>hdr</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>length</span> <span class=o>:=</span> <span class=nb>int</span><span class=p>(</span><span class=nx>PKG_S_HDR</span> <span class=o>+</span> <span class=nx>hdr</span><span class=p>.</span><span class=nx>Length</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nb>len</span><span class=p>(</span><span class=nx>data</span><span class=p>)</span> <span class=p>&lt;</span> <span class=nx>length</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=mi>0</span><span class=p>,</span> <span class=kc>nil</span><span class=p>,</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>length</span><span class=p>,</span> <span class=nx>data</span><span class=p>[:</span><span class=nx>length</span><span class=p>],</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>buff</span> <span class=o>:=</span> <span class=nb>new</span><span class=p>(</span><span class=nx>bytes</span><span class=p>.</span><span class=nx>Buffer</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>pack</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>Package</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>Header</span><span class=p>:</span> <span class=nx>Header</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>Magic</span><span class=p>:</span> <span class=p>[</span><span class=mi>4</span><span class=p>]</span><span class=kt>byte</span><span class=p>{</span><span class=sc>&#39;A&#39;</span><span class=p>,</span> <span class=sc>&#39;G&#39;</span><span class=p>,</span> <span class=sc>&#39;V&#39;</span><span class=p>,</span> <span class=sc>&#39;1&#39;</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>Type</span><span class=p>:</span>  <span class=mh>0x1234</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=p>},</span>
+</span></span><span class=line><span class=cl>                <span class=nx>TagLen</span><span class=p>:</span>  <span class=mi>4</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=nx>Tag</span><span class=p>:</span>     <span class=p>[]</span><span class=nb>byte</span><span class=p>(</span><span class=s>&#34;demo&#34;</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>                <span class=nx>Message</span><span class=p>:</span> <span class=p>[]</span><span class=nb>byte</span><span class=p>((</span><span class=s>&#34;Current time:&#34;</span> <span class=o>+</span> <span class=nx>time</span><span class=p>.</span><span class=nf>Now</span><span class=p>().</span><span class=nf>Format</span><span class=p>(</span><span class=s>&#34;2006-01-02 15:04:05&#34;</span><span class=p>))),</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>pack</span><span class=p>.</span><span class=nx>Length</span> <span class=p>=</span> <span class=nb>uint32</span><span class=p>(</span><span class=nx>pack</span><span class=p>.</span><span class=nx>TagLen</span><span class=p>)</span> <span class=o>+</span> <span class=nb>uint32</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=nx>pack</span><span class=p>.</span><span class=nx>Message</span><span class=p>))</span> <span class=o>+</span> <span class=nx>PKG_S_EXTRA</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>i</span> <span class=p>&lt;</span> <span class=mi>3</span><span class=p>;</span> <span class=nx>i</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>pack</span><span class=p>.</span><span class=nf>Pack</span><span class=p>(</span><span class=nx>buff</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>scan</span> <span class=o>:=</span> <span class=nx>bufio</span><span class=p>.</span><span class=nf>NewScanner</span><span class=p>(</span><span class=nx>buff</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>scan</span><span class=p>.</span><span class=nf>Split</span><span class=p>(</span><span class=nx>split</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>npkg</span> <span class=o>:=</span> <span class=nx>Package</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>scan</span><span class=p>.</span><span class=nf>Scan</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>npkg</span><span class=p>.</span><span class=nf>UnPack</span><span class=p>(</span><span class=nx>bytes</span><span class=p>.</span><span class=nf>NewBuffer</span><span class=p>(</span><span class=nx>scan</span><span class=p>.</span><span class=nf>Bytes</span><span class=p>()));</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>npkg</span><span class=p>.</span><span class=nf>String</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>scan</span><span class=p>.</span><span class=nf>Err</span><span class=p>();</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#异常处理>异常处理</a></li><li><a href=#示例>示例</a></li></ul></li><li><a href=#二进制协议>二进制协议</a><ul><li><a href=#示例-1>示例</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

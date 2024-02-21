@@ -1,0 +1,454 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Protobuf 协议简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Protobuf (Google Protocol Buffers) 是 google 开发的的一套用于数据存储，网络通信时用于协议编解码的工具库，与 XML 和 JSON 数据格式类似，但采用的是二进制的数据格式，具有更高的传输，打包和解包效率。
+相比 JSON 来说，Protobuf 的效率、编解码速度更快、数据体积更小，带来的问题是数据可读性变差，协议升级比较麻烦。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Protobuf 协议简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-05-24</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/network/ role=button>network</a></div></div><hr><div class=content><p>Protobuf (Google Protocol Buffers) 是 google 开发的的一套用于数据存储，网络通信时用于协议编解码的工具库，与 XML 和 JSON 数据格式类似，但采用的是二进制的数据格式，具有更高的传输，打包和解包效率。</p><p>相比 JSON 来说，Protobuf 的效率、编解码速度更快、数据体积更小，带来的问题是数据可读性变差，协议升级比较麻烦。</p><p><img alt="protobuf logo" src=images/protobuf-logo.png width=300px class="mx-auto d-block"></p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>Google 的 Protocol Buffer 是一种以二进制格式对消息进行编码和解码的库，可以支持大部分语言。</p><a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>在 CentOS 中，可通过 <code>yum install protobuf protobuf-compiler</code> 安装解析器，不过其显示的是打包版本，并非源码的发行版本，也可以从 <a href=https://github.com/protocolbuffers/protobuf>Github</a> 上下载。</p><a class=anchor id=python-插件></a><h2>Python 插件 <a href=#python-%e6%8f%92%e4%bb%b6 aria-hidden=true>#</a></h2><p>可以通过 <code>protoc</code> 生成编译后的文件，例如。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ protoc --go_out=plugins=grpc:. users.proto
+</span></span></code></pre></div><p>生成一个 <code>users.pb.go</code> 文件，其中定义了客户端和服务端的方法。</p><p>常用参数如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>-IPATH, --proto_path=PATH
+</span></span><span class=line><span class=cl>    用来指定 import 的查找目录，可以多次指定，此时将会按照顺序查找，不指定则默认使用当前目录。
+</span></span><span class=line><span class=cl>	当多个 proto 文件之间有互相依赖时，需要 import 其他几个 proto 文件，这时候就要用 -I 来指定搜索目录。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>--go_out
+</span></span><span class=line><span class=cl>   通过 golang 的编译插件，支持 golang 的编译，支持以下参数。
+</span></span><span class=line><span class=cl>       plugins=  指定插件，目前只支持grpc，也就是 plugins=grpc
+</span></span><span class=line><span class=cl>       最后是指定生成的目录路径，注意是与proto文件的相对路径。
+</span></span></code></pre></div><a class=anchor id=golang-语言支持></a><h1>GoLang 语言支持 <a href=#golang-%e8%af%ad%e8%a8%80%e6%94%af%e6%8c%81 aria-hidden=true>#</a></h1><p>在 GoLang 中使用 Protobuf ，有两个可选的包 <a href=https://github.com/golang/protobuf>goprotobuf</a>(官方) 和 <a href=https://github.com/gogo/protobuf>gogoprotobuf</a> ，或者完全兼容前者，而且据说它生成的代码质量和编解码性能均比官方的要高一些。</p><a class=anchor id=安装-1></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85-1 aria-hidden=true>#</a></h2><p>首先是安装官方的版本。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装protobuf库文件
+</span></span><span class=line><span class=cl>$ go get github.com/golang/protobuf/proto
+</span></span><span class=line><span class=cl>----- 安装插件，用来生成proto.pb.go文件
+</span></span><span class=line><span class=cl>$ go get github.com/golang/protobuf/protoc-gen-go
+</span></span></code></pre></div><p>接着可以安装 gogo 版本，其中有 <code>protoc-gen-gogo</code> 和 <code>protoc-gen-gofast</code> 两个插件可用，后者生成的代码更加复杂，但是性能也更高 (快5~7倍)。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装两个插件
+</span></span><span class=line><span class=cl>$ go get github.com/gogo/protobuf/protoc-gen-gogo
+</span></span><span class=line><span class=cl>$ go get github.com/gogo/protobuf/protoc-gen-gofast
+</span></span><span class=line><span class=cl>----- 安装库文件(可选)
+</span></span><span class=line><span class=cl>$ go get github.com/gogo/protobuf/gogoproto
+</span></span></code></pre></div><p>最后是使用上述的插件生成编译后的 go 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ protoc --go_out=. *.proto
+</span></span><span class=line><span class=cl>$ protoc --gogo_out=. *.proto
+</span></span><span class=line><span class=cl>$ protoc --gofast_out=. *.proto
+</span></span></code></pre></div><a class=anchor id=示例1></a><h2>示例1 <a href=#%e7%a4%ba%e4%be%8b1 aria-hidden=true>#</a></h2><p>这里采用的是 <code>proto2</code> 的示例，目录结构如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl> |-foobar.go
+</span></span><span class=line><span class=cl> `-example/
+</span></span><span class=line><span class=cl>   `-example.proto
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>syntax</span> <span class=p>=</span> <span class=s>&#34;proto2&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>package</span> <span class=nx>example</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>enum</span> <span class=nx>FOO</span> <span class=p>{</span> <span class=nx>X</span> <span class=p>=</span> <span class=mi>17</span><span class=p>;</span> <span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>message</span> <span class=nx>Test</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>required</span> <span class=kt>string</span> <span class=nx>label</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nx>optional</span> <span class=kt>int32</span> <span class=kd>type</span> <span class=p>=</span> <span class=mi>2</span> <span class=p>[</span><span class=k>default</span><span class=p>=</span><span class=mi>77</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>    <span class=nx>repeated</span> <span class=kt>int64</span> <span class=nx>reps</span> <span class=p>=</span> <span class=mi>3</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nx>optional</span> <span class=nx>group</span> <span class=nx>OptionalGroup</span> <span class=p>=</span> <span class=mi>4</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>required</span> <span class=kt>string</span> <span class=nx>RequiredField</span> <span class=p>=</span> <span class=mi>5</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;reflect&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;./example&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;github.com/golang/protobuf/proto&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>test</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>example</span><span class=p>.</span><span class=nx>Test</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Label</span><span class=p>:</span> <span class=nx>proto</span><span class=p>.</span><span class=nf>String</span><span class=p>(</span><span class=s>&#34;hello&#34;</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Type</span><span class=p>:</span>  <span class=nx>proto</span><span class=p>.</span><span class=nf>Int32</span><span class=p>(</span><span class=mi>17</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Optionalgroup</span><span class=p>:</span> <span class=o>&amp;</span><span class=nx>example</span><span class=p>.</span><span class=nx>Test_OptionalGroup</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>RequiredField</span><span class=p>:</span> <span class=nx>proto</span><span class=p>.</span><span class=nf>String</span><span class=p>(</span><span class=s>&#34;good bye&#34;</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>        <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>data</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>proto</span><span class=p>.</span><span class=nf>Marshal</span><span class=p>(</span><span class=nx>test</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=s>&#34;marshaling error: &#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;type:&#34;</span><span class=p>,</span> <span class=nx>reflect</span><span class=p>.</span><span class=nf>TypeOf</span><span class=p>(</span><span class=nx>data</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>newTest</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>example</span><span class=p>.</span><span class=nx>Test</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>err</span> <span class=p>=</span> <span class=nx>proto</span><span class=p>.</span><span class=nf>Unmarshal</span><span class=p>(</span><span class=nx>data</span><span class=p>,</span> <span class=nx>newTest</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=s>&#34;unmarshaling error: &#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>test</span><span class=p>.</span><span class=nf>GetLabel</span><span class=p>()</span> <span class=o>!=</span> <span class=nx>newTest</span><span class=p>.</span><span class=nf>GetLabel</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;data mismatch %q != %q&#34;</span><span class=p>,</span> <span class=nx>test</span><span class=p>.</span><span class=nf>GetLabel</span><span class=p>(),</span> <span class=nx>newTest</span><span class=p>.</span><span class=nf>GetLabel</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>然后通过 <code>protoc --go_out=. *.proto</code> 生成，其中 <code>Marshal()</code> 接口返回的数据是 <code>[]uint8</code> 或者 <code>[]byte</code> 类型。</p><a class=anchor id=示例2></a><h2>示例2 <a href=#%e7%a4%ba%e4%be%8b2 aria-hidden=true>#</a></h2><p>目录结构如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl> |-foobar.go
+</span></span><span class=line><span class=cl> |-example.proto
+</span></span><span class=line><span class=cl> `-example/
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>syntax</span> <span class=p>=</span> <span class=s>&#34;proto3&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>package</span> <span class=nx>example</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>message</span> <span class=nx>Person</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>string</span> <span class=nx>email</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>enum</span> <span class=nx>PhoneType</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>MOBILE</span> <span class=p>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=nx>HOME</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=nx>WORK</span> <span class=p>=</span> <span class=mi>2</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>message</span> <span class=nx>PhoneNumber</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>string</span> <span class=nx>number</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=nx>PhoneType</span> <span class=kd>type</span> <span class=p>=</span> <span class=mi>2</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>repeated</span> <span class=nx>PhoneNumber</span> <span class=nx>phones</span> <span class=p>=</span> <span class=mi>2</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>oneof</span> <span class=nx>UserID</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>string</span> <span class=nx>name</span> <span class=p>=</span> <span class=mi>3</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=kt>uint32</span> <span class=nx>id</span> <span class=p>=</span><span class=mi>4</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>pb</span> <span class=s>&#34;./example&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;github.com/golang/protobuf/proto&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span> <span class=o>:=</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>Person</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Email</span><span class=p>:</span> <span class=s>&#34;foobar@example.com&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Phones</span><span class=p>:</span> <span class=p>[]</span><span class=o>*</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Person_PhoneNumber</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=p>{</span><span class=nx>Number</span><span class=p>:</span> <span class=s>&#34;12345678&#34;</span><span class=p>,</span> <span class=nx>Type</span><span class=p>:</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>Person_HOME</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>        <span class=p>},</span>
+</span></span><span class=line><span class=cl>        <span class=nx>UserID</span><span class=p>:</span> <span class=o>&amp;</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Person_Name</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>Name</span><span class=p>:</span> <span class=s>&#34;foobar&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>data</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>proto</span><span class=p>.</span><span class=nf>Marshal</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>p</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=s>&#34;marshaling error: &#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>ps</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Person</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>err</span> <span class=p>=</span> <span class=nx>proto</span><span class=p>.</span><span class=nf>Unmarshal</span><span class=p>(</span><span class=nx>data</span><span class=p>,</span> <span class=nx>ps</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=s>&#34;unmarshaling error: &#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>switch</span> <span class=nx>x</span> <span class=o>:=</span> <span class=nx>ps</span><span class=p>.</span><span class=nx>UserID</span><span class=p>.(</span><span class=kd>type</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=o>*</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Person_Name</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Got name %s\n&#34;</span><span class=p>,</span> <span class=nx>ps</span><span class=p>.</span><span class=nf>GetName</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=o>*</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Person_Id</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Got ID %d\n&#34;</span><span class=p>,</span> <span class=nx>ps</span><span class=p>.</span><span class=nf>GetId</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=kc>nil</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=k>default</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=s>&#34;Person.UserID has unexpected type %T&#34;</span><span class=p>,</span> <span class=nx>x</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;ID: %d, Name: %s, Email: %s\n&#34;</span><span class=p>,</span> <span class=nx>ps</span><span class=p>.</span><span class=nf>GetId</span><span class=p>(),</span> <span class=nx>ps</span><span class=p>.</span><span class=nf>GetName</span><span class=p>(),</span> <span class=nx>ps</span><span class=p>.</span><span class=nf>GetEmail</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=nx>idx</span><span class=p>,</span> <span class=nx>val</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>ps</span><span class=p>.</span><span class=nf>GetPhones</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Phone%d = %+v\n&#34;</span><span class=p>,</span> <span class=nx>idx</span><span class=p>,</span> <span class=nx>val</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ protoc example.proto --go_out=plugins=grpc:example
+</span></span></code></pre></div><a class=anchor id=示例3></a><h2>示例3 <a href=#%e7%a4%ba%e4%be%8b3 aria-hidden=true>#</a></h2><p>目录结构如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl> |-server.go
+</span></span><span class=line><span class=cl> |-client.go
+</span></span><span class=line><span class=cl> `-proto/
+</span></span><span class=line><span class=cl>   |-userinfo/         用来保存生成的go文件
+</span></span><span class=line><span class=cl>   `-userinfo.proto
+</span></span></code></pre></div><p>其中 <code>userinfo.proto</code> 的内容如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>syntax</span> <span class=p>=</span> <span class=s>&#34;proto3&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>package</span> <span class=nx>userinfo</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>enum</span> <span class=nx>Gender</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>MALE</span> <span class=p>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nx>FEMALE</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>message</span> <span class=nx>Addr</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>string</span> <span class=nx>city</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>message</span> <span class=nx>Contact</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>string</span> <span class=nx>email</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>message</span> <span class=nx>UserInfo</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>string</span> <span class=nx>name</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int32</span> <span class=nx>age</span> <span class=p>=</span> <span class=mi>2</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Gender</span> <span class=nx>gender</span> <span class=p>=</span> <span class=mi>3</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>oneof</span> <span class=nx>method</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Addr</span> <span class=nx>addr</span> <span class=p>=</span> <span class=mi>5</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Contact</span> <span class=nx>cont</span> <span class=p>=</span> <span class=mi>6</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>客户端和服务端的代码如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=nx>pb</span> <span class=s>&#34;./proto/userinfo&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;net&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;github.com/golang/protobuf/proto&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//&#34;github.com/gogo/protobuf/proto&#34;
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Addr</span> <span class=o>:=</span> <span class=s>&#34;localhost:6600&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=kd>var</span> <span class=nx>conn</span> <span class=nx>net</span><span class=p>.</span><span class=nx>Conn</span>
+</span></span><span class=line><span class=cl>    <span class=kd>var</span> <span class=nx>err</span> <span class=kt>error</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>conn</span><span class=p>,</span> <span class=nx>err</span> <span class=p>=</span> <span class=nx>net</span><span class=p>.</span><span class=nf>Dial</span><span class=p>(</span><span class=s>&#34;tcp&#34;</span><span class=p>,</span> <span class=nx>Addr</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;connecting to&#34;</span><span class=p>,</span> <span class=nx>Addr</span><span class=p>,</span> <span class=s>&#34;fail&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;connect to&#34;</span><span class=p>,</span> <span class=nx>Addr</span><span class=p>,</span> <span class=s>&#34;success&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>defer</span> <span class=nx>conn</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>Request</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>pb</span><span class=p>.</span><span class=nx>UserInfo</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Name</span><span class=p>:</span>   <span class=s>&#34;foobar&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Age</span><span class=p>:</span>    <span class=mi>15</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Gender</span><span class=p>:</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>Gender_MALE</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Method</span><span class=p>:</span> <span class=o>&amp;</span><span class=nx>pb</span><span class=p>.</span><span class=nx>UserInfo_Addr</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>Addr</span><span class=p>:</span> <span class=o>&amp;</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Addr</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>                    <span class=nx>City</span><span class=p>:</span> <span class=s>&#34;foobar&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=p>},</span>
+</span></span><span class=line><span class=cl>        <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>data</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>proto</span><span class=p>.</span><span class=nf>Marshal</span><span class=p>(</span><span class=nx>Request</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nb>panic</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;%d bytes per package\n&#34;</span><span class=p>,</span> <span class=nb>len</span><span class=p>(</span><span class=nx>data</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>i</span> <span class=p>&lt;</span> <span class=mi>100</span><span class=p>;</span> <span class=nx>i</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>conn</span><span class=p>.</span><span class=nf>Write</span><span class=p>(</span><span class=nx>data</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=nx>pb</span> <span class=s>&#34;./proto/userinfo&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;io&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;net&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;github.com/golang/protobuf/proto&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//&#34;github.com/gogo/protobuf/proto&#34;
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>listener</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>net</span><span class=p>.</span><span class=nf>Listen</span><span class=p>(</span><span class=s>&#34;tcp&#34;</span><span class=p>,</span> <span class=s>&#34;localhost:6600&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nb>panic</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>conn</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>listener</span><span class=p>.</span><span class=nf>Accept</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nb>panic</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;New connect from&#34;</span><span class=p>,</span> <span class=nx>conn</span><span class=p>.</span><span class=nf>RemoteAddr</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>readMessage</span><span class=p>(</span><span class=nx>conn</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>readMessage</span><span class=p>(</span><span class=nx>conn</span> <span class=nx>net</span><span class=p>.</span><span class=nx>Conn</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>defer</span> <span class=nx>conn</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>count</span> <span class=o>:=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>    <span class=nx>buf</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=mi>4096</span><span class=p>,</span> <span class=mi>4096</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>cnt</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>conn</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>buf</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>==</span> <span class=nx>io</span><span class=p>.</span><span class=nx>EOF</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Client&#34;</span><span class=p>,</span> <span class=nx>conn</span><span class=p>.</span><span class=nf>RemoteAddr</span><span class=p>(),</span> <span class=s>&#34;quit.&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nb>panic</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>offset</span> <span class=o>:=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>Response</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>pb</span><span class=p>.</span><span class=nx>UserInfo</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=nx>err</span> <span class=p>=</span> <span class=nx>proto</span><span class=p>.</span><span class=nf>Unmarshal</span><span class=p>(</span><span class=nx>buf</span><span class=p>[</span><span class=nx>offset</span><span class=p>:</span><span class=nx>cnt</span><span class=p>],</span> <span class=nx>Response</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nb>panic</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>            <span class=nx>bytes</span> <span class=o>:=</span> <span class=nx>proto</span><span class=p>.</span><span class=nf>Size</span><span class=p>(</span><span class=nx>Response</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>if</span> <span class=nx>bytes</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>break</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>            <span class=nx>count</span><span class=o>++</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;[%03d] Got data(%d) from %s, data(%d) %v\n&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                    <span class=nx>count</span><span class=p>,</span> <span class=nx>cnt</span><span class=p>,</span> <span class=nx>conn</span><span class=p>.</span><span class=nf>RemoteAddr</span><span class=p>(),</span> <span class=nx>bytes</span><span class=p>,</span> <span class=nx>Response</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=k>switch</span> <span class=nx>x</span> <span class=o>:=</span> <span class=nx>Response</span><span class=p>.</span><span class=nx>Method</span><span class=p>.(</span><span class=kd>type</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=o>*</span><span class=nx>pb</span><span class=p>.</span><span class=nx>UserInfo_Addr</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Addr %+v\n&#34;</span><span class=p>,</span> <span class=nx>x</span><span class=p>.</span><span class=nx>Addr</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=o>*</span><span class=nx>pb</span><span class=p>.</span><span class=nx>UserInfo_Cont</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Cont&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=kc>nil</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>            <span class=k>default</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=nb>panic</span><span class=p>(</span><span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;proto: unexpected type %T in oneof&#34;</span><span class=p>,</span> <span class=nx>x</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>            <span class=nx>offset</span> <span class=o>+=</span> <span class=nx>bytes</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>然后，在根目录下执行如下命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ protoc -I proto proto/userinfo.proto --go_out=plugins=grpc:proto/userinfo
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ GOPATH=$PWD:$GOPATH go run server.go
+</span></span><span class=line><span class=cl>$ GOPATH=$PWD:$GOPATH go run client.go
+</span></span></code></pre></div><a class=anchor id=c-语言支持></a><h1>C 语言支持 <a href=#c-%e8%af%ad%e8%a8%80%e6%94%af%e6%8c%81 aria-hidden=true>#</a></h1><p>源码安装最新版本的 protoc 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 如果非Release版本需要执行如下脚本生成configure文件
+</span></span><span class=line><span class=cl>$ ./autogen.sh
+</span></span><span class=line><span class=cl>----- 指定安装路径
+</span></span><span class=line><span class=cl>$ ./configure --prefix=/usr/local/protobuf
+</span></span><span class=line><span class=cl>$ make
+</span></span><span class=line><span class=cl>----- 如下测试流程会很耗时，可以忽略
+</span></span><span class=line><span class=cl>$ make check
+</span></span><span class=line><span class=cl># make install
+</span></span></code></pre></div><p><code>protobuf-c</code> 最新版本是支持 proto3 的，如果平台没有对应的包，那么可以直接从源码开始编译。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>PKG_CONFIG_PATH=/usr/local/protobuf/lib/pkgconfig \
+</span></span><span class=line><span class=cl>./configure --includedir=/usr/local/protobuf/include/google/protobuf --prefix=/usr/local/protobuf-c
+</span></span></code></pre></div><p>注意，通过上述命令安装完 protobuf-c 之后，头文件实际会安装在 <code>/usr/local/protobuf/include/google/protobuf/protobuf-c</code> 目录下。</p><p>因为按转到了非标准目录下，在编译时就需要通过 <code>-I</code> 和 <code>-L</code> 参数指定目录路径；包括在执行时添加 <code>LD_LIBRARY_PATH=/usr/local/protobuf-c/lib/</code> 变量。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>如下是一个示例，相关的代码也可以参考 <a href=https://github.com/protobuf-c/protobuf-c/wiki/Examples>github protobuf-c examples</a> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>/* request.proto */
+</span></span><span class=line><span class=cl>syntax = &#34;proto2&#34;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>message Request {
+</span></span><span class=line><span class=cl>    required string hostname = 1;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    enum ProtocolType {
+</span></span><span class=line><span class=cl>        ICMP = 0;
+</span></span><span class=line><span class=cl>        TCP = 1;
+</span></span><span class=line><span class=cl>    };
+</span></span><span class=line><span class=cl>    required ProtocolType protocol = 2;
+</span></span><span class=line><span class=cl>    optional uint32 interval = 3;
+</span></span><span class=line><span class=cl>    optional uint32 timeout = 4;
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></div><p>测试代码如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;errno.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;request.pb-c.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cm>/* NOTE: Keep this same with request.proto */</span>
+</span></span><span class=line><span class=cl><span class=k>enum</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>PROTOCOL_TYPE_ICMP</span> <span class=o>=</span> <span class=mi>0</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=n>PROTOCOL_TYPE_TCP</span>  <span class=o>=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>Request</span> <span class=n>req</span> <span class=o>=</span> <span class=n>REQUEST__INIT</span><span class=p>,</span> <span class=o>*</span><span class=n>request</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>unsigned</span> <span class=kt>char</span> <span class=o>*</span><span class=n>buffer</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>size_t</span> <span class=n>len</span> <span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>req</span><span class=p>.</span><span class=n>hostname</span> <span class=o>=</span> <span class=s>&#34;192.168.9.10&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>req</span><span class=p>.</span><span class=n>protocol</span> <span class=o>=</span> <span class=n>PROTOCOL_TYPE_ICMP</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>req</span><span class=p>.</span><span class=n>has_interval</span> <span class=o>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>req</span><span class=p>.</span><span class=n>interval</span> <span class=o>=</span> <span class=mi>10</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>len</span> <span class=o>=</span> <span class=nf>request__get_packed_size</span><span class=p>(</span><span class=o>&amp;</span><span class=n>req</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>fprintf</span><span class=p>(</span><span class=n>stdout</span><span class=p>,</span> <span class=s>&#34;Packed size is %lu</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>len</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>assert</span><span class=p>(</span><span class=n>len</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>buffer</span> <span class=o>=</span> <span class=p>(</span><span class=kt>unsigned</span> <span class=kt>char</span> <span class=o>*</span><span class=p>)</span><span class=nf>malloc</span><span class=p>(</span><span class=n>len</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>buffer</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Out of memory</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nf>request__pack</span><span class=p>(</span><span class=o>&amp;</span><span class=n>req</span><span class=p>,</span> <span class=n>buffer</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>request</span> <span class=o>=</span> <span class=nf>request__unpack</span><span class=p>(</span><span class=nb>NULL</span><span class=p>,</span> <span class=n>len</span><span class=p>,</span> <span class=n>buffer</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>request</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;error unpacking incoming message</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;   hostname = %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>request</span><span class=o>-&gt;</span><span class=n>hostname</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;   protocol = %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>request</span><span class=o>-&gt;</span><span class=n>protocol</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>request</span><span class=o>-&gt;</span><span class=n>has_interval</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;   interval = %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>request</span><span class=o>-&gt;</span><span class=n>interval</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>request__free_unpacked</span><span class=p>(</span><span class=n>request</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>free</span><span class=p>(</span><span class=n>buffer</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p><code>Makefile</code> 编译。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-makefile data-lang=makefile><span class=line><span class=cl><span class=nv>OUTDIR</span><span class=o>=</span>proto-out
+</span></span><span class=line><span class=cl><span class=nv>PROTOFILE</span><span class=o>=</span>request
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nf>all</span><span class=o>:</span> <span class=n>pre</span> <span class=n>example</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nf>pre</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>        mkdir -p <span class=si>${</span><span class=nv>OUTDIR</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nf>example</span><span class=o>:</span> <span class=n>example</span>.<span class=n>c</span>
+</span></span><span class=line><span class=cl>        protoc-c --c_out<span class=o>=</span><span class=si>${</span><span class=nv>OUTDIR</span><span class=si>}</span> <span class=si>${</span><span class=nv>PROTOFILE</span><span class=si>}</span>.proto
+</span></span><span class=line><span class=cl>        gcc -Wall -I<span class=si>${</span><span class=nv>OUTDIR</span><span class=si>}</span> <span class=si>${</span><span class=nv>OUTDIR</span><span class=si>}</span>/<span class=si>${</span><span class=nv>PROTOFILE</span><span class=si>}</span>.pb-c.c $^ -o <span class=nv>$@</span> -lprotobuf-c
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nf>clean</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>        rm -rf <span class=si>${</span><span class=nv>OUTDIR</span><span class=si>}</span> example
+</span></span></code></pre></div><a class=anchor id=版本-v3></a><h2>版本 V3 <a href=#%e7%89%88%e6%9c%ac-v3 aria-hidden=true>#</a></h2><p>V2 和 V3 的改动包括了：</p><ol><li>只保留 repeated 来标记数组类型，而 optional 和 required 都被去掉了；</li><li>删除 default，当序列化和反序列化端有不同的默认值时，会导致最终的结果不一致；</li></ol><p>另外，在 V3 的版本其中有个 oneof 特性，而 protobuf-c 的实现比较坑，没有提供对应的 API 接口，需要进行手动设置。例如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-proto data-lang=proto><span class=line><span class=cl><span class=kd>message</span> <span class=nc>Request</span> <span class=p>{</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>	<span class=k>oneof</span> <span class=n>addr</span> <span class=p>{</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>		<span class=kt>string</span> <span class=n>state</span> <span class=o>=</span> <span class=mi>1</span><span class=p>;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>		<span class=kt>string</span> <span class=n>contry</span> <span class=o>=</span> <span class=mi>2</span><span class=p>;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>	<span class=p>};</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=p>};</span><span class=err>
+</span></span></span></code></pre></div><p>那么在进行序列化时，需要通过如下方式设置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=n>Request</span> <span class=n>req</span> <span class=o>=</span> <span class=n>REQUEST__INIT</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=n>req</span><span class=p>.</span><span class=n>addr_case</span> <span class=o>=</span> <span class=n>REQUEST__ADDR_STATE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=n>req</span><span class=p>.</span><span class=n>state</span> <span class=o>=</span> <span class=s>&#34;china&#34;</span><span class=p>;</span>
+</span></span></code></pre></div><p>而在进行反序列化时，可以通过 switch 进行判断，例如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>switch</span> <span class=p>(</span><span class=n>request</span><span class=o>-&gt;</span><span class=n>addr_case</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=nl>REQUEST__ADDR_STATE</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Got state: %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>request</span><span class=o>-&gt;</span><span class=n>state</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=nl>REQUEST__ADDR__NOT_SET</span><span class=p>:</span>
+</span></span><span class=line><span class=cl><span class=k>default</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>	<span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=插件实现></a><h1>插件实现 <a href=#%e6%8f%92%e4%bb%b6%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h1><p>目前支持大部分的语言，如果要实现其它语言，需要先实现一个 protoc 编译器的插件，也就是说，主要介绍如何通过 <code>protoc</code> 及其提供的能力实现某个语言相关的插件，如下以 Python 为例，会使用如下的 <code>hello.proto</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-proto data-lang=proto><span class=line><span class=cl><span class=kd>enum</span> <span class=n>Greeting</span> <span class=p>{</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>	<span class=n>NONE</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>	<span class=n>MR</span> <span class=o>=</span> <span class=mi>1</span><span class=p>;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>	<span class=n>MRS</span> <span class=o>=</span> <span class=mi>2</span><span class=p>;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>	<span class=n>MISS</span> <span class=o>=</span> <span class=mi>3</span><span class=p>;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=p>}</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=kd>message</span> <span class=nc>Hello</span> <span class=p>{</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>	<span class=k>required</span> <span class=n>Greeting</span> <span class=n>greeting</span> <span class=o>=</span> <span class=mi>1</span><span class=p>;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>	<span class=k>required</span> <span class=kt>string</span> <span class=n>name</span> <span class=o>=</span> <span class=mi>2</span><span class=p>;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=p>}</span><span class=err>
+</span></span></span></code></pre></div><p>编译器 <code>protoc</code> 的接口非常简单，编译器将在 stdin 上传递一个 CodeGeneratorRequest 消息，你的插件将在 stdout 的 CodeGeneratorResponse 中输出生成的代码。</p><p>第一步是编写读取请求的代码并写一个空的响应：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=ch>#!/usr/bin/env python</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=nn>sys</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>google.protobuf.compiler</span> <span class=kn>import</span> <span class=n>plugin_pb2</span> <span class=k>as</span> <span class=n>plugin</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>generate_code</span><span class=p>(</span><span class=n>request</span><span class=p>,</span> <span class=n>response</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>    <span class=k>pass</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=vm>__name__</span> <span class=o>==</span> <span class=s1>&#39;__main__&#39;</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=c1># Read request message from stdin</span>
+</span></span><span class=line><span class=cl>    <span class=n>data</span> <span class=o>=</span> <span class=n>sys</span><span class=o>.</span><span class=n>stdin</span><span class=o>.</span><span class=n>read</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=c1># Parse request</span>
+</span></span><span class=line><span class=cl>    <span class=n>request</span> <span class=o>=</span> <span class=n>plugin</span><span class=o>.</span><span class=n>CodeGeneratorRequest</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=n>request</span><span class=o>.</span><span class=n>ParseFromString</span><span class=p>(</span><span class=n>data</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=c1># Create response</span>
+</span></span><span class=line><span class=cl>    <span class=n>response</span> <span class=o>=</span> <span class=n>plugin</span><span class=o>.</span><span class=n>CodeGeneratorResponse</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=c1># Generate code</span>
+</span></span><span class=line><span class=cl>    <span class=n>generate_code</span><span class=p>(</span><span class=n>request</span><span class=p>,</span> <span class=n>response</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=c1># Serialise response message</span>
+</span></span><span class=line><span class=cl>    <span class=n>output</span> <span class=o>=</span> <span class=n>response</span><span class=o>.</span><span class=n>SerializeToString</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=c1># Write to stdout</span>
+</span></span><span class=line><span class=cl>    <span class=n>sys</span><span class=o>.</span><span class=n>stdout</span><span class=o>.</span><span class=n>write</span><span class=p>(</span><span class=n>output</span><span class=p>)</span>
+</span></span></code></pre></div><p>核心部分是从 stdin 读取 protoc 请求的接口代码，遍历 AST 并在 stdout 上写入响应。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li><li><a href=#python-插件>Python 插件</a></li></ul></li><li><a href=#golang-语言支持>GoLang 语言支持</a><ul><li><a href=#安装-1>安装</a></li><li><a href=#示例1>示例1</a></li><li><a href=#示例2>示例2</a></li><li><a href=#示例3>示例3</a></li></ul></li><li><a href=#c-语言支持>C 语言支持</a><ul><li><a href=#示例>示例</a></li><li><a href=#版本-v3>版本 V3</a></li></ul></li><li><a href=#插件实现>插件实现</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

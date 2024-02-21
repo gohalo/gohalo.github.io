@@ -1,0 +1,376 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 信号机制 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="软中断信号 (简称为信号) 是用来通知进程发生了异步事件，是在软件层次上是对中断机制的一种模拟，在原理上，一个进程收到一个信号与处理器收到一个中断请求可以说是一样的。
+信号是进程间通信机制中唯一的异步通信机制，一个进程不必通过任何操作来等待信号的到达，事实上，进程也不知道信号到底什么时候到达。
+进程之间可以互相通过系统调用 kill 发送软中断信号，内核也可以因为内部事件而给进程发送信号，通知进程发生了某个事件。
+信号机制除了基本通知功能外，还可以传递附加信息。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 信号机制</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-11-25</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kernel/ role=button>kernel</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/c/cpp/ role=button>c/cpp</a></div></div><hr><div class=content><p>软中断信号 (简称为信号) 是用来通知进程发生了异步事件，是在软件层次上是对中断机制的一种模拟，在原理上，一个进程收到一个信号与处理器收到一个中断请求可以说是一样的。</p><p>信号是进程间通信机制中唯一的异步通信机制，一个进程不必通过任何操作来等待信号的到达，事实上，进程也不知道信号到底什么时候到达。</p><p>进程之间可以互相通过系统调用 kill 发送软中断信号，内核也可以因为内部事件而给进程发送信号，通知进程发生了某个事件。</p><p>信号机制除了基本通知功能外，还可以传递附加信息。</p><a class=anchor id=信号简介></a><h1>信号简介 <a href=#%e4%bf%a1%e5%8f%b7%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>每个信号在 <code>signal.h</code> 头文件中通过宏进行定义，对于 CentOS 来说，实际是在 <code>/usr/include/asm-generic/signal.h</code> 中定义，对于编号以及信号名的映射关系可以通过 <code>kill -l</code> 命令查看。</p><p>其中，<code>[1, 31]</code> 是普通信号，<code>[34, 64]</code> 是实时信号，前者是从 UNIX 系统继承过来的信号，不支持排队可能会导致信号丢失, 比如发送多次相同的信号, 进程只能收到一次，其信号值小于 <code>SIGRTMIN</code> 。</p><p>后来 Linux 改进了信号机制，增加了 32 种新的信号，这些信号都是可靠信号，支持排队，主要位于 <code>[SIGRTMIN, SIGRTMAX]</code> 区间，通常用于用户使用。</p><p>对于实时信号，可以使用 <code>sigqueue</code> 发送信号。</p><p>对于信号，通常有如下的几种处理方式：</p><ol><li>忽略。大部分信号都可以通过这种方式处理，不过 <code>SIGKILL</code> 和 <code>SIGSTOP</code> 两个信号有特殊用处，不能被忽略。</li><li>默认动作。大多数信号的系统默认动作终止该进程。</li><li>捕捉信号。也就是在收到信号时，执行一些用户自定义的函数。</li></ol><p>其中信号可以简单通过 <code>signal()</code> 函数指定。</p><a class=anchor id=简单处理信号></a><h2>简单处理信号 <a href=#%e7%ae%80%e5%8d%95%e5%a4%84%e7%90%86%e4%bf%a1%e5%8f%b7 aria-hidden=true>#</a></h2><p>其中 <code>signal()</code> 函数的声明如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=k>typedef</span> <span class=nf>void</span><span class=p>(</span><span class=o>*</span><span class=kt>sighandler_t</span><span class=p>)(</span><span class=kt>int</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=kt>sighandler_t</span> <span class=nf>signal</span><span class=p>(</span><span class=kt>int</span> <span class=n>signum</span><span class=p>,</span> <span class=kt>sighandler_t</span> <span class=n>handler</span><span class=p>);</span>
+</span></span></code></pre></div><p>其中，<code>signal()</code> 用于对该进程的某个特定信号 (signum) 注册一个相应的处理函数，也就是修改对该信号的默认处理动作。</p><p>注意，<code>signal()</code> 会堵塞当前正在处理的信号，不过不会阻塞其它信号，如正在处理 <code>SIG_INT</code>，再来一个 <code>SIG_INT</code> 则会堵塞，但如果是 <code>SIG_QUIT</code> 则会被其中断，在处理完 <code>SIG_QUIT</code> 信号之后，<code>SIG_INT</code> 才会接着刚才处理。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;time.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>int_handler</span><span class=p>(</span><span class=kt>int</span> <span class=n>signum</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%ld Got a int signal %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>time</span><span class=p>(</span><span class=nb>NULL</span><span class=p>),</span> <span class=n>signum</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sleep</span><span class=p>(</span><span class=mi>5</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%ld Fininsh int signal %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>time</span><span class=p>(</span><span class=nb>NULL</span><span class=p>),</span> <span class=n>signum</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>quit_handler</span><span class=p>(</span><span class=kt>int</span> <span class=n>signum</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%ld Got a quit signal %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>time</span><span class=p>(</span><span class=nb>NULL</span><span class=p>),</span> <span class=n>signum</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>signal</span><span class=p>(</span><span class=n>SIGINT</span><span class=p>,</span> <span class=n>int_handler</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>signal</span><span class=p>(</span><span class=n>SIGQUIT</span><span class=p>,</span> <span class=n>quit_handler</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>while</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>sleep</span><span class=p>(</span><span class=mi>10</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;.&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fflush</span><span class=p>(</span><span class=n>stdout</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>当通过 <code>Ctrl-C</code> 发送了 INT 信号后，接着发送 <code>Ctrl-\</code> 发送 QUIT 信号，实际上不会继续睡眠，而是接着执行。</p><p>也可以通过如下方式忽略某一个信号。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=nf>signal</span><span class=p>(</span><span class=n>SIGHUP</span><span class=p>,</span> <span class=n>SIG_IGN</span><span class=p>);</span>
+</span></span></code></pre></div><p>这里表示忽略 <code>SIGHUP</code> 这个信号，该信号与控制台有关，当控制台被关闭时，操作系统会向拥有控制台 SessionID 的所有进程发送 HUP 信号，而默认 HUP 信号的处理是退出程序。当远程登陆启动某个服务进程并在程序运行时关闭终端的话会导致服务进程退出，所以一般服务进程都会用 nohup 工具启动或写成一个 daemon。</p><a class=anchor id=sleep></a><h2>Sleep <a href=#sleep aria-hidden=true>#</a></h2><p>如果进程设置了 <code>sleep()</code> ，应该检查其返回值，如果大于 0 ，那么有可能是被信号中断，此时的 <code>errno</code> 会被设置为 <code>EINTR</code> 。</p><p>注意，即使是通过类似 <code>signal()</code> 函数修改了信号处理函数，该函数仍然会类似上述的中断返回。</p><a class=anchor id=信号处理过程></a><h1>信号处理过程 <a href=#%e4%bf%a1%e5%8f%b7%e5%a4%84%e7%90%86%e8%bf%87%e7%a8%8b aria-hidden=true>#</a></h1><p>进程收到一个信号后不会被立即处理，而是在恰当时机进行处理！一般是在中断返回的时候，或者内核态返回用户态的时候 (这个情况出现的比较多)。</p><p>也就是说，信号不一定会被立即处理，操作系统不会为了处理一个信号而把当前正在运行的进程挂起，因为这样的话资源消耗太大了，如果不是紧急信号，是不会立即处理的，操作系统多选择在内核态切换回用户态的时候处理信号。</p><p>因为进程有可能在睡眠的时候收到信号，操作系统肯定不愿意切换当前正在运行的进程，于是就得把信号储存在进程唯一的 PCB(task_struct) 当中。</p><a class=anchor id=信号触发></a><h2>信号触发 <a href=#%e4%bf%a1%e5%8f%b7%e8%a7%a6%e5%8f%91 aria-hidden=true>#</a></h2><p>一般信号的触发大致可以分为如下的几类：</p><ol><li>在终端通过组合按键触发，终端驱动程序发送信号给前台进程。例如 <code>Ctrl-C(SIGINT)</code>、<code>Ctrl-\(SIGQUIT)</code>、<code>Ctrl-Z(SIGTSTP)</code> 。</li><li>硬件异常产生信号，由硬件检测到并通知内核并由内核向当前进程发送适当的信号。例如除 0 导致 CPU 产生异常，内核将该异常解释为 <code>SIGFPE</code> 信号发送给进程；访问非法内存地址导致 MMU 产生异常，内核将该异常解释为 <code>SIGSEGV</code> 信号发送给进程。</li><li>进程通过 <code>kill(2)</code> 发送信号，或者调用 <code>kill(1)</code> 命令发送，默认发送 <code>SIGTERM</code> 信号，该信号的默认处理动作是终止进程。</li><li>通过 <code>raise(3)</code> 给自己进程发送信号，其中 <code>raise(sig)</code> 等价于 <code>kill(getpid(), sig)</code> 。</li><li>通过 <code>killpg(2)</code> 给进程组发送信号，使用 <code>killpg(pgrp, sig)</code> 等价于 <code>kill(-pgrp, sig)</code> 。</li><li>利用 <code>sigqueue</code> 给进程发送信号，支持排队，可以附带信息。</li><li>当内核检测到某种软件条件发生时也可以通过信号通知进程。例如闹钟超时产生 <code>SIGALRM</code> 信号；向读端已关闭的管道写数据产生 <code>SIGPIPE</code> 信号；子进程退出发送 <code>SIGCHILD</code> 信号。</li></ol><p>当 CPU 正在执行某个进程时，通过终端驱动程序发送了一个 SIGINT 信号给该进程，该信号会记录在对应进程 PCB 中，则该进程的用户空间代码暂停执行，CPU 从用户态切换到内核态处理信号。</p><p>从内核态回到用户态之前，会先处理 PCB 中记录的信号，发现有一个 <code>SIGINT</code> 信号待处理，而这个信号的默认处理动作是终止进程，所以直接终止进程而不再返回它的用户空间代码执行。</p><a class=anchor id=函数调用></a><h3>函数调用 <a href=#%e5%87%bd%e6%95%b0%e8%b0%83%e7%94%a8 aria-hidden=true>#</a></h3><p>通过 <code>raise()</code> 可以给当前进程发送指定的信号；<code>kill()</code> 函数向指定进程发送信号；而 <code>abort()</code> 函数使当前进程接收到 <code>SIGABRT</code> 信号，其函数声明如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span><span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>int</span> <span class=nf>kill</span><span class=p>(</span><span class=kt>pid_t</span> <span class=n>pid</span><span class=p>,</span><span class=kt>int</span> <span class=n>signo</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>raise</span><span class=p>(</span><span class=kt>int</span> <span class=n>signo</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cp>#include</span><span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>void</span> <span class=nf>abort</span><span class=p>(</span><span class=kt>void</span><span class=p>);</span>
+</span></span></code></pre></div><p>类似于 <code>exit()</code> 函数，<code>abort()</code> 函数总是会成功的，所以没有返回值。</p><a class=anchor id=信号阻塞></a><h2>信号阻塞 <a href=#%e4%bf%a1%e5%8f%b7%e9%98%bb%e5%a1%9e aria-hidden=true>#</a></h2><p>信号在内核中的表示大致分为如下几类：</p><ol><li>信号递达 (delivery) 实际执行信号处理信号的动作。</li><li>信号未决 (pending) 信号从产生到抵达之间的状态，信号产生了但是未处理。</li><li>忽略，抵达之后的一种动作。</li><li>阻塞 (block) 收到信号不立即处理，被阻塞的信号将保持未决状态，直到进程解除对此信号的阻塞，才执行抵达动作。</li></ol><p>每个信号都由两个标志位分别表示阻塞和未决，以及一个函数指针表示信号的处理动作。</p><p><img alt="signal task structure" src=images/signal-task-struct-stuff.png class="mx-auto d-block"></p><p>在上图的例子中，其状态信息解释如下：</p><ul><li><code>SIGHUP</code> 未阻塞也未产生过，当它递达时执行默认处理动作。</li><li><code>SIGINT</code> 信号产生过，但正在被阻塞，所以暂时不能递达。虽然它的处理动作是忽略，但在没有解除阻塞之前不能忽略这个信号，因为进程仍有机会改变处理动作之后再解除阻塞。</li><li><code>SIGQUIT</code> 信号未产生过，一旦产生 <code>SIGQUIT</code> 信号将被阻塞，它的处理动作是用户自定义函数 sighandler。</li></ul><p>信号产生但是不立即处理，前提条件是要把它保存在 pending 表中，表明信号已经产生。</p><a class=anchor id=信号集操作函数></a><h2>信号集操作函数 <a href=#%e4%bf%a1%e5%8f%b7%e9%9b%86%e6%93%8d%e4%bd%9c%e5%87%bd%e6%95%b0 aria-hidden=true>#</a></h2><p>信号集用来描述信号的集合，每个信号占用一位，总共 64 位，Linux 所支持的所有信号可以全部或部分的出现在信号集中，主要与信号阻塞相关函数配合使用。</p><p>执行信号的处理动作称为信号递达 (Delivery)，信号从产生到递达之间的状态，称为信号未决 (Pending)，进程可以选择阻塞 (Block) 某个信号，被阻塞的信号产生时将保持在未决状态，直到进程解除对此信号的阻塞，才执行递达的动作。</p><p>注意，阻塞和忽略是不同的，信号被阻塞就不会递达，而忽略是在递达之后可选的一种处理动作。</p><p>每个进程都有一个用来描述哪些信号递送到进程时将被阻塞的信号集，该信号集中的所有信号在递送到进程后都将被阻塞，信号在内核中的表示可以看作是这样的：</p><p>如下是常见的信号集的操作函数：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>int</span> <span class=nf>sigemptyset</span><span class=p>(</span><span class=kt>sigset_t</span> <span class=o>*</span><span class=n>set</span><span class=p>);</span>                  <span class=cm>/* 所有信号的对应位清0 */</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>sigfillset</span><span class=p>(</span><span class=kt>sigset_t</span> <span class=o>*</span><span class=n>set</span><span class=p>);</span>                   <span class=cm>/* 设置所有的信号，包括系统支持的所有信号 */</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>sigaddset</span><span class=p>(</span><span class=kt>sigset_t</span> <span class=o>*</span><span class=n>set</span><span class=p>,</span> <span class=kt>int</span> <span class=n>signo</span><span class=p>);</span>         <span class=cm>/* 在该信号集中添加有效信号 */</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>sigdelset</span><span class=p>(</span><span class=kt>sigset_t</span> <span class=o>*</span><span class=n>set</span><span class=p>,</span> <span class=kt>int</span> <span class=n>signo</span><span class=p>);</span>         <span class=cm>/* 在该信号集中删除有效信号 */</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>sigismember</span><span class=p>(</span><span class=k>const</span> <span class=kt>sigset_t</span> <span class=o>*</span><span class=n>set</span><span class=p>,</span> <span class=kt>int</span> <span class=n>signo</span><span class=p>);</span> <span class=cm>/* 用于判断一个信号集的有效信号中是否包含某种信号 */</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>sigprocmask</span><span class=p>(</span><span class=kt>int</span> <span class=n>how</span><span class=p>,</span> <span class=k>const</span> <span class=kt>sigset_t</span> <span class=o>*</span><span class=kr>restrict</span> <span class=n>set</span><span class=p>,</span> <span class=kt>sigset_t</span> <span class=o>*</span><span class=kr>restrict</span> <span class=n>oset</span><span class=p>);</span>
+</span></span></code></pre></div><p>如下是一个操作示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/types.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>print_sigset</span><span class=p>(</span><span class=kt>sigset_t</span> <span class=o>*</span><span class=n>set</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>int</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span><span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>1</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>NSIG</span><span class=p>;</span> <span class=o>++</span><span class=n>i</span><span class=p>){</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span><span class=p>(</span><span class=nf>sigismember</span><span class=p>(</span><span class=n>set</span><span class=p>,</span> <span class=n>i</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>			<span class=nf>putchar</span><span class=p>(</span><span class=sc>&#39;1&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>else</span>
+</span></span><span class=line><span class=cl>			<span class=nf>putchar</span><span class=p>(</span><span class=sc>&#39;0&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nf>putchar</span><span class=p>(</span><span class=sc>&#39;\n&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>sigset_t</span> <span class=n>foobar</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>sigemptyset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>foobar</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigaddset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>foobar</span><span class=p>,</span> <span class=n>SIGINT</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigaddset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>foobar</span><span class=p>,</span> <span class=n>SIGQUIT</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigaddset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>foobar</span><span class=p>,</span> <span class=n>SIGUSR1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigaddset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>foobar</span><span class=p>,</span> <span class=n>SIGRTMIN</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>print_sigset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>foobar</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>调用 <code>sigprocmask()</code> 函数可以读取或更改进程的信号屏蔽字：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;signal.h&gt;
+</span></span><span class=line><span class=cl>int sigprocmask(int how, const sigset_t *set, sigset_t *oset);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>其中how:
+</span></span><span class=line><span class=cl>    SIG_BLOCK     信号屏蔽字是其当前信号屏蔽字和set指向信号集的并集，set包含了希望阻塞的信号
+</span></span><span class=line><span class=cl>    SIG_UNBLOCK   信号屏蔽字是其当前信号屏蔽字和set所指向信号集补集的交集，set包含了希望解除阻塞的信号
+</span></span><span class=line><span class=cl>    SIG_SETMASK   信号屏蔽字将被set指向的信号集的值代替
+</span></span></code></pre></div><p>一个进程的信号屏蔽字规定了当前阻塞而不能递送给该进程的信号集，如果调用该函数解除了对当前若干个未决信号的阻塞，则在该函数返回前，至少将其中一个信号递达。</p><a class=anchor id=实时信号></a><h2>实时信号 <a href=#%e5%ae%9e%e6%97%b6%e4%bf%a1%e5%8f%b7 aria-hidden=true>#</a></h2><p>实时信号支持队列，可以保证信号不会丢失，对于非实时信号，内核会为每个信号维护一个信号掩码，如果信号在阻塞期间传递过多次该信号，信号解除阻塞后仅传递一次。</p><p>实时信号采用队列化处理，一个实时信号的多个实例发送给进程，信号将会传递多次。同时可以在发送信号时传递数据，不同实时信号的传递顺序是固定的，优先传递信号编号小的。</p><a class=anchor id=sigqueue></a><h3>sigqueue <a href=#sigqueue aria-hidden=true>#</a></h3><p>新的发送信号系统调用，针对实时信号提出的支持信号带有参数，与函数 <code>sigaction()</code> 配合使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>typedef</span> <span class=k>union</span> <span class=n>sigval</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>int</span> <span class=n>sival_int</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>void</span> <span class=o>*</span><span class=n>sival_ptr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span> <span class=kt>sigval_t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>sigqueue</span><span class=p>(</span><span class=kt>pid_t</span> <span class=n>pid</span><span class=p>,</span> <span class=kt>int</span> <span class=n>sig</span><span class=p>,</span> <span class=k>const</span> <span class=k>union</span> <span class=n>sigval</span> <span class=n>value</span><span class=p>);</span>
+</span></span></code></pre></div><p>相比 <code>kill</code> 来说传递了更多的附加信息，但该函数只能向一个进程发送信号，而不能发送信号给一个进程组。</p><p>如下是一个示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>// recv.c
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;errno.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>handler</span><span class=p>(</span><span class=kt>int</span> <span class=n>sig</span><span class=p>,</span> <span class=kt>siginfo_t</span> <span class=o>*</span><span class=n>info</span><span class=p>,</span> <span class=kt>void</span> <span class=o>*</span><span class=n>ctx</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=n>ctx</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Recv sig=%d data=%d data=%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>sig</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=n>info</span><span class=o>-&gt;</span><span class=n>si_value</span><span class=p>.</span><span class=n>sival_int</span><span class=p>,</span> <span class=n>info</span><span class=o>-&gt;</span><span class=n>si_int</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>sigaction</span> <span class=n>act</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>sigemptyset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>act</span><span class=p>.</span><span class=n>sa_mask</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=n>act</span><span class=p>.</span><span class=n>sa_sigaction</span> <span class=o>=</span> <span class=n>handler</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>act</span><span class=p>.</span><span class=n>sa_flags</span> <span class=o>=</span> <span class=n>SA_SIGINFO</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>sigaction</span><span class=p>(</span><span class=n>SIGINT</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>act</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Sigaction error, %s&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>pause</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>对应的发送程序为。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>// send.c
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=n>argv</span><span class=p>[])</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>union</span> <span class=n>sigval</span> <span class=n>val</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>argc</span> <span class=o>!=</span> <span class=mi>2</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Usage %s pid</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>argv</span><span class=p>[</span><span class=mi>0</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=n>EXIT_FAILURE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>val</span><span class=p>.</span><span class=n>sival_int</span> <span class=o>=</span> <span class=mi>100</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigqueue</span><span class=p>(</span><span class=nf>atoi</span><span class=p>(</span><span class=n>argv</span><span class=p>[</span><span class=mi>1</span><span class=p>]),</span> <span class=n>SIGINT</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在使用时，<code>sa_sigaction</code> 与 <code>sa_handler</code> 只能取其一，其中前者多用于实时信号，可以保存信息；同时设置 <code>sa_flags</code> 为 <code>SA_SIGINFO</code> 用于接收其它进程发送的数据，保存在 <code>siginfo_t</code> 结构体中。</p><a class=anchor id=内核处理></a><h2>内核处理 <a href=#%e5%86%85%e6%a0%b8%e5%a4%84%e7%90%86 aria-hidden=true>#</a></h2><p>如果信号的处理动作是用户自定义函数，在信号递达时就调用这个函数，这称为信号捕捉。由于信号处理函数的代码是在用户空间的，处理过程比较复杂。</p><p><img alt="signal process" src=images/signal-kenel-process.png class="mx-auto d-block"></p><p>也就是说，处理信号最好的时机是程序从内核态切换到用户态时。</p><a class=anchor id=多线程></a><h1>多线程 <a href=#%e5%a4%9a%e7%ba%bf%e7%a8%8b aria-hidden=true>#</a></h1><p>在多线程环境下，产生的信号是传递给整个进程的，会随机选择一个线程发送。</p><p>多进程的信号一般是异步处理，在信号处理函数中会有很多的约束，例如 errno 是线程安全但是非信号安全、不能调用 <code>malloc()</code>、<code>free()</code> 等函数、使用全局变量时增加 <code>volatile</code> 以防不恰当优化等。</p><a class=anchor id=信号同步处理></a><h2>信号同步处理 <a href=#%e4%bf%a1%e5%8f%b7%e5%90%8c%e6%ad%a5%e5%a4%84%e7%90%86 aria-hidden=true>#</a></h2><p>在 POSIX.1 规范定义了 <code>sigwait()</code>、 <code>sigwaitinfo()</code> 和 <code>pthread_sigmask()</code> 等接口，可以实现在专用的线程中以同步方式处理信号。</p><a class=anchor id=signal-vs-sigaction></a><h1>Signal VS. Sigaction <a href=#signal-vs-sigaction aria-hidden=true>#</a></h1><p>实际上，上述的 <code>signal()</code> 是最早的函数，现在大多系统，包括 Linux 都用 <code>sigaction()</code> 重新实现了 <code>signal()</code>，其区别如下：</p><ol><li><code>signal()</code> 注册的回调函数，会在调用前先清除掉，所以需要在回调函数中重新注册；而 <code>sigaction()</code> 函数如果要删除需要显示调用。</li><li><code>signal()</code> 处理不能阻塞信号，而 <code>sigaction()</code> 则可以阻塞指定的信号。</li></ol><p>这也就意味着，<code>signal()</code> 函数可能会丢失信号。</p><p>如下是两个函数的声明。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=k>typedef</span> <span class=nf>void</span> <span class=p>(</span><span class=o>*</span><span class=kt>sighandler_t</span><span class=p>)(</span><span class=kt>int</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=kt>sighandler_t</span> <span class=nf>signal</span><span class=p>(</span><span class=kt>int</span> <span class=n>signum</span><span class=p>,</span> <span class=kt>sighandler_t</span> <span class=n>handler</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=k>struct</span> <span class=n>sigaction</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>void</span>     <span class=p>(</span><span class=o>*</span><span class=n>sa_handler</span><span class=p>)(</span><span class=kt>int</span><span class=p>);</span>                        <span class=cm>/* 信号处理方式 */</span>
+</span></span><span class=line><span class=cl>	<span class=kt>void</span>     <span class=p>(</span><span class=o>*</span><span class=n>sa_sigaction</span><span class=p>)(</span><span class=kt>int</span><span class=p>,</span> <span class=kt>siginfo_t</span> <span class=o>*</span><span class=p>,</span> <span class=kt>void</span> <span class=o>*</span><span class=p>);</span> <span class=cm>/* 实时信号的处理方式 */</span>
+</span></span><span class=line><span class=cl>	<span class=kt>sigset_t</span>   <span class=n>sa_mask</span><span class=p>;</span>   <span class=cm>/* 额外屏蔽的信号 */</span>
+</span></span><span class=line><span class=cl>	<span class=kt>int</span>        <span class=n>sa_flags</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>void</span>     <span class=p>(</span><span class=o>*</span><span class=n>sa_restorer</span><span class=p>)(</span><span class=kt>void</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>sigaction</span><span class=p>(</span><span class=kt>int</span> <span class=n>signum</span><span class=p>,</span> <span class=k>const</span> <span class=k>struct</span> <span class=n>sigaction</span> <span class=o>*</span><span class=n>act</span><span class=p>,</span> <span class=k>struct</span> <span class=n>sigaction</span> <span class=o>*</span><span class=n>oldact</span><span class=p>);</span>
+</span></span></code></pre></div><p>对于 <code>sigaction()</code> 函数，如果 <code>act</code> 非空，则会根据 <code>act</code> 结构体中的信号处理函数来修改该信号的处理动作；如果 <code>oldact</code> 非空则会通过该变量将信号原来的处理动作返回。</p><p>其中，<code>sa_handler</code> 变量用于指定信号的处理函数，有三种方式：</p><ol><li>SIG_IGN 忽略信号；</li><li>SIG_DFL 执行系统默认动作；</li><li>赋值为函数指针表示用自定义函数捕捉信号。</li></ol><p>当某个信号的处理函数被调用时，内核自动将当前信号加入进程的信号屏蔽字，当信号处理函数返回时自动恢复原来的信号屏蔽字，这样就保证了在处理某个信号时，如果这种信号再次产生，那么它会被阻塞到当前处理结束为止。</p><a class=anchor id=常用程序></a><h1>常用程序 <a href=#%e5%b8%b8%e7%94%a8%e7%a8%8b%e5%ba%8f aria-hidden=true>#</a></h1><a class=anchor id=实时信号-vs-非实时信号></a><h2>实时信号 VS. 非实时信号 <a href=#%e5%ae%9e%e6%97%b6%e4%bf%a1%e5%8f%b7-vs-%e9%9d%9e%e5%ae%9e%e6%97%b6%e4%bf%a1%e5%8f%b7 aria-hidden=true>#</a></h2><p>简单来说，就是通过测试程序，发现非实时信号不排队，而实时信号支持排队不会丢失。</p><p>首先是 recv 程序，在主函数中将 <code>SIGINT</code> 和 <code>SIGRTMIN</code> 信号加入信号屏蔽字，只有当接收到 <code>SIGUSR1</code> 信号时才对前面两个信号 unblock。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define ERR_EXIT(m) do {            \
+</span></span></span><span class=line><span class=cl><span class=cp>		perror(m);          \
+</span></span></span><span class=line><span class=cl><span class=cp>		exit(EXIT_FAILURE); \
+</span></span></span><span class=line><span class=cl><span class=cp>	} while(0)
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>handler</span><span class=p>(</span><span class=kt>int</span> <span class=n>sig</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>sig</span> <span class=o>==</span> <span class=n>SIGINT</span> <span class=o>||</span> <span class=n>sig</span> <span class=o>==</span> <span class=n>SIGRTMIN</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;recv a sig=%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>sig</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=n>sig</span> <span class=o>==</span> <span class=n>SIGUSR1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=kt>sigset_t</span> <span class=n>s</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=nf>sigemptyset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>s</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>sigaddset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>s</span><span class=p>,</span> <span class=n>SIGINT</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>sigaddset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>s</span><span class=p>,</span> <span class=n>SIGRTMIN</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>sigprocmask</span><span class=p>(</span><span class=n>SIG_UNBLOCK</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>s</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>sigaction</span> <span class=n>act</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>act</span><span class=p>.</span><span class=n>sa_handler</span> <span class=o>=</span> <span class=n>handler</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigemptyset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>act</span><span class=p>.</span><span class=n>sa_mask</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=n>act</span><span class=p>.</span><span class=n>sa_flags</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kt>sigset_t</span> <span class=n>s</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigemptyset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>s</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigaddset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>s</span><span class=p>,</span> <span class=n>SIGINT</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigaddset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>s</span><span class=p>,</span> <span class=n>SIGRTMIN</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigprocmask</span><span class=p>(</span><span class=n>SIG_BLOCK</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>s</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>sigaction</span><span class=p>(</span><span class=n>SIGINT</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>act</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nf>ERR_EXIT</span><span class=p>(</span><span class=s>&#34;sigaction error&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>sigaction</span><span class=p>(</span><span class=n>SIGRTMIN</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>act</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nf>ERR_EXIT</span><span class=p>(</span><span class=s>&#34;sigaction error&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>sigaction</span><span class=p>(</span><span class=n>SIGUSR1</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>act</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nf>ERR_EXIT</span><span class=p>(</span><span class=s>&#34;sigaction error&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=p>(;;)</span>
+</span></span><span class=line><span class=cl>		<span class=nf>pause</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如果在信号处理函数中对某个信号进行解除阻塞时，则只是将 pending 位清 0，让此信号递达一次 (同个实时信号产生多次进行排队都会抵达)，但不会将 block 位清 0，即再次产生此信号时还是会被阻塞，处于未决状态。</p><p>接着是 send 程序。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>pid_t</span> <span class=n>pid</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>union</span> <span class=n>sigval</span> <span class=n>val</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>argc</span> <span class=o>!=</span> <span class=mi>2</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Usage %s pid</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>argv</span><span class=p>[</span><span class=mi>0</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=n>EXIT_FAILURE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>pid</span> <span class=o>=</span> <span class=nf>atoi</span><span class=p>(</span><span class=n>argv</span><span class=p>[</span><span class=mi>1</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>	<span class=n>val</span><span class=p>.</span><span class=n>sival_int</span> <span class=o>=</span> <span class=mi>100</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>sigqueue</span><span class=p>(</span><span class=n>pid</span><span class=p>,</span> <span class=n>SIGINT</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigqueue</span><span class=p>(</span><span class=n>pid</span><span class=p>,</span> <span class=n>SIGINT</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigqueue</span><span class=p>(</span><span class=n>pid</span><span class=p>,</span> <span class=n>SIGINT</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigqueue</span><span class=p>(</span><span class=n>pid</span><span class=p>,</span> <span class=n>SIGRTMIN</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigqueue</span><span class=p>(</span><span class=n>pid</span><span class=p>,</span> <span class=n>SIGRTMIN</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigqueue</span><span class=p>(</span><span class=n>pid</span><span class=p>,</span> <span class=n>SIGRTMIN</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>sleep</span><span class=p>(</span><span class=mi>3</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>kill</span><span class=p>(</span><span class=n>pid</span><span class=p>,</span> <span class=n>SIGUSR1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>然后直接运行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ ./recv
+</span></span><span class=line><span class=cl>recv a sig=34
+</span></span><span class=line><span class=cl>recv a sig=34
+</span></span><span class=line><span class=cl>recv a sig=34
+</span></span><span class=line><span class=cl>recv a sig=2
+</span></span><span class=line><span class=cl>$ send `pidof recv`
+</span></span></code></pre></div><p>在 send 程序中连续各发送了 <code>SIGINT</code> 和 <code>SIGRTMIN</code> 信号 3 次，接着睡眠 3s 后使用 <code>kill()</code> 发送 <code>SIGUSR1</code> 信号给 recv 进程，可以看到实时信号支持排队，3 个信号都接收到了，而不可靠信号不支持排队，只保留一个信号。</p><a class=anchor id=pause></a><h2>Pause <a href=#pause aria-hidden=true>#</a></h2><p>该函数用于挂起进程，直到有信号触发，其声明如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>int</span> <span class=nf>pause</span><span class=p>(</span><span class=kt>void</span><span class=p>);</span>
+</span></span></code></pre></div><p>针对不同的处理行为，其表现不同：A) 终止进程(一般默认)，则进程终止，<code>pause()</code> 没有机会返回；B) 忽略，进程继续处于挂起状态，<code>pause()</code> 不返回；C) 有信号处理函数，则调用了信号处理函数之后 <code>pause()</code> 返回 -1，其 <code>errno</code> 设置为 <code>EINTR</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>sig_alarm</span><span class=p>(</span><span class=kt>int</span> <span class=n>signum</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;I am a custom handler! signal number is %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>signum</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>sigaction</span> <span class=n>sig</span><span class=p>,</span> <span class=n>old</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cm>/* register a alarm signal handler */</span>
+</span></span><span class=line><span class=cl>	<span class=n>sig</span><span class=p>.</span><span class=n>sa_handler</span> <span class=o>=</span> <span class=n>sig_alarm</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>sig</span><span class=p>.</span><span class=n>sa_flags</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigemptyset</span><span class=p>(</span><span class=o>&amp;</span><span class=n>sig</span><span class=p>.</span><span class=n>sa_mask</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sigaction</span><span class=p>(</span><span class=n>SIGALRM</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>sig</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>old</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;A SIGALRM handler has registered</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>alarm</span><span class=p>(</span><span class=mi>3</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>pause</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Raise another alarm signal, in 1 second later</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>alarm</span><span class=p>(</span><span class=mi>2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Try to sleep 10 seconds</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sleep</span><span class=p>(</span><span class=mi>10</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>alarm</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span> <span class=cm>/* Cancel the alarm */</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>sigaction</span><span class=p>(</span><span class=n>SIGALRM</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>old</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span> <span class=cm>/* restore */</span>
+</span></span><span class=line><span class=cl>	<span class=nf>alarm</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sleep</span><span class=p>(</span><span class=mi>2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如上代码，其处理过程为：</p><ol><li>注册一个 <code>SIGALRM</code> 信号的处理函数，并在 3s 后内核向该进程发送一个 <code>SIGALRM</code> 信号；</li><li>调用 <code>pause()</code> 将进程挂起，内核切换到别的进程运行；</li><li>内核向该进程发送 <code>SIGALRM</code> 信号，发现其处理动作是一个自定义函数，于是切回用户态执行该自定义处理函数；</li><li>进入处理函数后会自动屏蔽 <code>SIGALRM</code> 信号，返回后自动解除屏蔽。</li></ol><p>注意，<code>SIGALRM</code> 处理会自动取消 <code>sleep</code> 的阻塞。</p><a class=anchor id=sigkill-vs-sigstop></a><h2>SIGKILL VS. SIGSTOP <a href=#sigkill-vs-sigstop aria-hidden=true>#</a></h2><p>这两个信号比较特殊，无法在程序中进行屏蔽，用于一些特殊的用途。</p><a class=anchor id=sigkill></a><h3>SIGKILL <a href=#sigkill aria-hidden=true>#</a></h3><p>也就是直接的 <code>kill -9</code> 操作，为 root 提供了一种使进程强制终止方法，此时将会有操作系统直接回收该进程占用的资源，对于一些保存状态的应用就可能会导致异常。</p><a class=anchor id=sigstop></a><h3>SIGSTOP <a href=#sigstop aria-hidden=true>#</a></h3><p>对于前台运行的程序，可以通过 <code>Ctrl-Z</code> 终止程序，切换到后台，此时进程处于 <code>TASK_STOPPED</code> 状态，<code>ps</code> 命令显示处于 <code>T</code> 状态。如果要恢复运行，应该使用 <code>fg JOB-ID</code> 恢复运行，如果直接发送 <code>SIGCONT</code> 将会使进程退出。</p><p>可以参考 <a href=http://en.wikipedia.org/wiki/SIGSTOP>WikiPedia SIGSTOP</a> 中的介绍，抄录如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>When SIGSTOP is sent to a process, the usual behaviour is to pause that process in its
+</span></span><span class=line><span class=cl>current state. The process will only resume execution if it is sent the SIGCONT signal.
+</span></span><span class=line><span class=cl>SIGSTOP and SIGCONT are used for job control in the Unix shell, among other purposes.
+</span></span><span class=line><span class=cl>SIGSTOP cannot be caught or ignored.
+</span></span></code></pre></div><p>也就是说，这个信号是用于 Shell 的任务管理，不能被用户屏蔽。其中常用的是 rsync 的同步任务，例如要清理一些空间，可以暂停运行，清理完成后重新启动运行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># kill -s STOP `pidof rsync`
+</span></span><span class=line><span class=cl># kill -s CONT `pidof rsync`
+</span></span></code></pre></div><p>如下是启动一个 <code>sleep</code> 进程，可以看下如何停止、继续执行进程，如下示例中会启动一个前台进程，并通过发送信号进行停止、启动操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ sleep 1000
+</span></span><span class=line><span class=cl>$ kill -STOP &lt;PID&gt;
+</span></span><span class=line><span class=cl>$ kill -CONT &lt;PID&gt;
+</span></span></code></pre></div><p>当停止后，通过 <code>ps aux</code> 查看进程状态处于 <code>T</code> 也就是暂停状态。</p><p>注意，通过 <code>-CONT</code> 重新启动后会进入到后台运行，如果需要可以通过 <code>fg &lt;JOB-ID></code> 重新恢复到前台运行。</p><a class=anchor id=获取发送信号进程></a><h2>获取发送信号进程 <a href=#%e8%8e%b7%e5%8f%96%e5%8f%91%e9%80%81%e4%bf%a1%e5%8f%b7%e8%bf%9b%e7%a8%8b aria-hidden=true>#</a></h2><p>打印那个进程发送的信号。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;signal.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;errno.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/types.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>int</span> <span class=n>int_count</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>int</span> <span class=n>max_int</span> <span class=o>=</span> <span class=mi>5</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>int</span> <span class=n>max_term</span> <span class=o>=</span> <span class=mi>10</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>void</span> <span class=nf>multi_handler</span><span class=p>(</span><span class=kt>int</span> <span class=n>sig</span><span class=p>,</span> <span class=kt>siginfo_t</span> <span class=o>*</span><span class=n>siginfo</span><span class=p>,</span> <span class=kt>void</span> <span class=o>*</span><span class=n>context</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>pid_t</span> <span class=n>sender_pid</span> <span class=o>=</span> <span class=n>siginfo</span><span class=o>-&gt;</span><span class=n>si_pid</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span><span class=p>(</span><span class=n>sig</span> <span class=o>==</span> <span class=n>SIGINT</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;INT(%d), from [%d]</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>int_count</span><span class=o>++</span><span class=p>,</span> <span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>sender_pid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span> <span class=k>else</span> <span class=k>if</span><span class=p>(</span><span class=n>sig</span> <span class=o>==</span> <span class=n>SIGQUIT</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Quit, bye, from [%d]</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>sender_pid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span> <span class=k>else</span> <span class=k>if</span><span class=p>(</span><span class=n>sig</span> <span class=o>==</span> <span class=n>SIGTERM</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;TERM(%d), from [%d]</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>int_count</span><span class=o>++</span><span class=p>,</span> <span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>sender_pid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;process [%d] started.</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=nf>getpid</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>static</span> <span class=k>struct</span> <span class=n>sigaction</span> <span class=n>siga</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>siga</span><span class=p>.</span><span class=n>sa_sigaction</span> <span class=o>=</span> <span class=o>*</span><span class=n>multi_handler</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>siga</span><span class=p>.</span><span class=n>sa_flags</span> <span class=o>|=</span> <span class=n>SA_SIGINFO</span><span class=p>;</span> <span class=cm>/* get detail info */</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cm>/* Ctrl + C */</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>sigaction</span><span class=p>(</span><span class=n>SIGINT</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>siga</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>!=</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;error sigaction()&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>errno</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cm>/* Ctrl + \ */</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>sigaction</span><span class=p>(</span><span class=n>SIGQUIT</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>siga</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>!=</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;error sigaction()&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>errno</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>sigaction</span><span class=p>(</span><span class=n>SIGTERM</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>siga</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>!=</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;error sigaction()&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>errno</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kt>int</span> <span class=n>sig</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>while</span> <span class=p>(</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=n>int_count</span> <span class=o>&lt;</span> <span class=n>max_int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>sig</span> <span class=o>=</span> <span class=n>SIGINT</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=n>int_count</span> <span class=o>&gt;=</span> <span class=n>max_int</span> <span class=o>&amp;&amp;</span> <span class=n>int_count</span> <span class=o>&lt;</span> <span class=n>max_term</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>sig</span> <span class=o>=</span> <span class=n>SIGTERM</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>sig</span> <span class=o>=</span> <span class=n>SIGQUIT</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=nf>raise</span><span class=p>(</span><span class=n>sig</span><span class=p>);</span> <span class=cm>/* send signal to itself */</span>
+</span></span><span class=line><span class=cl>		<span class=nf>sleep</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>    <span class=c1>// sleep a while, note that: SIGINT will interrupt this, and make program wake up,
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p><a href=https://www.linuxjournal.com/article/3985>The Linux Signals Handling Model</a> 介绍 Linux 中断的实现。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#信号简介>信号简介</a><ul><li><a href=#简单处理信号>简单处理信号</a></li><li><a href=#sleep>Sleep</a></li></ul></li><li><a href=#信号处理过程>信号处理过程</a><ul><li><a href=#信号触发>信号触发</a></li><li><a href=#信号阻塞>信号阻塞</a></li><li><a href=#信号集操作函数>信号集操作函数</a></li><li><a href=#实时信号>实时信号</a></li><li><a href=#内核处理>内核处理</a></li></ul></li><li><a href=#多线程>多线程</a><ul><li><a href=#信号同步处理>信号同步处理</a></li></ul></li><li><a href=#signal-vs-sigaction>Signal VS. Sigaction</a></li><li><a href=#常用程序>常用程序</a><ul><li><a href=#实时信号-vs-非实时信号>实时信号 VS. 非实时信号</a></li><li><a href=#pause>Pause</a></li><li><a href=#sigkill-vs-sigstop>SIGKILL VS. SIGSTOP</a></li><li><a href=#获取发送信号进程>获取发送信号进程</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

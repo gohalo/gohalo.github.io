@@ -1,0 +1,222 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>InfluxDB | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="InfluxDB 是一个开源分布式时序、事件和指标数据库，使用 Go 语言编写，无需外部依赖，其设计目标是实现分布式和水平伸缩扩展。
+InfluxData 提供了 TICK 一套解决方案，不过使用比较多的是 InfluxDB，在此就介绍下 InfluxDB 以及 Telegraf 。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>InfluxDB</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-09-25</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>InfluxDB 是一个开源分布式时序、事件和指标数据库，使用 Go 语言编写，无需外部依赖，其设计目标是实现分布式和水平伸缩扩展。</p><p>InfluxData 提供了 TICK 一套解决方案，不过使用比较多的是 InfluxDB，在此就介绍下 InfluxDB 以及 Telegraf 。</p><p><img alt=influxdb src=images/influxdb-golang.png class="mx-auto d-block"></p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>在对时序数据进行存储时，常见的有多种格式：A) 使用文件 (如: RRD, Whisper)；B) 使用 LSM 树 (如: LevelDB, RocksDB, Cassandra)；C) 使用 B-Tree 排序和 k/v 存储 (如: BoltDB, LMDB) 。</p><p>如下，就是 InfluxDATA 提供的一整套监控解决方案，包括了数据采集 (Telegraf)、数据存储 (InfluxDB)、数据展示 (Chronograf) 以及报警 (Kapacitor) 。</p><p><img alt=TICK src=images/tick-stack-grid.jpg class="mx-auto d-block"></p><p>而实际上，使用比较多的是 InfluxDB ，这是一个时序数据库，关于时序数据库的排名，可以直接在 <a href=http://db-engines.com/en/ranking/time+series+dbms>db-engines.com</a> 查看，InfluxDB 的活跃度基本排在第一。</p><p>除了上述 InfluxDATA 提供的解决方案之外，通常还可以使用如下的方案。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>采集数据 (collectd) ==&gt;&gt;==&gt;&gt; 存储数据 (InfluxDB) ==&gt;&gt;==&gt;&gt; 显示数据 (Grafana)
+</span></span></code></pre></div><p>0.8.4 版本之前只能通过 <a href=https://github.com/hoonmin/influxdb-collectd-proxy>influxdb-collectd-proxy</a> 采集 collectd 上报的数据，之后 InfluxDB 自动提供了接口；当然，默认是不开启的，需要在配置文件中设置。</p><p>在此，还是重点介绍下 InfluxDB 。</p><a class=anchor id=特性></a><h3>特性 <a href=#%e7%89%b9%e6%80%a7 aria-hidden=true>#</a></h3><p>简单列举下 InfluxDB 所支持的特性：</p><ul><li>支持 Regular Timeseries 以及 Irregular Timeseries，前者是指时间间隔固定，后者指不固定，例如报警、入侵事件等；</li><li>可以将秒级监控在后台转换为分钟级，减小存储空间 (Continuous Queries)；</li><li>采用 Schemaless ，列存储，压缩率高，可以存储任意数量的列；</li><li>提供 min, max, sum, count, mean 等聚合函数；</li><li>使用类 SQL 语句；</li><li>Built-in Explorer 自带管理工具，默认不打开，需要在配置文件中配置；</li><li>Native HTTP API，采用内置 HTTP 服务 (Protobuf API 暂时不提供)。</li></ul><a class=anchor id=常用概念></a><h2>常用概念 <a href=#%e5%b8%b8%e7%94%a8%e6%a6%82%e5%bf%b5 aria-hidden=true>#</a></h2><p>简单列举下常见的概念。</p><a class=anchor id=database></a><h5>Database <a href=#database aria-hidden=true>#</a></h5><p>数据库，可以创建多个，不同数据库中的数据文件存放在磁盘上的不同目录。</p><a class=anchor id=measurement></a><h5>Measurement <a href=#measurement aria-hidden=true>#</a></h5><p>数据库中的表，例如 memory 记录了内存相关统计，其中包括了 used、cached、free 等。</p><a class=anchor id=point></a><h5>Point <a href=#point aria-hidden=true>#</a></h5><p>表里的一行数据，由 A) 时间戳 (timestamp，每条记录的时间，数据库的主索引，会自动生成)；B) 数据 (field，记录的 Key/Value 例如温度、湿度)；C) 标签 (tags，有索引如地区、海拔)组成。</p><a class=anchor id=tagtag-keytag-value></a><h5>Tag/tag key/tag value <a href=#tagtag-keytag-value aria-hidden=true>#</a></h5><p>有点不太好解释，可以理解为标签，或者二级索引，例如采集机器的 CPU 信息的时候，可以设置两个 tag 分别是机器 IP 以及第几个 CPU，在查询的时候放在 where 条件中，从而不需要遍厉整个表，这是一个 <code>map[stirng]string</code> 结构。</p><a class=anchor id=fields></a><h5>Fields <a href=#fields aria-hidden=true>#</a></h5><p>也就是实际记录的数据值，是 <code>map[string]interface{}</code> 类型，类似于 C 语言中的 void * ，这里的 <code>interface{}</code> 可以是 int、int32、int64、float32、float64，也就是真正需要显示或者计算的值，例如 CPU 的 sys, user, iowait 等。</p><a class=anchor id=retention-policy></a><h5>Retention Policy <a href=#retention-policy aria-hidden=true>#</a></h5><p>存储策略，InfluxDB 会自动清理数据，可以设置数据保留的时间，默认会创建存储策略 autogen (保留时间为永久)，之后用户可以自己设置，例如保留最近 30 天的数据。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                       +----------+
+</span></span><span class=line><span class=cl>                   +--&gt;|  series  |
+</span></span><span class=line><span class=cl>                   |   +----------+
+</span></span><span class=line><span class=cl>+-------------+    |   +----------+
+</span></span><span class=line><span class=cl>| measurement | ---+--&gt;|  series  |
+</span></span><span class=line><span class=cl>+-------------+    |   +----------+
+</span></span><span class=line><span class=cl>                   |   +----------+
+</span></span><span class=line><span class=cl>                   +--&gt;|  series  |
+</span></span><span class=line><span class=cl>                       +----------+
+</span></span></code></pre></div><a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>实际上，编译好的二进制程序，可以直接从官网 <a href=https://www.influxdata.com/downloads/>www.influxdata.com/downloads/</a> 上下载，例如，在 CentOS 中，可以通过如下方式安装，安装后数据默认保存在 <code>/var/lib/influxdb</code> 目录下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 下载二进制安装包
+</span></span><span class=line><span class=cl>$ wget https://dl.influxdata.com/influxdb/releases/influxdb-1.1.1.x86_64.rpm
+</span></span><span class=line><span class=cl>----- 查看二进制包的内容
+</span></span><span class=line><span class=cl>$ rpm -qpl influxdb-1.1.1.x86_64.rpm
+</span></span><span class=line><span class=cl>----- 解压二进制包
+</span></span><span class=line><span class=cl>$ rpm2cpio influxdb-1.1.1.x86_64.rpm | cpio -div
+</span></span><span class=line><span class=cl>----- 安装二进制包
+</span></span><span class=line><span class=cl># rpm -ivh influxdb-1.1.1.x86_64.rpm
+</span></span><span class=line><span class=cl>----- 启动服务，可以查看/usr/lib/systemd/system/influxdb.service文件
+</span></span><span class=line><span class=cl># systemctl start influxdb
+</span></span></code></pre></div><p>安装完之后，可以看到如下的可执行文件。</p><ul><li>influxd，服务器，可以直接通过该命令启动；</li><li>influx，InfluxDB 命令行客户端，可链接服务器，执行一些常见的命令；</li><li>influx_inspect，用于查看磁盘 shards 上的详细信息；</li><li>influx_stress，压力测试工具；</li><li>influx_tsm，数据库转换工具，可以将数据库从 b1 或 bz1 格式转换为 tsm1 格式。</li></ul><a class=anchor id=源码编译></a><h2>源码编译 <a href=#%e6%ba%90%e7%a0%81%e7%bc%96%e8%af%91 aria-hidden=true>#</a></h2><p>当然，主要介绍下 influxdb 和 telegraf 的源码编译。</p><a class=anchor id=buildpy></a><h4>build.py <a href=#buildpy aria-hidden=true>#</a></h4><p>在源码中，有一个编译脚本 build.py，可以通过该脚本进行编译、打包等操作。</p><p>实际上，在 build.py 脚本中，会通过 git 检查相应的版本 (详见 get_current_XXX 类函数)，所以需要保证这是一个 git 版本库，也就是说，如果通过该工具编译，需要通过 git clone 下载源码。</p><p>另外，代码库的依赖是通过 Go Dependancy Manager, GDM 管理的，当然如果没有安装，则会自动安装；然后下载依赖的代码库；最后，会直接调用 go install 安装。</p><blockquote><p>TIP: 如果无法直接连接到网络，可以将 get_current_XXX()、go_get()、local_changes() 返回正常的值即可，例如 get_current_commit() 返回 &ldquo;foobar&rdquo; ，go_get() 返回 true 等等；当然，此时，依赖的代码库需要手动下载 (执行go install时会显示依赖包)。</p></blockquote><p>编译后的程序，会最终安装到 $GOPATH/bin/ 目录下；也可以打包成 rpm 包，不过没仔细研究，后面再看看。</p><a class=anchor id=influxdb></a><h4>influxdb <a href=#influxdb aria-hidden=true>#</a></h4><p>对于 InfluxDB 可以通过如下方式安装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1. 下载相关的分支
+</span></span><span class=line><span class=cl>$ git clone -b v1.1.1 https://github.com/influxdata/influxdb.git .
+</span></span><span class=line><span class=cl>----- 2. 直接进行编译，如果并非通过git下载源码，需要如上修改build.py文件
+</span></span><span class=line><span class=cl>$ ./build.py
+</span></span><span class=line><span class=cl>----- 3. 直接复制到$GOPATH/bin目录下即可
+</span></span><span class=line><span class=cl>$ cp build/* $GOPATH/bin
+</span></span></code></pre></div><a class=anchor id=telegraf></a><h4>telegraf <a href=#telegraf aria-hidden=true>#</a></h4><p>对于 telegraf 可以直接使用 make 安装，对于其中一些依赖库，如 golang.org/x/crypto ，可能会导致无法下载，可以直接从 github 上下载，然后删除 Godeps 相关依赖。</p><p>另外，通过上述方法下载时，需要使用 git clone 下载，否则会由于缺少 .git 目录导致报错；这也意味着，如果可以确保相关的依赖都已经下载之后，直接将 build.py 脚本中的 go_get() 注释掉即可，这样就不会通过 gdm 下载依赖包了。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go get github.com/influxdata/telegraf
+</span></span><span class=line><span class=cl>$ cd $GOPATH/src/github.com/influxdata/telegraf
+</span></span><span class=line><span class=cl>$ make
+</span></span></code></pre></div><p>如官方所述，该工具是插件式的，这也就导致其在编译时，会依赖很多的插件，如果只需要部分插件，可以在 plugins 目录下，修改相应分类的 all/all.go 文件，将不需要的注释掉即可。</p><p>其实，主要修改 <code>plubins/{inputs,outputs}/all/all.go</code> 即可。</p><a class=anchor id=tips></a><h4>tips <a href=#tips aria-hidden=true>#</a></h4><p>需要注意的是，通过 gdm 安装依赖时，可能会由于墙 (你懂得) 部分包无法下载，但是现象是 hang 住 :-( 所以，可以从 github 上手动下载，一般都会有镜像的。</p><a class=anchor id=配置文件></a><h2> 配置文件 <a href=#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h2><p>默认使用 <code>/etc/influxdb/influxdb.conf</code> ，默认会使用如下的端口：</p><ul><li>8083: Web-Admin管理服务的端口，如果是本地可以直接通过 <a href=http://localhost:8083>http://localhost:8083</a> 打开，不过默认没有开启，需要在配置文件中打开；</li><li>8086: HTTP-API的端口，用于接收请求和发送数据；</li><li>8088: 集群端口，用于 InfluxDB 集群通讯使用，不过 0.11.1 版本之后就不再提供集群化的解决方案了，只有企业版才提供该功能；</li></ul><p>简单列举下常见的配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># 管理面需要打开如下配置
+</span></span><span class=line><span class=cl>[admin]
+</span></span><span class=line><span class=cl>enabled = true
+</span></span><span class=line><span class=cl>bind-address = &#34;:8083&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 如果不指定，则会通过os.hostname()通过系统获取，可能会报错
+</span></span><span class=line><span class=cl>hostname = &#39;192.168.1.23&#39;
+</span></span><span class=line><span class=cl># 默认每隔24小时会向usage.influxdata.com发送一些统计数据，可以关闭掉
+</span></span><span class=line><span class=cl>reporting-disabled = true
+</span></span></code></pre></div><a class=anchor id=python访问></a><h2>Python访问 <a href=#python%e8%ae%bf%e9%97%ae aria-hidden=true>#</a></h2><p>通过 Python 访问 InfluxDB 需要安装 <a href=https://pypi.python.org/pypi/influxdb/>InfluxDB Python</a>，然后通过如下方式访问即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ python
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; from influxdb import InfluxDBClient
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; json_body = [
+</span></span><span class=line><span class=cl>    {
+</span></span><span class=line><span class=cl>        &#34;measurement&#34;: &#34;cpu_load_short&#34;,
+</span></span><span class=line><span class=cl>        &#34;tags&#34;: {
+</span></span><span class=line><span class=cl>            &#34;host&#34;: &#34;server01&#34;,
+</span></span><span class=line><span class=cl>            &#34;region&#34;: &#34;us-west&#34;
+</span></span><span class=line><span class=cl>        },
+</span></span><span class=line><span class=cl>        &#34;time&#34;: &#34;2009-11-10T23:00:00Z&#34;,
+</span></span><span class=line><span class=cl>        &#34;fields&#34;: {
+</span></span><span class=line><span class=cl>            &#34;value&#34;: 0.64
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>]
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; client = InfluxDBClient(&#39;localhost&#39;, 8086, &#39;root&#39;, &#39;root&#39;, &#39;example&#39;)
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; client.create_database(&#39;example&#39;)
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; client.write_points(json_body)
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; result = client.query(&#39;select value from cpu_load_short;&#39;)
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; print(&#34;Result: {0}&#34;.format(result))
+</span></span></code></pre></div><a class=anchor id=常用操作></a><h2>常用操作 <a href=#%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><p>在 InfluxDB 中，写入数据采用行格式，可以粗略的将要存入的一条数据看作一个虚拟的 key 和其对应的 value (field value)，格式如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&lt;measurement&gt;[,&lt;tag-key&gt;=&lt;tag-value&gt;...] &lt;field-key&gt;=&lt;field-value&gt;[,&lt;field2-key&gt;=&lt;field2-value&gt;...] [timestamp]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>cpu,host=serverA,region=west value=0.64   服务器默认时间
+</span></span><span class=line><span class=cl>temperature,zipcode=384250,province=zhejiang value=75,humidity=20 1434067467000000000
+</span></span></code></pre></div><p>常见操作列举如下，可以通过 <code>-precision</code> 参数指定时间格式以及精度，例如 rfc3339 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 写入数据
+</span></span><span class=line><span class=cl>$ curl -i -XPOST &#39;http://localhost:8086/write?db=testDB&#39;
+</span></span><span class=line><span class=cl>    --data-binary &#39;weather,altitude=1000,area=北 temperature=11,humidity=-4&#39;
+</span></span><span class=line><span class=cl>$ curl -i -XPOST &#39;http://localhost:8086/write?db=testDB&amp;precision=s&#39;
+</span></span><span class=line><span class=cl>    --data-binary &#39;weather,altitude=1000,area=北 temperature=11,humidity=-4&#39;
+</span></span><span class=line><span class=cl>influx&gt; INSERT weather,altitude=1000,area=北 temperature=11,humidity=-4;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查询
+</span></span><span class=line><span class=cl>$ curl -G &#39;http://localhost:8086/query?pretty=true&#39; --data-urlencode &#34;db=mydb&#34; -precision &#39;rfc3339&#39;
+</span></span><span class=line><span class=cl>    --data-urlencode &#34;q=SELECT * FROM weather ORDER BY time DESC LIMIT 3&#34;
+</span></span><span class=line><span class=cl>$ curl -G &#39;http://localhost:8086/query?u=readonly&amp;p=password&amp;pretty=true&#39; --data-urlencode &#34;db=mydb&#34;
+</span></span><span class=line><span class=cl>    --data-urlencode &#34;q=SELECT * FROM weather ORDER BY time DESC LIMIT 3&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 设置过期策略
+</span></span><span class=line><span class=cl>$ curl -G http://localhost:8086/query --data-urlencode
+</span></span><span class=line><span class=cl>    &#34;q=CREATE RETENTION POLICY bar ON foo DURATION 300d REPLICATION 3 DEFAULT&#34;
+</span></span></code></pre></div><p>另外，支持 JSON 格式写入、GZIP 压缩数据插入及查询，详细可以参考源码中的 tests 目录。</p><a class=anchor id=运维操作></a><h1>运维操作 <a href=#%e8%bf%90%e7%bb%b4%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h1><p>基本的数据保存目录如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>.
+</span></span><span class=line><span class=cl>├── data
+</span></span><span class=line><span class=cl>│   ├── _internal
+</span></span><span class=line><span class=cl>│   │   └── monitor
+</span></span><span class=line><span class=cl>│   │       ├── 16   Shard-ID
+</span></span><span class=line><span class=cl>│   │       │   └── 000000004-000000003.tsm
+</span></span><span class=line><span class=cl>│   │       └── 3
+</span></span><span class=line><span class=cl>│   └── telegraf
+</span></span><span class=line><span class=cl>│       └── autogen  存储策略
+</span></span><span class=line><span class=cl>│           ├── 12
+</span></span><span class=line><span class=cl>│           │   └── 000000132-000000002.tsm
+</span></span><span class=line><span class=cl>│           └── 7
+</span></span><span class=line><span class=cl>│               └── 000000003-000000002.tsm
+</span></span><span class=line><span class=cl>├── meta
+</span></span><span class=line><span class=cl>│   └── meta.db    元数据
+</span></span><span class=line><span class=cl>└── wal
+</span></span><span class=line><span class=cl>    ├── _internal
+</span></span><span class=line><span class=cl>    │   └── monitor
+</span></span><span class=line><span class=cl>    │       ├── 16
+</span></span><span class=line><span class=cl>    │       │   └── _00015.wal
+</span></span><span class=line><span class=cl>    │       └── 3
+</span></span><span class=line><span class=cl>    │           ├── _00001.wal
+</span></span><span class=line><span class=cl>    │           ├── _00002.wal
+</span></span><span class=line><span class=cl>    │           ├── _00003.wal
+</span></span><span class=line><span class=cl>    │           └── _00006.wal
+</span></span><span class=line><span class=cl>    └── telegraf
+</span></span><span class=line><span class=cl>        └── autogen
+</span></span><span class=line><span class=cl>            ├── 12
+</span></span><span class=line><span class=cl>            │   └── _00395.wal
+</span></span><span class=line><span class=cl>            └── 7
+</span></span><span class=line><span class=cl>                └── _00010.wal
+</span></span></code></pre></div><a class=anchor id=系统监控></a><h2>系统监控 <a href=#%e7%b3%bb%e7%bb%9f%e7%9b%91%e6%8e%a7 aria-hidden=true>#</a></h2><p>可以查看 <a href=https://docs.influxdata.com/influxdb/v1.1/troubleshooting/statistics/>官方文档</a>，关于 GoLang 的内部运行状态，可以参考 <a href=https://golang.org/pkg/runtime/>https://golang.org/pkg/runtime</a> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- InfluxDB本身的监控统计数据，保存在内存中，重启后会丢失
+</span></span><span class=line><span class=cl>SHOW STATS FOR &lt;&#39;module&#39;&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 包括编译信息、主机名、系统配置、启动时间、内存使用率、GoLang运行环境信息
+</span></span><span class=line><span class=cl>SHOW DIAGNOSTICS FOR &lt;&#39;module&#39;&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 内部监控进程保存的数据，包含了各种监控的历史数据
+</span></span><span class=line><span class=cl>_internal
+</span></span></code></pre></div><a class=anchor id=元数据查看></a><h2>元数据查看 <a href=#%e5%85%83%e6%95%b0%e6%8d%ae%e6%9f%a5%e7%9c%8b aria-hidden=true>#</a></h2><p>仅简单列举一下常见的命令，详细可以查看 <a href=https://docs.influxdata.com/influxdb/v1.1/query_language/schema_exploration/>官方文档</a> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>SHOW SERIES;
+</span></span><span class=line><span class=cl>SHOW SERIES ON telegraf FROM mysql;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>SHOW FIELD KEYS;
+</span></span><span class=line><span class=cl>SHOW FIELD KEYS ON telegraf FROM cpu;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>SHOW MEASUREMENTS
+</span></span></code></pre></div><a class=anchor id=用户权限管理></a><h2>用户权限管理 <a href=#%e7%94%a8%e6%88%b7%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h2><p>InfluxDB 的权限设置比较简单，只有读、写、ALL 三种，详细参考 <a href=https://docs.influxdata.com/influxdb/v1.1/query_language/authentication_and_authorization/>官方文档</a> 。默认不开启用户认证，需要修改配置文件：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[http]
+</span></span><span class=line><span class=cl>auth-enabled = true
+</span></span></code></pre></div><p>常见命令如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 授权
+</span></span><span class=line><span class=cl>GRANT [READ,WRITE,ALL] ON &lt;database_name&gt; TO &lt;username&gt;
+</span></span><span class=line><span class=cl>GRANT ALL PRIVILEGES TO &#34;username&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 撤销权限
+</span></span><span class=line><span class=cl>REVOKE [READ,WRITE,ALL] ON &lt;database_name&gt; FROM &lt;username&gt;
+</span></span><span class=line><span class=cl>REVOKE ALL PRIVILEGES FROM &#34;username&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看权限
+</span></span><span class=line><span class=cl>SHOW GRANTS FOR &lt;user_name&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 显示用户
+</span></span><span class=line><span class=cl>SHOW USERS
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建用户
+</span></span><span class=line><span class=cl>CREATE USER &#34;readonly&#34; WITH PASSWORD &#39;password&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建管理员权限的用户
+</span></span><span class=line><span class=cl>CREATE USER &#34;readonly&#34; WITH PASSWORD &#39;password&#39; WITH ALL PRIVILEGES
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除用户
+</span></span><span class=line><span class=cl>DROP USER &#34;readonly&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改密码
+</span></span><span class=line><span class=cl>SET PASSWORD FOR &lt;username&gt; = &#39;&lt;password&gt;&#39;
+</span></span></code></pre></div><a class=anchor id=备份恢复></a><h2>备份恢复 <a href=#%e5%a4%87%e4%bb%bd%e6%81%a2%e5%a4%8d aria-hidden=true>#</a></h2><p>只支持全量备份，不支持增量，包括了元数据以及增量数据的备份，可以参考 <a href=https://docs.influxdata.com/influxdb/v1.1/administration/backup_and_restore/>官方文档</a> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 元数据备份
+</span></span><span class=line><span class=cl>$ influxd backup &lt;path-to-backup&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 数据备份
+</span></span><span class=line><span class=cl>$ influxd backup -database &lt;mydatabase&gt; &lt;path-to-backup&gt;
+</span></span><span class=line><span class=cl>$ influxd backup -database telegraf -retention autogen -since 2016-02-01T00:00:00Z /tmp/backup
+</span></span><span class=line><span class=cl>$ influxd backup -database mydatabase -host 10.0.0.1:8088 /tmp/remote-backup
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 恢复
+</span></span><span class=line><span class=cl>$ influxd restore -metadir /var/lib/influxdb/meta /tmp/backup
+</span></span><span class=line><span class=cl>$ influxd restore -database telegraf -datadir /var/lib/influxdb/data /tmp/backup
+</span></span></code></pre></div><a class=anchor id=数据保存策略></a><h2>数据保存策略 <a href=#%e6%95%b0%e6%8d%ae%e4%bf%9d%e5%ad%98%e7%ad%96%e7%95%a5 aria-hidden=true>#</a></h2><p>也就是 Retention Policies，可以设置保存的时间，例如保存 30 天。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查询
+</span></span><span class=line><span class=cl>SHOW RETENTION POLICIES ON &#34;database_name&#34;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 新建
+</span></span><span class=line><span class=cl>CREATE RETENTION POLICY &#34;rp_name&#34; ON &#34;db_name&#34; DURATION 30d REPLICATION 1 DEFAULT;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改
+</span></span><span class=line><span class=cl>ALTER RETENTION POLICY &#34;rp_name&#34; ON db_name DURATION 3w DEFAULT;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除
+</span></span><span class=line><span class=cl>DROP RETENTION POLICY &#34;rp_name&#34; ON &#34;db_name&#34;;
+</span></span></code></pre></div><a class=anchor id=连续查询></a><h2>连续查询 <a href=#%e8%bf%9e%e7%bb%ad%e6%9f%a5%e8%af%a2 aria-hidden=true>#</a></h2><p>也就是 Continuous Queries，当数据超过保存策略里指定的时间之后，就会被删除；可以通过连续查询把原来的秒级数据，保存为分钟级或者小时级的数据，从而减小数据的占用空间。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看
+</span></span><span class=line><span class=cl>SHOW CONTINUOUS QUERIES;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建
+</span></span><span class=line><span class=cl>CREATE CONTINUOUS QUERY cq-name ON db-name BEGIN
+</span></span><span class=line><span class=cl>    SELECT mean(tbl-name) INTO newtbl-name FROM tbl-name GROUP BY time(30m) END;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除
+</span></span><span class=line><span class=cl>DROP CONTINUOUS QUERY &lt;cq-name&gt; ON &lt;db-name&gt;;
+</span></span></code></pre></div><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><a class=anchor id=1-获取最近更新数据并转换为当前时间></a><h4>1. 获取最近更新数据，并转换为当前时间 <a href=#1-%e8%8e%b7%e5%8f%96%e6%9c%80%e8%bf%91%e6%9b%b4%e6%96%b0%e6%95%b0%e6%8d%ae%e5%b9%b6%e8%bd%ac%e6%8d%a2%e4%b8%ba%e5%bd%93%e5%89%8d%e6%97%b6%e9%97%b4 aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>select threads_running from mysql order by time desc limit 1;
+</span></span><span class=line><span class=cl>date -d @`echo 1483441750000000000 | awk &#39;{print substr($0,1,10)}&#39;` +&#34;%Y-%m-%d %H:%M:%S&#34;
+</span></span></code></pre></div><a class=anchor id=2-检查系统是否存活></a><h4>2. 检查系统是否存活 <a href=#2-%e6%a3%80%e6%9f%a5%e7%b3%bb%e7%bb%9f%e6%98%af%e5%90%a6%e5%ad%98%e6%b4%bb aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ curl -sl -I localhost:8086/ping
+</span></span></code></pre></div><a class=anchor id=3-常用操作></a><h4>3. 常用操作 <a href=#3-%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 简单查询
+</span></span><span class=line><span class=cl>SELECT * FROM weather ORDER BY time DESC LIMIT 3;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 指定时间范围，时间格式也可以为&#39;2017-01-03 00:00:00&#39;
+</span></span><span class=line><span class=cl>SELECT usage_idle FROM cpu WHERE time &gt;= &#39;2017-01-03T12:40:38.708Z&#39; AND time &lt;= &#39;2017-01-03T12:40:50.708Z&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 最近40min内的数据
+</span></span><span class=line><span class=cl>SELECT * FROM mysql WHERE time &gt;= now() - 40m;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 最近5分钟的秒级差值
+</span></span><span class=line><span class=cl>SELECT derivative(&#34;queries&#34;, 1s) AS &#34;queries&#34; from &#34;mysql&#34; where time &gt; now() - 5m;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 最近5min的秒级写入
+</span></span><span class=line><span class=cl>$ influx -database &#39;_internal&#39; -precision &#39;rfc3339&#39;
+</span></span><span class=line><span class=cl>      -execute &#39;select derivative(pointReq, 1s) from &#34;write&#34; where time &gt; now() - 5m&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 也可以通过日志查看
+</span></span><span class=line><span class=cl>$ grep &#39;POST&#39; /var/log/influxdb/influxd.log | awk &#39;{ print $10 }&#39; | sort | uniq -c
+</span></span><span class=line><span class=cl>$ journalctl -u influxdb.service | awk &#39;/POST/ { print $10 }&#39; | sort | uniq -c
+</span></span></code></pre></div><a class=anchor id=存储引擎></a><h1>存储引擎 <a href=#%e5%ad%98%e5%82%a8%e5%bc%95%e6%93%8e aria-hidden=true>#</a></h1><p>Bolt 是一个 Go 语言编写的嵌入式 KV 数据库，提供了一个简单可靠的方式做数据持久化，按照作者在 <a href=https://github.com/boltdb/bolt>Github BoltDB</a> 中的介绍：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Bolt is a pure Go key/value store inspired by Howard Chu&#39;s LMDB project. The goal
+</span></span><span class=line><span class=cl>of the project is to provide a simple, fast, and reliable database for projects
+</span></span><span class=line><span class=cl>that don&#39;t require a full database server such as Postgres or MySQL.
+</span></span></code></pre></div><p>与 LevelDB 有所区别，BoltDB 支持完全可序列化的 ACID 事务；而且，提供稳定的 API 接口，而非类似 SQLite 的 SQL 接口；从而也就意味着它更加方便地整合到其它系统。</p><a class=anchor id=安装使用></a><h2>安装、使用 <a href=#%e5%ae%89%e8%a3%85%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h2><p>在设置好 golang 的环境变量之后，可以很简单的通过 go get 获取源码并安装到 <code>$GOPATH/bin</code> 目录下，其命令如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go get github.com/boltdb/bolt/...
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>关于时序数据库的排名，可以参考 <a href=http://db-engines.com/en/ranking/time+series+dbms>db-engines.com</a>。</li><li>官方网站 <a href=https://www.influxdata.com/>www.influxdata.com</a>，包括了相关的文档。</li><li>源码可以直接从 Github 下载，<a href=https://github.com/influxdata/influxdb>Github InfluxDB</a>、<a href=https://github.com/influxdata/telegraf>Github Telegraf</a> 。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li></li><li><a href=#常用概念>常用概念</a></li><li><a href=#安装>安装</a></li><li><a href=#源码编译>源码编译</a></li><li><a href=#配置文件> 配置文件</a></li><li><a href=#python访问>Python访问</a></li><li><a href=#常用操作>常用操作</a></li></ul></li><li><a href=#运维操作>运维操作</a><ul><li><a href=#系统监控>系统监控</a></li><li><a href=#元数据查看>元数据查看</a></li><li><a href=#用户权限管理>用户权限管理</a></li><li><a href=#备份恢复>备份恢复</a></li><li><a href=#数据保存策略>数据保存策略</a></li><li><a href=#连续查询>连续查询</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#存储引擎>存储引擎</a><ul><li><a href=#安装使用>安装、使用</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

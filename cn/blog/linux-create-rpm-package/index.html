@@ -1,0 +1,424 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>如何制作一个标准的 RPM 包 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Red-Hat Package Manager 简称 RPM，这一文件格式在历史名称上虽然打着 RedHat 标志，但其原始设计理念是开放式的，现在包括 OpenLinux、SuSE、Turbo Linux 等多个 Linux 分发版本都有采用，可以算是公认的行业标准了。
+在此介绍下如何制作 RPM 包，尤其是如何写 .spec 配置文件，以及常见的技巧。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>如何制作一个标准的 RPM 包</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2015-10-21</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/devops/ role=button>devops</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/command/ role=button>command</a></div></div><hr><div class=content><p>Red-Hat Package Manager 简称 RPM，这一文件格式在历史名称上虽然打着 RedHat 标志，但其原始设计理念是开放式的，现在包括 OpenLinux、SuSE、Turbo Linux 等多个 Linux 分发版本都有采用，可以算是公认的行业标准了。</p><p>在此介绍下如何制作 RPM 包，尤其是如何写 .spec 配置文件，以及常见的技巧。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>若要构建一个标准的 RPM 包，需要创建 <code>.spec</code> 文件，其中包含软件打包的全部信息。然后，使用 rpmbuild 命令，按照 spec 文件的配置，系统会按照步骤生成最终的 RPM 包。</p><p>另外，需要注意的是，在使用时，需要使用普通用户，一定不要用 root 用户。</p><p>结下来，看看如何编译制作 RPM 包。</p><a class=anchor id=环境配置></a><h1>环境配置 <a href=#%e7%8e%af%e5%a2%83%e9%85%8d%e7%bd%ae aria-hidden=true>#</a></h1><p>接下来，看看如何配置一步步制作 RPM 包。</p><a class=anchor id=安装工具></a><h2>安装工具 <a href=#%e5%ae%89%e8%a3%85%e5%b7%a5%e5%85%b7 aria-hidden=true>#</a></h2><p>首先，在 CentOS 中配置环境。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装环境，需要rpm-build工具来打包，该包只依赖于gdb以及rpm版本
+</span></span><span class=line><span class=cl># yum install rpm-build -y
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 新建所需目录
+</span></span><span class=line><span class=cl>$ mkdir -pv ~/rpm-maker/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+</span></span></code></pre></div><a class=anchor id=配置环境></a><h2>配置环境 <a href=#%e9%85%8d%e7%bd%ae%e7%8e%af%e5%a2%83 aria-hidden=true>#</a></h2><p>打包相关的配置保存在宏文件 (macrofiles) 中，默认使用 <code>$HOME/rpmbuild</code> 目录，用户配置文件保存在 <code>$HOME/.rpmmacros</code>；而制作包时的操作实际都在 topdir 指定的目录下，可以通过如下方式查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>--- 查看所有的配置文件顺序
+</span></span><span class=line><span class=cl>$ rpmbuild --showrc | grep macros
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>--- 确认上述的根工作目录，两种方式相同
+</span></span><span class=line><span class=cl>$ rpmbuild --showrc | grep &#39;: _topdir&#39;
+</span></span><span class=line><span class=cl>$ rpm --eval &#39;%_topdir&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>--- 设置topdir变量，然后再次验证下，确认已经修改为目标目录
+</span></span><span class=line><span class=cl>$ echo &#34;%_topdir %{getenv:HOME}/rpm-maker&#34; &gt; ~/.rpmmacros
+</span></span><span class=line><span class=cl>$ rpm --eval &#39;%_topdir&#39;
+</span></span><span class=line><span class=cl>--- 也可以在制作rpm包时通过--define指定
+</span></span><span class=line><span class=cl>$ rpmbuild --define &#39;_topdir rpm-maker&#39; -ba package.spec
+</span></span></code></pre></div><p>下载 MySQL 的源码，并保存在 SPECS 目录下，整体目录结构如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ tree ~/rpm-maker
+</span></span><span class=line><span class=cl>.
+</span></span><span class=line><span class=cl>|-- BUILD                      ← 解压后的tar.gz包
+</span></span><span class=line><span class=cl>|-- BUILDROOT                  ← 临时安装目录，会打包该目录下文件
+</span></span><span class=line><span class=cl>|-- RPMS                       ← 编译后的RPM包
+</span></span><span class=line><span class=cl>|-- SOURCES                    ← 所需的文件
+</span></span><span class=line><span class=cl>|   `-- mysql-xxx.tar.gz       ← 包括了源码包
+</span></span><span class=line><span class=cl>|-- SPECS                      ← *.spec编译脚本
+</span></span><span class=line><span class=cl>|   |-- mysql-xxx.spec
+</span></span><span class=line><span class=cl>|   `-- mysql-yyy.spec
+</span></span><span class=line><span class=cl>`-- SRPMS                      ← src格式的rpm包存放的位置
+</span></span></code></pre></div><a class=anchor id=执行命令></a><h2>执行命令 <a href=#%e6%89%a7%e8%a1%8c%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h2><p>接下来，看看如何生成 rpm 包，也就是使用 rpmbuild 命令，过程可以分为多个阶段。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rpmbuild --bb mysql.spec   
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>使用参数：
+</span></span><span class=line><span class=cl>   -bb 制作成二进制RPM包
+</span></span><span class=line><span class=cl>   -bs 制作源码的RPM包
+</span></span><span class=line><span class=cl>   -ba 源码和二进制两种形式的RPM包
+</span></span><span class=line><span class=cl>   -bl 检测BUILDROOT没有包含到rpm包中的文件
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   -bp 执行到pre
+</span></span><span class=line><span class=cl>   -bc 执行到build段
+</span></span><span class=line><span class=cl>   -bi 执行install段
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   --quiet 默认会输出每次执行的shell命令，此时忽略
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 通过源码包重新编译
+</span></span><span class=line><span class=cl>$ rpmbuild --rebuild package-0.0-0.src.rpm
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 编译时指定参数
+</span></span><span class=line><span class=cl>$ rpmbuild -bb SPECS/librdkafka.spec --define &#34;__version 0.9.4&#34; --define &#34;__release 1&#34;
+</span></span></code></pre></div><p>一般来说，执行的顺序为 <code>rpmbuild -bp</code>，再 <code>-bc</code> 再 <code>-bi</code>，如果没问题，<code>rpmbuild -ba</code> 生成 src 包与二进制包，使用时通过 <code>rpm -ivh xxx.rpm;</code> 以及 <code>rpm -e xxx.rpm</code> 进行安装卸载。</p><a class=anchor id=执行步骤></a><h2>执行步骤 <a href=#%e6%89%a7%e8%a1%8c%e6%ad%a5%e9%aa%a4 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>1. 在 %prep 段中，通过 %setup -q 宏解压、打补丁，一般是从 SOURCES 目录下解压到 BUILD 目录下，一般目录是 &#34;NAME-VERSION&#34; 。
+</span></span><span class=line><span class=cl>2. 通过 %build 段定义了如何进行编译，编译目录就是上述的 BUILD/NAME-VERSION 。
+</span></span><span class=line><span class=cl>   2.1 首先通过 %configure %cmake 进行配置。
+</span></span><span class=line><span class=cl>   2.2 然后利用 %{__make} %{?_smp_mflags} 进行并行编译。
+</span></span><span class=line><span class=cl>3. 接着就是安装，也就是 %install 字段，一般会在 BUILDROOT/NAME-VERSION-RELEASE-ARCH 目录下。
+</span></span><span class=line><span class=cl>   3.1 通常为了清理环境会先使用 rm -rf %{buildroot} 清理。
+</span></span><span class=line><span class=cl>   3.2 接着通过 %{__make} install DESTDIR=%{buildroot} 命令进行安装，其中 DESTDIR 相当于是根目录了。
+</span></span><span class=line><span class=cl>   3.3 通过上步安装的文件，需要都打包到 RPM 包中，如果不需要那么就先清理掉。
+</span></span><span class=line><span class=cl>   3.4 编译没有生成的也可以通过 %{__install} %{__mv} %{__rm} 命令直接复制。
+</span></span><span class=line><span class=cl>4. 执行检查规范，对应了 %test 段，一般执行一些单元测试。
+</span></span><span class=line><span class=cl>5. 开始打包
+</span></span><span class=line><span class=cl>6. 在 %clean 段处理清理操作，通常会通过 rm -rf %{buildroot} 删除编译的中间内容。
+</span></span></code></pre></div><p>另外，还有 <code>%check</code> 字段，用于做些检查。</p><a class=anchor id=spec-文件></a><h1>SPEC 文件 <a href=#spec-%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h1><p>接下来准备 spec 文件，也是核心的内容，该文件包括三部分：介绍部分，编译部分，files 部分。接下来，是一个简单的示例，可以看看到底是如何制作 RPM 包的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>### 0.define section                ← ###自定义宏段(可选)，方便后续引用
+</span></span><span class=line><span class=cl>%define mysql_user mysql                            ← 定义宏，方便后续引用
+</span></span><span class=line><span class=cl>%define _topdir /home/jinyang/databases/rpm-maker
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>### 1.The introduction section      ← ###介绍区域段
+</span></span><span class=line><span class=cl>Name:           mysql                               ← 包名称，通常会在指定源码压缩包时引用
+</span></span><span class=line><span class=cl>Version:        5.7.17                              ← 版本号，同上
+</span></span><span class=line><span class=cl>Release:        1%{?dist}                           ← 释出号，每次制作rpm包时递增该数字
+</span></span><span class=line><span class=cl>Summary:        MySQL from FooBar.                  ← 软件包简介，最好不要超过50字符
+</span></span><span class=line><span class=cl>License:        GPLv2+ and BSD                      ← 许可，GPL、BSD、MIT等，也可以使用or
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Group:          Applications/Databases              ← 程序组名，从/usr/share/doc/rpm-VER/GROUPS选择
+</span></span><span class=line><span class=cl>URL:            http://kidding.com                  ← 一般为官网
+</span></span><span class=line><span class=cl>Source0:        %{name}-boost-%{version}.tar.gz     ← 源码包名称(可以使用URL)，可以用SourceN指定多个，如配置文件
+</span></span><span class=line><span class=cl>#Patch0:         some-bugs.patch                    ← 如果需要打补丁，则依次填写
+</span></span><span class=line><span class=cl>BuildRequires:  gcc,make                            ← 制作过程中用到的软件包
+</span></span><span class=line><span class=cl>Requires:       pcre,pcre-devel,openssl,chkconfig   ← 安装时所需软件包，可使用bash &gt;= 1.1.1
+</span></span><span class=line><span class=cl>Requires(pre):  test                                ← 指定不同阶段的依赖
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>BuildRoot:      %_topdir/BUILDROOT                  ← 会打包该目录下文件，可查看安装后文件路径
+</span></span><span class=line><span class=cl>Packager:       FooBar &lt;foobar@kidding.com&gt;
+</span></span><span class=line><span class=cl>Vendor:         kidding.com
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%description                        ← ###软件包的详细描述，可以撒丫子写了
+</span></span><span class=line><span class=cl>It is a MySQL from FooBar.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 2.The Prep section             ← ###准备阶段，主要是解压源码，并切换到源码目录下
+</span></span><span class=line><span class=cl>%prep
+</span></span><span class=line><span class=cl>%setup -q                                           ← 宏的作用是解压并切换到目录
+</span></span><span class=line><span class=cl>#%patch0 -p1                                        ← 如果需要打补丁，则依次写
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 3.The Build Section            ← ###编译制作阶段，主要目的就是编译
+</span></span><span class=line><span class=cl>%build
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>make %{?_smp_mflags}                                ← 多核则并行编译
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 4.Install section              ← ###安装阶段
+</span></span><span class=line><span class=cl>%install
+</span></span><span class=line><span class=cl>if [-d %{buildroot}]; then
+</span></span><span class=line><span class=cl>   rm -rf %{buildroot}                              ← 清空下安装目录，实际会自动清除
+</span></span><span class=line><span class=cl>fi
+</span></span><span class=line><span class=cl>make install DESTDIR=%{buildroot}                   ← 安装到buildroot目录下
+</span></span><span class=line><span class=cl>%{__install} -Dp -m0755 contrib/init.d %{buildroot}%{_initrddir}/foobar
+</span></span><span class=line><span class=cl>%{__install} -d %{buildroot}%{_sysconfdir}/foobar.d/
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 4.1 scripts section            ← ###没必要可以不填
+</span></span><span class=line><span class=cl>%pre                                                ← 安装前执行的脚本
+</span></span><span class=line><span class=cl>%post                                               ← 安装后执行的脚本
+</span></span><span class=line><span class=cl>%preun                                              ← 卸载前执行的脚本
+</span></span><span class=line><span class=cl>%postun                                             ← 卸载后执行的脚本
+</span></span><span class=line><span class=cl>%pretrans                                           ← 在事务开始时执行脚本
+</span></span><span class=line><span class=cl>%posttrans                                          ← 在事务结束时执行脚本
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 5. Clean section               ← ###清理段，可以通过--clean删除BUILD
+</span></span><span class=line><span class=cl>%clean
+</span></span><span class=line><span class=cl>rm -rf %{buildroot}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 6. File section                ← ###打包时要包含的文件，注意同时需要在%install中安装
+</span></span><span class=line><span class=cl>%files
+</span></span><span class=line><span class=cl>%defattr (-,root,root,0755)                         ← 设定默认权限
+</span></span><span class=line><span class=cl>%config(noreplace) /etc/my.cnf                      ← 表明是配置文件，noplace表示替换文件
+</span></span><span class=line><span class=cl>%doc %{src_dir}/Docs/ChangeLog                      ← 表明这个是文档
+</span></span><span class=line><span class=cl>%attr(644, root, root) %{_mandir}/man8/mysqld.8*    ← 分别是权限，属主，属组
+</span></span><span class=line><span class=cl>%attr(755, root, root) %{_sbindir}/mysqld
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 7. Chagelog section            ← ###记录SPEC的修改日志段
+</span></span><span class=line><span class=cl>%changelog
+</span></span><span class=line><span class=cl>* Fri Dec 29 2012 foobar &lt;foobar@kidding.com&gt; - 1.0.0-1
+</span></span><span class=line><span class=cl>- Initial version
+</span></span></code></pre></div><p>对于 <code>%config(noreplace)</code> 表示为配置文件，且不能覆盖，新安装时如果配置文件存在则会将原文件保存为 <code>*.rpmsave</code> ，升级时则不会覆盖原文件，直接将包中的文件命名为 <code>*.rpmnew</code>，更详细内容可以参考 <a href=http://people.ds.cam.ac.uk/jw35/docs/rpm_config.html>RPM, %config, and (noreplace)</a> 。</p><p>关于脚本部分，通常所有安装脚本和触发器脚本都是使用 <code>/bin/sh</code> 来执行的，如果想使用其他脚本，如 Lua，可使用 <code>-p /usr/bin/lua</code> 来告诉 rpm 使用 lua 解释器。如</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%post -p /usr/bin/lua
+</span></span><span class=line><span class=cl># lua script here
+</span></span><span class=line><span class=cl>%postun -p /usr/bin/perl
+</span></span><span class=line><span class=cl>$ perl sciprt here
+</span></span></code></pre></div><p>另外，如果只执行一条命令，也使用 <code>-p</code> 选项可直接执行，如 <code>%post -p /sbin/ldconfig</code> 。</p><p>一般最后一条命令的 exit 状态就是脚本的 exit 状态，除一些特殊情况，一般脚本都是以 <code>exit 0</code> 状态退出，所以大部分小脚本片段都会使用 <code>"||:"</code> 退出。</p><a class=anchor id=prep></a><h2>%prep <a href=#prep aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%setup -q -T -a 0 -a 7 -a 10 -c -n %{src_dir}
+</span></span><span class=line><span class=cl>参数列表：
+</span></span><span class=line><span class=cl>    -T 禁止自动解压源码文件
+</span></span><span class=line><span class=cl>    -D 解压前不删除目录
+</span></span><span class=line><span class=cl>    -a 切换目录前，解压指定Source文件，例如-a 0表示解压Source0
+</span></span><span class=line><span class=cl>    -b 切换目录后，解压指定Source文件，例如-a 0表示解压Source0
+</span></span><span class=line><span class=cl>    -n 解压后目录名称与RPM名称不同，则通过该参数指定切换目录
+</span></span><span class=line><span class=cl>    -c 解压缩之前先生成目录
+</span></span></code></pre></div><a class=anchor id=systemd></a><h2>systemd <a href=#systemd aria-hidden=true>#</a></h2><p>spec 脚本中提供了与 systemd 相关的脚本，关于脚本的详细内容可以查看 <a href=https://cgit.freedesktop.org/systemd/systemd/tree/src/core/macros.systemd.in>macros.systemd.in</a>，实用方式很简单，如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装结束后，实际执行systemctl preset，执行服务预设的内容
+</span></span><span class=line><span class=cl>%systemd_post foobar.service
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 执行卸载前，systemctl disable
+</span></span><span class=line><span class=cl>%systemd_preun foobar.service
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 卸载后执行重启操作，daemon-reload+try-restart
+</span></span><span class=line><span class=cl>%systemd_postun_with_restart foobar.service
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 如果不需要重启，例如有状态链接的(D-Bus)，执行systemctl daemon-reload
+</span></span><span class=line><span class=cl>%systemd_postun foobar.service
+</span></span></code></pre></div><p>关于安装升级的各个操作步骤详见 <a href=http://meinit.nl/rpm-spec-prepostpreunpostun-argument-values>RPM SPEC pre/post/preun/postun argument values</a> 以及 <a href=https://fedoraproject.org/wiki/Packaging:Scriptlets>Fedora Packaging Guidelines for RPM Scriptlets</a> 。</p><a class=anchor id=校验></a><h2>校验 <a href=#%e6%a0%a1%e9%aa%8c aria-hidden=true>#</a></h2><p>在安装完 RPM 包之后，可以通过 <code>--verify</code> 或者 <code>-V</code> 进行校验，正常不会显示任何信息，可以通过 <code>--verbose</code> 或者 <code>-v</code> 显示每个文件的信息；文件丢失显示 <code>missing</code>，属性方面的修改内容如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>SM5DLUGT c filename
+</span></span><span class=line><span class=cl>属性：
+</span></span><span class=line><span class=cl>  S: 文件大小;
+</span></span><span class=line><span class=cl>  M: 权限;
+</span></span><span class=line><span class=cl>  5: MD5检查和;
+</span></span><span class=line><span class=cl>  D: 主从设备号;
+</span></span><span class=line><span class=cl>  L: 符号连接;
+</span></span><span class=line><span class=cl>  U: 属主;
+</span></span><span class=line><span class=cl>  G: 属组;
+</span></span><span class=line><span class=cl>  T: 最后修改时间。
+</span></span><span class=line><span class=cl>类型：
+</span></span><span class=line><span class=cl>  c: 配置文件；
+</span></span><span class=line><span class=cl>  d: 文档文件。
+</span></span></code></pre></div><a class=anchor id=增加签名></a><h1>增加签名 <a href=#%e5%a2%9e%e5%8a%a0%e7%ad%be%e5%90%8d aria-hidden=true>#</a></h1><p>当制作 RPM 包之后，为了防止被篡改，可以使用私钥进行签名，然后将公钥开放出去，然后用户下载完软件包可以通过公钥进行验证签名，从而确保文件的原始性。</p><p>可以通过如下步骤进行操作。</p><a class=anchor id=1-生成密钥对></a><h4>1. 生成密钥对 <a href=#1-%e7%94%9f%e6%88%90%e5%af%86%e9%92%a5%e5%af%b9 aria-hidden=true>#</a></h4><p>首先，需要使用 gpp 来生成公私钥对，一般可以使用 RSA 非对称加密。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gpg --gen-key
+</span></span></code></pre></div><p>此时会在 <code>~/.gnupg</code> 目录下创建相关文件，创建完后可以通过如下命令查看当前的密钥对。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gpg --list-keys
+</span></span><span class=line><span class=cl>/home/foobar/.gnupg/pubring.gpg
+</span></span><span class=line><span class=cl>------------------------------
+</span></span><span class=line><span class=cl>pub   2048R/860FB269 2017-01-13
+</span></span><span class=line><span class=cl>uid                  foobar (just for test) &lt;foobar@example.com&gt;
+</span></span></code></pre></div><p>其中 UID 分别对应了用户名、注释、邮箱。</p><a class=anchor id=2-软件包签名></a><h4>2. 软件包签名 <a href=#2-%e8%bd%af%e4%bb%b6%e5%8c%85%e7%ad%be%e5%90%8d aria-hidden=true>#</a></h4><p>修改 RPM 宏，使用上述生成的密钥对。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ echo %_signature gpg &gt;&gt; ~/.rpmmacros
+</span></span><span class=line><span class=cl>$ echo &#34;%_gpg_name foobar (just for test)&#34; &gt;&gt; ~/.rpmmacros
+</span></span></code></pre></div><p>对已有 rpm 软件包进行签名。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rpm --addsign package_name.rpm
+</span></span><span class=line><span class=cl>Enter pass phrase:
+</span></span><span class=line><span class=cl>Pass phrase is good.
+</span></span><span class=line><span class=cl>package_name.rpm
+</span></span></code></pre></div><p>如果失败，则会出现如下的错误。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rpm --addsign package_name.rpm
+</span></span><span class=line><span class=cl>Enter pass phrase:
+</span></span><span class=line><span class=cl>Pass phrase check failed.
+</span></span></code></pre></div><p>此时需要仔细检查密钥名称和写入 rpm 宏里面的是否一致，最好是将 <code>--list-keys</code> 显示的内容整体复制出来。</p><p>当然也可以在通过 <code>rpmbuild --sign</code> 打包时自动包含签名。</p><a class=anchor id=3-增加签名></a><h4>3. 增加签名 <a href=#3-%e5%a2%9e%e5%8a%a0%e7%ad%be%e5%90%8d aria-hidden=true>#</a></h4><p>生成签名使用的是私钥，验证签名需要使用公钥。简单来说需要执行：1)将 gpg 产生的公钥导出到一个文件；2) 将这个公钥文件导入到 RPM 数据库里；3) 使用 rpm 命令进行检验。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 导出公钥到一个文本文档
+</span></span><span class=line><span class=cl>$ gpg --export -a &#34;foobar (just for test)&#34; &gt; RPM-GPG-KEY-FOOBAR
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看rpm数据库中已有的公钥
+</span></span><span class=line><span class=cl>$ rpm -q gpg-pubkey-*
+</span></span><span class=line><span class=cl>gpg-pubkey-f4a80eb5-53a7ff4b
+</span></span><span class=line><span class=cl>gpg-pubkey-352c64e5-52ae6884
+</span></span><span class=line><span class=cl>gpg-pubkey-442df0f8-4783f24a
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将公钥导入到RPM数据库，注意需要root用户执行
+</span></span><span class=line><span class=cl># rpm --import RPM-GPG-KEY-FOOBAR
+</span></span></code></pre></div><p>通过上述命令重新查看公钥时，会发现新增了一个 <code>gpg-pubkey-860fb269-5a65a0ad</code> 公钥，其中 <code>860FB269</code> 与上述 gpg 生成的密钥信息相同。</p><p>如果不需要，可以通过 <code>rpm -e gpg-pubkey-860fb269-5a65a0ad</code> 删除即可。</p><a class=anchor id=4-签名验证></a><h4>4. 签名验证 <a href=#4-%e7%ad%be%e5%90%8d%e9%aa%8c%e8%af%81 aria-hidden=true>#</a></h4><p>通过 <code>rpm -K package_name.rpm</code> 命令对签名验证即可，如下是验证成功以及失败时输出的内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>package_name.rpm: rsa sha1 (md5) pgp md5 OK
+</span></span><span class=line><span class=cl>package_name.rpm: RSA sha1 (MD5) (PGP) (MD5) (PGP) md5 NOT OK (MISSING KEYS: PGP#c0eb63c7 PGP#c0eb63c7)
+</span></span></code></pre></div><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><p>如果导入公钥失败，那么在安装时会生成一个类似 <code>Header V3 RSA/SHA1 signature: NOKEY, key ID c0eb63c7</code> 的告警信息。</p><p>如果要在 YUM 中验证签名，可以将公钥复制到系统 RPM 公钥目录，一般如下操作即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># cp RPM-GPG-KEY-FOOBAR /etc/pki/rpm-gpg/
+</span></span></code></pre></div><p>在源配置文件中通过如下两行来指定 gpg key 检验：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>gpgcheck=1
+</span></span><span class=line><span class=cl>gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-FOOBAR
+</span></span></code></pre></div><p>这样在通过 YUM 安装软件包时，当下载完毕以后会首先使用公钥进行签名验证。</p><a class=anchor id=常用设置></a><h1>常用设置 <a href=#%e5%b8%b8%e7%94%a8%e8%ae%be%e7%bd%ae aria-hidden=true>#</a></h1><p>接下来，看看一些常用的实用技巧。</p><p>在一个 SPEC 文件中可以同时打包多个 RPM 包，当然也可以通过 <code>%package -n foobar</code> 指定子模块 (subpackage) 的名称 。</p><a class=anchor id=宏定义></a><h2>宏定义 <a href=#%e5%ae%8f%e5%ae%9a%e4%b9%89 aria-hidden=true>#</a></h2><p>在定义文件的安装路径时，通常会使用类似 <code>%_sharedstatedir</code> 的宏，这些宏一般会在 <code>/usr/lib/rpm/macros</code> 中定义，当然部分会同时在不同平台上覆盖配置，可以直接 <code>grep</code> 查看。</p><p>RPM 内建宏定义在 <code>/usr/lib/rpm/redhat/macros</code> 文件中，这些宏基本上定义了目录路径或体系结构等等；同时也包含了一组用于调试 spec 文件的宏，关于 Macro 详细可以查看 <a href=http://rpm.org/user_doc/macros.html>Macro syntax</a>，其中常用如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%dump                 打印宏的值，包括一些内建的宏定义，也可以通过rpm --showrc查看
+</span></span><span class=line><span class=cl>%{echo:message}       打印信息到标准输出
+</span></span><span class=line><span class=cl>%{warn:message}       打印信息到标准错误
+</span></span><span class=line><span class=cl>%{error:message}      打印信息到标准错误，然后返回BADSPEC
+</span></span><span class=line><span class=cl>%{expand:expression}  类似Bash中的eval内置命令
+</span></span></code></pre></div><p>另外常用的是根据宏来设置变量。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%{?foobar:expr} 如果宏 foobar 存在则使用 expand expr，否则为空；也可以取反 %{!?foobar:expr}
+</span></span><span class=line><span class=cl>%{?macro}       只测试该宏是否存在，存在就用该宏的值，反之则不用，如 %configure %{?_with_foobar}
+</span></span></code></pre></div><p>另外，在判断宏的 Bool 值时，可以通过如下方式测试，如果 <code>variable</code> 定义，则为 <code>01</code> 也就是 <code>true</code> 否则为 <code>0</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%if 0%{?variable:1}
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>%endif
+</span></span></code></pre></div><a class=anchor id=配置脚本></a><h2>配置脚本 <a href=#%e9%85%8d%e7%bd%ae%e8%84%9a%e6%9c%ac aria-hidden=true>#</a></h2><p>很多制作 RPM 包的操作都是通过宏定义设置的，如下简单列举一下常见的宏定义操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>__os_install_post
+</span></span><span class=line><span class=cl>    安装完之后的操作，例如去除二进制文件中的注释等；
+</span></span><span class=line><span class=cl>__spec_install_pre
+</span></span><span class=line><span class=cl>    在安装前的操作，设置一些环境变量，然后删除BUILDROOT中的文件(如果文件多时耗时增加)；
+</span></span></code></pre></div><p>如果想取消某些操作，可以将这些操作设置为 <code>%{nil}</code> 即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看对应的命令
+</span></span><span class=line><span class=cl>$ rpm --showrc | grep -A 4 &#39;: __os_install_post&#39;
+</span></span><span class=line><span class=cl>-14: __os_install_post
+</span></span><span class=line><span class=cl>    /usr/lib/rpm/redhat/brp-compress
+</span></span><span class=line><span class=cl>    %{!?__debug_package:
+</span></span><span class=line><span class=cl>    /usr/lib/rpm/redhat/brp-strip %{__strip}
+</span></span><span class=line><span class=cl>    /usr/lib/rpm/redhat/brp-strip-comment-note %{__strip} %{__objdump}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 在SPEC文件头部添加如下内容
+</span></span><span class=line><span class=cl>%global __os_install_post %{nil}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 在用户的~/.rpmmacros文件中添加如下配置
+</span></span><span class=line><span class=cl>%__os_install_post %{nil}
+</span></span></code></pre></div><a class=anchor id=define-vs-global></a><h2>define vs. global <a href=#define-vs-global aria-hidden=true>#</a></h2><p>两者都可以用来进行变量定义，不过在细节上有些许差别，简单列举如下：</p><ul><li>define 用来定义宏，global 用来定义变量；</li><li>如果定义带参数的宏 (类似于函数)，必须要使用 define；</li><li>在 <code>%{}</code> 内部，必须要使用 global 而非 define；</li><li>define 在使用时计算其值，而 global 则在定义时就计算其值；</li></ul><p>可以简单参考如下的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#--- %prep之前的参数是必须要有的
+</span></span><span class=line><span class=cl>Name:           mysql
+</span></span><span class=line><span class=cl>Version:        5.7.17
+</span></span><span class=line><span class=cl>Release:        1%{?dist}
+</span></span><span class=line><span class=cl>Summary:        MySQL from FooBar.
+</span></span><span class=line><span class=cl>License:        GPLv2+ and BSD
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%description
+</span></span><span class=line><span class=cl>It is a MySQL from FooBar.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%prep
+</span></span><span class=line><span class=cl>#--- 带参数时，必须使用%define定义
+</span></span><span class=line><span class=cl>%define myecho() echo %1 %2
+</span></span><span class=line><span class=cl>%{!?bar: %define bar defined}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>echo 1: %{bar}
+</span></span><span class=line><span class=cl>%{myecho 2: %{bar}}
+</span></span><span class=line><span class=cl>echo 3: %{bar}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 如下是输出内容
+</span></span><span class=line><span class=cl>#1: defined
+</span></span><span class=line><span class=cl>#2: defined
+</span></span><span class=line><span class=cl>#3: %{bar}
+</span></span></code></pre></div><p>显然 3 的输出是不符合预期的，可以将 <code>%define</code> 修改为 <code>global</code> 即可。</p><a class=anchor id=变量使用></a><h2>变量使用 <a href=#%e5%8f%98%e9%87%8f%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h2><p>define 定义的变量类似于局部变量，只在 <code>%{!?foo: ... }</code> 区间有效，不过 SPEC 并不会自动清除该变量，只有再次遇到 <code>%{}</code> 时才会清除，WTF!!!</p><p>在命令行中通过 <code>--define 'with_ssl bundled'</code> 进行定义，在 SPEC 脚本中，使用 <code>%{?with_ssl: }</code> 处理上述参数，或者通过 <code>%{!?with_ssl: }</code> 处理未定义参数时的情况。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#--- 根据传入的变量，设置好相应的ssl_option变量
+</span></span><span class=line><span class=cl>%{?with_ssl: %global ssl_option -DWITH_SSL=%{with_ssl}}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 接下来，通过如下方式使用上述定义的变量
+</span></span><span class=line><span class=cl>%{?ssl_option}
+</span></span></code></pre></div><p>在 RPM 中，问号 <code>?</code> 用于条件检测，默认如果对应的变量值不存在，那么 RPM 会原样保留字符串，通过问号表示，如果不存在则移除。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rpm --eval=&#39;foo:%{foo}&#39;$&#39;\n&#39;&#39;bar:%{?bar}&#39;
+</span></span><span class=line><span class=cl>foo:%{foo}
+</span></span><span class=line><span class=cl>bar:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ rpm --define=&#39;foo foov&#39; --eval=&#39;foo:%{foo}&#39;$&#39;\n&#39;&#39;bar:%{?bar}&#39;
+</span></span><span class=line><span class=cl>foo:foov
+</span></span><span class=line><span class=cl>bar:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ rpm --define=&#39;foo foov&#39; --define=&#39;bar barv&#39; --eval=&#39;foo:%{foo}&#39;$&#39;\n&#39;&#39;bar:%{?bar}&#39;
+</span></span><span class=line><span class=cl>foo:foov
+</span></span><span class=line><span class=cl>bar:barv
+</span></span></code></pre></div><p>除了上述的表示方法外，还可以使用如下内容：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%define _without_foobar            1
+</span></span><span class=line><span class=cl># enabled by default
+</span></span><span class=line><span class=cl>%define with_foobar 0%{!?_without_foobar:1}
+</span></span></code></pre></div><p>如果 <code>_without_foobar</code> 变量不存在，那么默认 <code>with_foobar</code> 为 01 也就是 true，否则就是 0 也就是 false；可以通过如下命令行进行测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rpm --define=&#39;with_foobar 0%{!?_without_foobar:1}&#39; --eval=&#39;foobar:%{with_foobar}&#39;
+</span></span><span class=line><span class=cl>foobar:01
+</span></span><span class=line><span class=cl>$ rpm --define=&#39;_without_foobar 1&#39; --define=&#39;with_foobar 0%{!?_without_foobar:1}&#39; --eval=&#39;foobar:%{with_foobar}&#39;
+</span></span><span class=line><span class=cl>foobar:0
+</span></span></code></pre></div><a class=anchor id=测试脚本></a><h2>测试脚本 <a href=#%e6%b5%8b%e8%af%95%e8%84%9a%e6%9c%ac aria-hidden=true>#</a></h2><p>如下是一个测试用的脚本，可以用来生成简单的测试 SPEC 脚本，并执行。</p><p>该脚本会将 <code>/tmp/foobar</code> 目录作为工作目录，然后生成一个简单的 Hello world 程序。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=cp>#!/bin/bash
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=nv>WORKSPACE</span><span class=o>=</span>/tmp/foobar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=s2>&#34;0. Prepare dirs&#34;</span>
+</span></span><span class=line><span class=cl>mkdir -pv <span class=si>${</span><span class=nv>WORKSPACE</span><span class=si>}</span>/<span class=o>{</span>BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS,Workspace/foobar-1.0.0<span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=s2>&#34;1. Generate tar&#34;</span>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> <span class=si>${</span><span class=nv>WORKSPACE</span><span class=si>}</span>/Workspace/foobar-1.0.0
+</span></span><span class=line><span class=cl>cat <span class=s>&lt;&lt; EOF &gt; main.c
+</span></span></span><span class=line><span class=cl><span class=s>#include &lt;stdio.h&gt;
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>int main(int argc, char *argv)
+</span></span></span><span class=line><span class=cl><span class=s>{
+</span></span></span><span class=line><span class=cl><span class=s>    printf(&#34;Hello World!!!\n&#34;);
+</span></span></span><span class=line><span class=cl><span class=s>        return 0;
+</span></span></span><span class=line><span class=cl><span class=s>}
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span><span class=line><span class=cl>cat &lt;&lt; <span class=s2>&#34;EOF&#34;</span> &gt; Makefile
+</span></span><span class=line><span class=cl>all: main.c
+</span></span><span class=line><span class=cl>	gcc -o foobar $&lt; -Wall
+</span></span><span class=line><span class=cl>install:
+</span></span><span class=line><span class=cl>	install -m <span class=m>755</span> foobar <span class=si>${</span><span class=nv>DESTDIR</span><span class=si>}</span>/usr/bin/foobar
+</span></span><span class=line><span class=cl>EOF
+</span></span><span class=line><span class=cl><span class=nb>cd</span> <span class=si>${</span><span class=nv>WORKSPACE</span><span class=si>}</span>/Workspace
+</span></span><span class=line><span class=cl>tar -jcf foobar-1.0.0.tar.bz2 foobar-1.0.0
+</span></span><span class=line><span class=cl><span class=c1>#[ &#34;${WORKSPACE}/BUILD&#34; != &#34;/&#34; ] &amp;&amp; rm -rf &#34;${WORKSPACE}/BUILD/&#34;</span>
+</span></span><span class=line><span class=cl>rm -rf <span class=s2>&#34;</span><span class=si>${</span><span class=nv>WORKSPACE</span><span class=si>}</span><span class=s2>/SOURCES/foobar-1.0.0.tar.bz2&#34;</span>
+</span></span><span class=line><span class=cl>mv foobar-1.0.0.tar.bz2 <span class=si>${</span><span class=nv>WORKSPACE</span><span class=si>}</span>/SOURCES/
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=s2>&#34;2. Prepare spec-file&#34;</span>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> <span class=si>${</span><span class=nv>WORKSPACE</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>cat <span class=s>&lt;&lt; EOF &gt; SPECS/foobar-1.0.0.spec
+</span></span></span><span class=line><span class=cl><span class=s>### 0. The define section
+</span></span></span><span class=line><span class=cl><span class=s>%global _topdir ${WORKSPACE}
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>### 1.The introduction section
+</span></span></span><span class=line><span class=cl><span class=s>Name:           foobar
+</span></span></span><span class=line><span class=cl><span class=s>Version:        1.0.0
+</span></span></span><span class=line><span class=cl><span class=s>Release:        1%{?dist}
+</span></span></span><span class=line><span class=cl><span class=s>Summary:        Just a RPM example
+</span></span></span><span class=line><span class=cl><span class=s>License:        GPLv2+ and BSD
+</span></span></span><span class=line><span class=cl><span class=s>BuildRequires:  gcc,make
+</span></span></span><span class=line><span class=cl><span class=s>Source0:        %{name}-%{version}.tar.bz2
+</span></span></span><span class=line><span class=cl><span class=s>BuildRoot:      %_topdir/BUILDROOT
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>%description
+</span></span></span><span class=line><span class=cl><span class=s>It is a RPM example.
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>#--- 2.The Prep section
+</span></span></span><span class=line><span class=cl><span class=s>%prep
+</span></span></span><span class=line><span class=cl><span class=s>%setup -q
+</span></span></span><span class=line><span class=cl><span class=s>#%patch0 -p1
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>#--- 3.The Build Section
+</span></span></span><span class=line><span class=cl><span class=s>%build
+</span></span></span><span class=line><span class=cl><span class=s>make %{?_smp_mflags}
+</span></span></span><span class=line><span class=cl><span class=s>#echo %{_sysconfdir}
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>%install
+</span></span></span><span class=line><span class=cl><span class=s>#/usr/bin/
+</span></span></span><span class=line><span class=cl><span class=s>install -d -m 0751 %{buildroot}/%{_bindir}
+</span></span></span><span class=line><span class=cl><span class=s>make install DESTDIR=%{buildroot}
+</span></span></span><span class=line><span class=cl><span class=s>#--- 4.1 scripts section
+</span></span></span><span class=line><span class=cl><span class=s>%pre
+</span></span></span><span class=line><span class=cl><span class=s>echo &#34;pre&#34; &gt;&gt; /tmp/foobar
+</span></span></span><span class=line><span class=cl><span class=s>%post
+</span></span></span><span class=line><span class=cl><span class=s>echo &#34;post&#34; &gt;&gt; /tmp/foobar
+</span></span></span><span class=line><span class=cl><span class=s>%preun
+</span></span></span><span class=line><span class=cl><span class=s>echo &#34;preun&#34; &gt;&gt; /tmp/foobar
+</span></span></span><span class=line><span class=cl><span class=s>%postun
+</span></span></span><span class=line><span class=cl><span class=s>echo &#34;postun&#34; &gt;&gt; /tmp/foobar
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>#--- 5.clean section
+</span></span></span><span class=line><span class=cl><span class=s>%clean
+</span></span></span><span class=line><span class=cl><span class=s>rm -rf %{buildroot}
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>#--- 6.file section
+</span></span></span><span class=line><span class=cl><span class=s>%files
+</span></span></span><span class=line><span class=cl><span class=s>%defattr(-,root,root,-)
+</span></span></span><span class=line><span class=cl><span class=s>%attr(755, root, root) %{_bindir}/foobar
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>#--- 7.chagelog section
+</span></span></span><span class=line><span class=cl><span class=s>%changelog
+</span></span></span><span class=line><span class=cl><span class=s>* Fri Dec 28 2012 foobar foobar@kidding.com - 1.0.0-1
+</span></span></span><span class=line><span class=cl><span class=s>- Initial version
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=s2>&#34;3. Perform rpmbuild&#34;</span>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> <span class=si>${</span><span class=nv>WORKSPACE</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>rpmbuild --clean --define <span class=s1>&#39;_topdir /tmp/foobar&#39;</span> -ba SPECS/foobar-1.0.0.spec
+</span></span></code></pre></div><a class=anchor id=参考示例></a><h2>参考示例 <a href=#%e5%8f%82%e8%80%83%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>如上介绍了手动如何编译生成 rpm 包，这里通过 collectd 看看，如何使用一些常见的工具，更加方便的制作 rpm 包，可以参考 <a href=http://giovannitorres.me/how-to-build-rpms-collectd-example.html>collectd 创建的示例</a> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># yum install rpmdevtools yum-utils
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 配置环境，生成topdir工作目录~/rpmbuild，以及配置文件~/.rpmmacros
+</span></span><span class=line><span class=cl>$ rpmdev-setuptree
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 下载collectd源码，并解压
+</span></span><span class=line><span class=cl>$ mkdir ~/src &amp;&amp; cd ~/src &amp;&amp; curl --progress https://collectd.org/files/collectd-5.5.3.tar.gz | tar xz
+</span></span></code></pre></div><a class=anchor id=其它-1></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83-1 aria-hidden=true>#</a></h1><p>如下是 <code>%if</code> 判断的使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%if 0%{?rhel} == 6
+</span></span><span class=line><span class=cl>%global compatver             5.1.17
+</span></span><span class=line><span class=cl>BuildRequires:  systemd
+</span></span><span class=line><span class=cl>%else
+</span></span><span class=line><span class=cl>%global compatver             5.1.17
+</span></span><span class=line><span class=cl>BuildRequires:  sysv
+</span></span><span class=line><span class=cl>%endif
+</span></span></code></pre></div><p>可以使用 Requires(pre)、Requires(post) 等都是针对不同阶段的依赖设置；可以通过 <code>%package PACKAGE-NAME</code> 设置生成不同的 RPM 分支包。</p><p>另外，可以生成 GPG 签名，在此不再赘述。</p><a class=anchor id=添加用户></a><h2>添加用户 <a href=#%e6%b7%bb%e5%8a%a0%e7%94%a8%e6%88%b7 aria-hidden=true>#</a></h2><p>可以在 <code>%pre</code> 段中添加如下内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>/usr/sbin/groupadd -g 66 -o -r monitor &gt;/dev/null 2&gt;&amp;1 || :
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>参数：
+</span></span><span class=line><span class=cl>  --gid/-g
+</span></span><span class=line><span class=cl>    指定group id；
+</span></span><span class=line><span class=cl>  --non-unique/-o
+</span></span><span class=line><span class=cl>    group id可以不唯一，此时相当于指定了一个 alias；
+</span></span><span class=line><span class=cl>  --system/-r
+</span></span><span class=line><span class=cl>    创建系统分组；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>/usr/sbin/useradd -M %{!?el5:-N} -g monitor -o -r -d %{_libdir}/%{name} -s /bin/false \
+</span></span><span class=line><span class=cl>    -c &#34;Uagent Server&#34; -u 66 monitor &gt;/dev/null 2&gt;&amp;1 || :
+</span></span><span class=line><span class=cl>参数：
+</span></span><span class=line><span class=cl>  --no-create-home/-M
+</span></span><span class=line><span class=cl>    不创建HOME目录；
+</span></span><span class=line><span class=cl>  --no-user-group/-N
+</span></span><span class=line><span class=cl>    不创建相同用户名的分组；
+</span></span><span class=line><span class=cl>  --non-unique/-o
+</span></span><span class=line><span class=cl>    user id可以不唯一，此时相当于指定了一个 alias；
+</span></span><span class=line><span class=cl>  --system/-r
+</span></span><span class=line><span class=cl>    创建系统用户；
+</span></span><span class=line><span class=cl>  --home-dir/-d HOME_DIR
+</span></span><span class=line><span class=cl>    指定HOME目录，如果不存在则会创建；
+</span></span><span class=line><span class=cl>  --shell/-s SHELL
+</span></span><span class=line><span class=cl>    指定默认的shell；
+</span></span></code></pre></div><a class=anchor id=build-id></a><h2>Build-ID <a href=#build-id aria-hidden=true>#</a></h2><p>在新版本的 Fedora 27 以及 Redhat 8 中，增加了对于 build-id 的支持，在使用 rpmbuild 时默认会自动添加，会在 <code>/usr/lib/.build-id</code> 目录下生成相关的文件。</p><p>可以通过 <code>--define "_build_id_links none"</code> 参数取消文件的生成。</p><p>增加 build-id 的目的是为了可快速找到正确的二进制文件以及 Debuginfo 。</p><a class=anchor id=初始宏定义></a><h2>初始宏定义 <a href=#%e5%88%9d%e5%a7%8b%e5%ae%8f%e5%ae%9a%e4%b9%89 aria-hidden=true>#</a></h2><p>很多宏在 <code>/etc/rpm</code> 目录下定义，如上面的 <code>dist</code> 在 <code>/etc/rpm/macros.dist</code> 文件中定义。</p><a class=anchor id=rpm包查看></a><h2>RPM包查看 <a href=#rpm%e5%8c%85%e6%9f%a5%e7%9c%8b aria-hidden=true>#</a></h2><p>对于生成的 RPM 包，只能查看头部信息和脚本内容，指令分别如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rpm --info -qp XXX.rpm
+</span></span><span class=line><span class=cl>$ rpm --scripts -qp XXX.rpm
+</span></span></code></pre></div><a class=anchor id=变量定义></a><h2>变量定义 <a href=#%e5%8f%98%e9%87%8f%e5%ae%9a%e4%b9%89 aria-hidden=true>#</a></h2><p>在定义 <code>Version</code> 时，如果使用 <code>%{?package_version:1.0.0}</code> 可以工作但是，使用 <code>%{!?package_version:1.0.0}</code> 却无效。</p><p>而且这里的参数不能通过类似 <code>rpmbuld --define='package_version 1.9.1' foobar.spec</code> 的方式传入。</p><a class=anchor id=依赖检查></a><h1>依赖检查 <a href=#%e4%be%9d%e8%b5%96%e6%a3%80%e6%9f%a5 aria-hidden=true>#</a></h1><p>如果在安装时有些环境或者平台的检查，例如只支持某些平台，那么需要添加到 <code>%pre</code> 段中，其退出码非 0 ；注意，如果使用 <code>%post</code> 不会生效。</p><p>另外，在卸载时，如果 <code>%preun</code> 的退出码非 0 则会导致卸载失败；与安装类似，如果使用 <code>%postun</code> 同样不会生效。</p><p>对于如上场景可以使用 <code>--noscripts</code> 忽略，该参数等价于 <code>--nopre</code> <code>--nopost</code> <code>--nopreun</code> <code>--nopostun</code>，例如。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># rpm --noscripts -ivh foobar-1.0.0-1.x86_64.rpm
+</span></span><span class=line><span class=cl># rpm --noscripts -evh foobar
+</span></span></code></pre></div><p>如果想查看执行的是那些脚本，可以通过 <code>rpm -q --scripts package</code> 命令查看，当机器上有多个版本时，如果要删除所有版本可以使用 <code>--allmatches</code> 参数。</p><a class=anchor id=debuginfo></a><h2>debuginfo <a href=#debuginfo aria-hidden=true>#</a></h2><p>rpmbuild 默认会生成 debuginfo 包，如果要关闭，可以通过如下的几种方式设置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=o>-----</span> <span class=err>修改配置文件，可以是用户级别，或者是全局的</span><span class=o>/</span><span class=nx>etc</span><span class=o>/</span><span class=nx>rpm</span><span class=o>/</span><span class=nx>macros</span>
+</span></span><span class=line><span class=cl><span class=err>$</span> <span class=nx>echo</span> <span class=err>&#39;</span><span class=o>%</span><span class=nx>debug_package</span> <span class=o>%</span><span class=p>{</span><span class=kc>nil</span><span class=p>}</span><span class=err>&#39;</span> <span class=o>&gt;&gt;</span> <span class=err>~</span><span class=o>/</span><span class=p>.</span><span class=nx>rpmmacros</span>
+</span></span><span class=line><span class=cl><span class=err>$</span> <span class=nx>echo</span> <span class=err>&#39;</span><span class=o>%</span><span class=nx>define</span> <span class=nx>debug_package</span> <span class=o>%</span><span class=p>{</span><span class=kc>nil</span><span class=p>}</span><span class=err>&#39;</span> <span class=o>&gt;&gt;</span> <span class=err>~</span><span class=o>/</span><span class=p>.</span><span class=nx>rpmmacros</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>-----</span> <span class=err>也可以在命令行中添加参数</span>
+</span></span><span class=line><span class=cl><span class=err>$</span> <span class=nx>rpmbuild</span> <span class=o>--</span><span class=nx>define</span> <span class=s>&#34;debug_package %{nil}&#34;</span>
+</span></span></code></pre></div><p>注意，如果使用 <code>%global debug_package %{nil}</code> 定义，需要添加到 <code>%prep</code> 和 <code>%setup</code> 段之间。</p><p>注意，如果要使用 rpm 的 debuginfo 包，在编译的时候就需要添加 <code>-g</code> 参数，否则即使生成了 debuginfo 包，也有可能会导致没有提取到完整的 debuginfo 包，在使用 gdb 时会报如下的错误。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>separate debug info file has no debug info
+</span></span></code></pre></div><p>如果在 RedHat 中，也可能会报 <code>Empty %files file /your/file/path/debugsourcefils.list</code> 错误。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>很多关于 RPM 的介绍可以参考文档 <a href=http://rpm.org/max-rpm-snapshot/index.html>Maximum RPM</a>；另外，还可以参考下 MySQL 源码包中的相关示例 <a href=/reference/databases/mysql/mysql.spec>mysql.spec</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#环境配置>环境配置</a><ul><li><a href=#安装工具>安装工具</a></li><li><a href=#配置环境>配置环境</a></li><li><a href=#执行命令>执行命令</a></li><li><a href=#执行步骤>执行步骤</a></li></ul></li><li><a href=#spec-文件>SPEC 文件</a><ul><li><a href=#prep>%prep</a></li><li><a href=#systemd>systemd</a></li><li><a href=#校验>校验</a></li></ul></li><li><a href=#增加签名>增加签名</a><ul><li></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#常用设置>常用设置</a><ul><li><a href=#宏定义>宏定义</a></li><li><a href=#配置脚本>配置脚本</a></li><li><a href=#define-vs-global>define vs. global</a></li><li><a href=#变量使用>变量使用</a></li><li><a href=#测试脚本>测试脚本</a></li><li><a href=#参考示例>参考示例</a></li></ul></li><li><a href=#其它-1>其它</a><ul><li><a href=#添加用户>添加用户</a></li><li><a href=#build-id>Build-ID</a></li><li><a href=#初始宏定义>初始宏定义</a></li><li><a href=#rpm包查看>RPM包查看</a></li><li><a href=#变量定义>变量定义</a></li></ul></li><li><a href=#依赖检查>依赖检查</a><ul><li><a href=#debuginfo>debuginfo</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

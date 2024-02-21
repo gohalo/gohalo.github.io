@@ -1,0 +1,211 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>InnoDB 简单介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="我们知道，在 MySQL 中，存储引擎是通过插件实现的，从而使得添加存储引擎时相对来说比较简单，而且目前支持多种类型的存储引擎。
+InnoDB 目前基本上已经是实时上的没人存储引擎了，现在可以支持外键、行锁、MVCC、支持标准的 4 种隔离级别等等。实际上，这也就意味着 InnoDB 是相当复杂的一个存储引擎。
+在此，仅简单介绍下。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>InnoDB 简单介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2020-10-08</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/innodb/ role=button>innodb</a></div></div><hr><div class=content><p>我们知道，在 MySQL 中，存储引擎是通过插件实现的，从而使得添加存储引擎时相对来说比较简单，而且目前支持多种类型的存储引擎。</p><p>InnoDB 目前基本上已经是实时上的没人存储引擎了，现在可以支持外键、行锁、MVCC、支持标准的 4 种隔离级别等等。实际上，这也就意味着 InnoDB 是相当复杂的一个存储引擎。</p><p>在此，仅简单介绍下。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>在 MySQL 中，现仍然使用 InnoDB，而在 MariaDB 中，使用 XtraDB 替换了 InnoDB，但是仍然显示为 InnoDB，可以通过 <code>SHOW ENGINES</code> 查看，不知道后面会不会给换掉。</p><p>另一个比较不错的存储引擎是 Percona 开发的 TokuDB，还没有仔细研究过，暂时标记下。</p><a class=anchor id=innodb-特性></a><h2>InnoDB 特性 <a href=#innodb-%e7%89%b9%e6%80%a7 aria-hidden=true>#</a></h2><p>InnoDB 采用的 <strong>索引组织表</strong>，也就是采用唯一且非空的主键进行组织，主健可以为多个字段；如果没有定义主键，则会选择第一个非空的唯一索引；如果没有符合条件的索引则会使用一个隐含的 6-bytes 递增字段。</p><blockquote><p>堆组织表(Heap Organized Table, HOT)，数据会以堆的方式进行管理，插入数据时，会使用第一个能放下此数据的空闲空间。索引组织表(Index Organized Table, IOT)，数据按主键进行存储和排序。</p><p>Oracle 支持堆表以及索引组织表；PostgreSQL 只支持堆表；InnoDB 只支持索引组织表。</p></blockquote><p>上述的索引 (主健) 称为聚集索引 (Clustered Index)，除了聚集索引之外的其它索引都被称为二级索引 (Secondary Index)，二级索引还会保存对应的聚集索引，因此通常来说聚集索引不要太长。</p><p>索引是以 B+Tree 组织，对磁盘读取的最小单位为页 (Page)，默认大小是 16KB。页大小可以在创建实例时通过 <code>innodb_page_size</code> 参数设置，创建之后不能修改，不同页大小之间的实例不兼容。</p><p>当新记录插入时，会预留 <code>1KB</code> 为以后插入时使用。如果是顺序插入(升序或者降序)，则一般会占用 <code>15/16</code>，对于随机插入则会在 <code>1/2~15/16</code> 之间，小于 <code>1/2</code> 则尝试合并删除。</p><a class=anchor id=常用操作></a><h2>常用操作 <a href=#%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><p>InnoDB 相关的操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW ENGINES;                                         ← 查看现在支持的存储引擎。
+</span></span><span class=line><span class=cl>mysql&gt; SELECT * FROM information_schema.engines;             ← 功能同上
+</span></span><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;innodb_version&#39;;                 ← innodb的版本
+</span></span><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;innodb_%_io_threads&#39;;            ← io线程
+</span></span><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;innodb_purge_threads&#39;;           ← purge线程
+</span></span><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;innodb_buffer_pool_size&#39;;        ← 缓冲池大小
+</span></span><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;innodb_buffer_pool_instances&#39;;   ← 缓冲池实例数目
+</span></span><span class=line><span class=cl>mysql&gt; SHOW ENGINE INNODB STATUS\G                           ← 详细状态
+</span></span></code></pre></div><a class=anchor id=文件管理></a><h1>文件管理 <a href=#%e6%96%87%e4%bb%b6%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h1><p>MySQL 的各种数据保存在 <code>datadir</code> 变量指定的目录下，使用 OS 的文件系统；其中，表结构保存在数据库的目录下，文件为 <code>*.frm</code>，但是 InnoDB 同时会在表空间中保存表的元数据，显然不能通过删除 <code>*.frm</code> 来删除表，暂没有尝试过对其它的存储引擎直接删除 <code>*.frm</code> 。</p><p><img alt="innodb files" src=images/innodb-files.png class="mx-auto d-block"></p><p>各个文件的详细介绍如下：</p><ul><li><code>ibdata1</code> 系统表空间，包括了 <code>Undo log</code>、<code>Double Write Buffer</code>、<code>Insert Buffer</code> 等，可以通过 <code>innodb_data_file_path</code> 变量查看文件名称和大小。</li><li><code>ib_logfile0/1</code> redo-log日志，InnoDB 的 redo-log ，顺序写入，循环利用。</li><li><code>db-name/</code> 与数据库名称相同的目录，除 <code>information_schema</code> 外每个数据库都有个相同名称的目录，而 <code>information_schema</code> 实际上是一个视图，提供了访问元数据的一个接口，因此没有保存与之相关的文件。</li><li><code>db-name/db.opt</code> 文本文件，每个目录下都会保存一个 <code>db.opt</code> 文本文件，用来保存该库的默认字符集编码和字符集排序规则。在创建表时，如果没有指定字符集和排序规则，那么该新建的表将采用 db.opt 文件中指定的属性。</li><li><code>db-name/table-name.frm</code> MySQL 表的元数据，与 InnoDB 无关，同时每个数据库对应的目录下都会保存一个 <code>table-name.frm</code>，与存储引擎无关，用来保存表的元数据。</li><li><code>db-name/table-name.idb</code> 对于 innodb，如果采用共享表空间，则索引、数据等信息会保存在 <code>ibdataN</code> 中；如果采用独立表空间则会保存在目录下 <code>table-name.idb</code>。</li><li><code>db-name/{table-name.MYD,table-name.MYI}</code> <code>.MYD</code> 文件用来存储 <code>MyISAM</code> 的数据，<code>.MYI</code> 用来存储索引相关的信息。</li></ul><p>对于表的存储格式，实际上 Google 的 <a href=https://blog.jcole.us>Jeremy Cole</a> 对此介绍的已经很详细，可以直接参考其 blog，后面也会有对这方面的解析，仅记录个人对此的理解。</p><a class=anchor id=状态查看></a><h1>状态查看 <a href=#%e7%8a%b6%e6%80%81%e6%9f%a5%e7%9c%8b aria-hidden=true>#</a></h1><p>对于 InnoDB 状态的查看，有如下两种方法。</p><a class=anchor id=show-engine></a><h2>show engine <a href=#show-engine aria-hidden=true>#</a></h2><p>通过如下命令可以查看当前 InnoDB 的状态。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW ENGINE INNODB STATUS\G
+</span></span><span class=line><span class=cl>*************************** 1. row ***************************
+</span></span><span class=line><span class=cl>  Type: InnoDB
+</span></span><span class=line><span class=cl>  Name:
+</span></span><span class=line><span class=cl>Status:
+</span></span><span class=line><span class=cl>=====================================
+</span></span><span class=line><span class=cl>2016-12-11 09:07:11 7fc8552f4b00 INNODB MONITOR OUTPUT
+</span></span><span class=line><span class=cl>=====================================
+</span></span><span class=line><span class=cl>Per second averages calculated from the last 3 seconds
+</span></span><span class=line><span class=cl>-----------------
+</span></span><span class=line><span class=cl>BACKGROUND THREAD
+</span></span><span class=line><span class=cl>-----------------
+</span></span><span class=line><span class=cl>srv_master_thread loops: 1 srv_active, 0 srv_shutdown, 78844 srv_idle
+</span></span><span class=line><span class=cl>srv_master_thread log flush and writes: 78845
+</span></span><span class=line><span class=cl>----------
+</span></span><span class=line><span class=cl>SEMAPHORES
+</span></span><span class=line><span class=cl>----------
+</span></span><span class=line><span class=cl>----------
+</span></span><span class=line><span class=cl>MUTEX INFO
+</span></span><span class=line><span class=cl>----------
+</span></span><span class=line><span class=cl>Locked mutex: addr 0x7fc8586c6a40 thread 140498399349504 file handler/ha_innodb.cc line 15729
+</span></span><span class=line><span class=cl>Locked mutex: addr 0x7fc8586c69c0 thread 140498399349504 file srv/srv0srv.cc line 1397
+</span></span><span class=line><span class=cl>Total number of mutexes 8370
+</span></span><span class=line><span class=cl>-------------
+</span></span><span class=line><span class=cl>RW-LATCH INFO
+</span></span><span class=line><span class=cl>-------------
+</span></span><span class=line><span class=cl>Total number of rw-locks 16434
+</span></span><span class=line><span class=cl>OS WAIT ARRAY INFO: reservation count 5
+</span></span><span class=line><span class=cl>OS WAIT ARRAY INFO: signal count 5
+</span></span><span class=line><span class=cl>Mutex spin waits 975, rounds 1472, OS waits 2
+</span></span><span class=line><span class=cl>RW-shared spins 2, rounds 60, OS waits 2
+</span></span><span class=line><span class=cl>RW-excl spins 0, rounds 0, OS waits 0
+</span></span><span class=line><span class=cl>Spin rounds per wait: 1.51 mutex, 30.00 RW-shared, 0.00 RW-excl
+</span></span><span class=line><span class=cl>------------
+</span></span><span class=line><span class=cl>TRANSACTIONS
+</span></span><span class=line><span class=cl>------------
+</span></span><span class=line><span class=cl>Trx id counter 95236
+</span></span><span class=line><span class=cl>Purge done for trx&#39;s n:o &lt; 94832 undo n:o &lt; 0 state: running but idle
+</span></span><span class=line><span class=cl>History list length 545
+</span></span><span class=line><span class=cl>Total number of lock structs in row lock hash table 0
+</span></span><span class=line><span class=cl>LIST OF TRANSACTIONS FOR EACH SESSION:
+</span></span><span class=line><span class=cl>---TRANSACTION 0, not started
+</span></span><span class=line><span class=cl>MySQL thread id 53, OS thread handle 0x7fc8552f4b00, query id 600031 localhost 127.0.0.1 root init
+</span></span><span class=line><span class=cl>SHOW ENGINE INNODB STATUS
+</span></span><span class=line><span class=cl>---TRANSACTION 95235, not started
+</span></span><span class=line><span class=cl>MySQL thread id 1, OS thread handle 0x7fc856e58b00, query id 0 Waiting for background binlog tasks
+</span></span><span class=line><span class=cl>--------
+</span></span><span class=line><span class=cl>FILE I/O
+</span></span><span class=line><span class=cl>--------
+</span></span><span class=line><span class=cl>I/O thread 0 state: waiting for i/o request (insert buffer thread)
+</span></span><span class=line><span class=cl>I/O thread 1 state: waiting for i/o request (log thread)
+</span></span><span class=line><span class=cl>I/O thread 2 state: waiting for i/o request (read thread)
+</span></span><span class=line><span class=cl>I/O thread 3 state: waiting for i/o request (read thread)
+</span></span><span class=line><span class=cl>I/O thread 4 state: waiting for i/o request (read thread)
+</span></span><span class=line><span class=cl>I/O thread 5 state: waiting for i/o request (read thread)
+</span></span><span class=line><span class=cl>I/O thread 6 state: waiting for i/o request (write thread)
+</span></span><span class=line><span class=cl>I/O thread 7 state: waiting for i/o request (write thread)
+</span></span><span class=line><span class=cl>I/O thread 8 state: waiting for i/o request (write thread)
+</span></span><span class=line><span class=cl>I/O thread 9 state: waiting for i/o request (write thread)
+</span></span><span class=line><span class=cl>Pending normal aio reads: 0 [0, 0, 0, 0] , aio writes: 0 [0, 0, 0, 0] ,
+</span></span><span class=line><span class=cl> ibuf aio reads: 0, log i/o&#39;s: 0, sync i/o&#39;s: 0
+</span></span><span class=line><span class=cl>Pending flushes (fsync) log: 0; buffer pool: 0
+</span></span><span class=line><span class=cl>357 OS file reads, 5 OS file writes, 5 OS fsyncs
+</span></span><span class=line><span class=cl>0.00 reads/s, 0 avg bytes/read, 0.00 writes/s, 0.00 fsyncs/s
+</span></span><span class=line><span class=cl>-------------------------------------
+</span></span><span class=line><span class=cl>INSERT BUFFER AND ADAPTIVE HASH INDEX
+</span></span><span class=line><span class=cl>-------------------------------------
+</span></span><span class=line><span class=cl>Ibuf: size 1, free list len 0, seg size 2, 0 merges
+</span></span><span class=line><span class=cl>merged operations:
+</span></span><span class=line><span class=cl> insert 0, delete mark 0, delete 0
+</span></span><span class=line><span class=cl>discarded operations:
+</span></span><span class=line><span class=cl> insert 0, delete mark 0, delete 0
+</span></span><span class=line><span class=cl>0.00 hash searches/s, 0.00 non-hash searches/s
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>LOG
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>Log sequence number 47392436
+</span></span><span class=line><span class=cl>Log flushed up to   47392436
+</span></span><span class=line><span class=cl>Pages flushed up to 47392436
+</span></span><span class=line><span class=cl>Last checkpoint at  47392436
+</span></span><span class=line><span class=cl>Max checkpoint age    80826164
+</span></span><span class=line><span class=cl>Checkpoint age target 78300347
+</span></span><span class=line><span class=cl>Modified age          0
+</span></span><span class=line><span class=cl>Checkpoint age        0
+</span></span><span class=line><span class=cl>0 pending log writes, 0 pending chkp writes
+</span></span><span class=line><span class=cl>8 log i/o&#39;s done, 0.00 log i/o&#39;s/second
+</span></span><span class=line><span class=cl>----------------------
+</span></span><span class=line><span class=cl>BUFFER POOL AND MEMORY
+</span></span><span class=line><span class=cl>----------------------
+</span></span><span class=line><span class=cl>Total memory allocated 141033472; in additional pool allocated 0
+</span></span><span class=line><span class=cl>Total memory allocated by read views 88
+</span></span><span class=line><span class=cl>Internal hash tables (constant factor + variable factor)
+</span></span><span class=line><span class=cl>    Adaptive hash index 2233968         (2213368 + 20600)
+</span></span><span class=line><span class=cl>    Page hash           139112 (buffer pool 0 only)
+</span></span><span class=line><span class=cl>    Dictionary cache    618319  (554768 + 63551)
+</span></span><span class=line><span class=cl>    File system         819088  (812272 + 6816)
+</span></span><span class=line><span class=cl>    Lock system         333624  (332872 + 752)
+</span></span><span class=line><span class=cl>    Recovery system     0       (0 + 0)
+</span></span><span class=line><span class=cl>Dictionary memory allocated 63551
+</span></span><span class=line><span class=cl>Buffer pool size        8191
+</span></span><span class=line><span class=cl>Buffer pool size, bytes 134201344
+</span></span><span class=line><span class=cl>Free buffers            7856
+</span></span><span class=line><span class=cl>Database pages          334
+</span></span><span class=line><span class=cl>Old database pages      0
+</span></span><span class=line><span class=cl>Modified db pages       0
+</span></span><span class=line><span class=cl>Percent of dirty pages(LRU &amp; free pages): 0.000
+</span></span><span class=line><span class=cl>Max dirty pages percent: 75.000
+</span></span><span class=line><span class=cl>Pending reads 0
+</span></span><span class=line><span class=cl>Pending writes: LRU 0, flush list 0, single page 0
+</span></span><span class=line><span class=cl>Pages made young 0, not young 0
+</span></span><span class=line><span class=cl>0.00 youngs/s, 0.00 non-youngs/s
+</span></span><span class=line><span class=cl>Pages read 334, created 0, written 1
+</span></span><span class=line><span class=cl>0.00 reads/s, 0.00 creates/s, 0.00 writes/s
+</span></span><span class=line><span class=cl>No buffer pool page gets since the last printout
+</span></span><span class=line><span class=cl>Pages read ahead 0.00/s, evicted without access 0.00/s, Random read ahead 0.00/s
+</span></span><span class=line><span class=cl>LRU len: 334, unzip_LRU len: 0
+</span></span><span class=line><span class=cl>I/O sum[0]:cur[0], unzip sum[0]:cur[0]
+</span></span><span class=line><span class=cl>--------------
+</span></span><span class=line><span class=cl>ROW OPERATIONS
+</span></span><span class=line><span class=cl>--------------
+</span></span><span class=line><span class=cl>0 queries inside InnoDB, 0 queries in queue
+</span></span><span class=line><span class=cl>0 read views open inside InnoDB
+</span></span><span class=line><span class=cl>0 RW transactions active inside InnoDB
+</span></span><span class=line><span class=cl>0 RO transactions active inside InnoDB
+</span></span><span class=line><span class=cl>0 out of 1000 descriptors used
+</span></span><span class=line><span class=cl>Main thread process no. 6432, id 140497645459200, state: sleeping
+</span></span><span class=line><span class=cl>Number of rows inserted 0, updated 0, deleted 0, read 0
+</span></span><span class=line><span class=cl>0.00 inserts/s, 0.00 updates/s, 0.00 deletes/s, 0.00 reads/s
+</span></span><span class=line><span class=cl>Number of system rows inserted 0, updated 0, deleted 0, read 0
+</span></span><span class=line><span class=cl>0.00 inserts/s, 0.00 updates/s, 0.00 deletes/s, 0.00 reads/s
+</span></span><span class=line><span class=cl>----------------------------
+</span></span><span class=line><span class=cl>END OF INNODB MONITOR OUTPUT
+</span></span><span class=line><span class=cl>============================
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>1 row in set (0.02 sec)
+</span></span></code></pre></div><a class=anchor id=源码实现></a><h3>源码实现 <a href=#%e6%ba%90%e7%a0%81%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h3><p>上述命令会调用存储引擎中定义的 <code>show_status()</code> 接口，对于 InnoDB 来说，调用逻辑如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>// 初始化为相应的函数
+</span></span><span class=line><span class=cl>static int innobase_init(void *p)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    ... ...
+</span></span><span class=line><span class=cl>    innobase_hton-&gt;show_status = innobase_show_status;
+</span></span><span class=line><span class=cl>    ... ...
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>然后，其调用流程如下，也就是最终调用的是 <code>srv_printf_innodb_monitor()</code> 函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>innobase_show_status()               ← handler/ha_innodb.cc
+</span></span><span class=line><span class=cl>  |-innodb_show_status()
+</span></span><span class=line><span class=cl>    |-srv_printf_innodb_monitor()    ← 实际打印函数入口，srv/srv0srv.cc
+</span></span><span class=line><span class=cl>      |-lock_print_info_summary()    ← 打印锁相关信息
+</span></span><span class=line><span class=cl>      |-log_print()                  ← LOG，redo日志相关
+</span></span></code></pre></div><a class=anchor id=innodb_metrics></a><h2>innodb_metrics <a href=#innodb_metrics aria-hidden=true>#</a></h2><p>从 MySQL 5.6 开始，引入了 <code>information_schema.innodb_metrics</code> 表，包含了比 <code>show global status</code> 更详细的内容，而且相比 <code>performance_schema</code> 更轻量级。</p><p>八卦下，据说 <code>innodb_metrics</code> 表是在 Oracle-Sun 谈判的时候，所以就只实现了这一个表 ^_^</p><p>该表中包括了，页的分裂和合并、Purge 的性能、Adaptive Hash Index 活动、页的刷新、日志刷新、Index Condition Pushdown(ICP) 等等；监控那些指标可以分别控制。</p><p>InnoDB 中提供了如下的变量，可以对表内的参数进行设置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看可以使用的变量
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GLOBAL VARIABLES LIKE &#39;innodb_monitor_%&#39;;
+</span></span><span class=line><span class=cl>+--------------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name            | Value |
+</span></span><span class=line><span class=cl>+--------------------------+-------+
+</span></span><span class=line><span class=cl>| innodb_monitor_disable   |       |
+</span></span><span class=line><span class=cl>| innodb_monitor_enable    |       |
+</span></span><span class=line><span class=cl>| innodb_monitor_reset     |       |
+</span></span><span class=line><span class=cl>| innodb_monitor_reset_all |       |
+</span></span><span class=line><span class=cl>+--------------------------+-------+
+</span></span><span class=line><span class=cl>4 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看当前的监控指标
+</span></span><span class=line><span class=cl>mysql&gt; SELECT name,subsystem,status,type,comment FROM information_schema.innodb_metrics;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 开启一个指标项
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL innodb_monitor_enable=&#39;buffer_pool_reads&#39;;
+</span></span><span class=line><span class=cl>----- 关闭一个指标项
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL innodb_monitor_disable=&#39;buffer_pool_reads&#39;;
+</span></span><span class=line><span class=cl>----- 重置参数，只重置XXX_RESET列参数
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL innodb_monitor_reset=&#39;buffer_pool_reads&#39;;
+</span></span><span class=line><span class=cl>----- 重置所有参数，会重置所有参数
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL innodb_monitor_reset_all=&#39;buffer_pool_reads&#39;;
+</span></span><span class=line><span class=cl>----- 也可以使用通配符
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL innodb_monitor_enable=&#39;buffer_pool_%&#39;;
+</span></span></code></pre></div><p>可以参考 <a href=https://dev.mysql.com/doc/refman/en/innodb-metrics-table.html>Reference Manual</a> 以及 <a href=https://blogs.oracle.com/mysqlinnodb/entry/get_started_with_innodb_metrics>Get started with InnoDB Metrics Table</a> 。</p><a class=anchor id=源码解析></a><h3>源码解析 <a href=#%e6%ba%90%e7%a0%81%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h3><p>监控的源码实现在 <code>storage/innobase/srv/srv0mon.cc</code> 文件中，通过如下变量进行统计。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=k>static</span> <span class=n>monitor_info_t</span>   <span class=n>innodb_counter_info</span><span class=p>[]</span> <span class=o>=</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=cm>/* A dummy item to mark the module start, this is
+</span></span></span><span class=line><span class=cl><span class=cm>    to accomodate the default value (0) set for the
+</span></span></span><span class=line><span class=cl><span class=cm>    global variables with the control system. */</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span><span class=s>&#34;module_start&#34;</span><span class=p>,</span> <span class=s>&#34;module_start&#34;</span><span class=p>,</span> <span class=s>&#34;module_start&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=n>MONITOR_MODULE</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=n>MONITOR_DEFAULT_START</span><span class=p>,</span> <span class=n>MONITOR_DEFAULT_START</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span><span class=s>&#34;buffer_flush_background_pages&#34;</span><span class=p>,</span> <span class=s>&#34;buffer&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>     <span class=s>&#34;Pages queued as a background batch&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>     <span class=n>MONITOR_SET_MEMBER</span><span class=p>,</span> <span class=n>MONITOR_FLUSH_BACKGROUND_TOTAL_PAGE</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>     <span class=n>MONITOR_FLUSH_BACKGROUND_PAGES</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></div><p>计数器在那里增加，可以通过最后的一个宏定义查看，如上述 <code>MONITOR_FLUSH_BACKGROUND_PAGES</code> 。</p><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><p>在 MySQL 中设置与 InnoDB 相关的变量时，实际对应到源码后是将变量中的 innodb 替换为了 srv ，例如 <code>innodb_read_ahead_threshold</code> 对应到源码中是 <code>srv_read_ahead_threshold</code> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#innodb-特性>InnoDB 特性</a></li><li><a href=#常用操作>常用操作</a></li></ul></li><li><a href=#文件管理>文件管理</a></li><li><a href=#状态查看>状态查看</a><ul><li><a href=#show-engine>show engine</a></li><li><a href=#innodb_metrics>innodb_metrics</a></li><li><a href=#其它>其它</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

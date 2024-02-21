@@ -1,0 +1,97 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>OpenSSL 常用命令 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="OpenSSL 除了提供一个开发库之外，还包括了一些常用的命令，这里简单介绍其使用方式。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>OpenSSL 常用命令</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-05-10</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>Linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/tls/ssl/ role=button>TLS/SSL</a></div></div><hr><div class=content><p>OpenSSL 除了提供一个开发库之外，还包括了一些常用的命令，这里简单介绍其使用方式。</p><a class=anchor id=安装></a><h1>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h1><p>一般在 Linux 发行版本中已经安装了 OpenSSL ，可以通过 <code>openssl version</code> 查看其版本号，通过 <code>-a</code> 参数查看详细的编译参数；也可以通过如下方式从源码安装：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ ./config -fPIC no-shared --prefix=/usr/local --openssldir=/usr/local/ssl
+</span></span><span class=line><span class=cl>$ make
+</span></span><span class=line><span class=cl># make install
+</span></span></code></pre></div><p>其中各个参数介绍如下：</p><ul><li><code>shared</code> 生成动态库，默认会生成静态库；</li><li><code>no-shared</code> 只生成静态库，也就是生成 <code>libssl.a</code> 以及 <code>libcrypto.a</code> 两个库文件；</li><li><code>-fPIC</code> 生成位置无关代码，用来防止在静态库连接到动态库的时候报错；</li><li><code>--openssldir=OPENSSLDIR</code> 安装目录，默认是 <code>/usr/local/ssl</code>；</li><li><code>--prefix=PREFIX</code> 设置 <code>lib</code> <code>include</code> <code>bin</code> 目录的前缀，默认为 <code>OPENSSLDIR</code> 目录。</li></ul><a class=anchor id=生成秘钥></a><h1>生成秘钥 <a href=#%e7%94%9f%e6%88%90%e7%a7%98%e9%92%a5 aria-hidden=true>#</a></h1><p>通过 openssl 可以生成一个秘钥(私钥)，可以通过这个秘钥将公钥提取出来，严格来说，为了安全需要对秘钥进行对称加密，这样类似 Nginx 之类的插件需要交互输入密码。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 生成、查看未加密的秘钥文件
+</span></span><span class=line><span class=cl>openssl genrsa -out private.pem 1024
+</span></span><span class=line><span class=cl>openssl rsa -in private.pem
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>------ 查看私钥具体参数以及秘钥文件内容，通过-noout关闭私钥打印
+</span></span><span class=line><span class=cl>openssl rsa -in private.pem -text
+</span></span><span class=line><span class=cl>openssl rsa -in private.pem -text -noout
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>------ 对秘钥加密或者直接生成
+</span></span><span class=line><span class=cl>openssl rsa -in private.pem -des3 -passout &#39;pass:YourPassHere&#39; -out private_des.pem
+</span></span><span class=line><span class=cl>openssl genrsa -out private_des.pem -des3 -passout &#39;pass:YourPassHere&#39; 1024
+</span></span><span class=line><span class=cl>openssl rsa -in private_des.pem -text -noout -passin &#39;pass:YourPassHere&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>------ 检查秘钥文件是否合法
+</span></span><span class=line><span class=cl>openssl rsa -in private.pem -check
+</span></span></code></pre></div><a class=anchor id=查看公钥></a><h2>查看公钥 <a href=#%e6%9f%a5%e7%9c%8b%e5%85%ac%e9%92%a5 aria-hidden=true>#</a></h2><p>利用上述生成的秘钥可以生成公钥。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 通过私钥生成公钥，然后查看，等价于直接查看文件内容
+</span></span><span class=line><span class=cl>openssl rsa -in private.pem -pubout -out public.pem
+</span></span><span class=line><span class=cl>openssl rsa -pubin -in public.pem
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看公钥信息，但是不查看文件内容
+</span></span><span class=line><span class=cl>openssl rsa -pubin -in public.pem -text -noout
+</span></span></code></pre></div><a class=anchor id=查看证书></a><h2>查看证书 <a href=#%e6%9f%a5%e7%9c%8b%e8%af%81%e4%b9%a6 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 请求信息
+</span></span><span class=line><span class=cl>openssl req -noout -text -in cert.csr
+</span></span><span class=line><span class=cl>----- 私钥信息
+</span></span><span class=line><span class=cl>openssl rsa -text -noout -passin &#39;pass:YourPassHere&#39; -in key.pem
+</span></span><span class=line><span class=cl>----- 证书信息
+</span></span><span class=line><span class=cl>openssl x509 -noout -text -in cert.pem
+</span></span></code></pre></div><a class=anchor id=生成证书></a><h1>生成证书 <a href=#%e7%94%9f%e6%88%90%e8%af%81%e4%b9%a6 aria-hidden=true>#</a></h1><p>这里采用自签发的证书，需要生成根证书，并分别向服务端和客户端颁发对应的证书，这样可以作双向认证。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mkdir pki/{CA,SVR,CLI} -p
+</span></span></code></pre></div><a class=anchor id=自签名证书></a><h2>自签名证书 <a href=#%e8%87%aa%e7%ad%be%e5%90%8d%e8%af%81%e4%b9%a6 aria-hidden=true>#</a></h2><p>自签 CA 证书，有如下的三种方式，简单介绍。</p><p>服务端私钥和证书。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 生成服务端私钥
+</span></span><span class=line><span class=cl>openssl genrsa -out key.pem 2048
+</span></span><span class=line><span class=cl>----- 生成证书请求文件
+</span></span><span class=line><span class=cl>openssl req -new -key key.pem -out server.csr  \
+</span></span><span class=line><span class=cl>	-subj &#34;/C=CN/ST=MyProvince/L=MyCity/O=MyOrganization/OU=MyGroup/CN=MyServer&#34;
+</span></span><span class=line><span class=cl>----- 使用根证书签发服务端证书
+</span></span><span class=line><span class=cl>openssl x509 -req -days 365 -sha1 -extensions v3_req -CA ../CA/cacert.pem \
+</span></span><span class=line><span class=cl>	-CAkey ../CA/cakey.pem -CAserial ca.csr -CAcreateserial           \
+</span></span><span class=line><span class=cl>	-in server.csr -out cert.pem
+</span></span><span class=line><span class=cl>----- 使用CA证书验证server端证书
+</span></span><span class=line><span class=cl>openssl verify -CAfile ../CA/cacert.pem cert.pem
+</span></span></code></pre></div><p>客户端私钥和证书。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 生成客户端私钥
+</span></span><span class=line><span class=cl>openssl genrsa -out key.pem 2048
+</span></span><span class=line><span class=cl>----- 生成证书请求文件
+</span></span><span class=line><span class=cl>openssl req -new -key key.pem -out client.csr  \
+</span></span><span class=line><span class=cl>	-subj &#34;/C=CN/ST=MyProvince/L=MyCity/O=MyOrganization/OU=MyGroup/CN=MyClient&#34;
+</span></span><span class=line><span class=cl>----- 使用根证书签发客户端证书
+</span></span><span class=line><span class=cl>openssl x509 -req -days 365 -sha1 -extensions v3_req -CA ../CA/cacert.pem     \
+</span></span><span class=line><span class=cl>	-CAkey ../CA/cakey.pem -CAserial ../SVR/ca.csr -in client.csr -out cert.pem
+</span></span><span class=line><span class=cl>----- 使用CA证书验证客户端证书
+</span></span><span class=line><span class=cl>openssl verify -CAfile ../CA/cacert.pem cert.pem
+</span></span></code></pre></div><p>也可以对私钥进行加密。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 通过AES256解密保护私钥
+</span></span><span class=line><span class=cl>openssl genrsa -aes256 -out keysec.pem -passout pass:123456 2048
+</span></span><span class=line><span class=cl>openssl req -new -key keysec.pem -out clientsec.csr   \
+</span></span><span class=line><span class=cl>	-subj &#34;/C=CN/ST=MyProvince/L=MyCity/O=MyOrganization/OU=MyGroup/CN=MyClient&#34; \
+</span></span><span class=line><span class=cl>	-passin pass:123456
+</span></span><span class=line><span class=cl>openssl x509 -req -days 365 -sha1 -extensions v3_req -CA ../CA/cacert.pem \
+</span></span><span class=line><span class=cl>	-CAkey ../CA/cakey.pem -CAserial ../SVR/ca.csr -in clientsec.csr \
+</span></span><span class=line><span class=cl>	-out certsec.pem -passin pass:123456
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 去除私钥中的密码保护
+</span></span><span class=line><span class=cl>openssl rsa -in pki/CLI/keysec.pem -out pki/CLI/keyplain.pem -passin pass:123456
+</span></span></code></pre></div><p>其它。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看证书的内容
+</span></span><span class=line><span class=cl>openssl x509 -in SVR/cert.pem -text -noout
+</span></span></code></pre></div><p>可以通过 <a href=reference/gencert.sh>gencert.sh</a> 脚本生成相关证书文件。</p><a class=anchor id=服务端-客户端></a><h1>服务端 客户端 <a href=#%e6%9c%8d%e5%8a%a1%e7%ab%af-%e5%ae%a2%e6%88%b7%e7%ab%af aria-hidden=true>#</a></h1><p>OpenSSL 提供了 Server 和 Client 的相关工具，可以用来模拟客户端以及服务端进行测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>openssl s_server -accept 44330 -CAfile pki/CA/cacert.pem            \
+</span></span><span class=line><span class=cl>	-key pki/SVR/key.pem -cert pki/SVR/cert.pem -state
+</span></span><span class=line><span class=cl>openssl s_client -connect 127.0.0.1:44330 -CAfile pki/CA/cacert.pem \
+</span></span><span class=line><span class=cl>	-key pki/CLI/key.pem -cert pki/CLI/cert.pem -state
+</span></span></code></pre></div><p>如下是常用的参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>-connect            指定服务器的地址以及端口，默认是localhost:443
+</span></span><span class=line><span class=cl>-key                私钥文件的路径
+</span></span><span class=line><span class=cl>-cert               证书文件的路径
+</span></span><span class=line><span class=cl>-CAfile             根证书文件的路径
+</span></span><span class=line><span class=cl>-showcerts          显示服务器的证书信息
+</span></span><span class=line><span class=cl>-state              在SSL交互过程中的各种信息
+</span></span><span class=line><span class=cl>-verify             根证书校验的深度
+</span></span><span class=line><span class=cl>-debug              打印调试信息
+</span></span><span class=line><span class=cl>-accept             监听的端口号
+</span></span><span class=line><span class=cl>-ciphersuites       指定TLSv1.3版本的安全套件，通过:分割
+</span></span><span class=line><span class=cl>-cipher             指定TLSv1.2版本以下的安全套件
+</span></span><span class=line><span class=cl>-tls1_3             明确使用TLSv1.3版本，或者tls1_2 tls1_1 tls1
+</span></span><span class=line><span class=cl>-num_tickets &lt;N&gt;    在TLSv1.3的Server中Post-Handshake阶段发送几个tickets
+</span></span><span class=line><span class=cl>-reconnect &lt;N&gt;      尝试重新连接，可以用来测试会话复用
+</span></span><span class=line><span class=cl>-keylogfile &lt;FILE&gt;  将链接的MasterSecret信息保存到文件中
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#安装>安装</a></li><li><a href=#生成秘钥>生成秘钥</a><ul><li><a href=#查看公钥>查看公钥</a></li><li><a href=#查看证书>查看证书</a></li></ul></li><li><a href=#生成证书>生成证书</a><ul><li><a href=#自签名证书>自签名证书</a></li></ul></li><li><a href=#服务端-客户端>服务端 客户端</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

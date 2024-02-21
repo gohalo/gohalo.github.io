@@ -1,0 +1,204 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Bison 简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="bison 读入一个 CFG 文法的文件，在程序内经过计算，输出一个 parser generator 的 c 文件；也就是说 Bison 适合上下文无关文法，采用 LALR Parser (LALR语法分析器)。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Bison 简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-09-20</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a></div></div><hr><div class=content><p>bison 读入一个 CFG 文法的文件，在程序内经过计算，输出一个 parser generator 的 c 文件；也就是说 Bison 适合上下文无关文法，采用 LALR Parser (LALR语法分析器)。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>在实现时，bison 会创建一组状态，每个状态用来表示规则中的一个可能位置，同时还会维护一个堆栈，这个堆栈叫做分析器堆栈 (parser stack)。每次读入一个终结符 (token)，它会将该终结符及其语意值一起压入堆栈，把一个 token 压入堆栈通常叫做移进 (shifting)。</p><p>当已经移进的后 n 个终结符可以与一个左侧的文法规则相匹配时，这个 n 各终结符会被根据那个规则结合起来，同时将这 n 个终结符出栈，左侧的符号如栈，这叫做归约 (reduction)。</p><p>如果可以将 bison+flex 混合使用，当语法分析需要输入标记 (token) 时，就会调用 <code>yylex()</code> ，然后匹配规则，如果找到则返回。</p><a class=anchor id=文件格式></a><h2>文件格式 <a href=#%e6%96%87%e4%bb%b6%e6%a0%bc%e5%bc%8f aria-hidden=true>#</a></h2><p>两个文件的格式基本类似，分成三部分，都是通过 <code>%%</code> 进行分割，如下所示。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>... definitions ...
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>... rules ...
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>... subroutines ...
+</span></span></code></pre></div><p>其中：A) <code>definitions</code> 定义模式、C语言变量、以及包含c头文件等；B) <code>rules</code> 部分用户定义模式对应的动作；C) <code>subroutines</code> 部分用于定义 C 函数等。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>读取 <code>Hi</code> <code>Bye</code> 并输出相关的内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>/* hello.l */
+</span></span><span class=line><span class=cl>%{
+</span></span><span class=line><span class=cl>        #include &#34;hello.tab.h&#34;
+</span></span><span class=line><span class=cl>        int yyerror(char *errormsg);
+</span></span><span class=line><span class=cl>        int yyparse(void);
+</span></span><span class=line><span class=cl>%}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>(&#34;hi&#34;|&#34;Hi&#34;)&#34;\n&#34;       { return HI;  }
+</span></span><span class=line><span class=cl>(&#34;Bye&#34;|&#34;bye&#34;)&#34;\n&#34;     { return BYE; }
+</span></span><span class=line><span class=cl>[-[]+.,&gt;&lt;]            { return yytext[0]; }
+</span></span><span class=line><span class=cl>.                     { yyerror(&#34;Unknow char&#34;);  }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>int main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>        yyparse();
+</span></span><span class=line><span class=cl>        return 0;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int yywrap(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>        return 0;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int yyerror(char *errormsg)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>        fprintf(stderr, &#34;%s\n&#34;, errormsg);
+</span></span><span class=line><span class=cl>        exit(1);
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>/* hello.y */
+</span></span><span class=line><span class=cl>%{
+</span></span><span class=line><span class=cl>        #include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>        #include &lt;stdlib.h&gt;
+</span></span><span class=line><span class=cl>        int yylex(void);
+</span></span><span class=line><span class=cl>        int yyerror(const char *s);
+</span></span><span class=line><span class=cl>%}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%token HI BYE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>program:
+</span></span><span class=line><span class=cl>        hi bye
+</span></span><span class=line><span class=cl>        ;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>hi:
+</span></span><span class=line><span class=cl>        HI     { printf(&#34;Hello World\n&#34;);   }
+</span></span><span class=line><span class=cl>        ;
+</span></span><span class=line><span class=cl>bye:
+</span></span><span class=line><span class=cl>        BYE    { printf(&#34;Bye Now\n&#34;); exit(0); }
+</span></span><span class=line><span class=cl>        ;
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># Makefile
+</span></span><span class=line><span class=cl>all:
+</span></span><span class=line><span class=cl>        flex --outfile=hello.yy.c hello.l
+</span></span><span class=line><span class=cl>        bison -d --output=hello.tab.c hello.y
+</span></span><span class=line><span class=cl>        gcc hello.tab.c hello.yy.c -o hello
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>clean:
+</span></span><span class=line><span class=cl>        rm *.tab.c *.tab.h *.yy.c -f hello
+</span></span></code></pre></div><p>可以直接执行 hello ，然后输入 <code>Hi</code> <code>Bye</code> 加上回车即可。</p><a class=anchor id=规则></a><h1>规则 <a href=#%e8%a7%84%e5%88%99 aria-hidden=true>#</a></h1><p>定了语法的产生以及语义的动作，一般规则为 <code>Result: Components {...};</code>，其中 <code>Result</code> 为非终结符，<code>Components</code> 可以是终结符、非终结符、语义动作。</p><p>在 <code>{...}</code> 中，通过 C 语言实现语义的动作，<code>$$</code> 表示 Result 的</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>value:
+</span></span><span class=line><span class=cl>	VARIABLE
+</span></span><span class=line><span class=cl>        | NUMBER
+</span></span><span class=line><span class=cl>expression:
+</span></span><span class=line><span class=cl>          value &#39;+&#39; value
+</span></span><span class=line><span class=cl>        | value &#39;-&#39; value
+</span></span></code></pre></div><p>这意味着表达式可以是几种格式中的任意一种；例如，一个变量、一个加号或者一个数字都 可以是一个表达式。</p><p>yacc 中定义了很多的符号，详细的可以查看 <a href=http://dinosaur.compilertools.net/bison/bison_13.html>Bison Symbols</a> 中的介绍，如下简单介绍常见的符号定义：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%start foobar
+</span></span><span class=line><span class=cl>  修改默认的开始规则，例如从foobar规则开始解析，默认从第一条规则开始
+</span></span><span class=line><span class=cl>%token TOKEN1 TOKEN2 TOKEN3 ...
+</span></span><span class=line><span class=cl>  通常用来指定从 flex 解析获取的符号类型，如上，可以是终结符或者标记。
+</span></span><span class=line><span class=cl>%left，%right，%nonassoc
+</span></span><span class=line><span class=cl>  类似于终结符，不过同时具有某种优先级和结核性，分别表示左结合、右结合、不结合 (也就是终结符不能连续出现，
+</span></span><span class=line><span class=cl>     例如&lt;，此时不允许出现a&lt;b&lt;c这类句子)。
+</span></span><span class=line><span class=cl>  优先级与其定义的顺序相关，先定义的优先级低，最后定义的优先级最高，同时定义的优先级相同。
+</span></span><span class=line><span class=cl>     例如，如上程序关于计算器中优先级的定义。
+</span></span></code></pre></div><a class=anchor id=终结符-vs-非终结符></a><h2>终结符 VS. 非终结符 <a href=#%e7%bb%88%e7%bb%93%e7%ac%a6-vs-%e9%9d%9e%e7%bb%88%e7%bb%93%e7%ac%a6 aria-hidden=true>#</a></h2><p>通过 Flex 生成的符号称为终结符 (Terminals) 或者标记 (Tokens)，从它们装配而来的内容称为非终结符 (Non-Terminals)。</p><p>所以，在上述的例子中，<code>NUMBER</code> 是一个终结符；value 是一个非终结符，它通过装配终结符而创建出来的。</p><a class=anchor id=token-vs-type></a><h1>Token VS. Type <a href=#token-vs-type aria-hidden=true>#</a></h1><p>Bison 会调用 Flex 的 <code>yylex()</code> 来获得标志 (Token)，其中与标志对应的值由 Lex 放在变量 yylval 中，而 yylval 的类型由 <code>YYSTYPE</code> 决定，默认是 int 。</p><p>也就是说，在 Bison 调用 <code>yylex()</code> 返回类型后，同时需要将对应的值通过 <code>yylval</code> 将值从 Flex 传递到 Bison 中。</p><a class=anchor id=union></a><h2>%union <a href=#union aria-hidden=true>#</a></h2><p>如果有多个值类型，则需要通过 <code>%union</code> 列举出所有的类型，此时 <code>yylval</code> 的类型就是上述的 <code>union</code> 结构体。</p><p>需要为每个符号定义相对的类型，其中终结符使用 <code>%token</code>，非终结符使用 <code>%type</code> 来定义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%union {
+</span></span><span class=line><span class=cl>	long value;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>%token &lt;value&gt;  NUMBER
+</span></span><span class=line><span class=cl>%type &lt;value&gt;   expression
+</span></span></code></pre></div><p>这样，当 Bison 解析器得到 Flex 返回的 NUMBER 记号时，它可以变量 yylval 中名为 value 的成员已经被赋值；这只是一个约定，同时需要在 Flex 中添加如下内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[0-9]+  { yylval.value = atol(yytext); return NUMBER; }
+</span></span></code></pre></div><p>上述通过 <code>%type</code> 声明了 <code>expression</code> 为非终结符，同时还使用了 <code>union yylval</code> 中的 <code>value</code> 成员；另外，<code>NUMBER</code> 为终结符。</p><p>注意，在不同的 Token 返回时，不要将值赋值到错误的对象。</p><a class=anchor id=使用></a><h2>使用 <a href=#%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h2><p>在 Bison 的规则中，可以通过符号名引用表达式的组成部分，其中返回值为 <code>$$</code> ，其它分别为 <code>$1</code> 到 <code>$N</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>expression:
+</span></span><span class=line><span class=cl>	NUMBER &#39;+&#39; NUMBER { $$ = $1 + $3; }
+</span></span></code></pre></div><p>注意，其中 <code>$2</code> 对应的是 <code>+</code> 号，只作为一个占位符，实际上没有任何意义。</p><p>在介绍原理的时候，会保存一个栈分析栈，实际上还通过 <code>yyvsp</code> 保存了对应的值，这也就是通过 <code>$N</code> 转换保存的值。</p><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><ul><li><code>%error-verbose</code> 显示详细的错误信息。</li></ul><a class=anchor id=冲突></a><h1>冲突 <a href=#%e5%86%b2%e7%aa%81 aria-hidden=true>#</a></h1><p>在解析语法的过程中，意味着可以选择多个分支，yacc 会根据规则选择默认的分支，但是，冲突意味着某些地方可能会出现异常。</p><p>Yacc 属于 LR 解析器，类似于一个有限的状态机，有所不同的是，Yacc 同时会有一个栈保存终止符，可以 pop 也可以 push ，这也就是为什么能支持上下文无关的语法。</p><a class=anchor id=递进-规约></a><h2>递进 规约 <a href=#%e9%80%92%e8%bf%9b-%e8%a7%84%e7%ba%a6 aria-hidden=true>#</a></h2><p>简单来说，Yacc 就是不断的执行递进和规约，每次都是不断地匹配语法右侧规则。</p><p>所谓的递进 (Shitf) 就是不断地读取符号，并添加到栈中；当最上层的栈满足某个语法规则时 (如 <code>A->x y z</code>) ，那么就会执行规约 (Reduce) 操作，也就是将 <code>x y z</code> 弹出，将 <code>A</code> 压入。</p><p>也就是说，递进是在等待满足条件的语法；而规约则是已经找到了。</p><p>总共有两种类型的冲突：A) Shift-Reduce；B) Reduce-Reduce；如果要查看具体的冲突，可以通过 <code>-v</code> 参数输出调试信息，也就是 <code>y.output</code> 文件。</p><a class=anchor id=shift-reduce></a><h2>Shift-Reduce <a href=#shift-reduce aria-hidden=true>#</a></h2><p>此时解析器需要判断是执行 Shift 还是执行 Reduce ，默认是前者。</p><p>例如，有如下的语法规则。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>S -&gt; 0 S 0
+</span></span><span class=line><span class=cl>S -&gt; e     /* epsilon */
+</span></span></code></pre></div><p>对应到 Bison 的代码为</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>S : &#39;0&#39; S &#39;0&#39;
+</span></span><span class=line><span class=cl>  | /* epsilon */
+</span></span><span class=line><span class=cl>  ;
+</span></span></code></pre></div><p>然后，通过如下方式编译。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ bison -d -v hello.y
+</span></span><span class=line><span class=cl>hello.y: warning: 1 shift/reduce conflict [-Wconflicts-sr]
+</span></span></code></pre></div><a class=anchor id=reduce-reduce></a><h2>Reduce-Reduce <a href=#reduce-reduce aria-hidden=true>#</a></h2><p>当执行规约时面临着两个 Reduce 的选择，默认选择第一个。</p><a class=anchor id=其它-1></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83-1 aria-hidden=true>#</a></h1><a class=anchor id=字符串解析></a><h2>字符串解析 <a href=#%e5%ad%97%e7%ac%a6%e4%b8%b2%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h2><p>通过如下方式可以设置使用内存字符串而非文件：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>YY_BUFFER_STATE yy_scan_string(const char *str);
+</span></span><span class=line><span class=cl>YY_BUFFER_STATE yy_scan_bytes(const char *bytes, int len);
+</span></span></code></pre></div><p>这里会返回一个 <code>YY_BUFFER_STATE</code> 类型，在使用完之后，需要通过 <code>yy_delete_buffer()</code> 删除，也就是在通过 <code>yylex()</code> 解析前会先复制一份数据，然后解析时会修改缓存。</p><p>如果不希望复制，那么可以使用如下函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>YY_BUFFER_STATE yy_scan_buffer(char *base, yy_size_t size)
+</span></span></code></pre></div><p>下面是一个简单的示例：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>yy_scan_string</span><span class=p>(</span><span class=s>&#34;a test string&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>yylex</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=变量></a><h2>变量 <a href=#%e5%8f%98%e9%87%8f aria-hidden=true>#</a></h2><p><code>$$ $1 $2 ...</code> 定义了默认的参数，示例如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>exp:
+</span></span><span class=line><span class=cl>| exp &#39;+&#39; exp     { $$ = $1 + $3; }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>exp[result]:
+</span></span><span class=line><span class=cl>| exp[left] &#39;+&#39; exp[right]  { $result = $left + $right; }
+</span></span></code></pre></div><a class=anchor id=示例程序></a><h1>示例程序 <a href=#%e7%a4%ba%e4%be%8b%e7%a8%8b%e5%ba%8f aria-hidden=true>#</a></h1><p>实现一个简单的计算器程序，能进行加、减、乘、除、幂运算，需要注意优先级。</p><p><code>calc.l</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%{
+</span></span><span class=line><span class=cl>    #include &#34;calc.tab.h&#34;
+</span></span><span class=line><span class=cl>    #include &lt;stdlib.h&gt;
+</span></span><span class=line><span class=cl>    void yyerror(char *);
+</span></span><span class=line><span class=cl>%}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[a-z]       {
+</span></span><span class=line><span class=cl>                yylval = *yytext - &#39;a&#39;;
+</span></span><span class=line><span class=cl>                return VARIABLE;
+</span></span><span class=line><span class=cl>                }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[0-9]+      {
+</span></span><span class=line><span class=cl>                yylval = atoi(yytext);
+</span></span><span class=line><span class=cl>                return INTEGER;
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[-+()=/*\n]     { return *yytext; }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[ \t]   ;       /* skip whitespace */
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>.               yyerror(&#34;Unknown character&#34;);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int yywrap(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	return 1;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p><code>calc.y</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%{
+</span></span><span class=line><span class=cl>	#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>	void yyerror(char *);
+</span></span><span class=line><span class=cl>	int yylex(void);
+</span></span><span class=line><span class=cl>	int sym[26];
+</span></span><span class=line><span class=cl>%}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%token INTEGER VARIABLE
+</span></span><span class=line><span class=cl>%left &#39;+&#39; &#39;-&#39;
+</span></span><span class=line><span class=cl>%left &#39;*&#39; &#39;/&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>program:
+</span></span><span class=line><span class=cl>	program statement &#39;\n&#39;
+</span></span><span class=line><span class=cl>	| /* NULL */
+</span></span><span class=line><span class=cl>	;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>statement:
+</span></span><span class=line><span class=cl>	expression                      { printf(&#34;%d\n&#34;, $1); }
+</span></span><span class=line><span class=cl>	| VARIABLE &#39;=&#39; expression       { sym[$1] = $3; }
+</span></span><span class=line><span class=cl>	;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>expression:
+</span></span><span class=line><span class=cl>	INTEGER
+</span></span><span class=line><span class=cl>	| VARIABLE                      { $$ = sym[$1]; }
+</span></span><span class=line><span class=cl>	| expression &#39;+&#39; expression     { $$ = $1 + $3; }
+</span></span><span class=line><span class=cl>	| expression &#39;-&#39; expression     { $$ = $1 - $3; }
+</span></span><span class=line><span class=cl>	| expression &#39;*&#39; expression     { $$ = $1 * $3; }
+</span></span><span class=line><span class=cl>	| expression &#39;/&#39; expression     { $$ = $1 / $3; }
+</span></span><span class=line><span class=cl>	| &#39;(&#39; expression &#39;)&#39;            { $$ = $2; }
+</span></span><span class=line><span class=cl>	;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>void yyerror(char *s)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	fprintf(stderr, &#34;%s\n&#34;, s);
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	yy_scan_string(&#34;1+1\n&#34;);
+</span></span><span class=line><span class=cl>	yyparse();
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>all:
+</span></span><span class=line><span class=cl>	bison -d calc.y
+</span></span><span class=line><span class=cl>	flex -o calc.lex.c calc.l
+</span></span><span class=line><span class=cl>	gcc calc.lex.c calc.tab.h calc.tab.c -o calc -lm
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>clean:
+</span></span><span class=line><span class=cl>	rm -f calc.lex.c calc.tab.c calc.tab.h calc test
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li><a href=https://medium.com/@gvanrossum_83706>Guido van Rossum</a> Python 作者的 Blog ，初篇介绍了很多关于解析器的内容。</li><li><a href=http://tldp.org/HOWTO/Lex-YACC-HOWTO.html>Lex and YACC HOWTO</a> 关于 Lex 和 Yacc 的详细介绍，可以作为入门。</li><li><a href=https://www.epaperpress.com/lexandyacc/index.html>龙书</a> 中的相关介绍，很多不错的资源，包括了 PDF 以及源码。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#文件格式>文件格式</a></li><li><a href=#示例>示例</a></li></ul></li><li><a href=#规则>规则</a><ul><li><a href=#终结符-vs-非终结符>终结符 VS. 非终结符</a></li></ul></li><li><a href=#token-vs-type>Token VS. Type</a><ul><li><a href=#union>%union</a></li><li><a href=#使用>使用</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#冲突>冲突</a><ul><li><a href=#递进-规约>递进 规约</a></li><li><a href=#shift-reduce>Shift-Reduce</a></li><li><a href=#reduce-reduce>Reduce-Reduce</a></li></ul></li><li><a href=#其它-1>其它</a><ul><li><a href=#字符串解析>字符串解析</a></li><li><a href=#变量>变量</a></li></ul></li><li><a href=#示例程序>示例程序</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

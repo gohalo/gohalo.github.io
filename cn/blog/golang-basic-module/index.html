@@ -1,0 +1,889 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>GoLang 常用模块 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="简单介绍常见的模块，例如 fmt、unsafe、signal、container 等。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>GoLang 常用模块</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2022-10-26</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><p>简单介绍常见的模块，例如 fmt、unsafe、signal、container 等。</p><a class=anchor id=fmt></a><h1>fmt <a href=#fmt aria-hidden=true>#</a></h1><p>其中最常用的是 <code>%v</code>，这是一个通用的格式化方式，用来打印 struct 的成员变量名称。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%v   默认格式，只打印各个字段的值，没有字段名称；
+</span></span><span class=line><span class=cl>%+v  当打印结构体时，同时会添加字段名称；
+</span></span><span class=line><span class=cl>%#v  类似+v，同时会打印对象名称，并用语法标示数据类型，例如字符串会加&#34;&#34;；
+</span></span><span class=line><span class=cl>%T   变量对应的类型名称 pakage.struct；
+</span></span></code></pre></div><p>示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>User</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>name</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl>    <span class=nx>age</span>  <span class=kt>int</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>u</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>User</span><span class=p>{</span><span class=nx>name</span><span class=p>:</span> <span class=s>&#34;andy&#34;</span><span class=p>,</span> <span class=nx>age</span><span class=p>:</span> <span class=mi>30</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;%v\n&#34;</span><span class=p>,</span> <span class=o>*</span><span class=nx>u</span><span class=p>)</span>  <span class=c1>// {andy 30}
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;%+v\n&#34;</span><span class=p>,</span> <span class=o>*</span><span class=nx>u</span><span class=p>)</span> <span class=c1>// {name:andy age:30}
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;%#v\n&#34;</span><span class=p>,</span> <span class=o>*</span><span class=nx>u</span><span class=p>)</span> <span class=c1>// main.User{name:&#34;andy&#34;, age:30}
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;%T\n&#34;</span><span class=p>,</span> <span class=o>*</span><span class=nx>u</span><span class=p>)</span>  <span class=c1>// main.User
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=flag></a><h1>flag <a href=#flag aria-hidden=true>#</a></h1><p>在 <code>os</code> 包中有一个 string 类型的切片变量 <code>os.Args</code> ，其中 <code>os.Args[0]</code> 放的是程序本身的名字，所以实际参数为 <code>os.Args[1:]</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>fmt.Println(&#34;Parameters:&#34;, os.Args[1:])
+</span></span></code></pre></div><p>可以通过标准库中 <code>flag</code> 库作为命令行入参的校验，其定义的变量类型是指针，获取对应值的时候需要添加引用 <code>*</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;flag&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=nx>name</span>   <span class=p>=</span> <span class=nx>flag</span><span class=p>.</span><span class=nf>String</span><span class=p>(</span><span class=s>&#34;name&#34;</span><span class=p>,</span> <span class=s>&#34;nick&#34;</span><span class=p>,</span> <span class=s>&#34;Input Your Name&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>age</span>    <span class=p>=</span> <span class=nx>flag</span><span class=p>.</span><span class=nf>Int</span><span class=p>(</span><span class=s>&#34;age&#34;</span><span class=p>,</span> <span class=mi>28</span><span class=p>,</span> <span class=s>&#34;Input Your Age&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>gender</span> <span class=p>=</span> <span class=nx>flag</span><span class=p>.</span><span class=nf>String</span><span class=p>(</span><span class=s>&#34;gender&#34;</span><span class=p>,</span> <span class=s>&#34;male&#34;</span><span class=p>,</span> <span class=s>&#34;Input Your Gender&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>address</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>flag</span><span class=p>.</span><span class=nf>StringVar</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>address</span><span class=p>,</span> <span class=s>&#34;address&#34;</span><span class=p>,</span> <span class=s>&#34;China&#34;</span><span class=p>,</span> <span class=s>&#34;Your Address&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>flag</span><span class=p>.</span><span class=nf>Parse</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;args=%s, num=%d\n&#34;</span><span class=p>,</span> <span class=nx>flag</span><span class=p>.</span><span class=nf>Args</span><span class=p>(),</span> <span class=nx>flag</span><span class=p>.</span><span class=nf>NArg</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>i</span> <span class=o>!=</span> <span class=nx>flag</span><span class=p>.</span><span class=nf>NArg</span><span class=p>();</span> <span class=nx>i</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;arg[%d]=%s\n&#34;</span><span class=p>,</span> <span class=nx>i</span><span class=p>,</span> <span class=nx>flag</span><span class=p>.</span><span class=nf>Arg</span><span class=p>(</span><span class=nx>i</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;name=&#34;</span><span class=p>,</span> <span class=o>*</span><span class=nx>name</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;age=&#34;</span><span class=p>,</span> <span class=o>*</span><span class=nx>age</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;gender=&#34;</span><span class=p>,</span> <span class=o>*</span><span class=nx>gender</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;address=&#34;</span><span class=p>,</span> <span class=nx>address</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在命令行中，可以使用如下的参数之一 <code>-age=XXX</code> <code>-age XXX</code> <code>--age=XXX</code> <code>--age XXX</code> 。</p><a class=anchor id=unsafe></a><h1>unsafe <a href=#unsafe aria-hidden=true>#</a></h1><p>这是一个很特殊的包，可以绕过 GoLang 本身的一些语法检查直接操作对象，从而可能会导致不可移植(可控)，而且使用比较危险。该包中包含了三个函数，以及一种类型：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Alignof</span><span class=p>(</span><span class=nx>variable</span> <span class=nx>ArbitraryType</span><span class=p>)</span> <span class=kt>uintptr</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Offsetof</span><span class=p>(</span><span class=nx>selector</span> <span class=nx>ArbitraryType</span><span class=p>)</span> <span class=kt>uintptr</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Sizeof</span><span class=p>(</span><span class=nx>variable</span> <span class=nx>ArbitraryType</span><span class=p>)</span> <span class=kt>uintptr</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>Pointer</span> <span class=o>*</span><span class=nx>ArbitraryType</span>
+</span></span></code></pre></div><p>上述函数类似于 C 中的宏，在编译时求值，而非运行时，也就是说它的结果可以分配给常量。</p><p>另外，<code>uintptr</code> 实际上是整型，其大小根据不同的平台变化，可以用来保存指针，例如在 32Bits 下是 4Bytes，在 64Bits 下是 8Bytes 。</p><a class=anchor id=使用示例></a><h2>使用示例 <a href=#%e4%bd%bf%e7%94%a8%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>在官方文档中有介绍其常见的使用场景。</p><a class=anchor id=unsafepointer-vs-uintptr></a><h3>unsafe.Pointer VS. uintptr <a href=#unsafepointer-vs-uintptr aria-hidden=true>#</a></h3><p><code>uintptr</code> 是一个可以容纳指针地址的整数类型，及时该变量仍然有效，但是其所指向地址的数据可能已经被 GC 回收掉。</p><p><code>unsafe.Pointer</code> 是一个通用的指针类型，如果该变量有效，那么其指向的地址出的数据就不会被 GC 回收掉。</p><p>因为 <code>uintptr</code> 是一个整型，可以进行算术运算；那么就可以使用上述两者绕过限制操作变量，计算结构体中变量的偏移。</p><p>如下是两个示例，分别用来操作数组和结构体成员。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;unsafe&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>a</span> <span class=o>:=</span> <span class=p>[</span><span class=mi>4</span><span class=p>]</span><span class=kt>int</span><span class=p>{</span><span class=mi>0</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>3</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p1</span> <span class=o>:=</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nf>Pointer</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>a</span><span class=p>[</span><span class=mi>1</span><span class=p>])</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p3</span> <span class=o>:=</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nf>Pointer</span><span class=p>(</span><span class=nb>uintptr</span><span class=p>(</span><span class=nx>p1</span><span class=p>)</span> <span class=o>+</span> <span class=mi>2</span><span class=o>*</span><span class=nx>unsafe</span><span class=p>.</span><span class=nf>Sizeof</span><span class=p>(</span><span class=nx>a</span><span class=p>[</span><span class=mi>0</span><span class=p>]))</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=p>(</span><span class=o>*</span><span class=kt>int</span><span class=p>)(</span><span class=nx>p3</span><span class=p>)</span> <span class=p>=</span> <span class=mi>6</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;a =&#34;</span><span class=p>,</span> <span class=nx>a</span><span class=p>)</span> <span class=c1>// a = [0 1 2 6]
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=kd>type</span> <span class=nx>Person</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>name</span>   <span class=kt>string</span>
+</span></span><span class=line><span class=cl>        <span class=nx>age</span>    <span class=kt>int</span>
+</span></span><span class=line><span class=cl>        <span class=nx>gender</span> <span class=kt>bool</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>who</span> <span class=o>:=</span> <span class=nx>Person</span><span class=p>{</span><span class=s>&#34;John&#34;</span><span class=p>,</span> <span class=mi>30</span><span class=p>,</span> <span class=kc>true</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>pp</span> <span class=o>:=</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nf>Pointer</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>who</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>pname</span> <span class=o>:=</span> <span class=p>(</span><span class=o>*</span><span class=kt>string</span><span class=p>)(</span><span class=nx>unsafe</span><span class=p>.</span><span class=nf>Pointer</span><span class=p>(</span><span class=nb>uintptr</span><span class=p>(</span><span class=nx>pp</span><span class=p>)</span> <span class=o>+</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nf>Offsetof</span><span class=p>(</span><span class=nx>who</span><span class=p>.</span><span class=nx>name</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl>    <span class=nx>page</span> <span class=o>:=</span> <span class=p>(</span><span class=o>*</span><span class=kt>int</span><span class=p>)(</span><span class=nx>unsafe</span><span class=p>.</span><span class=nf>Pointer</span><span class=p>(</span><span class=nb>uintptr</span><span class=p>(</span><span class=nx>pp</span><span class=p>)</span> <span class=o>+</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nf>Offsetof</span><span class=p>(</span><span class=nx>who</span><span class=p>.</span><span class=nx>age</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl>    <span class=nx>pgender</span> <span class=o>:=</span> <span class=p>(</span><span class=o>*</span><span class=kt>bool</span><span class=p>)(</span><span class=nx>unsafe</span><span class=p>.</span><span class=nf>Pointer</span><span class=p>(</span><span class=nb>uintptr</span><span class=p>(</span><span class=nx>pp</span><span class=p>)</span> <span class=o>+</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nf>Offsetof</span><span class=p>(</span><span class=nx>who</span><span class=p>.</span><span class=nx>gender</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=nx>pname</span> <span class=p>=</span> <span class=s>&#34;Alice&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=nx>page</span> <span class=p>=</span> <span class=mi>28</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=nx>pgender</span> <span class=p>=</span> <span class=kc>false</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>who</span><span class=p>)</span> <span class=c1>// {Alice 28 false}
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=signal></a><h1>signal <a href=#signal aria-hidden=true>#</a></h1><p>关于信号处理主要在 <code>os/signal</code> 中实现，其中包含了两个主要的方法：</p><ul><li>Notify() 监听收到的信号</li><li>Stop() 取消监听</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Notify</span><span class=p>(</span><span class=nx>c</span> <span class=kd>chan</span><span class=o>&lt;-</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Signal</span><span class=p>,</span> <span class=nx>sig</span> <span class=err>…</span><span class=nx>os</span><span class=p>.</span><span class=nx>Signal</span><span class=p>)</span>
+</span></span></code></pre></div><p>简单使用用例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os/signal&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;syscall&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>c</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Signal</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//signal.Notify(c) // default all signal
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>signal</span><span class=p>.</span><span class=nf>Notify</span><span class=p>(</span><span class=nx>c</span><span class=p>,</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Interrupt</span><span class=p>,</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Kill</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGUSR1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Waiting signal&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>s</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>c</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Quit with&#34;</span><span class=p>,</span> <span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>最经常使用的用例如下，可以通过捕获信号来做一些清理操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os/signal&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;syscall&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>c</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Signal</span><span class=p>,</span> <span class=mi>128</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>signal</span><span class=p>.</span><span class=nf>Notify</span><span class=p>(</span><span class=nx>c</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGHUP</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGINT</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGTERM</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGQUIT</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGUSR1</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGUSR2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>s</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>c</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>switch</span> <span class=nx>s</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGHUP</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGINT</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGTERM</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGQUIT</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Quit with signal&#34;</span><span class=p>,</span> <span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=nx>os</span><span class=p>.</span><span class=nf>Exit</span><span class=p>(</span><span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGUSR1</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;USR1&#34;</span><span class=p>,</span> <span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>case</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGUSR2</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;USR2&#34;</span><span class=p>,</span> <span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>default</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Other&#34;</span><span class=p>,</span> <span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Starting ...&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Waiting ...&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>time</span><span class=p>.</span><span class=nf>Sleep</span><span class=p>(</span><span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=container></a><h1>container <a href=#container aria-hidden=true>#</a></h1><p>在官方代码 <code>container</code> 目录下包含了三个容器类型的数据类型，也就是 <code>heap</code>、<code>list</code> 和 <code>ring</code>，这里简单介绍其使用方式。</p><a class=anchor id=list></a><h2>List <a href=#list aria-hidden=true>#</a></h2><p>这里实现的是一个双向链表，其对应类型的定义如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>List</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>root</span> <span class=nx>Element</span>
+</span></span><span class=line><span class=cl>	<span class=nx>len</span>  <span class=kt>int</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Element</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>next</span><span class=p>,</span> <span class=nx>prev</span> <span class=o>*</span><span class=nx>Element</span>
+</span></span><span class=line><span class=cl>	<span class=nx>list</span> <span class=o>*</span><span class=nx>List</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Value</span> <span class=kd>interface</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>注意，这里定义的是类型而非接口。其中的示例以及接口可以直接参考 <a href=https://golang.org/pkg/container/list/>golang.org/pkg/container/list</a> 文档中的相关介绍，如下是部分相关的示例整理。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;container/list&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>dump</span><span class=p>(</span><span class=nx>l</span> <span class=o>*</span><span class=nx>list</span><span class=p>.</span><span class=nx>List</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Total %d\n&#34;</span><span class=p>,</span> <span class=nx>l</span><span class=p>.</span><span class=nf>Len</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=nx>e</span> <span class=o>:=</span> <span class=nx>l</span><span class=p>.</span><span class=nf>Front</span><span class=p>();</span> <span class=nx>e</span> <span class=o>!=</span> <span class=kc>nil</span><span class=p>;</span> <span class=nx>e</span> <span class=p>=</span> <span class=nx>e</span><span class=p>.</span><span class=nf>Next</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>e</span><span class=p>.</span><span class=nx>Value</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>reverse</span><span class=p>(</span><span class=nx>l</span> <span class=o>*</span><span class=nx>list</span><span class=p>.</span><span class=nx>List</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Total %d\n&#34;</span><span class=p>,</span> <span class=nx>l</span><span class=p>.</span><span class=nf>Len</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=nx>e</span> <span class=o>:=</span> <span class=nx>l</span><span class=p>.</span><span class=nf>Back</span><span class=p>();</span> <span class=nx>e</span> <span class=o>!=</span> <span class=kc>nil</span><span class=p>;</span> <span class=nx>e</span> <span class=p>=</span> <span class=nx>e</span><span class=p>.</span><span class=nf>Prev</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>e</span><span class=p>.</span><span class=nx>Value</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>l0</span> <span class=o>:=</span> <span class=nx>list</span><span class=p>.</span><span class=nf>New</span><span class=p>()</span> <span class=c1>// l0 := new(list.List).Init()
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>e4</span> <span class=o>:=</span> <span class=nx>l0</span><span class=p>.</span><span class=nf>PushBack</span><span class=p>(</span><span class=mi>4</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>e1</span> <span class=o>:=</span> <span class=nx>l0</span><span class=p>.</span><span class=nf>PushFront</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>l0</span><span class=p>.</span><span class=nf>InsertAfter</span><span class=p>(</span><span class=mi>2</span><span class=p>,</span> <span class=nx>e1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>l0</span><span class=p>.</span><span class=nf>InsertBefore</span><span class=p>(</span><span class=mi>3</span><span class=p>,</span> <span class=nx>e4</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>l0</span><span class=p>.</span><span class=nf>MoveToBack</span><span class=p>(</span><span class=nx>e1</span><span class=p>)</span>     <span class=c1>// 2 3 4 1
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>l0</span><span class=p>.</span><span class=nf>MoveToFront</span><span class=p>(</span><span class=nx>e4</span><span class=p>)</span>    <span class=c1>// 4 2 3 1
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>l0</span><span class=p>.</span><span class=nf>MoveAfter</span><span class=p>(</span><span class=nx>e1</span><span class=p>,</span> <span class=nx>e4</span><span class=p>)</span>  <span class=c1>// 4 1 2 3
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>l0</span><span class=p>.</span><span class=nf>MoveBefore</span><span class=p>(</span><span class=nx>e1</span><span class=p>,</span> <span class=nx>e4</span><span class=p>)</span> <span class=c1>// 1 4 2 3
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>l0</span><span class=p>.</span><span class=nf>Remove</span><span class=p>(</span><span class=nx>e4</span><span class=p>)</span>         <span class=c1>// 1 2 3
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>	<span class=nx>l2</span> <span class=o>:=</span> <span class=nx>list</span><span class=p>.</span><span class=nf>New</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>l2</span><span class=p>.</span><span class=nf>PushBack</span><span class=p>(</span><span class=mi>4</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>l3</span> <span class=o>:=</span> <span class=nx>list</span><span class=p>.</span><span class=nf>New</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>l3</span><span class=p>.</span><span class=nf>PushFront</span><span class=p>(</span><span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>l0</span><span class=p>.</span><span class=nf>PushBackList</span><span class=p>(</span><span class=nx>l2</span><span class=p>)</span>  <span class=c1>// 1 2 3 4
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>l0</span><span class=p>.</span><span class=nf>PushFrontList</span><span class=p>(</span><span class=nx>l3</span><span class=p>)</span> <span class=c1>// 0 1 2 3 4
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nf>dump</span><span class=p>(</span><span class=nx>l0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=heap></a><h2>Heap <a href=#heap aria-hidden=true>#</a></h2><p>这里的堆使用的数据结构是最小二叉树，即根节点比左边子树和右边子树的所有值都小，其对应的接口定义为：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Interface</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>Len</span><span class=p>()</span> <span class=kt>int</span>
+</span></span><span class=line><span class=cl>	<span class=nf>Less</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span>
+</span></span><span class=line><span class=cl>	<span class=nf>Swap</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Interface</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>sort</span><span class=p>.</span><span class=nx>Interface</span>
+</span></span><span class=line><span class=cl>	<span class=nf>Push</span><span class=p>(</span><span class=nx>x</span> <span class=kd>interface</span><span class=p>{})</span> <span class=c1>// add x as element Len()
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nf>Pop</span><span class=p>()</span> <span class=kd>interface</span><span class=p>{}</span>   <span class=c1>// remove and return element Len() - 1.
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>也就是说，堆的接口继承自 <code>sort.Interface</code> 对应了 <code>sort/sort.go</code> 中的实现，那么对于堆来说，总共包含了上述的五个接口实现，使用时需要实现对应的接口才行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;container/heap&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>IntHeap</span> <span class=p>[]</span><span class=kt>int</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>h</span> <span class=nx>IntHeap</span><span class=p>)</span> <span class=nf>Len</span><span class=p>()</span> <span class=kt>int</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nb>len</span><span class=p>(</span><span class=nx>h</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>h</span> <span class=nx>IntHeap</span><span class=p>)</span> <span class=nf>Less</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nx>h</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>&lt;</span> <span class=nx>h</span><span class=p>[</span><span class=nx>j</span><span class=p>]</span> <span class=c1>// MinHeap
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>//return h[i] &gt; h[j] // MaxHeap
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>h</span> <span class=nx>IntHeap</span><span class=p>)</span> <span class=nf>Swap</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>h</span><span class=p>[</span><span class=nx>i</span><span class=p>],</span> <span class=nx>h</span><span class=p>[</span><span class=nx>j</span><span class=p>]</span> <span class=p>=</span> <span class=nx>h</span><span class=p>[</span><span class=nx>j</span><span class=p>],</span> <span class=nx>h</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>h</span> <span class=o>*</span><span class=nx>IntHeap</span><span class=p>)</span> <span class=nf>Push</span><span class=p>(</span><span class=nx>x</span> <span class=nx>any</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=o>*</span><span class=nx>h</span> <span class=p>=</span> <span class=nb>append</span><span class=p>(</span><span class=o>*</span><span class=nx>h</span><span class=p>,</span> <span class=nx>x</span><span class=p>.(</span><span class=kt>int</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>h</span> <span class=o>*</span><span class=nx>IntHeap</span><span class=p>)</span> <span class=nf>Pop</span><span class=p>()</span> <span class=nx>any</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>old</span><span class=p>,</span> <span class=nx>n</span> <span class=o>:=</span> <span class=o>*</span><span class=nx>h</span><span class=p>,</span> <span class=nb>len</span><span class=p>(</span><span class=o>*</span><span class=nx>h</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>x</span> <span class=o>:=</span> <span class=nx>old</span><span class=p>[</span><span class=nx>n</span><span class=o>-</span><span class=mi>1</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>	<span class=o>*</span><span class=nx>h</span> <span class=p>=</span> <span class=nx>old</span><span class=p>[:</span><span class=nx>n</span><span class=o>-</span><span class=mi>1</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nx>x</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>drain</span><span class=p>(</span><span class=nx>h</span> <span class=o>*</span><span class=nx>IntHeap</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=nx>h</span><span class=p>.</span><span class=nf>Len</span><span class=p>()</span> <span class=p>&gt;</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>heap</span><span class=p>.</span><span class=nf>Pop</span><span class=p>(</span><span class=nx>h</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>h</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>IntHeap</span><span class=p>{</span><span class=mi>2</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=mi>5</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>heap</span><span class=p>.</span><span class=nf>Init</span><span class=p>(</span><span class=nx>h</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>heap</span><span class=p>.</span><span class=nf>Push</span><span class=p>(</span><span class=nx>h</span><span class=p>,</span> <span class=mi>3</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>(</span><span class=o>*</span><span class=nx>h</span><span class=p>)[</span><span class=mi>1</span><span class=p>]</span> <span class=p>=</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>	<span class=nx>heap</span><span class=p>.</span><span class=nf>Fix</span><span class=p>(</span><span class=nx>h</span><span class=p>,</span> <span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>heap</span><span class=p>.</span><span class=nf>Remove</span><span class=p>(</span><span class=nx>h</span><span class=p>,</span> <span class=mi>3</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nf>drain</span><span class=p>(</span><span class=nx>h</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>也可以针对某个结构体进行封装，注意，结构体中的 <code>index</code> 用于执行 <code>Fix()</code> 时调用，如果不需要该功能，或者可以确定则忽略。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;container/heap&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Item</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>value</span>    <span class=kt>string</span>
+</span></span><span class=line><span class=cl>	<span class=nx>priority</span> <span class=kt>int</span>
+</span></span><span class=line><span class=cl>	<span class=nx>index</span>    <span class=kt>int</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>i</span> <span class=o>*</span><span class=nx>Item</span><span class=p>)</span> <span class=nf>String</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nx>i</span><span class=p>.</span><span class=nx>value</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>PQueue</span> <span class=p>[]</span><span class=o>*</span><span class=nx>Item</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=nx>PQueue</span><span class=p>)</span> <span class=nf>Len</span><span class=p>()</span> <span class=kt>int</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nb>len</span><span class=p>(</span><span class=nx>p</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=nx>PQueue</span><span class=p>)</span> <span class=nf>Less</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nx>p</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>priority</span> <span class=p>&lt;</span> <span class=nx>p</span><span class=p>[</span><span class=nx>j</span><span class=p>].</span><span class=nx>priority</span> <span class=c1>// MinHeap
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=nx>PQueue</span><span class=p>)</span> <span class=nf>Swap</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>p</span><span class=p>[</span><span class=nx>i</span><span class=p>],</span> <span class=nx>p</span><span class=p>[</span><span class=nx>j</span><span class=p>]</span> <span class=p>=</span> <span class=nx>p</span><span class=p>[</span><span class=nx>j</span><span class=p>],</span> <span class=nx>p</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>	<span class=nx>p</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>index</span> <span class=p>=</span> <span class=nx>i</span>
+</span></span><span class=line><span class=cl>	<span class=nx>p</span><span class=p>[</span><span class=nx>j</span><span class=p>].</span><span class=nx>index</span> <span class=p>=</span> <span class=nx>j</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>PQueue</span><span class=p>)</span> <span class=nf>Push</span><span class=p>(</span><span class=nx>x</span> <span class=nx>any</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>n</span><span class=p>,</span> <span class=nx>item</span> <span class=o>:=</span> <span class=nb>len</span><span class=p>(</span><span class=o>*</span><span class=nx>p</span><span class=p>),</span> <span class=nx>x</span><span class=p>.(</span><span class=o>*</span><span class=nx>Item</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>item</span><span class=p>.</span><span class=nx>index</span> <span class=p>=</span> <span class=nx>n</span> <span class=o>-</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>	<span class=o>*</span><span class=nx>p</span> <span class=p>=</span> <span class=nb>append</span><span class=p>(</span><span class=o>*</span><span class=nx>p</span><span class=p>,</span> <span class=nx>item</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>PQueue</span><span class=p>)</span> <span class=nf>Pop</span><span class=p>()</span> <span class=nx>any</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>old</span><span class=p>,</span> <span class=nx>n</span> <span class=o>:=</span> <span class=o>*</span><span class=nx>p</span><span class=p>,</span> <span class=nb>len</span><span class=p>(</span><span class=o>*</span><span class=nx>p</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>x</span> <span class=o>:=</span> <span class=nx>old</span><span class=p>[</span><span class=nx>n</span><span class=o>-</span><span class=mi>1</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>	<span class=nx>old</span><span class=p>[</span><span class=nx>n</span><span class=o>-</span><span class=mi>1</span><span class=p>]</span> <span class=p>=</span> <span class=kc>nil</span>  <span class=c1>// avoid memory leak
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>x</span><span class=p>.</span><span class=nx>index</span> <span class=p>=</span> <span class=o>-</span><span class=mi>1</span>    <span class=c1>// for safety
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=o>*</span><span class=nx>p</span> <span class=p>=</span> <span class=nx>old</span><span class=p>[:</span><span class=nx>n</span><span class=o>-</span><span class=mi>1</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nx>x</span><span class=p>.</span><span class=nx>value</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>drain</span><span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>PQueue</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=nx>p</span><span class=p>.</span><span class=nf>Len</span><span class=p>()</span> <span class=p>&gt;</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>heap</span><span class=p>.</span><span class=nf>Pop</span><span class=p>(</span><span class=nx>p</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>h</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>PQueue</span><span class=p>{</span><span class=o>&amp;</span><span class=nx>Item</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>value</span><span class=p>:</span>    <span class=s>&#34;banana&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>priority</span><span class=p>:</span> <span class=mi>3</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>index</span><span class=p>:</span>    <span class=mi>0</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>	<span class=p>},</span> <span class=o>&amp;</span><span class=nx>Item</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>value</span><span class=p>:</span>    <span class=s>&#34;apple&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>priority</span><span class=p>:</span> <span class=mi>2</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>index</span><span class=p>:</span>    <span class=mi>1</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>	<span class=p>},</span> <span class=o>&amp;</span><span class=nx>Item</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>value</span><span class=p>:</span>    <span class=s>&#34;pear&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>priority</span><span class=p>:</span> <span class=mi>4</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>index</span><span class=p>:</span>    <span class=mi>2</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>	<span class=p>}}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>heap</span><span class=p>.</span><span class=nf>Init</span><span class=p>(</span><span class=nx>h</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>heap</span><span class=p>.</span><span class=nf>Push</span><span class=p>(</span><span class=nx>h</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>Item</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>value</span><span class=p>:</span>    <span class=s>&#34;orange&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>priority</span><span class=p>:</span> <span class=mi>1</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>	<span class=p>})</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>item</span> <span class=o>:=</span> <span class=p>(</span><span class=o>*</span><span class=nx>h</span><span class=p>)[</span><span class=mi>1</span><span class=p>]</span> <span class=c1>// apple
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>item</span><span class=p>.</span><span class=nx>priority</span> <span class=p>=</span> <span class=mi>10</span>
+</span></span><span class=line><span class=cl>	<span class=nx>heap</span><span class=p>.</span><span class=nf>Fix</span><span class=p>(</span><span class=nx>h</span><span class=p>,</span> <span class=nx>item</span><span class=p>.</span><span class=nx>index</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 这里是删除某个元素，不一定是按照优先级删除
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>heap</span><span class=p>.</span><span class=nf>Remove</span><span class=p>(</span><span class=nx>h</span><span class=p>,</span> <span class=mi>2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nf>drain</span><span class=p>(</span><span class=nx>h</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=ring></a><h2>Ring <a href=#ring aria-hidden=true>#</a></h2><p>环也是链表实现，只是其尾部就是头部，所以每个元素实际上就可以代表自身的这个环，而不需要像 <code>List</code> 那样维护两个数据结构。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Ring</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>next</span><span class=p>,</span> <span class=nx>prev</span> <span class=o>*</span><span class=nx>Ring</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Value</span>      <span class=kd>interface</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>初始化的时候，需要先定义好环的大小，然后可以对其每个元素进行操作。同时还提供一个 <code>Do()</code> 函数，能遍历一遍环，对每个元素执行次函数调用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;container/ring&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>r0</span> <span class=o>:=</span> <span class=nx>ring</span><span class=p>.</span><span class=nf>New</span><span class=p>(</span><span class=mi>5</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>i</span> <span class=p>&lt;</span> <span class=mi>5</span><span class=p>;</span> <span class=nx>i</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>r0</span><span class=p>.</span><span class=nx>Value</span> <span class=p>=</span> <span class=nx>i</span>
+</span></span><span class=line><span class=cl>		<span class=nx>r0</span> <span class=p>=</span> <span class=nx>r0</span><span class=p>.</span><span class=nf>Next</span><span class=p>()</span> <span class=c1>// r0.Prev()
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>r1</span> <span class=o>:=</span> <span class=nx>ring</span><span class=p>.</span><span class=nf>New</span><span class=p>(</span><span class=mi>3</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>5</span><span class=p>;</span> <span class=nx>i</span> <span class=p>&lt;</span> <span class=mi>8</span><span class=p>;</span> <span class=nx>i</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>r1</span><span class=p>.</span><span class=nx>Value</span> <span class=p>=</span> <span class=nx>i</span>
+</span></span><span class=line><span class=cl>		<span class=nx>r1</span> <span class=p>=</span> <span class=nx>r1</span><span class=p>.</span><span class=nf>Next</span><span class=p>()</span> <span class=c1>// r1.Prev()
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>r0</span><span class=p>.</span><span class=nf>Link</span><span class=p>(</span><span class=nx>r1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Total %d\n&#34;</span><span class=p>,</span> <span class=nx>r0</span><span class=p>.</span><span class=nf>Len</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>	<span class=nx>r0</span><span class=p>.</span><span class=nf>Do</span><span class=p>(</span><span class=kd>func</span><span class=p>(</span><span class=nx>v</span> <span class=kd>interface</span><span class=p>{})</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>v</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>})</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=sort></a><h1>sort <a href=#sort aria-hidden=true>#</a></h1><p>有三种场景可以使用。</p><a class=anchor id=基础类型></a><h2>基础类型 <a href=#%e5%9f%ba%e7%a1%80%e7%b1%bb%e5%9e%8b aria-hidden=true>#</a></h2><p>也就是 <code>int</code> <code>float64</code> <code>string</code> 三类。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;sort&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>intl</span> <span class=o>:=</span> <span class=p>[]</span><span class=kt>int</span><span class=p>{</span><span class=mi>9</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>7</span><span class=p>,</span> <span class=mi>4</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>sort</span><span class=p>.</span><span class=nf>Ints</span><span class=p>(</span><span class=nx>intl</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>intl</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>floatl</span> <span class=o>:=</span> <span class=p>[]</span><span class=kt>float64</span><span class=p>{</span><span class=mf>9.3</span><span class=p>,</span> <span class=mf>2.4</span><span class=p>,</span> <span class=mf>7.1</span><span class=p>,</span> <span class=mf>4.3</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>sort</span><span class=p>.</span><span class=nf>Float64s</span><span class=p>(</span><span class=nx>floatl</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>floatl</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>stringl</span> <span class=o>:=</span> <span class=p>[]</span><span class=kt>string</span><span class=p>{</span><span class=s>&#34;orange&#34;</span><span class=p>,</span> <span class=s>&#34;pear&#34;</span><span class=p>,</span> <span class=s>&#34;apple&#34;</span><span class=p>,</span> <span class=s>&#34;banana&#34;</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>sort</span><span class=p>.</span><span class=nf>Strings</span><span class=p>(</span><span class=nx>stringl</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>stringl</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述是升序，也可以修改为降序。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>sort</span><span class=p>.</span><span class=nf>Sort</span><span class=p>(</span><span class=nx>sort</span><span class=p>.</span><span class=nf>Reverse</span><span class=p>(</span><span class=nx>sort</span><span class=p>.</span><span class=nf>IntSlice</span><span class=p>(</span><span class=nx>intl</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl><span class=nx>sort</span><span class=p>.</span><span class=nf>Sort</span><span class=p>(</span><span class=nx>sort</span><span class=p>.</span><span class=nf>Reverse</span><span class=p>(</span><span class=nx>sort</span><span class=p>.</span><span class=nf>Float64Slice</span><span class=p>(</span><span class=nx>floatl</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl><span class=nx>sort</span><span class=p>.</span><span class=nf>Sort</span><span class=p>(</span><span class=nx>sort</span><span class=p>.</span><span class=nf>Reverse</span><span class=p>(</span><span class=nx>sort</span><span class=p>.</span><span class=nf>StringSlice</span><span class=p>(</span><span class=nx>stringl</span><span class=p>)))</span>
+</span></span></code></pre></div><p>其中 <code>IntSlice</code> 是对 <code>[]int</code> 类型的封装，同时实现了 <code>sort.Interface</code> 定义的排序接口，这样就意味着升序可以通过 <code>sort.Sort(sort.IntSclice(intl))</code> 实现；而 <code>sort.Reverse</code> 则是重新定义 <code>Less</code> 接口，采用倒序方式比较。</p><a class=anchor id=自定义比较></a><h2>自定义比较 <a href=#%e8%87%aa%e5%ae%9a%e4%b9%89%e6%af%94%e8%be%83 aria-hidden=true>#</a></h2><p>对于切片通过简单函数实现。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;sort&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;strings&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Person</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Name</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Age</span>  <span class=kt>int</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>family</span> <span class=o>:=</span> <span class=p>[]</span><span class=nx>Person</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;David&#34;</span><span class=p>,</span> <span class=mi>5</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;Alice&#34;</span><span class=p>,</span> <span class=mi>28</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;Andy&#34;</span><span class=p>,</span> <span class=mi>5</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;Bob&#34;</span><span class=p>,</span> <span class=mi>32</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 按照Age升序排序，如果相同则保持原顺序
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>sort</span><span class=p>.</span><span class=nf>SliceStable</span><span class=p>(</span><span class=nx>family</span><span class=p>,</span> <span class=kd>func</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=nx>family</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Age</span> <span class=p>&lt;</span> <span class=nx>family</span><span class=p>[</span><span class=nx>j</span><span class=p>].</span><span class=nx>Age</span>
+</span></span><span class=line><span class=cl>	<span class=p>})</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>family</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 先按照Age升序排序，如果相同则按照Name升序排序
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>sort</span><span class=p>.</span><span class=nf>SliceStable</span><span class=p>(</span><span class=nx>family</span><span class=p>,</span> <span class=kd>func</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=nx>family</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Age</span> <span class=o>!=</span> <span class=nx>family</span><span class=p>[</span><span class=nx>j</span><span class=p>].</span><span class=nx>Age</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span> <span class=nx>family</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Age</span> <span class=p>&lt;</span> <span class=nx>family</span><span class=p>[</span><span class=nx>j</span><span class=p>].</span><span class=nx>Age</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=nx>strings</span><span class=p>.</span><span class=nf>Compare</span><span class=p>(</span><span class=nx>family</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Name</span><span class=p>,</span> <span class=nx>family</span><span class=p>[</span><span class=nx>j</span><span class=p>].</span><span class=nx>Name</span><span class=p>)</span> <span class=p>&lt;</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>	<span class=p>})</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>family</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>也可以通过 <code>sort.Slice()</code> 实现非稳定排序。</p><a class=anchor id=结构体></a><h2>结构体 <a href=#%e7%bb%93%e6%9e%84%e4%bd%93 aria-hidden=true>#</a></h2><p>通过别名实现 <code>sort.Interface</code> 接口。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;sort&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Person</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Name</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Age</span>  <span class=kt>int</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>ByAge</span> <span class=p>[]</span><span class=nx>Person</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=nx>ByAge</span><span class=p>)</span> <span class=nf>Len</span><span class=p>()</span> <span class=kt>int</span>           <span class=p>{</span> <span class=k>return</span> <span class=nb>len</span><span class=p>(</span><span class=nx>a</span><span class=p>)</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=nx>ByAge</span><span class=p>)</span> <span class=nf>Less</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span> <span class=k>return</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Age</span> <span class=p>&lt;</span> <span class=nx>a</span><span class=p>[</span><span class=nx>j</span><span class=p>].</span><span class=nx>Age</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=nx>ByAge</span><span class=p>)</span> <span class=nf>Swap</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span>      <span class=p>{</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>],</span> <span class=nx>a</span><span class=p>[</span><span class=nx>j</span><span class=p>]</span> <span class=p>=</span> <span class=nx>a</span><span class=p>[</span><span class=nx>j</span><span class=p>],</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>family</span> <span class=o>:=</span> <span class=p>[]</span><span class=nx>Person</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;David&#34;</span><span class=p>,</span> <span class=mi>5</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;Alice&#34;</span><span class=p>,</span> <span class=mi>28</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;Andy&#34;</span><span class=p>,</span> <span class=mi>5</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;Bob&#34;</span><span class=p>,</span> <span class=mi>32</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>sort</span><span class=p>.</span><span class=nf>Sort</span><span class=p>(</span><span class=nf>ByAge</span><span class=p>(</span><span class=nx>family</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>family</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>也可以通过如下方式定义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;sort&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Person</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Name</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Age</span>  <span class=kt>int</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>Person</span><span class=p>)</span> <span class=nf>String</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;%s/%d&#34;</span><span class=p>,</span> <span class=nx>p</span><span class=p>.</span><span class=nx>Name</span><span class=p>,</span> <span class=nx>p</span><span class=p>.</span><span class=nx>Age</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Family</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>person</span> <span class=p>[]</span><span class=o>*</span><span class=nx>Person</span>
+</span></span><span class=line><span class=cl>	<span class=nx>less</span>   <span class=kd>func</span><span class=p>(</span><span class=nx>x</span><span class=p>,</span> <span class=nx>y</span> <span class=o>*</span><span class=nx>Person</span><span class=p>)</span> <span class=kt>bool</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>f</span> <span class=nx>Family</span><span class=p>)</span> <span class=nf>Len</span><span class=p>()</span> <span class=kt>int</span>           <span class=p>{</span> <span class=k>return</span> <span class=nb>len</span><span class=p>(</span><span class=nx>f</span><span class=p>.</span><span class=nx>person</span><span class=p>)</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>f</span> <span class=nx>Family</span><span class=p>)</span> <span class=nf>Less</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span> <span class=k>return</span> <span class=nx>f</span><span class=p>.</span><span class=nf>less</span><span class=p>(</span><span class=nx>f</span><span class=p>.</span><span class=nx>person</span><span class=p>[</span><span class=nx>i</span><span class=p>],</span> <span class=nx>f</span><span class=p>.</span><span class=nx>person</span><span class=p>[</span><span class=nx>j</span><span class=p>])</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>f</span> <span class=nx>Family</span><span class=p>)</span> <span class=nf>Swap</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span>      <span class=p>{</span> <span class=nx>f</span><span class=p>.</span><span class=nx>person</span><span class=p>[</span><span class=nx>i</span><span class=p>],</span> <span class=nx>f</span><span class=p>.</span><span class=nx>person</span><span class=p>[</span><span class=nx>j</span><span class=p>]</span> <span class=p>=</span> <span class=nx>f</span><span class=p>.</span><span class=nx>person</span><span class=p>[</span><span class=nx>j</span><span class=p>],</span> <span class=nx>f</span><span class=p>.</span><span class=nx>person</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>person</span> <span class=o>:=</span> <span class=p>[]</span><span class=o>*</span><span class=nx>Person</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;David&#34;</span><span class=p>,</span> <span class=mi>5</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;Alice&#34;</span><span class=p>,</span> <span class=mi>28</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;Andy&#34;</span><span class=p>,</span> <span class=mi>5</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>		<span class=p>{</span><span class=s>&#34;Bob&#34;</span><span class=p>,</span> <span class=mi>32</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>family</span> <span class=o>:=</span> <span class=nx>Family</span><span class=p>{</span><span class=nx>person</span><span class=p>,</span> <span class=kd>func</span><span class=p>(</span><span class=nx>x</span><span class=p>,</span> <span class=nx>y</span> <span class=o>*</span><span class=nx>Person</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=nx>x</span><span class=p>.</span><span class=nx>Age</span> <span class=o>!=</span> <span class=nx>y</span><span class=p>.</span><span class=nx>Age</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span> <span class=nx>x</span><span class=p>.</span><span class=nx>Age</span> <span class=p>&lt;</span> <span class=nx>y</span><span class=p>.</span><span class=nx>Age</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=nx>x</span><span class=p>.</span><span class=nx>Name</span> <span class=p>&lt;</span> <span class=nx>y</span><span class=p>.</span><span class=nx>Name</span>
+</span></span><span class=line><span class=cl>	<span class=p>}}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>sort</span><span class=p>.</span><span class=nf>Sort</span><span class=p>(</span><span class=nx>family</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>family</span><span class=p>.</span><span class=nx>person</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=查找></a><h2>查找 <a href=#%e6%9f%a5%e6%89%be aria-hidden=true>#</a></h2><p>对于基础类型的切片可以通过如下方式查找。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;sort&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>intl</span> <span class=o>:=</span> <span class=p>[]</span><span class=kt>int</span><span class=p>{</span><span class=mi>9</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>7</span><span class=p>,</span> <span class=mi>4</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>sort</span><span class=p>.</span><span class=nf>Ints</span><span class=p>(</span><span class=nx>intl</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>sort</span><span class=p>.</span><span class=nf>IntsAreSorted</span><span class=p>(</span><span class=nx>intl</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>sort</span><span class=p>.</span><span class=nf>SearchInts</span><span class=p>(</span><span class=nx>intl</span><span class=p>,</span> <span class=mi>4</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>这里的 <code>SearchInts()</code> 函数实际上是对 <code>Search()</code> 的封装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>SearchInts</span><span class=p>(</span><span class=nx>a</span> <span class=p>[]</span><span class=kt>int</span><span class=p>,</span> <span class=nx>x</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>int</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nf>Search</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=nx>a</span><span class=p>),</span> <span class=kd>func</span><span class=p>(</span><span class=nx>i</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span> <span class=k>return</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=o>&gt;=</span> <span class=nx>x</span> <span class=p>})</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述返回的是第一个大于等于 <code>x</code> 的索引，也就是 <code>LowerBound</code> 实现，如下是其它的实现。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 查找第一个大于 x 的索引，也就是 UpperBound
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>sort</span><span class=p>.</span><span class=nf>Search</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=nx>a</span><span class=p>),</span> <span class=kd>func</span><span class=p>(</span><span class=nx>i</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>&gt;</span> <span class=nx>x</span>
+</span></span><span class=line><span class=cl><span class=p>})</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 查找第一个小于 x 的索引
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>sort</span><span class=p>.</span><span class=nf>Search</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=nx>a</span><span class=p>),</span> <span class=kd>func</span><span class=p>(</span><span class=nx>i</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>&lt;</span> <span class=nx>x</span>
+</span></span><span class=line><span class=cl><span class=p>})</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 查找第一个小于等于 x 的索引
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>sort</span><span class=p>.</span><span class=nf>Search</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=nx>a</span><span class=p>),</span> <span class=kd>func</span><span class=p>(</span><span class=nx>i</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=o>&lt;=</span> <span class=nx>x</span>
+</span></span><span class=line><span class=cl><span class=p>})</span>
+</span></span></code></pre></div><p>其中 <code>Search</code> 函数实现了二分搜索，如参实际上是个简单的闭包，在源码文档中甚至有个猜数字的游戏。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>GuessingGame</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kd>var</span> <span class=nx>s</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Pick an integer from 0 to 100.\n&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>answer</span> <span class=o>:=</span> <span class=nx>sort</span><span class=p>.</span><span class=nf>Search</span><span class=p>(</span><span class=mi>100</span><span class=p>,</span> <span class=kd>func</span><span class=p>(</span><span class=nx>i</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Is your number &lt;= %d? &#34;</span><span class=p>,</span> <span class=nx>i</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Scanf</span><span class=p>(</span><span class=s>&#34;%s&#34;</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=nx>s</span> <span class=o>!=</span> <span class=s>&#34;&#34;</span> <span class=o>&amp;&amp;</span> <span class=nx>s</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>==</span> <span class=sc>&#39;y&#39;</span>
+</span></span><span class=line><span class=cl>	<span class=p>})</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Your number is %d.\n&#34;</span><span class=p>,</span> <span class=nx>answer</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=exec></a><h1>exec <a href=#exec aria-hidden=true>#</a></h1><p>exec 用来执行命令，实际上是将 <code>os.StartProcess()</code> 进行包装使得它更容易映射到 <code>stdin</code> 和 <code>stdout</code> 。</p><p>其源码在 <code>os/exec/</code> 中实现，其中核心的结构体为 <code>type Cmd struct</code> ，另外很多的示例可以参考源码目录下的 <code>example_test.go</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Cmd</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Path</span>         <span class=kt>string</span><span class=err>　　</span>    <span class=err>　</span><span class=c1>// 运行命令的路径，可以是绝对路径或者相对路径
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>Args</span>         <span class=p>[]</span><span class=kt>string</span><span class=err>　　</span>    <span class=c1>// 命令参数
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>Env</span>          <span class=p>[]</span><span class=kt>string</span>        <span class=c1>// 环境变量，为 nil 时使用当前进程的环境变量
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>Dir</span>          <span class=kt>string</span><span class=err>　　</span>    <span class=err>　</span><span class=c1>// 指定命令运行时的工作目录
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>Stdin</span>        <span class=nx>io</span><span class=p>.</span><span class=nx>Reader</span><span class=err>　　</span>   <span class=c1>// 标准输入，nil 则从os.DevNull读取
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>Stdout</span>       <span class=nx>io</span><span class=p>.</span><span class=nx>Writer</span>       <span class=c1>// 标准输出
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>Stderr</span>       <span class=nx>io</span><span class=p>.</span><span class=nx>Writer</span><span class=err>　　</span>   <span class=c1>// 标准错误输出，nil 重定向到os.DevNull设备中
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>	<span class=nx>ExtraFiles</span>   <span class=p>[]</span><span class=o>*</span><span class=nx>os</span><span class=p>.</span><span class=nx>File</span> <span class=err>　　</span>
+</span></span><span class=line><span class=cl>	<span class=nx>SysProcAttr</span>  <span class=o>*</span><span class=nx>syscall</span><span class=p>.</span><span class=nx>SysProcAttr</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Process</span>      <span class=o>*</span><span class=nx>os</span><span class=p>.</span><span class=nx>Process</span>         <span class=c1>// 对应os.Process中的实现
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>ProcessState</span> <span class=o>*</span><span class=nx>os</span><span class=p>.</span><span class=nx>ProcessState</span><span class=err>　　</span><span class=c1>// 一个进程退出时的信息，当调用Wait()或者Run()时会生成该对象
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>常用接口。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 在环境变量中查找可执行的二进制文件，可以在绝对路径、相对路径下查找
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=nf>LookPath</span><span class=p>(</span><span class=nx>file</span> <span class=kt>string</span><span class=p>)</span> <span class=p>(</span><span class=kt>string</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 仅设置Cmd结构中的Path和Args参数，如果不含路径分隔符则会尝试通过LookPath查找
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=nf>Command</span><span class=p>(</span><span class=nx>name</span> <span class=kt>string</span><span class=p>,</span> <span class=nx>arg</span> <span class=o>...</span><span class=kt>string</span><span class=p>)</span> <span class=o>*</span><span class=nx>Cmd</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>CommandContext</span><span class=p>(</span><span class=nx>ctx</span> <span class=nx>context</span><span class=p>.</span><span class=nx>Context</span><span class=p>,</span> <span class=nx>name</span> <span class=kt>string</span><span class=p>,</span> <span class=nx>arg</span> <span class=o>...</span><span class=kt>string</span><span class=p>)</span> <span class=o>*</span><span class=nx>Cmd</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;bytes&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os/exec&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;strings&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>Command</span><span class=p>(</span><span class=s>&#34;tr&#34;</span><span class=p>,</span> <span class=s>&#34;a-z&#34;</span><span class=p>,</span> <span class=s>&#34;A-Z&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nx>Stdin</span> <span class=p>=</span> <span class=nx>strings</span><span class=p>.</span><span class=nf>NewReader</span><span class=p>(</span><span class=s>&#34;some input&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kd>var</span> <span class=nx>out</span> <span class=nx>bytes</span><span class=p>.</span><span class=nx>Buffer</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nx>Stdout</span> <span class=p>=</span> <span class=o>&amp;</span><span class=nx>out</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>err</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>Run</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Got ===&gt; %q\n&#34;</span><span class=p>,</span> <span class=nx>out</span><span class=p>.</span><span class=nf>String</span><span class=p>())</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 运行命令并同时返回标准输出和标准错误
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>c</span> <span class=o>*</span><span class=nx>Cmd</span><span class=p>)</span> <span class=nf>Output</span><span class=p>()</span> <span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>c</span> <span class=o>*</span><span class=nx>Cmd</span><span class=p>)</span> <span class=nf>CombinedOutput</span><span class=p>()</span> <span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span></code></pre></div><p>如果执行命令出错会同时设置 <code>error</code> 错误。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os/exec&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>Command</span><span class=p>(</span><span class=s>&#34;ls&#34;</span><span class=p>,</span> <span class=s>&#34;-alh&#34;</span><span class=p>,</span> <span class=s>&#34;/&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>out</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>CombinedOutput</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Got ===&gt;%s&#34;</span><span class=p>,</span> <span class=nb>string</span><span class=p>(</span><span class=nx>out</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 开始执行命令，如果需要，应该使用Wait()等待命令执行完毕
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>c</span> <span class=o>*</span><span class=nx>Cmd</span><span class=p>)</span> <span class=nf>Start</span><span class=p>()</span> <span class=kt>error</span>
+</span></span><span class=line><span class=cl><span class=c1>// 执行指定的命令并且等待执行结束，实际上是Start()+Wait()的组合
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>c</span> <span class=o>*</span><span class=nx>Cmd</span><span class=p>)</span> <span class=nf>Run</span><span class=p>()</span> <span class=kt>error</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os/exec&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>Command</span><span class=p>(</span><span class=s>&#34;ls&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nx>Stdout</span> <span class=p>=</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Stdout</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nf>Run</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>cmd</span><span class=p>.</span><span class=nf>Start</span><span class=p>())</span> <span class=c1>//exec: already started
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>注意，一个 Command 只能使用 <code>Start()</code> 或者 <code>Run()</code> 中的一个启动命令，不能两个同时使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 等待命令退出，必须和Start一起使用
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>c</span> <span class=o>*</span><span class=nx>Cmd</span><span class=p>)</span> <span class=nf>Wait</span><span class=p>()</span> <span class=kt>error</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 将标准输入、输出等重定向，返回一个Pipe，在命令退出时会关闭这些Pipe
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>c</span> <span class=o>*</span><span class=nx>Cmd</span><span class=p>)</span> <span class=nf>StderrPipe</span><span class=p>()</span> <span class=p>(</span><span class=nx>io</span><span class=p>.</span><span class=nx>ReadCloser</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>c</span> <span class=o>*</span><span class=nx>Cmd</span><span class=p>)</span> <span class=nf>StdoutPipe</span><span class=p>()</span> <span class=p>(</span><span class=nx>io</span><span class=p>.</span><span class=nx>ReadCloser</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>c</span> <span class=o>*</span><span class=nx>Cmd</span><span class=p>)</span> <span class=nf>StdinPipe</span><span class=p>()</span> <span class=p>(</span><span class=nx>io</span><span class=p>.</span><span class=nx>WriteCloser</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os/exec&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>Command</span><span class=p>(</span><span class=s>&#34;cat&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>stdin</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StdinPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>_</span><span class=p>,</span> <span class=nx>err</span> <span class=p>=</span> <span class=nx>stdin</span><span class=p>.</span><span class=nf>Write</span><span class=p>([]</span><span class=nb>byte</span><span class=p>(</span><span class=s>&#34;Hi World!!!\n&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>stdin</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nx>Stdout</span> <span class=p>=</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Stdout</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nf>Start</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;io/ioutil&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os/exec&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>Command</span><span class=p>(</span><span class=s>&#34;ls&#34;</span><span class=p>,</span> <span class=s>&#34;-alh&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>stdout</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StdoutPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nf>Start</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nx>content</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>ioutil</span><span class=p>.</span><span class=nf>ReadAll</span><span class=p>(</span><span class=nx>stdout</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nb>string</span><span class=p>(</span><span class=nx>content</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>os 包有一个 <code>StartProcess()</code> 可以用来调用或启动外部系统命令和二进制可执行文件，三个入参分别为：A) 运行的进程；B) 传递选项或参数；C) 系统环境基本信息的结构体。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>proc</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>os</span><span class=p>.</span><span class=nf>StartProcess</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;/bin/ls&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=p>[]</span><span class=kt>string</span><span class=p>{</span><span class=s>&#34;ls&#34;</span><span class=p>,</span> <span class=s>&#34;-l&#34;</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>        <span class=o>&amp;</span><span class=nx>os</span><span class=p>.</span><span class=nx>ProcAttr</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>Env</span><span class=p>:</span> <span class=nx>os</span><span class=p>.</span><span class=nf>Environ</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl>            <span class=nx>Files</span><span class=p>:</span> <span class=p>[]</span><span class=o>*</span><span class=nx>os</span><span class=p>.</span><span class=nx>File</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>os</span><span class=p>.</span><span class=nx>Stdin</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=nx>os</span><span class=p>.</span><span class=nx>Stdout</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=nx>os</span><span class=p>.</span><span class=nx>Stderr</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=p>},</span>
+</span></span><span class=line><span class=cl>        <span class=p>})</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Error %v starting process!&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>os</span><span class=p>.</span><span class=nf>Exit</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;The process id is %v\n&#34;</span><span class=p>,</span> <span class=nx>proc</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>_</span><span class=p>,</span> <span class=nx>err</span> <span class=p>=</span> <span class=nx>proc</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Error %v wait process!&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>os</span><span class=p>.</span><span class=nf>Exit</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=进程管理></a><h2>进程管理 <a href=#%e8%bf%9b%e7%a8%8b%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;errors&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os/exec&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;sync&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;syscall&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>procInfo</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmdset</span>  <span class=p>[]</span><span class=kt>string</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span>     <span class=o>*</span><span class=nx>exec</span><span class=p>.</span><span class=nx>Cmd</span>
+</span></span><span class=line><span class=cl>    <span class=nx>mu</span>      <span class=nx>sync</span><span class=p>.</span><span class=nx>Mutex</span>
+</span></span><span class=line><span class=cl>    <span class=nx>waitErr</span> <span class=kt>error</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cond</span>    <span class=o>*</span><span class=nx>sync</span><span class=p>.</span><span class=nx>Cond</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>procs</span> <span class=kd>map</span><span class=p>[</span><span class=kt>string</span><span class=p>]</span><span class=o>*</span><span class=nx>procInfo</span>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>wg</span> <span class=nx>sync</span><span class=p>.</span><span class=nx>WaitGroup</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>init</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>procs</span> <span class=p>=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>map</span><span class=p>[</span><span class=kt>string</span><span class=p>]</span><span class=o>*</span><span class=nx>procInfo</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>procs</span><span class=p>[</span><span class=s>&#34;FOOBAR&#34;</span><span class=p>]</span> <span class=p>=</span> <span class=o>&amp;</span><span class=nx>procInfo</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>cmdset</span><span class=p>:</span> <span class=p>[]</span><span class=kt>string</span><span class=p>{</span><span class=s>&#34;/bin/sh&#34;</span><span class=p>,</span> <span class=s>&#34;-c&#34;</span><span class=p>,</span> <span class=s>&#34;sleep 1000&#34;</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=nx>k</span><span class=p>,</span> <span class=nx>v</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>procs</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>procs</span><span class=p>[</span><span class=nx>k</span><span class=p>].</span><span class=nx>cond</span> <span class=p>=</span> <span class=nx>sync</span><span class=p>.</span><span class=nf>NewCond</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>v</span><span class=p>.</span><span class=nx>mu</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// spawn command that specified as proc.
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=nf>spawnProc</span><span class=p>(</span><span class=nx>proc</span> <span class=kt>string</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span> <span class=o>:=</span> <span class=nx>procs</span><span class=p>[</span><span class=nx>proc</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>Command</span><span class=p>(</span><span class=nx>p</span><span class=p>.</span><span class=nx>cmdset</span><span class=p>[</span><span class=mi>0</span><span class=p>],</span> <span class=nx>p</span><span class=p>.</span><span class=nx>cmdset</span><span class=p>[</span><span class=mi>1</span><span class=p>:]</span><span class=o>...</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nx>Stdin</span> <span class=p>=</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nx>Stdout</span> <span class=p>=</span> <span class=kc>nil</span> <span class=c1>// TODO: some log
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>cmd</span><span class=p>.</span><span class=nx>Stderr</span> <span class=p>=</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nx>SysProcAttr</span> <span class=p>=</span> <span class=o>&amp;</span><span class=nx>syscall</span><span class=p>.</span><span class=nx>SysProcAttr</span><span class=p>{</span><span class=nx>Setpgid</span><span class=p>:</span> <span class=kc>true</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>cmd</span><span class=p>.</span><span class=nx>Env</span> <span class=p>=</span> <span class=nx>os</span><span class=p>.</span><span class=nf>Environ</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=c1>//cmd.Env = append(os.Environ(), fmt.Sprintf(&#34;PORT=%d&#34;, 1234))
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Starting %s\n&#34;</span><span class=p>,</span> <span class=nx>proc</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>err</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>Start</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Failed to start %s: %s\n&#34;</span><span class=p>,</span> <span class=nx>proc</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>.</span><span class=nx>cmd</span> <span class=p>=</span> <span class=nx>cmd</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>.</span><span class=nx>mu</span><span class=p>.</span><span class=nf>Unlock</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>err</span> <span class=p>=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>.</span><span class=nx>mu</span><span class=p>.</span><span class=nf>Lock</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>.</span><span class=nx>cond</span><span class=p>.</span><span class=nf>Broadcast</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>.</span><span class=nx>waitErr</span> <span class=p>=</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>.</span><span class=nx>cmd</span> <span class=p>=</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Terminating %s\n&#34;</span><span class=p>,</span> <span class=nx>proc</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>terminateProc</span><span class=p>(</span><span class=nx>proc</span> <span class=kt>string</span><span class=p>,</span> <span class=nx>signal</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Signal</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span> <span class=o>:=</span> <span class=nx>procs</span><span class=p>[</span><span class=nx>proc</span><span class=p>].</span><span class=nx>cmd</span><span class=p>.</span><span class=nx>Process</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>p</span> <span class=o>==</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>pgid</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>syscall</span><span class=p>.</span><span class=nf>Getpgid</span><span class=p>(</span><span class=nx>p</span><span class=p>.</span><span class=nx>Pid</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// use pgid, ref: http://unix.stackexchange.com/questions/14815/process-descendants
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>pid</span> <span class=o>:=</span> <span class=nx>p</span><span class=p>.</span><span class=nx>Pid</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>pgid</span> <span class=o>==</span> <span class=nx>p</span><span class=p>.</span><span class=nx>Pid</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>pid</span> <span class=p>=</span> <span class=o>-</span><span class=mi>1</span> <span class=o>*</span> <span class=nx>pid</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>target</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>os</span><span class=p>.</span><span class=nf>FindProcess</span><span class=p>(</span><span class=nx>pid</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>target</span><span class=p>.</span><span class=nf>Signal</span><span class=p>(</span><span class=nx>signal</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>startProc</span><span class=p>(</span><span class=nx>proc</span> <span class=kt>string</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>procs</span><span class=p>[</span><span class=nx>proc</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>!</span><span class=nx>ok</span> <span class=o>||</span> <span class=nx>p</span> <span class=o>==</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>errors</span><span class=p>.</span><span class=nf>New</span><span class=p>(</span><span class=s>&#34;unknown proc: &#34;</span> <span class=o>+</span> <span class=nx>proc</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>.</span><span class=nx>mu</span><span class=p>.</span><span class=nf>Lock</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>procs</span><span class=p>[</span><span class=nx>proc</span><span class=p>].</span><span class=nx>cmd</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span> <span class=cm>/* already running */</span>
+</span></span><span class=line><span class=cl>        <span class=nx>p</span><span class=p>.</span><span class=nx>mu</span><span class=p>.</span><span class=nf>Unlock</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>wg</span><span class=p>.</span><span class=nf>Add</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>spawnProc</span><span class=p>(</span><span class=nx>proc</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Done</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>p</span><span class=p>.</span><span class=nx>mu</span><span class=p>.</span><span class=nf>Unlock</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>}()</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>stopProc</span><span class=p>(</span><span class=nx>proc</span> <span class=kt>string</span><span class=p>,</span> <span class=nx>signal</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Signal</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>signal</span> <span class=o>==</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>signal</span> <span class=p>=</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGTERM</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>procs</span><span class=p>[</span><span class=nx>proc</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>!</span><span class=nx>ok</span> <span class=o>||</span> <span class=nx>p</span> <span class=o>==</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>errors</span><span class=p>.</span><span class=nf>New</span><span class=p>(</span><span class=s>&#34;unknown proc: &#34;</span> <span class=o>+</span> <span class=nx>proc</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>.</span><span class=nx>mu</span><span class=p>.</span><span class=nf>Lock</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>defer</span> <span class=nx>p</span><span class=p>.</span><span class=nx>mu</span><span class=p>.</span><span class=nf>Unlock</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>p</span><span class=p>.</span><span class=nx>cmd</span> <span class=o>==</span> <span class=kc>nil</span> <span class=p>{</span> <span class=cm>/* not start yet */</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>err</span> <span class=o>:=</span> <span class=nf>terminateProc</span><span class=p>(</span><span class=nx>proc</span><span class=p>,</span> <span class=nx>signal</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>timeout</span> <span class=o>:=</span> <span class=nx>time</span><span class=p>.</span><span class=nf>AfterFunc</span><span class=p>(</span><span class=mi>10</span><span class=o>*</span><span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>,</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>p</span><span class=p>.</span><span class=nx>mu</span><span class=p>.</span><span class=nf>Lock</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=k>defer</span> <span class=nx>p</span><span class=p>.</span><span class=nx>mu</span><span class=p>.</span><span class=nf>Unlock</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>p</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>procs</span><span class=p>[</span><span class=nx>proc</span><span class=p>];</span> <span class=nx>ok</span> <span class=o>&amp;&amp;</span> <span class=nx>p</span><span class=p>.</span><span class=nx>cmd</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>err</span> <span class=p>=</span> <span class=nx>p</span><span class=p>.</span><span class=nx>cmd</span><span class=p>.</span><span class=nx>Process</span><span class=p>.</span><span class=nf>Kill</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>})</span>
+</span></span><span class=line><span class=cl>    <span class=nx>p</span><span class=p>.</span><span class=nx>cond</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nx>timeout</span><span class=p>.</span><span class=nf>Stop</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>err</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>startProc</span><span class=p>(</span><span class=s>&#34;FOOBAR&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>stopProc</span><span class=p>(</span><span class=s>&#34;FOOBAR&#34;</span><span class=p>,</span> <span class=kc>nil</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>wg</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;OK, All Done&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如上实际上是通过单个协程处理一个进程，也可以通过信号量来处理。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>signalC</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Signal</span><span class=p>,</span> <span class=mi>128</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=nx>signal</span><span class=p>.</span><span class=nf>Notify</span><span class=p>(</span><span class=nx>signalC</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGCHLD</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=k>defer</span> <span class=nx>signal</span><span class=p>.</span><span class=nf>Stop</span><span class=p>(</span><span class=nx>signalC</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=nx>s</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>signalC</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>switch</span> <span class=nx>s</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>case</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>SIGCHLD</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=kd>var</span> <span class=nx>wstatus</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>WaitStatus</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>				<span class=nx>pid</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>syscall</span><span class=p>.</span><span class=nf>Wait4</span><span class=p>(</span><span class=o>-</span><span class=mi>1</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>wstatus</span><span class=p>,</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>WNOHANG</span><span class=p>,</span> <span class=kc>nil</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=k>if</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>EINTR</span> <span class=o>==</span> <span class=nx>err</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>					<span class=k>continue</span>
+</span></span><span class=line><span class=cl>				<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=nx>syscall</span><span class=p>.</span><span class=nx>ECHILD</span> <span class=o>==</span> <span class=nx>err</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>					<span class=k>break</span>
+</span></span><span class=line><span class=cl>				<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>				<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Reaper cleanup: pid=%d, wstatus=%+v\n&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>					<span class=nx>pid</span><span class=p>,</span> <span class=nx>wstatus</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>default</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Other&#34;</span><span class=p>,</span> <span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}()</span>
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#fmt>fmt</a></li><li><a href=#flag>flag</a></li><li><a href=#unsafe>unsafe</a><ul><li><a href=#使用示例>使用示例</a></li></ul></li><li><a href=#signal>signal</a></li><li><a href=#container>container</a><ul><li><a href=#list>List</a></li><li><a href=#heap>Heap</a></li><li><a href=#ring>Ring</a></li></ul></li><li><a href=#sort>sort</a><ul><li><a href=#基础类型>基础类型</a></li><li><a href=#自定义比较>自定义比较</a></li><li><a href=#结构体>结构体</a></li><li><a href=#查找>查找</a></li></ul></li><li><a href=#exec>exec</a><ul><li><a href=#进程管理>进程管理</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,77 +1,82 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 常用命令 rsync 介绍 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="rsync 是一个远程数据同步工具，使用 &amp;ldquo;rsync算法&amp;rdquo; 来使本地和远程两个主机之间的文件达到同步，该算法只传送两个文件的不同部分，从而可以有效提高传输效率，而且本地复制文件也可以提高效率。
-"><link rel=canonical href=https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/","url":"https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/","name":"Linux 常用命令 rsync 介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2018-10-15T21:10:05CET","dateModified":"2018-10-15T21:10:05CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"Linux 常用命令 rsync 介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/"},"datePublished":"2018-10-15T21:10:05CET","dateModified":"2018-10-15T21:10:05CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/linux-command-rsync-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"Linux 常用命令 rsync 介绍"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
-<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
-<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
-<span>页面目录</span>
-<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#传输方式>传输方式</a><ul><li><a href=#1-复制本地文件>1. 复制本地文件</a></li><li><a href=#2-利用ssh>2. 利用ssh</a></li><li><a href=#3-使用rsync服务器>3. 使用rsync服务器</a></li></ul></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#传输方式>传输方式</a><ul><li><a href=#1-复制本地文件>1. 复制本地文件</a></li><li><a href=#2-利用ssh>2. 利用ssh</a></li><li><a href=#3-使用rsync服务器>3. 使用rsync服务器</a></li></ul></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>Linux 常用命令 rsync 介绍</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2018-10-15</span>
-<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/linux/ role=button>linux</a></div></div><hr><div class=content-body><p>rsync 是一个远程数据同步工具，使用 &ldquo;rsync算法&rdquo; 来使本地和远程两个主机之间的文件达到同步，该算法只传送两个文件的不同部分，从而可以有效提高传输效率，而且本地复制文件也可以提高效率。</p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>也就是 Remote Synchronize，这是一个在 <code>*nix</code> 下的一个远程数据同步工具，可以通过网络快速同步多台主机间的文件和目录；而且并非每次都整份传输，而是只传输两个文件的不同部分，因此其传输速度相当快。</p><p>rsync 的传输效率要比 <code>scp</code> 高很多，其特点有：</p><ul><li>可镜像保存整个目录树和文件系统；</li><li>可做到保持原文件的权限、时间、软硬连接等；</li></ul><p>如下是使用的命令行参数。</p><pre tabindex=0><code>$ rsync [OPTION]... SRC [USER@]HOST::DEST
-$ rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]
-$ rsync -av user@hostname::/dir/path /local/path
-
-rsync [-avrlptgoD] [-e ssh] [user@host:/dir] [/local/path]
-参数：
-  --compress/-z, --compress-level=level
-    传输过程中是否进行数据压缩，以及指定的压缩级别；
-  --archive/-a, --times, --perms, --owner, --group
-    用于设置保留原来的更新时间戳、权限、所有者和组信息，注意，对于 -a 同时会设置 --recursive 和 --links，
-    相当于 -rlptgoD；
-  --recursive/-r VS. --dirs/-d
-    前者递归复制所有目录(含子目录)；后者会跳过子目录及其内容；
-  --delete
-    默认从源复制到目的端时，不删除额外文件，通过该选项保证源和目标目录的内容完全一致，如果源是空，那么会
-    导致目的目录内容被删除；
-  --links/-l, --hard-links/-H, --copy-links/-L, --copy-unsafe-links, --safe-links
-    分别为保持符号链接、保持硬链接、复制符号链接指向的内容而非符号链接本身、如果符号链接指向源目录外则仍
-    复制、指向源目录外时为保证安全不复制；
-  --verbose, --progress, --stats
-    用于显示正在执行的状态，默认不打印任何信息；
-  --rsh/-e
-    默认使用的就是ssh，通过该参数强制使用，可以通过 --rsh &#34;ssh -p 12345&#34; 指定 ssh 的参数；
-  --exclude, --include
-    选择要同步的文件，可以指定多次，例如 --exclude &#34;*bak&#34; --exclude &#34;*~&#34; ；
-    示例：注意，指定时使用的是源地址的相对路径。
-    --exclude &#34;checkout&#34;    某个目录
-    --exclude &#34;filename*&#34;   某类文件
-    --exclude-from=sync-exclude.list  通过文件指定要忽略的文件
-  --update/-u
-    增量传输，也就是会跳过所有存在于目标，且时间较新的文件。注意，只检查文件名和最后修改时间，并不检查文
-    件大小，如果目的端有1M的A.txt文件，但是更新时间新于源端10M的A.txt那么本地文件不会更新；
-  --partial, -P
-    断点续传，会保留没有完全传输的文件，以加快随后的再次传输，其中 -P 相当于 --partial --progress；注意，
-    该参数与 -u 冲突，会导致传了一半的文件会被 rsync 跳过，详见上面的介绍；
-
-注意: 在指定复制源时，路径是否有最后的 &#34;/&#34; 有不同的含义，例如：
-    /data  ：表示将整个 /data 目录复制到目标目录含改目录；
-    /data/ ：表示将 /data/ 目录中的所有内容复制到目标目录。
-</code></pre><h1 id=传输方式>传输方式 <a href=#%e4%bc%a0%e8%be%93%e6%96%b9%e5%bc%8f class=anchor aria-hidden=true>#</a></h1><p>这三种传输方式的主要差异是，是否有冒号 <code>:</code>，本地传送不需要冒号，通过 <code>ssh</code> 或 <code>rsh</code> 时，需要一个冒号，通过 rsync 传送需要两个冒号。</p><h2 id=1-复制本地文件>1. 复制本地文件 <a href=#1-%e5%a4%8d%e5%88%b6%e6%9c%ac%e5%9c%b0%e6%96%87%e4%bb%b6 class=anchor aria-hidden=true>#</a></h2><p>在本地直接运行，用法与 <code>cp</code> 几乎一模一样，而且同样可以利用算法提高效率。</p><pre tabindex=0><code>$ rsync [OPTION]... SRC DEST
-
-$ rsync -av /etc /tmp              ← 将/etc/的资料备份到/tmp/etc內
-</code></pre><h2 id=2-利用ssh>2. 利用ssh <a href=#2-%e5%88%a9%e7%94%a8ssh class=anchor aria-hidden=true>#</a></h2><p>实际上就是使用远程 shell 程序，一般为 rsh 或者 ssh 实现内容的远程复制，通常路径地址包含单个冒号 <code>:</code> 分隔符时启动该模式。</p><pre tabindex=0><code>$ rsync [OPTION]... SRC [USER@]host:DEST
-
------ 将remote-server的/etc备份到本地主机/tmp內
-$ rsync -ave ssh user@remote-server:/etc /tmp
-</code></pre><h2 id=3-使用rsync服务器>3. 使用rsync服务器 <a href=#3-%e4%bd%bf%e7%94%a8rsync%e6%9c%8d%e5%8a%a1%e5%99%a8 class=anchor aria-hidden=true>#</a></h2><p>通过 <code>rsyncd</code> 提供的服务来传送，可以通过如下方式安装。</p><pre tabindex=0><code>----- 安装并启动
-# yum install rsync rsync-daemon
-# systemctl start rsyncd
-
------ 如果无法使用可以查看防火墙配置
-# systemctl stop firewalld
-# getenforce
-# setenforce 0
-</code></pre><p>默认会启动 873 端口，此外，还需要 A) 编辑 <code>/etc/rsyncd.conf</code> 配置文件；B) 需要设置好客户端密码文件。</p><pre tabindex=0><code># echo &#34;root:123456&#34; &gt; /etc/rsyncd.passwd
-# chmod 600 /etc/rsyncd.passwd
-
-# cat /etc/rsyncd.conf
-port=873
-log file=/var/log/rsync.log
-[foobar]
-path=/opt/foobar
-read only=false
-list=true
-uid=root
-gid=root
-auth users=root
-secrets file=/etc/rsyncd.passwd
-use chroot=no
-hosts allow=*
-</code></pre><p>配置好之后就可以通过 <code>rsync -avPz --port=873 --password-file=/etc/rsyncd.passwd /Your/Path root@YourIP::foobar/</code> 的方式同步文件。</p><p>如果有多个不同的目录需要同步，那么可以将公共的配置放置到开始，然后每个目录配置仅保留特有的配置项。另外，每次修改完之后是无需重启服务器的。</p></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/gdb-gdbinit-script/>gdbinit 功能介绍</a></li><li><a class=text-body href=/cn/blog/linux-network-status/>Linux 网络状态查看</a></li><li><a class=text-body href=/cn/blog/gdb-dwarf-format-introduce/>DWARF 格式简介</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 常用命令 rsync 介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="rsync 是一个远程数据同步工具，使用 &amp;ldquo;rsync算法&amp;rdquo; 来使本地和远程两个主机之间的文件达到同步，该算法只传送两个文件的不同部分，从而可以有效提高传输效率，而且本地复制文件也可以提高效率。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 常用命令 rsync 介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-10-01</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>rsync 是一个远程数据同步工具，使用 &ldquo;rsync算法&rdquo; 来使本地和远程两个主机之间的文件达到同步，该算法只传送两个文件的不同部分，从而可以有效提高传输效率，而且本地复制文件也可以提高效率。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>也就是 Remote Synchronize，这是一个在 <code>*nix</code> 下的一个远程数据同步工具，可以通过网络快速同步多台主机间的文件和目录；而且并非每次都整份传输，而是只传输两个文件的不同部分，因此其传输速度相当快。</p><p>rsync 的传输效率要比 <code>scp</code> 高很多，其特点有：</p><ul><li>可镜像保存整个目录树和文件系统；</li><li>可做到保持原文件的权限、时间、软硬连接等；</li></ul><p>如下是使用的命令行参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rsync [OPTION]... SRC [USER@]HOST::DEST
+</span></span><span class=line><span class=cl>$ rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]
+</span></span><span class=line><span class=cl>$ rsync -av user@hostname::/dir/path /local/path
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>rsync [-avrlptgoD] [-e ssh] [user@host:/dir] [/local/path]
+</span></span><span class=line><span class=cl>参数：
+</span></span><span class=line><span class=cl>  --compress/-z, --compress-level=level
+</span></span><span class=line><span class=cl>    传输过程中是否进行数据压缩，以及指定的压缩级别；
+</span></span><span class=line><span class=cl>  --archive/-a, --times, --perms, --owner, --group
+</span></span><span class=line><span class=cl>    用于设置保留原来的更新时间戳、权限、所有者和组信息，注意，对于 -a 同时会设置 --recursive 和 --links，
+</span></span><span class=line><span class=cl>    相当于 -rlptgoD；
+</span></span><span class=line><span class=cl>  --recursive/-r VS. --dirs/-d
+</span></span><span class=line><span class=cl>    前者递归复制所有目录(含子目录)；后者会跳过子目录及其内容；
+</span></span><span class=line><span class=cl>  --delete
+</span></span><span class=line><span class=cl>    默认从源复制到目的端时，不删除额外文件，通过该选项保证源和目标目录的内容完全一致，如果源是空，那么会
+</span></span><span class=line><span class=cl>    导致目的目录内容被删除；
+</span></span><span class=line><span class=cl>  --links/-l, --hard-links/-H, --copy-links/-L, --copy-unsafe-links, --safe-links
+</span></span><span class=line><span class=cl>    分别为保持符号链接、保持硬链接、复制符号链接指向的内容而非符号链接本身、如果符号链接指向源目录外则仍
+</span></span><span class=line><span class=cl>    复制、指向源目录外时为保证安全不复制；
+</span></span><span class=line><span class=cl>  --verbose, --progress, --stats
+</span></span><span class=line><span class=cl>    用于显示正在执行的状态，默认不打印任何信息；
+</span></span><span class=line><span class=cl>  --rsh/-e
+</span></span><span class=line><span class=cl>    默认使用的就是ssh，通过该参数强制使用，可以通过 --rsh &#34;ssh -p 12345&#34; 指定 ssh 的参数；
+</span></span><span class=line><span class=cl>  --exclude, --include
+</span></span><span class=line><span class=cl>    选择要同步的文件，可以指定多次，例如 --exclude &#34;*bak&#34; --exclude &#34;*~&#34; ；
+</span></span><span class=line><span class=cl>    示例：注意，指定时使用的是源地址的相对路径。
+</span></span><span class=line><span class=cl>    --exclude &#34;checkout&#34;    某个目录
+</span></span><span class=line><span class=cl>    --exclude &#34;filename*&#34;   某类文件
+</span></span><span class=line><span class=cl>    --exclude-from=sync-exclude.list  通过文件指定要忽略的文件
+</span></span><span class=line><span class=cl>  --update/-u
+</span></span><span class=line><span class=cl>    增量传输，也就是会跳过所有存在于目标，且时间较新的文件。注意，只检查文件名和最后修改时间，并不检查文
+</span></span><span class=line><span class=cl>    件大小，如果目的端有1M的A.txt文件，但是更新时间新于源端10M的A.txt那么本地文件不会更新；
+</span></span><span class=line><span class=cl>  --partial, -P
+</span></span><span class=line><span class=cl>    断点续传，会保留没有完全传输的文件，以加快随后的再次传输，其中 -P 相当于 --partial --progress；注意，
+</span></span><span class=line><span class=cl>    该参数与 -u 冲突，会导致传了一半的文件会被 rsync 跳过，详见上面的介绍；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>注意: 在指定复制源时，路径是否有最后的 &#34;/&#34; 有不同的含义，例如：
+</span></span><span class=line><span class=cl>    /data  ：表示将整个 /data 目录复制到目标目录含改目录；
+</span></span><span class=line><span class=cl>    /data/ ：表示将 /data/ 目录中的所有内容复制到目标目录。
+</span></span></code></pre></div><a class=anchor id=传输方式></a><h1>传输方式 <a href=#%e4%bc%a0%e8%be%93%e6%96%b9%e5%bc%8f aria-hidden=true>#</a></h1><p>这三种传输方式的主要差异是，是否有冒号 <code>:</code>，本地传送不需要冒号，通过 <code>ssh</code> 或 <code>rsh</code> 时，需要一个冒号，通过 rsync 传送需要两个冒号。</p><a class=anchor id=1-复制本地文件></a><h2>1. 复制本地文件 <a href=#1-%e5%a4%8d%e5%88%b6%e6%9c%ac%e5%9c%b0%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h2><p>在本地直接运行，用法与 <code>cp</code> 几乎一模一样，而且同样可以利用算法提高效率。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rsync [OPTION]... SRC DEST
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ rsync -av /etc /tmp              ← 将/etc/的资料备份到/tmp/etc內
+</span></span></code></pre></div><a class=anchor id=2-利用ssh></a><h2>2. 利用ssh <a href=#2-%e5%88%a9%e7%94%a8ssh aria-hidden=true>#</a></h2><p>实际上就是使用远程 shell 程序，一般为 rsh 或者 ssh 实现内容的远程复制，通常路径地址包含单个冒号 <code>:</code> 分隔符时启动该模式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rsync [OPTION]... SRC [USER@]host:DEST
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将remote-server的/etc备份到本地主机/tmp內
+</span></span><span class=line><span class=cl>$ rsync -ave ssh user@remote-server:/etc /tmp
+</span></span></code></pre></div><a class=anchor id=3-使用rsync服务器></a><h2>3. 使用rsync服务器 <a href=#3-%e4%bd%bf%e7%94%a8rsync%e6%9c%8d%e5%8a%a1%e5%99%a8 aria-hidden=true>#</a></h2><p>通过 <code>rsyncd</code> 提供的服务来传送，可以通过如下方式安装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装并启动
+</span></span><span class=line><span class=cl># yum install rsync rsync-daemon
+</span></span><span class=line><span class=cl># systemctl start rsyncd
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 如果无法使用可以查看防火墙配置
+</span></span><span class=line><span class=cl># systemctl stop firewalld
+</span></span><span class=line><span class=cl># getenforce
+</span></span><span class=line><span class=cl># setenforce 0
+</span></span></code></pre></div><p>默认会启动 873 端口，此外，还需要 A) 编辑 <code>/etc/rsyncd.conf</code> 配置文件；B) 需要设置好客户端密码文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># echo &#34;root:123456&#34; &gt; /etc/rsyncd.passwd
+</span></span><span class=line><span class=cl># chmod 600 /etc/rsyncd.passwd
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># cat /etc/rsyncd.conf
+</span></span><span class=line><span class=cl>port=873
+</span></span><span class=line><span class=cl>log file=/var/log/rsync.log
+</span></span><span class=line><span class=cl>[foobar]
+</span></span><span class=line><span class=cl>path=/opt/foobar
+</span></span><span class=line><span class=cl>read only=false
+</span></span><span class=line><span class=cl>list=true
+</span></span><span class=line><span class=cl>uid=root
+</span></span><span class=line><span class=cl>gid=root
+</span></span><span class=line><span class=cl>auth users=root
+</span></span><span class=line><span class=cl>secrets file=/etc/rsyncd.passwd
+</span></span><span class=line><span class=cl>use chroot=no
+</span></span><span class=line><span class=cl>hosts allow=*
+</span></span></code></pre></div><p>配置好之后就可以通过 <code>rsync -avPz --port=873 --password-file=/etc/rsyncd.passwd /Your/Path root@YourIP::foobar/</code> 的方式同步文件。</p><p>如果有多个不同的目录需要同步，那么可以将公共的配置放置到开始，然后每个目录配置仅保留特有的配置项。另外，每次修改完之后是无需重启服务器的。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#传输方式>传输方式</a><ul><li><a href=#1-复制本地文件>1. 复制本地文件</a></li><li><a href=#2-利用ssh>2. 利用ssh</a></li><li><a href=#3-使用rsync服务器>3. 使用rsync服务器</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

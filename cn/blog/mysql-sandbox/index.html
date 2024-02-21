@@ -1,0 +1,171 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>详细介绍 MySQL Sandbox 使用 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="MySQL Sandbox 是个用于在本地快速部署 MySQL 服务的工具，包括了不同版本，不同模式的部署，例如单节点、主备部署、一主多备等等；如果配合 Gearman，甚至可以完成分布式的部署。
+该程序通常用于测试，是用 Perl 语言编写的，在此，仅简单介绍下如何使用。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>详细介绍 MySQL Sandbox 使用</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-07-22</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a></div></div><hr><div class=content><p>MySQL Sandbox 是个用于在本地快速部署 MySQL 服务的工具，包括了不同版本，不同模式的部署，例如单节点、主备部署、一主多备等等；如果配合 <a href=http://gearman.org/>Gearman</a>，甚至可以完成分布式的部署。</p><p>该程序通常用于测试，是用 Perl 语言编写的，在此，仅简单介绍下如何使用。</p><p><img alt="mysql sandbox logo" src=images/sandbox-logo.png class="mx-auto d-block"></p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>MySQL-Sandbox 会在同一机器上部署不同的实例，实际上也就是安装时对应的 data-directory、Port、Unix Socket 不同，默认上述的三个参数与版本有关，以 MySQL-5.0.17 为例，对应如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Data-Directory: $SANDBOX_HOME/msb_5.0.17/data
+</span></span><span class=line><span class=cl>          Port: 5017
+</span></span><span class=line><span class=cl>   Unix Socket: /tmp/mysql_5017.sock
+</span></span></code></pre></div><p>另外，常见的命令简介如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>make_sandbox
+</span></span><span class=line><span class=cl>  最简单创建sandbox，也就是一个实例；
+</span></span><span class=line><span class=cl>low_level_make_sandbox
+</span></span><span class=line><span class=cl>  创建单个sandbox，可以使用多个选项，不过不会直接使用；
+</span></span><span class=line><span class=cl>make_replication_sandbox
+</span></span><span class=line><span class=cl>  创建master-slave架构；
+</span></span><span class=line><span class=cl>make_multiple_sandbox
+</span></span><span class=line><span class=cl>  创建相同版本的sandbox；
+</span></span><span class=line><span class=cl>make_multiple_custom_sandbox
+</span></span><span class=line><span class=cl>  创建不同版本的sandbox；
+</span></span><span class=line><span class=cl>make_sandbox_from_source
+</span></span><span class=line><span class=cl>  从源码编译的build目录创建一个sandbox；
+</span></span><span class=line><span class=cl>make_sandbox_from_installed
+</span></span><span class=line><span class=cl>  从已安装的二进制文件创建一个sandbox；
+</span></span><span class=line><span class=cl>sbtool
+</span></span><span class=line><span class=cl>  sandbox管理工具。
+</span></span></code></pre></div><p>具体用法参考源码目录下的 <code>README.md</code> 文档，非常详细，在此简单介绍如下。</p><a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>对于 Perl 程序可以通过 cpan 安装，当然需要 root 权限。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># cpan
+</span></span><span class=line><span class=cl>cpan&gt; install MySQL::Sandbox
+</span></span></code></pre></div><p>源码包可以直接从 <a href=https://github.com/datacharmer/mysql-sandbox/releases>github</a> 上下载，然后通过如下方式安装。</p><p>注意，在如下执行 <code>make test</code> 时，会依赖 Perl 的测试框架，可通过 <code>yum install perl-Test-Simple</code> 命令进行安装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 解压、编译、安装
+</span></span><span class=line><span class=cl>$ tar -xzf MySQL-Sandbox-x.x.x.tar.gz
+</span></span><span class=line><span class=cl>$ cd MySQL-Sandbox-x.x.x
+</span></span><span class=line><span class=cl>$ perl Makefile.PL PREFIX=/opt/mysql-sandbox
+</span></span><span class=line><span class=cl>$ make
+</span></span><span class=line><span class=cl>$ make test
+</span></span><span class=line><span class=cl>$ make install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 设置$PERL5LIB以及$PATH变量
+</span></span><span class=line><span class=cl>$ export PATH=$PATH:/opt/mysql-sandbox/bin
+</span></span><span class=line><span class=cl>$ export PERL5LIB=/opt/mysql-sandbox/share/perl5
+</span></span></code></pre></div><p>另外，建议使用普通用户进行测试，如果要使用 root 用户，则需要设置 <code>export SANDBOX_AS_ROOT=1</code> 环境变量。</p><a class=anchor id=安装方式></a><h1>安装方式 <a href=#%e5%ae%89%e8%a3%85%e6%96%b9%e5%bc%8f aria-hidden=true>#</a></h1><p>可直接下载二进制包，然后通过如下方式安装，如上所述，会安装到 <code>$SANDBOX_HOME/msb_X_X_XX</code> 目录下，如果未设置，默认 <code>SANDBOX_HOME=$HOME/sandboxes</code> 。</p><p>可以通过三种方式进行安装，简单介绍如下。</p><a class=anchor id=二进制包></a><h2>二进制包 <a href=#%e4%ba%8c%e8%bf%9b%e5%88%b6%e5%8c%85 aria-hidden=true>#</a></h2><p>可以直接从 <a href=https://dev.mysql.com/downloads/mysql/>官网</a> 下载二进制包，例如 <a href=https://dev.mysql.com/downloads/mysql/5.6.html#downloads>mysql-5.6.35-linux-glibc2.5-x86_64.tar.gz</a> ，包含了已经编译好的二进制包。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 单个MySQL服务
+</span></span><span class=line><span class=cl>$ make_sandbox /path/mysql-x.x.x.tar.gz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 主备方式
+</span></span><span class=line><span class=cl>$ make_replication_sandbox /path/mysql-x.x.x.tar.gz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 主备循环
+</span></span><span class=line><span class=cl>$ make_replication_sandbox --circular=5 /path/mysql-x.x.x.tar.gz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 多个MySQL服务
+</span></span><span class=line><span class=cl>$ make_multiple_sandbox /path/mysql-x.x.x.tar.gz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 多个不同版本的MySQL服务
+</span></span><span class=line><span class=cl>$ make_multiple_sandbox /path/mysql-x.x.x.tar.gz /path/mysql-x.x.x-other-tar.gz /path/another-tar.gz
+</span></span></code></pre></div><p>默认会将上述二进制包解压到当前目录，并将目录重命名为版本号，例如 5.6.35 。</p><a class=anchor id=源码包></a><h2>源码包 <a href=#%e6%ba%90%e7%a0%81%e5%8c%85 aria-hidden=true>#</a></h2><p>可以直接下载源码，然后编译，但是不想安装，可以通过如下命令搭建。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ make_sandbox_from_source {SOURCE_DIRECTORY} {sandbox_type} [options]
+</span></span></code></pre></div><p>其中 <code>sandbox_type</code> 参数指定了类型，包括了 single、multiple、replication、circular ，示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ ./configure &amp;&amp; make
+</span></span><span class=line><span class=cl>$ make_sandbox_from_source $PWD single
+</span></span></code></pre></div><p>也可以使用如下参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ make_sandbox_from_source $HOME/build/5.6.35 single --export_binaries --check_port 
+</span></span><span class=line><span class=cl>$ make_sandbox_from_source $HOME/build/5.6.35 replication --how_many_slaves=5
+</span></span></code></pre></div><a class=anchor id=已安装包></a><h2>已安装包 <a href=#%e5%b7%b2%e5%ae%89%e8%a3%85%e5%8c%85 aria-hidden=true>#</a></h2><p>可将不同版本的 MySQL 放在 <code>$SANDBOX_BINARY</code> 环境变量指定目录下，然后使用更简单的方式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ export SANDBOX_BINARY=$HOME/mybin
+</span></span><span class=line><span class=cl>$ ls $SANDBOX_BINARY
+</span></span><span class=line><span class=cl>5.6.35 5.7.17
+</span></span><span class=line><span class=cl>$ make_sandbox 5.7.17
+</span></span></code></pre></div><a class=anchor id=使用></a><h1>使用 <a href=#%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h1><p>在安装到 <code>$SANDBOX_HOME</code> 目录下之后，会生成一列的操作脚本。</p><a class=anchor id=服务器操作></a><h2>服务器操作 <a href=#%e6%9c%8d%e5%8a%a1%e5%99%a8%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><p>单个实例对应命令如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>start
+</span></span><span class=line><span class=cl>  启动服务，在数据目录下创建.pid文件，在/tmp目录下创建socket文件；如果.pid文件存在则立即退出。
+</span></span><span class=line><span class=cl>stop
+</span></span><span class=line><span class=cl>  停止服务，如果.pid文件不存在则立即退出。
+</span></span><span class=line><span class=cl>clear
+</span></span><span class=line><span class=cl>  通过stop停止服务，并删除test数据库中的文件。
+</span></span><span class=line><span class=cl>send_kill
+</span></span><span class=line><span class=cl>  发送SIGTERM信号，如果MySQL服务没有响应则发送SIGKILL信号。
+</span></span><span class=line><span class=cl>use
+</span></span><span class=line><span class=cl>  通过客户端链接到服务器，默认使用my_sandbox.cnf中的配置，用户名密码分别为msandbox/msandbox、root/msandbox 。
+</span></span><span class=line><span class=cl>use &#34;command&#34;
+</span></span><span class=line><span class=cl>  执行命令。
+</span></span></code></pre></div><p>而对于多个实例，只需要在上述的操作中添加 <code>_all</code> 即可，例如 start_all stop_all clear_all use_all send_kill_all 。</p><p>在通过客户端链接到服务器时，对于一主多备可以使用 m s1 s2 s3 命令链接，而多个节点则可以使用 n1 n2 n3 命令。</p><a class=anchor id=sandbox-tools></a><h2>Sandbox Tools <a href=#sandbox-tools aria-hidden=true>#</a></h2><p>提供了一个 sbtool 工具用于一些常见的操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 将数据复制到不同环境下
+</span></span><span class=line><span class=cl>$ make_sandbox 5.1.33
+</span></span><span class=line><span class=cl>$ make_sandbox 5.1.34
+</span></span><span class=line><span class=cl>$ sbtool -o copy \
+</span></span><span class=line><span class=cl>    -s $HOME/sandboxes/msb_5_1_33 \
+</span></span><span class=line><span class=cl>    -d $HOME/sandboxes/msb_5_1_34
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 移动到其它目录下
+</span></span><span class=line><span class=cl>$ make_sandbox 5.1.33
+</span></span><span class=line><span class=cl>$ sbtool -o move \
+</span></span><span class=line><span class=cl>    -s $HOME/sandboxes/msb_5_1_33 \
+</span></span><span class=line><span class=cl>    -d /some/path/a_fancy_name
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 新的测试脚本
+</span></span><span class=line><span class=cl>$ cat &lt;&lt; EOF &gt;&gt; check_single_server.sb
+</span></span><span class=line><span class=cl>shell:
+</span></span><span class=line><span class=cl>command  = make_sandbox 5.1.30 --no_confirm
+</span></span><span class=line><span class=cl>expected = sandbox server started
+</span></span><span class=line><span class=cl>msg = sandbox creation
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>sql:
+</span></span><span class=line><span class=cl>path = $SANDBOX_HOME/msb_5_1_30
+</span></span><span class=line><span class=cl>query = select version()
+</span></span><span class=line><span class=cl>expected = 5.1.30
+</span></span><span class=line><span class=cl>msg = checking version
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>shell:
+</span></span><span class=line><span class=cl>command = $SANDBOX_HOME/msb_5_1_30/stop
+</span></span><span class=line><span class=cl>expected = OK
+</span></span><span class=line><span class=cl>msg = stopped
+</span></span><span class=line><span class=cl>EOF
+</span></span><span class=line><span class=cl>$ export TAP_MODE=1
+</span></span><span class=line><span class=cl>$ perldoc Test::Harness::TAP
+</span></span><span class=line><span class=cl>$ test_sandbox --tests=user \
+</span></span><span class=line><span class=cl>    --user_test=t/check_single_server.sb
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 也可以在一个测试中嵌套测试
+</span></span><span class=line><span class=cl>$ prove -v t/06_test_user_defined.t
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建复制树
+</span></span><span class=line><span class=cl>$ make_multiple_sandbox --how_many_nodes=12 5.0.77
+</span></span><span class=line><span class=cl>$ sbtool -o tree \
+</span></span><span class=line><span class=cl>    --tree_dir=$HOME/sandbox/multi_msb_5_0_77 \
+</span></span><span class=line><span class=cl> --master_node=1 \
+</span></span><span class=line><span class=cl> --mid_nodes=&#39;2 3 4&#39; \
+</span></span><span class=line><span class=cl> --leaf_nodes=&#39;5 6|7 8 9|10 11 12&#39;
+</span></span><span class=line><span class=cl>$ cd $HOME/sandbox/multi_msb_5_0_77
+</span></span><span class=line><span class=cl>$ ./n1 -e &#34;show slave hosts&#34;
+</span></span><span class=line><span class=cl>$ ./n2 -e &#34;show slave hosts&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 检查端口
+</span></span><span class=line><span class=cl>$ sbtool -o ports
+</span></span><span class=line><span class=cl>$ sbtool -o ports --only_used
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 检查range
+</span></span><span class=line><span class=cl>$ sbtool -o range --min_range=5130
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 保存禁止删除，如下删除时会报错
+</span></span><span class=line><span class=cl>$ sbtool -o preserve \
+</span></span><span class=line><span class=cl>    -s $HOME/sandboxes/msb_5_1_33/
+</span></span><span class=line><span class=cl>$ $HOME/sandboxes/msb_5_1_33/clear
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 允许删除
+</span></span><span class=line><span class=cl>$ sbtool -o unpreserve \
+</span></span><span class=line><span class=cl>    -s $HOME/sandboxes/msb_5_1_33/
+</span></span><span class=line><span class=cl>$ $HOME/sandboxes/msb_5_1_33/clear
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除所有，实际可以直接删除目录，需要使用绝对路径
+</span></span><span class=line><span class=cl>$ sbtool -o delete \
+</span></span><span class=line><span class=cl>    -s $HOME/sandboxes/msb_5_1_33/
+</span></span></code></pre></div><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><p>对于 mysqldump、mysqlbinlog、mysqladmin 可以通过如下方式启动，直接使用 my_sandbox.cnf 中的配置，不需要输入密码。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>./my sqlbinlog ./data/mysql-bin.000001 | less
+</span></span><span class=line><span class=cl>./my sqldump dbname &gt; dumpname
+</span></span><span class=line><span class=cl>./my sqladmin extended-status
+</span></span></code></pre></div><a class=anchor id=常用示例></a><h3>常用示例 <a href=#%e5%b8%b8%e7%94%a8%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 搭建不同版本MySQL服务
+</span></span><span class=line><span class=cl>$ make_multiple_custom_sandbox 5.6.16 5.7.17
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 也可以添加选项，可以通过--help查看可用参数
+</span></span><span class=line><span class=cl>$ make_sandbox /path/mysql-x.x.x.tar.gz \
+</span></span><span class=line><span class=cl>    --my_file={small|medium|large|huge}
+</span></span><span class=line><span class=cl>$ make_sandbox /path/mysql-x.x.x.tar.gz \
+</span></span><span class=line><span class=cl>    --interactive
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 检查备库
+</span></span><span class=line><span class=cl>./check_slaves
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 所有节点执行命令
+</span></span><span class=line><span class=cl>./use all &#34;SELECT @@server_id&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 重启时指定参数
+</span></span><span class=line><span class=cl>./restart --key_buffer=20M
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>详细可以参考官方网站 <a href=http://mysqlsandbox.net/index.html>mysqlsandbox.net</a>，源码包可以直接从 <a href=https://github.com/datacharmer/mysql-sandbox/releases>github</a> 上下载。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li></ul></li><li><a href=#安装方式>安装方式</a><ul><li><a href=#二进制包>二进制包</a></li><li><a href=#源码包>源码包</a></li><li><a href=#已安装包>已安装包</a></li></ul></li><li><a href=#使用>使用</a><ul><li><a href=#服务器操作>服务器操作</a></li><li><a href=#sandbox-tools>Sandbox Tools</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

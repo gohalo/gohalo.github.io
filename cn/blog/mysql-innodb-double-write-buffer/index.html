@@ -1,0 +1,319 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>InnoDB Double Write Buffer | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="从 Double Write Buffer 来看，貌似是内存中的一块缓存区域，实际上，这里的 buffer 并不只是一块内存区域，而是还包括了存放在表空间中或是单独指定的某个文件中的一个 buffer 。
+在此，介绍下为什么会有 Double Write Buffer，以及其是如何实现的。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>InnoDB Double Write Buffer</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-09-13</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/innodb/ role=button>innodb</a></div></div><hr><div class=content><p>从 Double Write Buffer 来看，貌似是内存中的一块缓存区域，实际上，这里的 buffer 并不只是一块内存区域，而是还包括了存放在表空间中或是单独指定的某个文件中的一个 buffer 。</p><p>在此，介绍下为什么会有 Double Write Buffer，以及其是如何实现的。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>总体来说，Double Write Buffer 是 InnoDB 所使用的一种较为独特的文件 Flush 实现技术，也就是牺牲了一点点写性能，提高系统 Crash 或者断电情况下数据的安全性，避免写入的数据不完整。</p><p>在介绍 double write 的实现之前，有必要先了解一下 partial page write 问题。</p><a class=anchor id=问题起因></a><h2>问题起因 <a href=#%e9%97%ae%e9%a2%98%e8%b5%b7%e5%9b%a0 aria-hidden=true>#</a></h2><p>InnoDB 中的默认页大小是 16KB，通过 innodb_page_size 变量定义，很多的操作 (主要是对数据文件操作)，如数据校验、写入磁盘等，也是以页为单位进行。</p><p>而计算机硬件和操作系统的原子操作通常小于该值，一般为 512 字节，也就意味着，在极端情况下（如宕机、断电、OS Crash 等），往往并不能保证写入页的原子性。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- MySQL变量查看，数据写入页大小为16K
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GLOBAL VARIABLES LIKE &#39;innodb_page_size&#39;;
+</span></span><span class=line><span class=cl>+------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name    | Value |
+</span></span><span class=line><span class=cl>+------------------+-------+
+</span></span><span class=line><span class=cl>| innodb_page_size | 16384 |
+</span></span><span class=line><span class=cl>+------------------+-------+
+</span></span><span class=line><span class=cl>1 row in set (0.06 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看文件系统的块大小，一般为4K
+</span></span><span class=line><span class=cl># getconf PAGESIZE
+</span></span><span class=line><span class=cl># blockdev --getbsz /dev/sda7
+</span></span><span class=line><span class=cl># dumpe2fs /dev/sda7 | grep &#34;Block size&#34;
+</span></span><span class=line><span class=cl>dumpe2fs 1.42.9 (28-Dec-2013)
+</span></span><span class=line><span class=cl>Block size:               4096
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看sector的大小
+</span></span><span class=line><span class=cl># fdisk -l | grep Sector
+</span></span><span class=line><span class=cl>Sector size (logical/physical): 512 bytes / 512 bytes
+</span></span></code></pre></div><p>例如，16K 的数据，在写入 4K 时机器宕机，此时只有一部分写是成功的，这种情况下就是 partial page write 问题。</p><p>MySQL 在崩溃恢复阶段，读取数据页时，需要检查页的 checksum，当发生 partial page write 时，页已经损坏，就导致数据无法恢复。</p><p>为了解决上述问题，采用两次写，此时需要额外添加两个部分，A) 内存中的两次写缓冲 (double write buffer)，大小为 2MB；B) 磁盘上共享表空间中连续的 128 页，大小也为 2MB。</p><a class=anchor id=配置参数></a><h2>配置参数 <a href=#%e9%85%8d%e7%bd%ae%e5%8f%82%e6%95%b0 aria-hidden=true>#</a></h2><p>在 InnoDB 中，可以通过如下方式查看 double write 的状态。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>------ 查看是否启用了double write，以及相关参数
+</span></span><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;innodb_doublewrite%&#39;;
+</span></span><span class=line><span class=cl>+-------------------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name                 | Value |
+</span></span><span class=line><span class=cl>+-------------------------------+-------+
+</span></span><span class=line><span class=cl>| innodb_doublewrite            | ON    |
+</span></span><span class=line><span class=cl>| innodb_doublewrite_batch_size | 120   |
+</span></span><span class=line><span class=cl>+-------------------------------+-------+
+</span></span><span class=line><span class=cl>2 rows in set (0.02 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 可以查询double write的使用情况
+</span></span><span class=line><span class=cl>mysql&gt; SHOW STATUS LIKE &#39;innodb_dblwr_%&#39;;
+</span></span><span class=line><span class=cl>+----------------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name              | Value |
+</span></span><span class=line><span class=cl>+----------------------------+-------+
+</span></span><span class=line><span class=cl>| Innodb_dblwr_pages_written | 14615 |   从BP写入到dblwr的page数
+</span></span><span class=line><span class=cl>| Innodb_dblwr_writes        | 636   |   写文件的次数
+</span></span><span class=line><span class=cl>+----------------------------+-------+
+</span></span><span class=line><span class=cl>2 rows in set (0.02 sec)
+</span></span></code></pre></div><p>如上可以得到平均每次写操作合并页数为 <code>Innodb_dblwr_pages_written/Innodb_dblwr_writes</code> 。</p><a class=anchor id=工作过程></a><h2>工作过程 <a href=#%e5%b7%a5%e4%bd%9c%e8%bf%87%e7%a8%8b aria-hidden=true>#</a></h2><p>工作过程大致如下：</p><ol><li>当需要将缓冲池的脏页刷新到 data file 时，并不直接写到数据文件中，而是先拷贝至内存中的 double write buffer。</li><li>接着从 double write buffer 分两次写入磁盘共享表空间中，每次写入 1MB，并马上调用 fsync 函数，同步到磁盘，避免缓冲带来的问题。</li><li>第 2 步完成后，再将两次写缓冲区写入数据文件。</li></ol><p>如下是执行示意图。</p><p><img alt="how innodb double write works" src=images/innodb-double-write-works.jpg class="mx-auto d-block"></p><p>在这个过程中，第二步的 double write 是顺序写，所以开销并不大；而第三步，在将 double write buffer 写入各表空间文件，是离散写入；而 double write 实际引入的是第二步的开销。</p><a class=anchor id=恢复过程></a><h2>恢复过程 <a href=#%e6%81%a2%e5%a4%8d%e8%bf%87%e7%a8%8b aria-hidden=true>#</a></h2><p>有 double write 后，恢复时就简单多了，首先检查数据页，如果损坏，则尝试从 double write 中恢复数据；然后，检查 double writer 的数据的完整性，如果不完整直接丢弃，重新执行 redo log；如果 double write 的数据是完整的，用 double buffer 的数据更新该数据页，跳过该 redo log。</p><p><img alt="how innodb double write recovery" src=images/innodb-double-write-recovery.jpg class="mx-auto d-block"></p><p>有些时候，并不是所有的场景都需要使用 Double Write 这样的机制来保证数据的安全准确性，比如当我们使用某些特别文件系统的时候，如在 Solaris 平台上非常著名的 ZFS 文件系统，他就可以自己保证文件写入的完整性。</p><p>再有就是从机，或者硬件也提供了类似的原子写入功能，因此可以关闭 double write 功能。</p><p>也即将 innodb_doublewrite 变量设置为 OFF，此时的写入过程大致如下。</p><p><img alt="innodb double write closed" src=images/innodb-double-write-closed.png class="mx-auto d-block"></p><a class=anchor id=源码解析></a><h1>源码解析 <a href=#%e6%ba%90%e7%a0%81%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h1><p>如上所述，一个 dblwr 有 2MB 也就是 128 pages，其中默认有 120 pages 用于批量刷新，可以直接通过 <code>innodb_doublewrite_batch_size</code> 变量设置，其包括了 BUF_FLUSH_LRU、BUF_FLUSH_LIST，剩下的 8 个页用于单个 page 的 flush。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=n>UNIV_INTERN</span> <span class=n>buf_dblwr_t</span><span class=o>*</span> <span class=n>buf_dblwr</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>          <span class=c1>// 定义Double Write Buffer全局变量
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl><span class=k>struct</span> <span class=nc>buf_dblwr_t</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>ib_mutex_t</span>  <span class=n>mutex</span><span class=p>;</span>                 <span class=c1>// 互斥量，用于保护first_free、write_buf
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>ulint</span>       <span class=n>block1</span><span class=p>;</span>                <span class=c1>// 第一个doubewrite块(64 pages)的page no
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>ulint</span>       <span class=n>block2</span><span class=p>;</span>                <span class=c1>// 第二个doublewrite块的page no
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>ulint</span>       <span class=n>first_free</span><span class=p>;</span>            <span class=c1>// 在write_buf中第一个空闲的位置，单位为UNIV_PAGE_SIZE
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>ulint</span>       <span class=n>b_reserved</span><span class=p>;</span>            <span class=c1>// 为batch flush预留的slot数
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>os_event_t</span>  <span class=n>b_event</span><span class=p>;</span>               <span class=c1>// 等待batch flush完成的事件
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>ulint</span>       <span class=n>s_reserved</span><span class=p>;</span>            <span class=c1>// 为单个page刷新预留的slot数
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>os_event_t</span>  <span class=n>s_event</span><span class=p>;</span>               <span class=c1>// 等待single flush完成的事件
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>bool</span><span class=o>*</span>       <span class=n>in_use</span><span class=p>;</span>                <span class=c1>// 标记一个slot是否被使用，只用于single page flush
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>bool</span>        <span class=n>batch_running</span><span class=p>;</span>         <span class=c1>// 当设置为TRUE时，表明有batch flush正在执行
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>byte</span><span class=o>*</span>       <span class=n>write_buf</span><span class=p>;</span>             <span class=c1>// dblwr在内存的缓存，以UNIV_PAGE_SIZE为单位对齐
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>byte</span><span class=o>*</span>       <span class=n>write_buf_unaligned</span><span class=p>;</span>   <span class=c1>// 未对齐的write_buf
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>buf_page_t</span><span class=o>**</span>    <span class=n>buf_block_arr</span><span class=p>;</span>     <span class=c1>// 存储已经cache到write_buf的block的指针
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>};</span>
+</span></span></code></pre></div><p>对于 FLUSH 操作，有三种类型。</p><ul><li><code>BUF_FLUSH_LRU</code> 从 buffer pool 的 LRU 上扫描并刷新。</li><li><code>BUF_FLUSH_LIST</code> 从 buffer pool 的 FLUSH LIST 上扫描并刷新。</li><li><code>BUF_FLUSH_SINGLE_PAGE</code> 从 LRU 上只刷新一个 page，会通过 <code>buf_dblwr_write_single_page()</code> 来写一个 page 。</li></ul><p>前两种属于 BATCH FLUSH，最后一种属于 SINGLE FLUSH，在 <code>buf_flush_write_block_low()</code> 函数中执行如下逻辑。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>buf_flush_page()                      将可以刷新的页写入到磁盘中
+</span></span><span class=line><span class=cl> |-buf_flush_write_block_low()
+</span></span><span class=line><span class=cl>   |-buf_dblwr_write_single_page()    刷新类型为BUF_FLUSH_SINGLE_PAGE时
+</span></span><span class=line><span class=cl>   |                                  会写入dblwr+sync，然后写入datafile+sync
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-buf_dblwr_add_to_batch()         批量写入，只要是非SINGLE都划分到此类
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-fil_flush()                      如果是同步，则刷新并等待执行完成
+</span></span><span class=line><span class=cl>   |-buf_page_io_complete()
+</span></span></code></pre></div><p>在如上的配置中，只要不是 SINGLE 类型，都作为 BATCH 。</p><a class=anchor id=single></a><h2>single <a href=#single aria-hidden=true>#</a></h2><p>也就是在 <code>buf_dblwr_write_single_page()</code> 函数中，用于将一个 page 加入到 double write buffer 中，并完成写操作</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=kt>void</span> <span class=nf>buf_dblwr_write_single_page</span><span class=p>(</span><span class=n>buf_page_t</span><span class=o>*</span> <span class=n>bpage</span><span class=p>,</span> <span class=kt>bool</span> <span class=n>sync</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 计算为single刷新预留的dblwr page，其中size为dblwr总的页数，一般为128 pages
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>size</span> <span class=o>=</span> <span class=mi>2</span> <span class=o>*</span> <span class=n>TRX_SYS_DOUBLEWRITE_BLOCK_SIZE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>n_slots</span> <span class=o>=</span> <span class=n>size</span> <span class=o>-</span> <span class=n>srv_doublewrite_batch_size</span><span class=p>;</span>  <span class=c1>// 默认为8 pages
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 接下来需要检查下数据的有效性
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=n>buf_page_get_state</span><span class=p>(</span><span class=n>bpage</span><span class=p>)</span> <span class=o>==</span> <span class=n>BUF_BLOCK_FILE_PAGE</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=cm>/* Check that the actual page in the buffer pool is
+</span></span></span><span class=line><span class=cl><span class=cm>        not corrupt and the LSN values are sane. */</span>
+</span></span><span class=line><span class=cl>        <span class=n>buf_dblwr_check_block</span><span class=p>((</span><span class=n>buf_block_t</span><span class=o>*</span><span class=p>)</span> <span class=n>bpage</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=cm>/* Check that the page as written to the doublewrite
+</span></span></span><span class=line><span class=cl><span class=cm>        buffer has sane LSN values. */</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>bpage</span><span class=o>-&gt;</span><span class=n>zip</span><span class=p>.</span><span class=n>data</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>buf_dblwr_check_page_lsn</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>                <span class=p>((</span><span class=n>buf_block_t</span><span class=o>*</span><span class=p>)</span> <span class=n>bpage</span><span class=p>)</span><span class=o>-&gt;</span><span class=n>frame</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>retry</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 当s_reserved值等于最大single page数量时，线程会等待有空闲slot
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>mutex_enter</span><span class=p>(</span><span class=o>&amp;</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>s_reserved</span> <span class=o>==</span> <span class=n>n_slots</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=cm>/* All slots are reserved. */</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int64_t</span> <span class=n>sig_count</span> <span class=o>=</span> <span class=n>os_event_reset</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>s_event</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>mutex_exit</span><span class=p>(</span><span class=o>&amp;</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>os_event_wait_low</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>s_event</span><span class=p>,</span> <span class=n>sig_count</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>goto</span> <span class=n>retry</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 找到一个没有在使用的slot，分配给当前page，将in_use设为TRUE，并递增s_reserved
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=n>srv_doublewrite_batch_size</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>size</span><span class=p>;</span> <span class=o>++</span><span class=n>i</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>in_use</span><span class=p>[</span><span class=n>i</span><span class=p>])</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>in_use</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=o>=</span> <span class=nb>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>s_reserved</span><span class=o>++</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>buf_block_arr</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=o>=</span> <span class=n>bpage</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>mutex_exit</span><span class=p>(</span><span class=o>&amp;</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span>        <span class=c1>// 同时释放buf_dblwr-&gt;mutex
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 将单个page写入到double write buffer中
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=n>i</span> <span class=o>&lt;</span> <span class=n>TRX_SYS_DOUBLEWRITE_BLOCK_SIZE</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>offset</span> <span class=o>=</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>block1</span> <span class=o>+</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>offset</span> <span class=o>=</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>block2</span> <span class=o>+</span> <span class=n>i</span>
+</span></span><span class=line><span class=cl>             <span class=o>-</span> <span class=n>TRX_SYS_DOUBLEWRITE_BLOCK_SIZE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>is_compressed</span><span class=p>())</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>memcpy</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>write_buf</span> <span class=o>+</span> <span class=n>univ_page_size</span><span class=p>.</span><span class=n>physical</span><span class=p>()</span> <span class=o>*</span> <span class=n>i</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>zip</span><span class=p>.</span><span class=n>data</span><span class=p>,</span> <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>physical</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// 对于压缩页，会补0
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=n>memset</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>write_buf</span> <span class=o>+</span> <span class=n>univ_page_size</span><span class=p>.</span><span class=n>physical</span><span class=p>()</span> <span class=o>*</span> <span class=n>i</span>
+</span></span><span class=line><span class=cl>               <span class=o>+</span> <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>physical</span><span class=p>(),</span> <span class=mh>0x0</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=n>univ_page_size</span><span class=p>.</span><span class=n>physical</span><span class=p>()</span> <span class=o>-</span> <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>physical</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>fil_io</span><span class=p>(</span><span class=n>IORequestWrite</span><span class=p>,</span> <span class=nb>true</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=n>page_id_t</span><span class=p>(</span><span class=n>TRX_SYS_SPACE</span><span class=p>,</span> <span class=n>offset</span><span class=p>),</span> <span class=n>univ_page_size</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=n>univ_page_size</span><span class=p>.</span><span class=n>physical</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl>               <span class=p>(</span><span class=kt>void</span><span class=o>*</span><span class=p>)</span> <span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>write_buf</span>
+</span></span><span class=line><span class=cl>                <span class=o>+</span> <span class=n>univ_page_size</span><span class=p>.</span><span class=n>physical</span><span class=p>()</span> <span class=o>*</span> <span class=n>i</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>               <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=cm>/* It is a regular page. Write it directly to the
+</span></span></span><span class=line><span class=cl><span class=cm>        doublewrite buffer */</span>
+</span></span><span class=line><span class=cl>        <span class=n>fil_io</span><span class=p>(</span><span class=n>IORequestWrite</span><span class=p>,</span> <span class=nb>true</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=n>page_id_t</span><span class=p>(</span><span class=n>TRX_SYS_SPACE</span><span class=p>,</span> <span class=n>offset</span><span class=p>),</span> <span class=n>univ_page_size</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=n>univ_page_size</span><span class=p>.</span><span class=n>physical</span><span class=p>(),</span>
+</span></span><span class=line><span class=cl>               <span class=p>(</span><span class=kt>void</span><span class=o>*</span><span class=p>)</span> <span class=p>((</span><span class=n>buf_block_t</span><span class=o>*</span><span class=p>)</span> <span class=n>bpage</span><span class=p>)</span><span class=o>-&gt;</span><span class=n>frame</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 将doublewrite buffer中的数据，也就是系统表，写入到磁盘
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>fil_flush</span><span class=p>(</span><span class=n>TRX_SYS_SPACE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 将数据写入到数据表中，此时可能是同步操作
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>buf_dblwr_write_block_to_datafile</span><span class=p>(</span><span class=n>bpage</span><span class=p>,</span> <span class=n>sync</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=batch></a><h2>batch <a href=#batch aria-hidden=true>#</a></h2><p>入口函数为 <code>buf_dblwr_add_to_batch()</code>，也就是将一个 page 加入到 double write buffer 中，如果 batch 满了，则刷 double write buffer 到磁盘。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=kt>void</span> <span class=nf>buf_dblwr_add_to_batch</span><span class=p>(</span><span class=n>buf_page_t</span><span class=o>*</span> <span class=n>bpage</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=nl>try_again</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 获取buf_dblwr-&gt;mutex锁
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>mutex_enter</span><span class=p>(</span><span class=o>&amp;</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 当batch_running为TRUE，表示已有线程开始做batch flush来刷dblwr，释放互斥锁，重新等待
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>batch_running</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=cm>/* 正常来说，只有后台线程才会做batche flush操作，正常不会有竞争；
+</span></span></span><span class=line><span class=cl><span class=cm>           唯一的例外是当达到sync checkpoint时，用户线程强制做batch flush操作。*/</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int64_t</span> <span class=n>sig_count</span> <span class=o>=</span> <span class=n>os_event_reset</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>b_event</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>mutex_exit</span><span class=p>(</span><span class=o>&amp;</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>os_event_wait_low</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>b_event</span><span class=p>,</span> <span class=n>sig_count</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>goto</span> <span class=n>try_again</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 如果batch满了，则释放mutex，主动把dblwr的写到磁盘
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span> <span class=o>==</span> <span class=n>srv_doublewrite_batch_size</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>mutex_exit</span><span class=p>(</span><span class=o>&amp;</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>        <span class=n>buf_dblwr_flush_buffered_writes</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=k>goto</span> <span class=n>try_again</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 将page拷贝到第buf_dblwr-&gt;first_free个槽位，并设置相应的变量
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>byte</span><span class=o>*</span>   <span class=n>p</span> <span class=o>=</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>write_buf</span>
+</span></span><span class=line><span class=cl>        <span class=o>+</span> <span class=n>univ_page_size</span><span class=p>.</span><span class=n>physical</span><span class=p>()</span> <span class=o>*</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>is_compressed</span><span class=p>())</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>UNIV_MEM_ASSERT_RW</span><span class=p>(</span><span class=n>bpage</span><span class=o>-&gt;</span><span class=n>zip</span><span class=p>.</span><span class=n>data</span><span class=p>,</span> <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>physical</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>        <span class=cm>/* Copy the compressed page and clear the rest. */</span>
+</span></span><span class=line><span class=cl>        <span class=n>memcpy</span><span class=p>(</span><span class=n>p</span><span class=p>,</span> <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>zip</span><span class=p>.</span><span class=n>data</span><span class=p>,</span> <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>physical</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>        <span class=n>memset</span><span class=p>(</span><span class=n>p</span> <span class=o>+</span> <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>physical</span><span class=p>(),</span> <span class=mh>0x0</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=n>univ_page_size</span><span class=p>.</span><span class=n>physical</span><span class=p>()</span> <span class=o>-</span> <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>physical</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>ut_a</span><span class=p>(</span><span class=n>buf_page_get_state</span><span class=p>(</span><span class=n>bpage</span><span class=p>)</span> <span class=o>==</span> <span class=n>BUF_BLOCK_FILE_PAGE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>UNIV_MEM_ASSERT_RW</span><span class=p>(((</span><span class=n>buf_block_t</span><span class=o>*</span><span class=p>)</span> <span class=n>bpage</span><span class=p>)</span><span class=o>-&gt;</span><span class=n>frame</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                   <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>logical</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>        <span class=n>memcpy</span><span class=p>(</span><span class=n>p</span><span class=p>,</span> <span class=p>((</span><span class=n>buf_block_t</span><span class=o>*</span><span class=p>)</span> <span class=n>bpage</span><span class=p>)</span><span class=o>-&gt;</span><span class=n>frame</span><span class=p>,</span> <span class=n>bpage</span><span class=o>-&gt;</span><span class=n>size</span><span class=p>.</span><span class=n>logical</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>buf_block_arr</span><span class=p>[</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span><span class=p>]</span> <span class=o>=</span> <span class=n>bpage</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span><span class=o>++</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>b_reserved</span><span class=o>++</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 再次判断batch是否满了，是则释放mutex，主动把dblwr的写到磁盘
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span> <span class=o>==</span> <span class=n>srv_doublewrite_batch_size</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>mutex_exit</span><span class=p>(</span><span class=o>&amp;</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>        <span class=n>buf_dblwr_flush_buffered_writes</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>mutex_exit</span><span class=p>(</span><span class=o>&amp;</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>));</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>接下来，再看看上述函数中调用的 <code>buf_dblwr_flush_buffered_writes()</code>，该函数会对 batch flush 操作批量刷 double write buffer 函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=kt>void</span> <span class=nf>buf_dblwr_flush_buffered_writes</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 如果没有开启doublewrite buffer则直接调用同步写入函数
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>srv_use_doublewrite_buf</span> <span class=o>||</span> <span class=n>buf_dblwr</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=cm>/* Sync the writes to the disk. */</span>
+</span></span><span class=line><span class=cl>        <span class=n>buf_dblwr_sync_datafiles</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>try_again</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=n>mutex_enter</span><span class=p>(</span><span class=o>&amp;</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span>  <span class=c1>// 获取锁
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 第一次写入时，直接调用同步写入
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>mutex_exit</span><span class=p>(</span><span class=o>&amp;</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>os_aio_simulated_wake_handler_threads</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 如果batch_running为TRUE，表示正有线程在做batch flush，则等待一段时间重试
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>batch_running</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int64_t</span> <span class=n>sig_count</span> <span class=o>=</span> <span class=n>os_event_reset</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>b_event</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>mutex_exit</span><span class=p>(</span><span class=o>&amp;</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>os_event_wait_low</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>b_event</span><span class=p>,</span> <span class=n>sig_count</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>goto</span> <span class=n>try_again</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 设置buf_dblwr-&gt;batch_running为true，防止并发写入
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// 正常来说批量写入只有后台函数以及checkpoint sync的用户线程，但是单页也有可能
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>batch_running</span> <span class=o>=</span> <span class=nb>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>first_free</span> <span class=o>=</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>mutex_exit</span><span class=p>(</span><span class=o>&amp;</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span> <span class=c1>// 释放锁
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>write_buf</span> <span class=o>=</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>write_buf</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 检查每一个将要写dblwr的block以及write_buf中的page是否被损坏或者LSN值是否正确
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>for</span> <span class=p>(</span><span class=n>ulint</span> <span class=n>len2</span> <span class=o>=</span> <span class=mi>0</span><span class=p>,</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>         <span class=n>i</span> <span class=o>&lt;</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>         <span class=n>len2</span> <span class=o>+=</span> <span class=n>UNIV_PAGE_SIZE</span><span class=p>,</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>const</span> <span class=n>buf_block_t</span><span class=o>*</span>  <span class=n>block</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>block</span> <span class=o>=</span> <span class=p>(</span><span class=n>buf_block_t</span><span class=o>*</span><span class=p>)</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>buf_block_arr</span><span class=p>[</span><span class=n>i</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>buf_block_get_state</span><span class=p>(</span><span class=n>block</span><span class=p>)</span> <span class=o>!=</span> <span class=n>BUF_BLOCK_FILE_PAGE</span>
+</span></span><span class=line><span class=cl>            <span class=o>||</span> <span class=n>block</span><span class=o>-&gt;</span><span class=n>page</span><span class=p>.</span><span class=n>zip</span><span class=p>.</span><span class=n>data</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=cm>/* No simple validate for compressed
+</span></span></span><span class=line><span class=cl><span class=cm>            pages exists. */</span>
+</span></span><span class=line><span class=cl>            <span class=k>continue</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=n>buf_dblwr_check_block</span><span class=p>(</span><span class=n>block</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>buf_dblwr_check_page_lsn</span><span class=p>(</span><span class=n>write_buf</span> <span class=o>+</span> <span class=n>len2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 将write_buf中的page写入到文件中，先写第一个block，再写第二个block
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=cm>/* Write out the first block of the doublewrite buffer */</span>
+</span></span><span class=line><span class=cl>    <span class=n>len</span> <span class=o>=</span> <span class=n>ut_min</span><span class=p>(</span><span class=n>TRX_SYS_DOUBLEWRITE_BLOCK_SIZE</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>             <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span><span class=p>)</span> <span class=o>*</span> <span class=n>UNIV_PAGE_SIZE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>fil_io</span><span class=p>(</span><span class=n>IORequestWrite</span><span class=p>,</span> <span class=nb>true</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>           <span class=n>page_id_t</span><span class=p>(</span><span class=n>TRX_SYS_SPACE</span><span class=p>,</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>block1</span><span class=p>),</span> <span class=n>univ_page_size</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>           <span class=mi>0</span><span class=p>,</span> <span class=n>len</span><span class=p>,</span> <span class=p>(</span><span class=kt>void</span><span class=o>*</span><span class=p>)</span> <span class=n>write_buf</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span> <span class=o>&lt;=</span> <span class=n>TRX_SYS_DOUBLEWRITE_BLOCK_SIZE</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=cm>/* No unwritten pages in the second block. */</span>
+</span></span><span class=line><span class=cl>        <span class=k>goto</span> <span class=n>flush</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=cm>/* Write out the second block of the doublewrite buffer. */</span>
+</span></span><span class=line><span class=cl>    <span class=n>len</span> <span class=o>=</span> <span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span> <span class=o>-</span> <span class=n>TRX_SYS_DOUBLEWRITE_BLOCK_SIZE</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>           <span class=o>*</span> <span class=n>UNIV_PAGE_SIZE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>write_buf</span> <span class=o>=</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>write_buf</span>
+</span></span><span class=line><span class=cl>            <span class=o>+</span> <span class=n>TRX_SYS_DOUBLEWRITE_BLOCK_SIZE</span> <span class=o>*</span> <span class=n>UNIV_PAGE_SIZE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>fil_io</span><span class=p>(</span><span class=n>IORequestWrite</span><span class=p>,</span> <span class=nb>true</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>           <span class=n>page_id_t</span><span class=p>(</span><span class=n>TRX_SYS_SPACE</span><span class=p>,</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>block2</span><span class=p>),</span> <span class=n>univ_page_size</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>           <span class=mi>0</span><span class=p>,</span> <span class=n>len</span><span class=p>,</span> <span class=p>(</span><span class=kt>void</span><span class=o>*</span><span class=p>)</span> <span class=n>write_buf</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>flush</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=cm>/* increment the doublewrite flushed pages counter */</span>
+</span></span><span class=line><span class=cl>    <span class=n>srv_stats</span><span class=p>.</span><span class=n>dblwr_pages_written</span><span class=p>.</span><span class=n>add</span><span class=p>(</span><span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>srv_stats</span><span class=p>.</span><span class=n>dblwr_writes</span><span class=p>.</span><span class=n>inc</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* Now flush the doublewrite buffer data to disk */</span>
+</span></span><span class=line><span class=cl>    <span class=n>fil_flush</span><span class=p>(</span><span class=n>TRX_SYS_SPACE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* We know that the writes have been flushed to disk now
+</span></span></span><span class=line><span class=cl><span class=cm>    and in recovery we will find them in the doublewrite buffer
+</span></span></span><span class=line><span class=cl><span class=cm>    blocks. Next do the writes to the intended positions. */</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* Up to this point first_free and buf_dblwr-&gt;first_free are
+</span></span></span><span class=line><span class=cl><span class=cm>    same because we have set the buf_dblwr-&gt;batch_running flag
+</span></span></span><span class=line><span class=cl><span class=cm>    disallowing any other thread to post any request but we
+</span></span></span><span class=line><span class=cl><span class=cm>    can&#39;t safely access buf_dblwr-&gt;first_free in the loop below.
+</span></span></span><span class=line><span class=cl><span class=cm>    This is so because it is possible that after we are done with
+</span></span></span><span class=line><span class=cl><span class=cm>    the last iteration and before we terminate the loop, the batch
+</span></span></span><span class=line><span class=cl><span class=cm>    gets finished in the IO helper thread and another thread posts
+</span></span></span><span class=line><span class=cl><span class=cm>    a new batch setting buf_dblwr-&gt;first_free to a higher value.
+</span></span></span><span class=line><span class=cl><span class=cm>    If this happens and we are using buf_dblwr-&gt;first_free in the
+</span></span></span><span class=line><span class=cl><span class=cm>    loop termination condition then we&#39;ll end up dispatching
+</span></span></span><span class=line><span class=cl><span class=cm>    the same block twice from two different threads. */</span>
+</span></span><span class=line><span class=cl>    <span class=n>ut_ad</span><span class=p>(</span><span class=n>first_free</span> <span class=o>==</span> <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>first_free</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>ulint</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>first_free</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>buf_dblwr_write_block_to_datafile</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=n>buf_dblwr</span><span class=o>-&gt;</span><span class=n>buf_block_arr</span><span class=p>[</span><span class=n>i</span><span class=p>],</span> <span class=nb>false</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* Wake possible simulated aio thread to actually post the
+</span></span></span><span class=line><span class=cl><span class=cm>    writes to the operating system. We don&#39;t flush the files
+</span></span></span><span class=line><span class=cl><span class=cm>    at this point. We leave it to the IO helper thread to flush
+</span></span></span><span class=line><span class=cl><span class=cm>    datafiles when the whole batch has been processed. */</span>
+</span></span><span class=line><span class=cl>    <span class=n>os_aio_simulated_wake_handler_threads</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#问题起因>问题起因</a></li><li><a href=#配置参数>配置参数</a></li><li><a href=#工作过程>工作过程</a></li><li><a href=#恢复过程>恢复过程</a></li></ul></li><li><a href=#源码解析>源码解析</a><ul><li><a href=#single>single</a></li><li><a href=#batch>batch</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,113 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>BCC eBPF 使用 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="正常来说，如果要使用 eBPF 提供的能力，需要完成 &amp;ldquo;编写BPF代码-编译成字节码-注入内核-获取结果-展示&amp;rdquo; 这一整套流程，而且会非常复杂。
+而 bcc 是通过 Python 编写的一个 eBPF 工具集，使得上述的 整个过程更加便捷。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>BCC eBPF 使用</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2021-12-01</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/ebpf/ role=button>ebpf</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/devops/ role=button>devops</a></div></div><hr><div class=content><p>正常来说，如果要使用 eBPF 提供的能力，需要完成 &ldquo;编写BPF代码-编译成字节码-注入内核-获取结果-展示&rdquo; 这一整套流程，而且会非常复杂。</p><p>而 bcc 是通过 Python 编写的一个 eBPF 工具集，使得上述的 整个过程更加便捷。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>可以通过 <code>yum install bcc-tools</code> 安装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># /usr/share/bcc/tools/killsnoop
+</span></span><span class=line><span class=cl>TIME      PID    COMM             SIG  TPID   RESULT
+</span></span><span class=line><span class=cl>15:50:42  23361  bash             15   23359  0
+</span></span></code></pre></div><p>如上的测试用例，会捕获进程发送的信号。</p><a class=anchor id=工具开发></a><h1>工具开发 <a href=#%e5%b7%a5%e5%85%b7%e5%bc%80%e5%8f%91 aria-hidden=true>#</a></h1><p>如下是一个最简单的示例，会监控 <code>clone()</code> 系统调用，并将相关的信息打印出来。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=ch>#!/usr/bin/python</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>bcc</span> <span class=kn>import</span> <span class=n>BPF</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>BPF</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&#34;&#34;&#34;
+</span></span></span><span class=line><span class=cl><span class=s2>int kprobe__sys_clone(void *ctx)
+</span></span></span><span class=line><span class=cl><span class=s2>{
+</span></span></span><span class=line><span class=cl><span class=s2>	bpf_trace_printk(&#34;Hello, World!</span><span class=se>\\</span><span class=s2>n&#34;);
+</span></span></span><span class=line><span class=cl><span class=s2>	return 0;
+</span></span></span><span class=line><span class=cl><span class=s2>}
+</span></span></span><span class=line><span class=cl><span class=s2>&#34;&#34;&#34;</span><span class=p>)</span><span class=o>.</span><span class=n>trace_print</span><span class=p>()</span>
+</span></span></code></pre></div><p>输出的内容如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># python test.py
+</span></span><span class=line><span class=cl>	bash-31608 [003] d...  4499.926795: : Hello, World!
+</span></span><span class=line><span class=cl>	bash-31608 [003] d...  4499.926795: : Hello, World!
+</span></span><span class=line><span class=cl>	bash-31608 [003] d...  4499.926795: : Hello, World!
+</span></span><span class=line><span class=cl>	bash-31608 [000] d...  4511.861866: : Hello, World!
+</span></span><span class=line><span class=cl>	... ...
+</span></span></code></pre></div><p>其中上面的程序内容包括了如下几部分：</p><ul><li><code>text='...'</code> 包含的是 C 语言编写的 BPF 程序；</li><li><code>kprobe__sys_clone()</code> 对应内核 kprobes 的动态跟踪，也就是 <code>sys_clone()</code> 接口；</li><li><code>void *ctx</code> 这里没有用到该参数，直接设置为 <code>void *</code> 类型；</li><li><code>bpf_trace_printk()</code> 一个通用的打印函数，会输出到 <code>trace_pipe</code> 中，如下详解；</li><li><code>.trace_print()</code> 用来读取上面的输出。</li></ul><p><code>bpf_trace_printk()</code> 会将信息输出到 <code>/sys/kernel/debug/tracing/trace_pipe</code> 文件中，不过有几个限制：A) 最大只有三个参数；B) 只能有一个 <code>%s</code> 输出；C) 全局公用，可能会写乱。</p><p>后面，可以使用 <code>BPF_PERF_OUTPUT()</code> 替换。</p><a class=anchor id=格式输出></a><h2>格式输出 <a href=#%e6%a0%bc%e5%bc%8f%e8%be%93%e5%87%ba aria-hidden=true>#</a></h2><p>如下的功能与上面功能相同，只是会将输出进行格式化。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=ch>#!/usr/bin/python</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>bcc</span> <span class=kn>import</span> <span class=n>BPF</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># define BPF program</span>
+</span></span><span class=line><span class=cl><span class=n>prog</span> <span class=o>=</span> <span class=s2>&#34;&#34;&#34;
+</span></span></span><span class=line><span class=cl><span class=s2>int hello(void *ctx)
+</span></span></span><span class=line><span class=cl><span class=s2>{
+</span></span></span><span class=line><span class=cl><span class=s2>	bpf_trace_printk(&#34;Hello, World!</span><span class=se>\\</span><span class=s2>n&#34;);
+</span></span></span><span class=line><span class=cl><span class=s2>	return 0;
+</span></span></span><span class=line><span class=cl><span class=s2>}
+</span></span></span><span class=line><span class=cl><span class=s2>&#34;&#34;&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># load BPF program</span>
+</span></span><span class=line><span class=cl><span class=n>b</span> <span class=o>=</span> <span class=n>BPF</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=n>prog</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>b</span><span class=o>.</span><span class=n>attach_kprobe</span><span class=p>(</span><span class=n>event</span><span class=o>=</span><span class=n>b</span><span class=o>.</span><span class=n>get_syscall_fnname</span><span class=p>(</span><span class=s2>&#34;clone&#34;</span><span class=p>),</span> <span class=n>fn_name</span><span class=o>=</span><span class=s2>&#34;hello&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># header and format output</span>
+</span></span><span class=line><span class=cl><span class=nb>print</span><span class=p>(</span><span class=s2>&#34;</span><span class=si>%-18s</span><span class=s2> </span><span class=si>%-16s</span><span class=s2> </span><span class=si>%-6s</span><span class=s2> </span><span class=si>%s</span><span class=s2>&#34;</span> <span class=o>%</span> <span class=p>(</span><span class=s2>&#34;TIME(s)&#34;</span><span class=p>,</span> <span class=s2>&#34;COMM&#34;</span><span class=p>,</span> <span class=s2>&#34;PID&#34;</span><span class=p>,</span> <span class=s2>&#34;MESSAGE&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=k>while</span> <span class=mi>1</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>	<span class=k>try</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>		<span class=p>(</span><span class=n>task</span><span class=p>,</span> <span class=n>pid</span><span class=p>,</span> <span class=n>cpu</span><span class=p>,</span> <span class=n>flags</span><span class=p>,</span> <span class=n>ts</span><span class=p>,</span> <span class=n>msg</span><span class=p>)</span> <span class=o>=</span> <span class=n>b</span><span class=o>.</span><span class=n>trace_fields</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>except</span> <span class=ne>ValueError</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>		<span class=k>continue</span>
+</span></span><span class=line><span class=cl>	<span class=nb>print</span><span class=p>(</span><span class=s2>&#34;</span><span class=si>%-18.9f</span><span class=s2> </span><span class=si>%-16s</span><span class=s2> </span><span class=si>%-6d</span><span class=s2> </span><span class=si>%s</span><span class=s2>&#34;</span> <span class=o>%</span> <span class=p>(</span><span class=n>ts</span><span class=p>,</span> <span class=n>task</span><span class=p>,</span> <span class=n>pid</span><span class=p>,</span> <span class=n>msg</span><span class=p>))</span>
+</span></span></code></pre></div><p>其输出内容如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># python test.py
+</span></span><span class=line><span class=cl>TIME(s)            COMM             PID    MESSAGE
+</span></span><span class=line><span class=cl>4499.926795000     bash             13679  Hello, World!
+</span></span><span class=line><span class=cl>4499.926795000     bash             13679  Hello, World!
+</span></span><span class=line><span class=cl>4511.861866000     bash             13679  Hello, World!
+</span></span><span class=line><span class=cl>4511.861866000     bash             13679  Hello, World!
+</span></span><span class=line><span class=cl>... ...
+</span></span></code></pre></div><p>如上使用 <code>hello()</code> 作为通用函数，而非使用 <code>kprobe__</code> 的前缀。接着，调用 <code>attach_kprobe()</code> 将 <code>hello()</code> 函数添加到系统调用 <code>clone()</code> 处，该函数可以调用多次。</p><a class=anchor id=map-使用></a><h2>MAP 使用 <a href=#map-%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h2><p>一般在关机前，为了确保所有的数据都已经保存，通常会执行多次 <code>sync</code> 命令，这里会通过 MAP 保存上次的统计时间，如果两个 <code>sync</code> 的命令执行间隔小于 1 秒，那么就打印相关的信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=ch>#!/usr/bin/python</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>__future__</span> <span class=kn>import</span> <span class=n>print_function</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>bcc</span> <span class=kn>import</span> <span class=n>BPF</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># load BPF program</span>
+</span></span><span class=line><span class=cl><span class=n>b</span> <span class=o>=</span> <span class=n>BPF</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&#34;&#34;&#34;
+</span></span></span><span class=line><span class=cl><span class=s2>#include &lt;uapi/linux/ptrace.h&gt;
+</span></span></span><span class=line><span class=cl><span class=s2>
+</span></span></span><span class=line><span class=cl><span class=s2>BPF_HASH(last);
+</span></span></span><span class=line><span class=cl><span class=s2>
+</span></span></span><span class=line><span class=cl><span class=s2>int do_trace(struct pt_regs *ctx)
+</span></span></span><span class=line><span class=cl><span class=s2>{
+</span></span></span><span class=line><span class=cl><span class=s2>	u64 ts, *tsp, delta, key = 0;
+</span></span></span><span class=line><span class=cl><span class=s2>
+</span></span></span><span class=line><span class=cl><span class=s2>	// attempt to read stored timestamp
+</span></span></span><span class=line><span class=cl><span class=s2>	tsp = last.lookup(&amp;key);
+</span></span></span><span class=line><span class=cl><span class=s2>	if (tsp != 0) {
+</span></span></span><span class=line><span class=cl><span class=s2>		delta = bpf_ktime_get_ns() - *tsp;
+</span></span></span><span class=line><span class=cl><span class=s2>		// output if time is less than 1 second
+</span></span></span><span class=line><span class=cl><span class=s2>		if (delta &lt; 1e9)
+</span></span></span><span class=line><span class=cl><span class=s2>			bpf_trace_printk(&#34;</span><span class=si>%d</span><span class=se>\\</span><span class=s2>n&#34;, delta / 1000000);
+</span></span></span><span class=line><span class=cl><span class=s2>	}
+</span></span></span><span class=line><span class=cl><span class=s2>
+</span></span></span><span class=line><span class=cl><span class=s2>	// update stored timestamp
+</span></span></span><span class=line><span class=cl><span class=s2>	ts = bpf_ktime_get_ns();
+</span></span></span><span class=line><span class=cl><span class=s2>	last.update(&amp;key, &amp;ts);
+</span></span></span><span class=line><span class=cl><span class=s2>	return 0;
+</span></span></span><span class=line><span class=cl><span class=s2>}
+</span></span></span><span class=line><span class=cl><span class=s2>&#34;&#34;&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>b</span><span class=o>.</span><span class=n>attach_kprobe</span><span class=p>(</span><span class=n>event</span><span class=o>=</span><span class=n>b</span><span class=o>.</span><span class=n>get_syscall_fnname</span><span class=p>(</span><span class=s2>&#34;sync&#34;</span><span class=p>),</span> <span class=n>fn_name</span><span class=o>=</span><span class=s2>&#34;do_trace&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=nb>print</span><span class=p>(</span><span class=s2>&#34;Tracing for quick sync&#39;s... Ctrl-C to end&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># format output</span>
+</span></span><span class=line><span class=cl><span class=n>start</span> <span class=o>=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl><span class=k>while</span> <span class=mi>1</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>	<span class=p>(</span><span class=n>task</span><span class=p>,</span> <span class=n>pid</span><span class=p>,</span> <span class=n>cpu</span><span class=p>,</span> <span class=n>flags</span><span class=p>,</span> <span class=n>ts</span><span class=p>,</span> <span class=n>ms</span><span class=p>)</span> <span class=o>=</span> <span class=n>b</span><span class=o>.</span><span class=n>trace_fields</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=n>start</span> <span class=o>==</span> <span class=mi>0</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>		<span class=n>start</span> <span class=o>=</span> <span class=n>ts</span>
+</span></span><span class=line><span class=cl>	<span class=n>ts</span> <span class=o>=</span> <span class=n>ts</span> <span class=o>-</span> <span class=n>start</span>
+</span></span><span class=line><span class=cl>	<span class=nb>print</span><span class=p>(</span><span class=s2>&#34;At time </span><span class=si>%.2f</span><span class=s2> s: multiple syncs detected, last </span><span class=si>%s</span><span class=s2> ms ago&#34;</span> <span class=o>%</span> <span class=p>(</span><span class=n>ts</span><span class=p>,</span> <span class=n>ms</span><span class=p>))</span>
+</span></span></code></pre></div><p>这里的输出内容如下，可以通过 <code>sync; usleep 100000; sync</code> 命令测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># python test.py
+</span></span><span class=line><span class=cl>Tracing for quick sync&#39;s... Ctrl-C to end
+</span></span><span class=line><span class=cl>At time 122.39 s: multiple syncs detected, last 35 ms ago
+</span></span><span class=line><span class=cl>At time 126.98 s: multiple syncs detected, last 43 ms ago
+</span></span><span class=line><span class=cl>At time 129.17 s: multiple syncs detected, last 50 ms ago
+</span></span><span class=line><span class=cl>At time 133.50 s: multiple syncs detected, last 134 ms ago
+</span></span></code></pre></div><p>其中 <code>bpf_ktime_get_ns()</code> 函数用来获取纳秒时间，而与 MAP 相关的操作有：A) <code>BPF_HASH(last)</code> 定义一个名称为 <code>last</code> 的 KV MAP ，其类型为 <code>uint64</code>；B) 其中相关的 <code>lookup()</code> <code>delete()</code> <code>update()</code> 等用来操作对象。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>详细可以参考 <a href=https://github.com/iovisor/bcc>Github IOVisor/BCC</a> 中的相关介绍。</li><li>两个不错的文档 <a href=https://github.com/iovisor/bcc/blob/master/docs/tutorial_bcc_python_developer.md>bcc Python Developer Tutorial</a> 以及 <a href=https://github.com/iovisor/bcc/blob/master/docs/tutorial.md>bcc Tutorial</a> 。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#工具开发>工具开发</a><ul><li><a href=#格式输出>格式输出</a></li><li><a href=#map-使用>MAP 使用</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

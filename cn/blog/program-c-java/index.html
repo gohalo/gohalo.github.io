@@ -1,0 +1,153 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Java C 程序调用 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="简单介绍下 Java 和 C 程序的相互调用。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Java C 程序调用</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2015-12-23</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/java/ role=button>java</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/c/cpp/ role=button>c/cpp</a></div></div><hr><div class=content><p>简单介绍下 Java 和 C 程序的相互调用。</p><a class=anchor id=java-调用-c></a><h1>Java 调用 C <a href=#java-%e8%b0%83%e7%94%a8-c aria-hidden=true>#</a></h1><p>Java 可以通过 JNI 调用 C 程序，这里通过一个 <code>HelloWorld</code> 的 Java 程序调用 <code>helloFromC</code> 函数，一个保存在 ctest 的共享库中函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=cm>/* HelloWorld.java */</span>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=kd>class</span> <span class=nc>HelloWorld</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=kd>native</span> <span class=kt>void</span> <span class=nf>helloFromC</span><span class=o>();</span>        <span class=cm>/* (1) */</span>
+</span></span><span class=line><span class=cl>    <span class=kd>static</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>System</span><span class=o>.</span><span class=na>loadLibrary</span><span class=o>(</span><span class=s>&#34;ctest&#34;</span><span class=o>);</span> <span class=cm>/* (2) */</span>
+</span></span><span class=line><span class=cl>    <span class=o>}</span>
+</span></span><span class=line><span class=cl>    <span class=kd>static</span> <span class=kd>public</span> <span class=kt>void</span> <span class=nf>main</span><span class=o>(</span><span class=n>String</span> <span class=n>argv</span><span class=o>[])</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>HelloWorld</span> <span class=n>helloWorld</span> <span class=o>=</span> <span class=k>new</span> <span class=n>HelloWorld</span><span class=o>();</span>
+</span></span><span class=line><span class=cl>        <span class=n>helloWorld</span><span class=o>.</span><span class=na>helloFromC</span><span class=o>();</span>     <span class=cm>/* (3) */</span>
+</span></span><span class=line><span class=cl>    <span class=o>}</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></div><p>简单介绍下上述的步骤：</p><ol><li>通知 JVM 存在 <code>helloFromC()</code> 函数；</li><li>加载 ctest 动态库，该库中定义了上述的函数；</li><li>直接调用上述的定义的函数。</li></ol><p>即是现在还没有实现动态库，实际上仍可以编译 Java 程序，因为默认会在加载时可以找到相应的函数；只是在真正执行函数时会报错。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ javac HelloWorld.java
+</span></span><span class=line><span class=cl>$ java HelloWorld
+</span></span><span class=line><span class=cl>Exception in thread &#34;main&#34; java.lang.UnsatisfiedLinkError: no ctest in java.library.path
+</span></span><span class=line><span class=cl>        at java.lang.ClassLoader.loadLibrary(ClassLoader.java:1867)
+</span></span><span class=line><span class=cl>        at java.lang.Runtime.loadLibrary0(Runtime.java:870)
+</span></span><span class=line><span class=cl>        at java.lang.System.loadLibrary(System.java:1122)
+</span></span><span class=line><span class=cl>        at HelloWorld.&lt;clinit&gt;(HelloWorld.java:5)
+</span></span></code></pre></div><p>接下来，就需要通过 C 创建一个 ctest 库。首先，通过上面生成的 <code>.class</code> 文件创建相应的 C 语言头文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ javah HelloWorld
+</span></span></code></pre></div><p>该命令会生成 <code>HelloWorld.h</code> 头文件，包含了如下内容：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cm>/* DO NOT EDIT THIS FILE - it is machine generated */</span>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;jni.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=cm>/* Header for class HelloWorld */</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cp>#ifndef _Included_HelloWorld
+</span></span></span><span class=line><span class=cl><span class=cp>#define _Included_HelloWorld
+</span></span></span><span class=line><span class=cl><span class=cp>#ifdef __cplusplus
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=k>extern</span> <span class=s>&#34;C&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=cm>/*
+</span></span></span><span class=line><span class=cl><span class=cm> * Class:     HelloWorld
+</span></span></span><span class=line><span class=cl><span class=cm> * Method:    helloFromC
+</span></span></span><span class=line><span class=cl><span class=cm> * Signature: ()V
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=n>JNIEXPORT</span> <span class=kt>void</span> <span class=n>JNICALL</span> <span class=nf>Java_HelloWorld_helloFromC</span>
+</span></span><span class=line><span class=cl>  <span class=p>(</span><span class=n>JNIEnv</span> <span class=o>*</span><span class=p>,</span> <span class=n>jobject</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cp>#ifdef __cplusplus
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span></code></pre></div><p>直接从上述的文件中复制函数的声明，并生成如下的文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cm>/* ctest.c */</span>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;jni.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=n>JNIEXPORT</span> <span class=kt>void</span> <span class=n>JNICALL</span> <span class=nf>Java_HelloWorld_helloFromC</span>
+</span></span><span class=line><span class=cl>  <span class=p>(</span><span class=n>JNIEnv</span> <span class=o>*</span> <span class=n>env</span><span class=p>,</span> <span class=n>jobject</span> <span class=n>jobj</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Hello from C!</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>接着就是生成动态库了，不同的平台对应 jni.h 文件位置有所区别，例如 CentOS 中可以通过如下命令查看头文件所在路径，并编译。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rpm -ql `rpm -qa | grep &#34;java.*-openjdk-devel&#34;` | grep &#39;jni.h&#39;
+</span></span><span class=line><span class=cl>$ gcc -o libctest.so -shared -I/path/to/jdk/headers ctest.c -lc
+</span></span></code></pre></div><p>其中在 Mac 中要将 <code>.so</code> 文件替换为 <code>.dylib</code> ，在 Windows 中替换为 <code>.dll</code> 文件，编译完成后，就可以通过如下方式运行：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD; java HelloWorld
+</span></span></code></pre></div><a class=anchor id=c-调用-java></a><h1>C 调用 Java <a href=#c-%e8%b0%83%e7%94%a8-java aria-hidden=true>#</a></h1><p>书写 C 文件，模拟 JDK 中自带的 Java 命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;jni.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=kt>char</span><span class=o>*</span><span class=n>argv</span><span class=p>[])</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>JavaVM</span> <span class=o>*</span><span class=n>jvm</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>JNIEnv</span> <span class=o>*</span><span class=n>env</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>JavaVMInitArgs</span> <span class=n>vm_args</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>JavaVMOption</span> <span class=n>options</span><span class=p>[</span><span class=mi>1</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>jobjectArray</span> <span class=n>applicationArgs</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>jstring</span> <span class=n>appArg</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* Setting VM arguments */</span>
+</span></span><span class=line><span class=cl>    <span class=n>vm_args</span><span class=p>.</span><span class=n>version</span> <span class=o>=</span> <span class=n>JNI_VERSION_1_2</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>vm_args</span><span class=p>.</span><span class=n>ignoreUnrecognized</span> <span class=o>=</span> <span class=n>JNI_TRUE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>vm_args</span><span class=p>.</span><span class=n>nOptions</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>     <span class=cm>/* Setting classpath */</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=n>classpath</span><span class=p>[</span><span class=mi>1024</span><span class=p>]</span> <span class=o>=</span> <span class=s>&#34;-Djava.class.path=&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=o>*</span><span class=n>env_classpath</span> <span class=o>=</span> <span class=nf>getenv</span><span class=p>(</span><span class=s>&#34;CLASSPATH&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>mainclass_index</span> <span class=o>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>argc</span> <span class=o>&gt;=</span> <span class=mi>3</span> <span class=o>&amp;&amp;</span> <span class=o>!</span><span class=nf>strcmp</span><span class=p>(</span><span class=s>&#34;-classpath&#34;</span><span class=p>,</span> <span class=n>argv</span><span class=p>[</span><span class=mi>1</span><span class=p>]))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>options</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=n>optionString</span> <span class=o>=</span> <span class=nf>strcat</span><span class=p>(</span><span class=n>classpath</span><span class=p>,</span> <span class=n>argv</span><span class=p>[</span><span class=mi>2</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>        <span class=n>vm_args</span><span class=p>.</span><span class=n>nOptions</span><span class=o>++</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>mainclass_index</span> <span class=o>+=</span> <span class=mi>2</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=n>env_classpath</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>options</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=n>optionString</span> <span class=o>=</span> <span class=nf>strcat</span><span class=p>(</span><span class=n>classpath</span><span class=p>,</span> <span class=n>env_classpath</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>vm_args</span><span class=p>.</span><span class=n>nOptions</span><span class=o>++</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>vm_args</span><span class=p>.</span><span class=n>nOptions</span> <span class=o>&gt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>vm_args</span><span class=p>.</span><span class=n>options</span> <span class=o>=</span> <span class=n>options</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>mainclass_index</span> <span class=o>&gt;=</span> <span class=n>argc</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Main class not found, please specify it</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>jint</span> <span class=n>res</span> <span class=o>=</span> <span class=nf>JNI_CreateJavaVM</span><span class=p>(</span><span class=o>&amp;</span><span class=n>jvm</span><span class=p>,</span> <span class=p>(</span><span class=kt>void</span> <span class=o>**</span><span class=p>)</span><span class=o>&amp;</span><span class=n>env</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>vm_args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>res</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Create VM error, code = %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>res</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>jclass</span> <span class=n>cls</span> <span class=o>=</span> <span class=p>(</span><span class=o>*</span><span class=n>env</span><span class=p>)</span><span class=o>-&gt;</span><span class=nf>FindClass</span><span class=p>(</span><span class=n>env</span><span class=p>,</span> <span class=n>argv</span><span class=p>[</span><span class=n>mainclass_index</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>cls</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Class %s not found</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>argv</span><span class=p>[</span><span class=n>mainclass_index</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>jmethodID</span> <span class=n>mid</span> <span class=o>=</span> <span class=p>(</span><span class=o>*</span><span class=n>env</span><span class=p>)</span><span class=o>-&gt;</span><span class=nf>GetStaticMethodID</span><span class=p>(</span><span class=n>env</span><span class=p>,</span> <span class=n>cls</span><span class=p>,</span> <span class=s>&#34;main&#34;</span><span class=p>,</span> <span class=s>&#34;([Ljava/lang/String;)V&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>mid</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Method %s of Class %s not found</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=s>&#34;main&#34;</span><span class=p>,</span> <span class=n>argv</span><span class=p>[</span><span class=n>mainclass_index</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=n>applicationArgs</span> <span class=o>=</span> <span class=p>(</span><span class=o>*</span><span class=n>env</span><span class=p>)</span><span class=o>-&gt;</span><span class=nf>NewObjectArray</span><span class=p>(</span><span class=n>env</span><span class=p>,</span> <span class=n>argc</span> <span class=o>-</span> <span class=n>mainclass_index</span> <span class=o>-</span> <span class=mi>1</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                              <span class=p>(</span><span class=o>*</span><span class=n>env</span><span class=p>)</span><span class=o>-&gt;</span><span class=nf>FindClass</span><span class=p>(</span><span class=n>env</span><span class=p>,</span> <span class=s>&#34;java/lang/String&#34;</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>                              <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=n>mainclass_index</span> <span class=o>+</span> <span class=mi>1</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>argc</span><span class=p>;</span> <span class=n>i</span> <span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>appArg</span> <span class=o>=</span> <span class=p>(</span><span class=o>*</span><span class=n>env</span><span class=p>)</span><span class=o>-&gt;</span><span class=nf>NewStringUTF</span><span class=p>(</span><span class=n>env</span><span class=p>,</span> <span class=n>argv</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>        <span class=p>(</span><span class=o>*</span><span class=n>env</span><span class=p>)</span><span class=o>-&gt;</span><span class=nf>SetObjectArrayElement</span><span class=p>(</span><span class=n>env</span><span class=p>,</span> <span class=n>applicationArgs</span><span class=p>,</span> <span class=n>i</span> <span class=o>-</span> <span class=n>mainclass_index</span> <span class=o>-</span> <span class=mi>1</span><span class=p>,</span> <span class=n>appArg</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=p>(</span><span class=o>*</span><span class=n>env</span><span class=p>)</span><span class=o>-&gt;</span><span class=nf>CallStaticVoidMethod</span><span class=p>(</span><span class=n>env</span><span class=p>,</span> <span class=n>cls</span><span class=p>,</span> <span class=n>mid</span><span class=p>,</span> <span class=n>applicationArgs</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;before destroy</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/*
+</span></span></span><span class=line><span class=cl><span class=cm>     * Destroy the JVM.
+</span></span></span><span class=line><span class=cl><span class=cm>     * This is necessary, otherwise if the called method exits,
+</span></span></span><span class=line><span class=cl><span class=cm>     * this program will return immediately.
+</span></span></span><span class=line><span class=cl><span class=cm>     */</span>
+</span></span><span class=line><span class=cl>    <span class=p>(</span><span class=o>*</span><span class=n>jvm</span><span class=p>)</span><span class=o>-&gt;</span><span class=nf>DestroyJavaVM</span><span class=p>(</span><span class=n>jvm</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;after destroy</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>接着需要编写 Makefile 文件，注意要链接 JDK 中所自带的 <code>libjvm.so</code> 库文件，在 CentOS 中可以通过 <code>java-N.N.N-openjdk-headless</code> 包安装。</p><p>设置环境变量 <code>LD_LIBRARY_PATH</code>，也即 <code>libjvm.so</code> 所在的路径。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>export LD_LIBRARY_PATH=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-3.b12.el7_3.x86_64/jre/lib/amd64/server/
+</span></span></code></pre></div><p>然后运行命令 <code>./jvm -classpath . HelloWorld</code> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#java-调用-c>Java 调用 C</a></li><li><a href=#c-调用-java>C 调用 Java</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

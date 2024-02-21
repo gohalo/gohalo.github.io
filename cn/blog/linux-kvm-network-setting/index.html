@@ -1,0 +1,81 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>KVM 网路配置介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>KVM 网路配置介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-03-12</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kvm/ role=button>kvm</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/network/ role=button>network</a></div></div><hr><div class=content><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>一般虚拟机的配置保存在 <code>/etc/libvirt/qemu</code> 目录下，其中与网络相关的为 <code>interface</code> 字段，示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&lt;interface type=&#39;bridge&#39;&gt;
+</span></span><span class=line><span class=cl>  &lt;mac address=&#39;52:54:00:ee:3b:7d&#39;/&gt;
+</span></span><span class=line><span class=cl>  &lt;source bridge=&#39;virbr0&#39;/&gt;
+</span></span><span class=line><span class=cl>  &lt;model type=&#39;virtio&#39;/&gt;
+</span></span><span class=line><span class=cl>  &lt;address type=&#39;pci&#39; domain=&#39;0x0000&#39; bus=&#39;0x01&#39; slot=&#39;0x00&#39; function=&#39;0x0&#39;/&gt;
+</span></span><span class=line><span class=cl>&lt;/interface&gt;
+</span></span></code></pre></div><a class=anchor id=网络配置></a><h2>网络配置 <a href=#%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae aria-hidden=true>#</a></h2><p>登录虚拟机之后，一般的网卡名为 <code>eth0</code>，以 CentOS 为例，网卡配置路径为 <code>/etc/sysconfig/network-scripts/ifcfg-eth0</code>，修改网络配置，保证如下配置存在，其中 IP 需要与上述配置的网桥网段相同。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>ONBOOT=yes
+</span></span><span class=line><span class=cl>BOOTPROTO=static
+</span></span><span class=line><span class=cl>IPADDR=192.168.122.100  # 手动指定IP地址，需要与宿主机在相同网段
+</span></span><span class=line><span class=cl>NETMASK=255.255.255.0   # 也可以是PREFIX=24配置
+</span></span><span class=line><span class=cl>GATEWAY=192.168.122.1
+</span></span></code></pre></div><p>然后，通过 <code>ifup eth0</code> 命令激活网卡。</p><a class=anchor id=bridge></a><h1>Bridge <a href=#bridge aria-hidden=true>#</a></h1><p>虚拟机与物理机在同一个子网内，其它机器知道并可以访问这些虚拟机，这样虚拟机有自己网络中的独立 IP 地址。</p><a class=anchor id=网络配置-1></a><h2>网络配置 <a href=#%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae-1 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看所有网络，默认只显示活跃网络，如果非活跃则启动
+</span></span><span class=line><span class=cl># virsh net-list --all
+</span></span><span class=line><span class=cl> Name                 State      Autostart     Persistent
+</span></span><span class=line><span class=cl>----------------------------------------------------------
+</span></span><span class=line><span class=cl> default              active     yes           yes
+</span></span><span class=line><span class=cl># virsh net-start default
+</span></span><span class=line><span class=cl># virsh net-autostart default
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 该网络详细配置
+</span></span><span class=line><span class=cl># virsh net-dumpxml default
+</span></span><span class=line><span class=cl>&lt;network&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;default&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;uuid&gt;19a8f652-9c33-4de0-b1e3-97ec8cd8d6eb&lt;/uuid&gt;
+</span></span><span class=line><span class=cl>  &lt;forward mode=&#39;nat&#39;&gt;
+</span></span><span class=line><span class=cl>    &lt;nat&gt;
+</span></span><span class=line><span class=cl>      &lt;port start=&#39;1024&#39; end=&#39;65535&#39;/&gt;
+</span></span><span class=line><span class=cl>    &lt;/nat&gt;
+</span></span><span class=line><span class=cl>  &lt;/forward&gt;
+</span></span><span class=line><span class=cl>  &lt;bridge name=&#39;virbr0&#39; stp=&#39;on&#39; delay=&#39;0&#39;/&gt;
+</span></span><span class=line><span class=cl>  &lt;mac address=&#39;52:54:00:63:39:92&#39;/&gt;
+</span></span><span class=line><span class=cl>  &lt;ip address=&#39;192.168.122.1&#39; netmask=&#39;255.255.255.0&#39;&gt;
+</span></span><span class=line><span class=cl>    &lt;dhcp&gt;
+</span></span><span class=line><span class=cl>      &lt;range start=&#39;192.168.122.2&#39; end=&#39;192.168.122.254&#39;/&gt;
+</span></span><span class=line><span class=cl>    &lt;/dhcp&gt;
+</span></span><span class=line><span class=cl>  &lt;/ip&gt;
+</span></span><span class=line><span class=cl>&lt;/network&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 编辑修改default网络的配置
+</span></span><span class=line><span class=cl># virsh net-edit default
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将default网络干掉，再重新定义
+</span></span><span class=line><span class=cl># virsh net-undefine default
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 重新创建default.xml文件，指定某个mac地址对应的ip，以及ip段
+</span></span><span class=line><span class=cl># cat default.xml
+</span></span><span class=line><span class=cl>&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;
+</span></span><span class=line><span class=cl>&lt;network&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;default&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;uuid&gt;dc69ff61-6445-4376-b940-8714a3922bf7&lt;/uuid&gt;
+</span></span><span class=line><span class=cl>  &lt;forward mode=&#34;nat&#34;/&gt;
+</span></span><span class=line><span class=cl>  &lt;bridge name=&#34;virbr0&#34; stp=&#34;on&#34; delay=&#34;0&#34;/&gt;
+</span></span><span class=line><span class=cl>  &lt;mac address=&#34;52:54:00:81:14:18&#34;/&gt;
+</span></span><span class=line><span class=cl>  &lt;ip address=&#34;192.168.122.1&#34; netmask=&#34;255.255.255.0&#34;&gt;
+</span></span><span class=line><span class=cl>    &lt;dhcp&gt;
+</span></span><span class=line><span class=cl>      &lt;range start=&#34;192.168.122.2&#34; end=&#34;192.168.122.254&#34;/&gt;
+</span></span><span class=line><span class=cl>      &lt;host mac=&#34;00:25:90:eb:4b:bb&#34; name=&#34;guest1&#34; ip=&#34;192.168.5.13&#34;/&gt;
+</span></span><span class=line><span class=cl>      &lt;host mac=&#34;00:25:90:eb:34:2c&#34; name=&#34;guest2&#34; ip=&#34;192.168.7.206&#34;/&gt;
+</span></span><span class=line><span class=cl>      &lt;host mac=&#34;00:25:90:eb:e5:de&#34; name=&#34;guest3&#34; ip=&#34;192.168.7.207&#34;/&gt;
+</span></span><span class=line><span class=cl>      &lt;host mac=&#34;00:25:90:eb:7e:11&#34; name=&#34;guest4&#34; ip=&#34;192.168.7.208&#34;/&gt;
+</span></span><span class=line><span class=cl>      &lt;host mac=&#34;00:25:90:eb:b2:11&#34; name=&#34;guest5&#34; ip=&#34;192.168.7.209&#34;/&gt;
+</span></span><span class=line><span class=cl>    &lt;/dhcp&gt;
+</span></span><span class=line><span class=cl>  &lt;/ip&gt;
+</span></span><span class=line><span class=cl>&lt;/network&gt;
+</span></span><span class=line><span class=cl># virsh net-define default.xml
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 使其生效
+</span></span><span class=line><span class=cl># virsh net-start default
+</span></span></code></pre></div><p>其它配置可以参考 <a href=https://libvirt.org/formatnetwork.html>Network XML Format</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#网络配置>网络配置</a></li></ul></li><li><a href=#bridge>Bridge</a><ul><li><a href=#网络配置-1>网络配置</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

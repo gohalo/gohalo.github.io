@@ -1,0 +1,194 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>git 分支管理 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="相比其它的版本管理软件，git 有很多优点，其中很重要的一个特性就是版本的分支 (branch) 和合并 (merge) 十分方便。
+git 分支并非生成一个物理代码拷贝，而是只生成一个指向当前版本的指针，又被称为 &amp;ldquo;快照&amp;rdquo; (snapshot) ，因此，处理起来是分快速，而且节省空间。
+接下来，就看看 git 的版本分支管理策略。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>git 分支管理</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-02-27</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/devops/ role=button>devops</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/git/ role=button>git</a></div></div><hr><div class=content><p>相比其它的版本管理软件，git 有很多优点，其中很重要的一个特性就是版本的分支 (branch) 和合并 (merge) 十分方便。</p><p>git 分支并非生成一个物理代码拷贝，而是只生成一个指向当前版本的指针，又被称为 &ldquo;快照&rdquo; (snapshot) ，因此，处理起来是分快速，而且节省空间。</p><p>接下来，就看看 git 的版本分支管理策略。</p><a class=anchor id=分支></a><h1>分支 <a href=#%e5%88%86%e6%94%af aria-hidden=true>#</a></h1><p>Git 版本的分支 (branch) 和合并 (merge) 十分方便，只生成一个指向当前版本的指针 (称为 &ldquo;快照&rdquo;)，而非生成一份现有代码的物理拷贝，所以非常快捷易用。</p><p>更加详细的内容可以查看 <a href=https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell>Git Branching</a> 。</p><a class=anchor id=追踪分支></a><h2>追踪分支 <a href=#%e8%bf%bd%e8%b8%aa%e5%88%86%e6%94%af aria-hidden=true>#</a></h2><p>追踪分支是用与联系本地分支和远程分支，在追踪分支 (Tracking Branches) 上执行 push 或 pull 时，会自动关联到远程分支上；如果要经常从远程仓库里拉取分支到本地，而且想简单使用 <code>git pull</code> 命令，那么就应当使用 &ldquo;追踪分支&rdquo; 。</p><p>可以通过如下命令手动创建一个追踪分支。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git branch --track experimental origin/experimental
+</span></span></code></pre></div><p>当运行 <code>git pull experimental</code> 命令时，会自动从 <code>origin/experimental</code> fetch 内容，然后再将该分支 merge 进本地的 <code>experimental</code> 分支。</p><p>当要把修改 push 到 origin 时, 它会将你本地的 <code>experimental</code> 分支中的修改推送到 <code>origin/experimental</code> 分支里，而且无需指定 origin 。</p><a class=anchor id=fast-forward></a><h2>fast-forward <a href=#fast-forward aria-hidden=true>#</a></h2><p>当前分支合并到另一分支时，当没分歧解决时就会直接移动文件指针，这就被叫做 fast-forward 。</p><p>举例来说，一直在 develop 分支开发，然后新建了一个 feature 分支，并在该分支上进行一系列提交，完成后，回到 develop 分支，此时，如果 develop 分支在创建 feature 分支后从未产生任何新的提交，此时的合并就叫 fast forward 。</p><p><strong>注意</strong>：可以看出这次合并完之后的视图为扁平状，看不出 feature 分支开发的任何信息。</p><p><img alt="git develop model no-ff means" src=images/git-develop-model-no-ff-means.png class="mx-auto d-block"></p><p>另外，可以使用 <code>--no-ff</code> (no fast foward) 进行合并，使得每一次的合并都创建一个新的 commit 记录，并强制保留 feature 分支的开发记录，也就告诉后来者 <strong>一系列的提交都是为了同一个目的</strong> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[branch &#34;master&#34;]
+</span></span><span class=line><span class=cl>mergeoptions = --no-commit --no-ff
+</span></span></code></pre></div><p>如果远程和本地分支的提交线图有分叉，也即不能 fast-forwarded，git 会执行一次 merge 操作，也就是产生一次没意义的提交记录，从而造成提交日志比较混乱。</p><a class=anchor id=rebase-vs-no-ff></a><h3>rebase VS. no-ff <a href=#rebase-vs-no-ff aria-hidden=true>#</a></h3><p>pull 时可以使用 <code>git pull --rebase</code> 选项，也即当提交线图有分叉的话，git 会用 rebase 策略来代替默认的 merge 策略，可以通过 <code>man git-merge</code> 查看详细内容，其好处介绍如下。</p><p>假设提交线图在执行 pull 前是这样的：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                 A---B---C  remotes/origin/master
+</span></span><span class=line><span class=cl>                /
+</span></span><span class=line><span class=cl>           D---E---F---G  master
+</span></span></code></pre></div><p>如果是执行 <code>git pull</code> 后，提交线图会变成这样：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                 A---B---C remotes/origin/master
+</span></span><span class=line><span class=cl>                /         \
+</span></span><span class=line><span class=cl>           D---E---F---G---H master
+</span></span></code></pre></div><p>结果多出了 H 这个没必要的提交记录，如果执行 <code>git pull --rebase</code> 的话，提交线图会变成如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>           remotes/origin/master
+</span></span><span class=line><span class=cl>               |
+</span></span><span class=line><span class=cl>D---E---A---B---C---F&#39;---G&#39;  master
+</span></span></code></pre></div><p>F G 两个提交通过 rebase 方式重新拼接在 C 之后，多余的分叉去掉了，目的达到。大多数时候，使用 <code>git pull --rebase</code> 是为了使提交线图更好看，从而方便 code review 。</p><a class=anchor id=最佳实践></a><h3>最佳实践 <a href=#%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5 aria-hidden=true>#</a></h3><p>在合并分支之前，例如要在本地将 feature 分支合并到 dev 分支，会先检查 feature 分支是否落后于远程 dev 分支：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git checkout dev
+</span></span><span class=line><span class=cl>$ git fetch                   ← 更新dev分支，pull&lt;=&gt;fetch+merge
+</span></span><span class=line><span class=cl>$ git log feature..dev
+</span></span></code></pre></div><p>如果没有输出任何提交信息的话，即表示 feature 对于 dev 分支是 up-to-date 的，如果有输出的而马上执行了 <code>git merge --no-ff</code> 的话，提交线图会变成上图的左侧。</p><a class=anchor id=常用场景></a><h2>常用场景 <a href=#%e5%b8%b8%e7%94%a8%e5%9c%ba%e6%99%af aria-hidden=true>#</a></h2><p>如上是从现有代码中 clone 并查看分支，进行开发。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1. 克隆代码，可以指定分支或者tag，默认是master
+</span></span><span class=line><span class=cl>$ git clone -b &lt;branch/tag&gt; https://github.com/master-dev.git
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2. 查看所有分支，有master(本地主分支)、origin/master(远程主分支)、其它(如origin/dev)
+</span></span><span class=line><span class=cl>-----    默认两个master关联，保持同步；由于dev本地没有关联，从而无法在那里开发
+</span></span><span class=line><span class=cl>$ git branch --all                    ← 查看包括本地以及远程分支
+</span></span><span class=line><span class=cl>$ git branch                          ← 只查看本地分支
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 3. 创建本地关联origin/dev的分支
+</span></span><span class=line><span class=cl>-----    默认本地dev分支的初始代码和远程的dev分支代码一样
+</span></span><span class=line><span class=cl>$ git checkout dev origin/dev
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 4. 切换到dev分支进行开发
+</span></span><span class=line><span class=cl>$ git checkout dev
+</span></span></code></pre></div><p>接下来看看如何从无到有新建分支，并提交到远端。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 完整命令
+</span></span><span class=line><span class=cl>$ git push &lt;remote-host&gt; &lt;local-branch&gt;:&lt;remote-branch&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 1. 创建本地新的hello分支
+</span></span><span class=line><span class=cl>$ git branch hello                    ← 创建本地分支
+</span></span><span class=line><span class=cl>$ git branch                          ← 查看本地分支
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2. 将hello分支发布到远程仓库
+</span></span><span class=line><span class=cl>$ git push origin dev:dev
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 3. 删除远程分支
+</span></span><span class=line><span class=cl>$ git branch -r -d origin/branch-name
+</span></span><span class=line><span class=cl>$ git push origin :branch-name
+</span></span></code></pre></div><p>实际上，第一步创建完本地分支后，该本地分支远程仓库并不知道，此时可以在本地分支开发，然后 merge 到 master ，使用 master 同步代码。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1. 创建本地新的hello分支
+</span></span><span class=line><span class=cl>$ git branch hello                    ← 创建本地分支
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2. 切换到hello分支开发代码
+</span></span><span class=line><span class=cl>$ git checkout hello
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 3. 开发完成后，合并主分支
+</span></span><span class=line><span class=cl>$ git checkout master                 ← 切换到主分支
+</span></span><span class=line><span class=cl>$ git merge hello                     ← 把hello分支的更改合并到master
+</span></span><span class=line><span class=cl>$ git push                            ← 提交主分支代码远程
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 4. 删除本地分支
+</span></span><span class=line><span class=cl>$ git branch -d hello
+</span></span></code></pre></div><p><strong>注意</strong>：在分支切换之前最好先commit全部的改变，除非你真的知道自己在做什么</p><a class=anchor id=合并冲突></a><h2>合并冲突 <a href=#%e5%90%88%e5%b9%b6%e5%86%b2%e7%aa%81 aria-hidden=true>#</a></h2><p>作为分布式版本控制系统，所有修改操作都是基于本地的，在团队协作时，如果同时修改了相同的代码，而你同伴先于你 push 到远端，那么你必须先 pull 做本地合并，然后在 push 到远程。</p><p>当在合并的时候，可能会出现代码冲突。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 0. 尝试合并
+</span></span><span class=line><span class=cl>$ git checkout master
+</span></span><span class=line><span class=cl>$ git merge hello
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 1. 发生冲突时，将会暂停合并，可以通过如下命令查看冲突文件
+</span></span><span class=line><span class=cl>$ git status
+</span></span></code></pre></div><p>当查看冲突的文件时，显示的内容如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD:index.html
+</span></span><span class=line><span class=cl>&lt;div id=&#34;footer&#34;&gt;contact : email.support@domain.com&lt;/div&gt;
+</span></span><span class=line><span class=cl>=======
+</span></span><span class=line><span class=cl>&lt;div id=&#34;footer&#34;&gt;
+</span></span><span class=line><span class=cl> please contact us at support@domain.com
+</span></span><span class=line><span class=cl>&lt;/div&gt;
+</span></span><span class=line><span class=cl>&gt;&gt;&gt;&gt;&gt;&gt;&gt; foobar:index.html
+</span></span></code></pre></div><p>其中冲突的两个分支的内容通过 <code>======</code> 进行分割，解决冲突后，其内容如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&lt;div id=&#34;footer&#34;&gt;
+</span></span><span class=line><span class=cl> please contact us at support@domain.com
+</span></span><span class=line><span class=cl>&lt;/div&gt;
+</span></span></code></pre></div><p>然后，通过 <code>git add index.html</code> 命令标记下，表示现在已经解决了冲突；当然，也可以使用 <code>git mergetool</code> 工具。</p><a class=anchor id=其它></a><h3>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git branch -v
+</span></span><span class=line><span class=cl>$ git branch --merged
+</span></span><span class=line><span class=cl>$ git branch --no-merged
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 获取某个分支
+</span></span><span class=line><span class=cl>$ git clone http://github.com/project/foobar.git    # 只能获取默认的分支，一般是master，可以手动设置
+</span></span><span class=line><span class=cl>$ git branch -a                                     # 查看所有分支
+</span></span><span class=line><span class=cl>$ git checkout -b dev origin/dev                    # 获取其它分支
+</span></span></code></pre></div><a class=anchor id=经典-branch-工作模式></a><h1>经典 branch 工作模式 <a href=#%e7%bb%8f%e5%85%b8-branch-%e5%b7%a5%e4%bd%9c%e6%a8%a1%e5%bc%8f aria-hidden=true>#</a></h1><p>如下是一个不错的代码管理模式，详细的可以参考 <a href=http://nvie.com/posts/a-successful-git-branching-model/>A successful Git branching model</a>，如下是一个简单介绍。</p><p><img alt="git development model" src=images/git-develop-model.png class="mx-auto d-block"></p><p>从上图可以看到主要包含下面几个分支，简单介绍如下：</p><ul><li>master: 主分支，用来版本发布，通常</li><li>develop：日常开发分支，保存了开发的最新代码，用于每天的回归测试；</li><li>feature：新的特性或者功能开发分支，只与 develop 分支交互；</li><li>release：预发布分支，在特性开发基本测试完成后，准备发布前，用于发布前最后测试；</li><li>hotfix：线上 bug 修复分支。</li></ul><p>接下来详细介绍。</p><blockquote><p>NOTE: 如下的介绍中有个 bump-version.sh 脚本，该脚本的作用是，将源码中与版本号相关的内容替换为最新的值，然后用于发布。其中 Github 上有个相关的版本，可以参考 <a href=https://github.com/peritus/bumpversion>Github bumpversion</a> 。</p></blockquote><a class=anchor id=main-branches></a><h2>Main Branches <a href=#main-branches aria-hidden=true>#</a></h2><p>含两个主分支 master 和 develop ，其中 origin/master 表示主分支， HEAD 始终是用于生产环境的代码。而 origin/develop 表示主开发分支，其中的 HEAD 表示最新提交的代码，这也就是每天用来编译测试的代码。</p><p><img alt="git master develop" src=images/git-master-develop.png class="mx-auto d-block"></p><p>当开发分支的代码趋于稳定之后，且准备发布时，只需要打个发布的版本号标签 (tag) 即可。</p><p>因此，每次提交到主干时，也就意味着这是一个新的生产版本的发布，那么可以通过一个 hook 自动编译，生成生产环境的安装包。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 新建一个仓库，默认会有一个master分支
+</span></span><span class=line><span class=cl>$ git init
+</span></span><span class=line><span class=cl>$ echo &#39;Hello World!&#39; &gt; README
+</span></span><span class=line><span class=cl>$ git add README
+</span></span><span class=line><span class=cl>$ git commit -m &#39;Initial Commit&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 新建一个develop分支
+</span></span><span class=line><span class=cl>$ git branch develop
+</span></span></code></pre></div><p>上述的 main 和 develop 都可以称之为主干分支。</p><p>除了主干的分支外，还包括了一些其它分支，区别是这些分支有固定的生命周期，包括了 Feature Branches、Release Branches、Hotfix Branches 三种针对不同的场景，也对应了如何获取分支以及如何合并分支。</p><p>如上介绍的三种分支也可以被称为 Support Branches，接下来详细介绍这三种分支。</p><a class=anchor id=feature-branches></a><h2>Feature Branches <a href=#feature-branches aria-hidden=true>#</a></h2><p>特性分支用来开发一个新的特性，这一分支从 develop 创建，而且最终会合并到 develop 分支；当然，也有可能最终取消掉，这取决于最终产品的决策。</p><p><img alt="git develop model feature branches" src=images/git-develop-model-feature-branches.png class="mx-auto d-block"></p><p>接下来看看如何使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 0. 创建新的特性分支
+</span></span><span class=line><span class=cl>$ git checkout -b feature-foobar develop
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 1. 执行一些操作，多次提交
+</span></span><span class=line><span class=cl>$ echo &#34;FOOBAR Feature 1&#34; &gt;&gt; README
+</span></span><span class=line><span class=cl>$ git commit -a -m &#34;foobar feature 1&#34;
+</span></span><span class=line><span class=cl>$ echo &#34;FOOBAR Feature 2&#34; &gt;&gt; README
+</span></span><span class=line><span class=cl>$ git commit -a -m &#34;foobar feature 2&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2.1 开发完成，接下来准备合并，先切换到develop分支
+</span></span><span class=line><span class=cl>$ git checkout develop
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2.2 合并到develop主分支
+</span></span><span class=line><span class=cl>$ git merge --no-ff feature-foobar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2.3 删除原来的分支
+</span></span><span class=line><span class=cl>$ git branch -d feature-foobar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2.4 提交到远程仓库
+</span></span><span class=line><span class=cl>$ git push origin develop
+</span></span></code></pre></div><p>另外，需要注意的是，上述合并到主分支的时候，采用的是 <code>--no-ff</code> 模式。</p><p><img alt="git develop model no-ff means" src=images/git-develop-model-no-ff-means.png class="mx-auto d-block"></p><p>该参数的作用是强行关闭 fast-forward 方式，该方式就是当条件允许的时候，git 直接把 HEAD 指针指向合并分支的头，完成合并。不过如果删除分支，由于这个过程中没有创建 commit，则会丢失分支信息，使用该参数将保留分支 commit 历史。</p><p>实际上，通过 <code>git log</code> 查看时，使用 <code>--on-ff</code> 会强制添加 commit ，否则看不到合并的信息。</p><p>另外，还有个参数 <code>--squash</code>，会把多次分支 commit 历史压缩为一次。</p><a class=anchor id=release-branches></a><h2>Release Branches <a href=#release-branches aria-hidden=true>#</a></h2><p>用于正式发布前的最后测试，尽量减少 bug 数目，添加元信息 (版本号以及发布日期等)。该分支从 develop 创建，可以合并到 develop 或者 master 分支，其命名为 <code>release-*</code> 。</p><p>合并到 master 之后就可以用于发布了，而之所以合并到 develop ，是为了将最新修改合并到新的开发分支。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1. 创建分支，并更新文件一些头部信息等，然后提交
+</span></span><span class=line><span class=cl>$ git checkout -b release-1.2 develop
+</span></span><span class=line><span class=cl>$ ./bump-version.sh 1.2
+</span></span><span class=line><span class=cl>$ git commit -a -m &#34;Bumped version number to 1.2&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2. 测试没有问题后，准备正式发布
+</span></span><span class=line><span class=cl>$ git checkout master
+</span></span><span class=line><span class=cl>$ git merge --no-ff release-1.2
+</span></span><span class=line><span class=cl>$ git tag -a 1.2
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 3. 删除release分支
+</span></span><span class=line><span class=cl>$ git checkout develop
+</span></span><span class=line><span class=cl>$ git merge --no-ff release-1.2
+</span></span><span class=line><span class=cl>$ git branch -d release-1.2
+</span></span></code></pre></div><a class=anchor id=hotfix-branches></a><h2>Hotfix Branches <a href=#hotfix-branches aria-hidden=true>#</a></h2><p>该分支由于修复线上 bug，当线上代码出现 bug 时，从 master 开一个 hotfix 分支，修复 bug 之后再将 hotfix 分支合并到 master 分支并进行发布，同时也需要合并到 develop 分支上去。</p><p><img alt="git develop model hotfix branch" src=images/git-develop-model-hotfix-branch.png class="mx-auto d-block"></p><p>可以发现，hotfix 和 release 分支功能类似，两者好处是不会打断 develop 分支正常功能开发。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1. 从master获取分支
+</span></span><span class=line><span class=cl>$ git checkout -b hotfix-1.2.1 master
+</span></span><span class=line><span class=cl>$ ./bump-version.sh 1.2.1
+</span></span><span class=line><span class=cl>$ git commit -a -m &#34;Bumped version number to 1.2.1&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2. 然后修改代码修复bug，并提交
+</span></span><span class=line><span class=cl>$ git commit -m &#34;Fixed severe production problem&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 3. bug修复后，将该分支合并到master
+</span></span><span class=line><span class=cl>$ git checkout master
+</span></span><span class=line><span class=cl>$ git merge --no-ff hotfix-1.2.1
+</span></span><span class=line><span class=cl>$ git tag -a 1.2.1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 4. 然后将hotfix合并到develop分支
+</span></span><span class=line><span class=cl>$ git checkout develop
+</span></span><span class=line><span class=cl>$ git merge --no-ff hotfix-1.2.1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 5. 删除hotfix分支
+</span></span><span class=line><span class=cl>$ git branch -d hotfix-1.2.1
+</span></span></code></pre></div><a class=anchor id=git-flow></a><h1>git-flow <a href=#git-flow aria-hidden=true>#</a></h1><p><a href=https://github.com/nvie/gitflow>git-flow</a> 提供了很多不错的脚本，来支持上述的这种开发模式，不过它并没有提供重置 (rebase) 特性分支的能力，安装方式可以参考 <a href=https://github.com/nvie/gitflow/wiki/Installation>gitflow-installation</a> 。</p><p>该工具集成了一些常见的命令，每次操作实际都会提示一些操作记录。</p><a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>可以直接从 <a href=https://raw.githubusercontent.com/nvie/gitflow/develop/contrib/gitflow-installer.sh>github gitflow/contrib/gitflow-installer.sh</a> 下载文件，然后执行如下命令即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装
+</span></span><span class=line><span class=cl>$ wget --no-check-certificate -q https://raw.githubusercontent.com/.../gitflow-installer.sh
+</span></span><span class=line><span class=cl># bash gitflow-installer.sh install stable
+</span></span><span class=line><span class=cl>$ rm gitflow-installer.sh
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除
+</span></span><span class=line><span class=cl># bash gitflow-installer.sh uninstall
+</span></span></code></pre></div><p>实际上很简单，只是将代码 clone 到本地，然后通过 install 命令安装；当然，也可以离线安装，该模块会依赖于 <a href=https://github.com/nvie/shFlags>github - nvie/shFlags</a>，直接将该代码下载并放置到源码的 shFlags 目录下即可。</p><p>最后，通过 <code>make install</code> 安装，也可以执行如下步骤，不过需要修改安装脚本的代码，注释掉下载代码的步骤。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ tar -xf gitflow-x.x.x.tar.gz shFlags-x.x.x.tar.gz
+</span></span><span class=line><span class=cl>$ mv gitflow-x.x.x gitflow &amp;&amp; rm gitflow/shFlags -rf
+</span></span><span class=line><span class=cl>$ mv shFlags-x.x.x gitflow/shFlags
+</span></span><span class=line><span class=cl># bash gitflow/contrib/gitflow-installer.sh
+</span></span></code></pre></div><a class=anchor id=初始化></a><h2>初始化 <a href=#%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h2><p>使用 git-flow 时，需要从初始化一个 git 库开始，其中命令如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git flow init
+</span></span><span class=line><span class=cl>No branches exist yet. Base branches must be created now.
+</span></span><span class=line><span class=cl>Branch name for production releases: [master]
+</span></span><span class=line><span class=cl>Branch name for &#34;next release&#34; development: [develop]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>How to name your supporting branch prefixes?
+</span></span><span class=line><span class=cl>Feature branches? [feature/]
+</span></span><span class=line><span class=cl>Release branches? [release/]
+</span></span><span class=line><span class=cl>Hotfix branches? [hotfix/]
+</span></span><span class=line><span class=cl>Support branches? [support/]
+</span></span><span class=line><span class=cl>Version tag prefix? []
+</span></span></code></pre></div><p>主要是回答几个关于分支的命名约定，建议使用默认值。</p><p>对于最后的 tag 选项，可以设置为软件的名称，例如 <code>foobar-</code>，然后 Release Branches 的名称使用类似 <code>v1.1.0</code> 名称，那么最终的 tag 名即为 <code>foobar-v1.1.0</code>。</p><p>关于该 tag 的信息可以通过 <code>git show foobar-v1.1.0</code> 命令查看。</p><a class=anchor id=新特性></a><h2>新特性 <a href=#%e6%96%b0%e7%89%b9%e6%80%a7 aria-hidden=true>#</a></h2><p>关于新特性的开发流程，为即将发布的版本开发新功能特性，这通常只存在开发者的库中。</p><a class=anchor id=增加新特性></a><h3>增加新特性 <a href=#%e5%a2%9e%e5%8a%a0%e6%96%b0%e7%89%b9%e6%80%a7 aria-hidden=true>#</a></h3><p>新特性的开发是基于 &lsquo;develop&rsquo; 分支的，可以通过下面的命令开始开发新特性：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git flow feature start MYFEATURE
+</span></span></code></pre></div><p>这个操作创建了一个基于 &lsquo;develop&rsquo; 的特性分支，并切换到这个分支之下。</p><a class=anchor id=完成新特性></a><h3>完成新特性 <a href=#%e5%ae%8c%e6%88%90%e6%96%b0%e7%89%b9%e6%80%a7 aria-hidden=true>#</a></h3><p>完成开发新特性之后，执行下面的操作，主要是合并 MYFEATURE 分支到 &lsquo;develop&rsquo;，并删除这个新特性分支，然后切换回 &lsquo;develop&rsquo; 分支。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git flow feature finish MYFEATURE
+</span></span></code></pre></div><a class=anchor id=发布新特性></a><h3>发布新特性 <a href=#%e5%8f%91%e5%b8%83%e6%96%b0%e7%89%b9%e6%80%a7 aria-hidden=true>#</a></h3><p>主要用于合作开发一新特性，将新特性分支发布到远程服务器，这样其他用户可以使用该分支。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git flow feature publish MYFEATURE
+</span></span></code></pre></div><a class=anchor id=取得新特性分支></a><h3>取得新特性分支 <a href=#%e5%8f%96%e5%be%97%e6%96%b0%e7%89%b9%e6%80%a7%e5%88%86%e6%94%af aria-hidden=true>#</a></h3><p>主要用于取得其他用户发布的新特性分支，并签出远程的变更，主要有如下的两种方式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 签出特性分支变更
+</span></span><span class=line><span class=cl>$ git flow feature pull origin MYFEATURE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 跟踪特性分支变更
+</span></span><span class=line><span class=cl>$ git flow feature track MYFEATURE
+</span></span></code></pre></div><a class=anchor id=预发布版本></a><h2>预发布版本 <a href=#%e9%a2%84%e5%8f%91%e5%b8%83%e7%89%88%e6%9c%ac aria-hidden=true>#</a></h2><p>该分支准备开始发布，用于支持一个新的用于生产环境的发布版本，允许修正小问题 (bug)，但不新增特性，并为发布版本准备元数据。</p><a class=anchor id=准备></a><h3>准备 <a href=#%e5%87%86%e5%a4%87 aria-hidden=true>#</a></h3><p>开始准备预发布版本，它从 &lsquo;develop&rsquo; 分支开始创建一个 release 分支。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git flow release start RELEASE [BASE]
+</span></span></code></pre></div><p>可以选择一个 <code>[BASE]</code> 参数，这是 &lsquo;develop&rsquo; 分支提交记录的 hash 值。</p><p>创建 release 分支之后，可以立即发布到远端，从而允许其它用户向这个 release 分支提交代码，该命令十分类似发布新特性：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 提交到远端
+</span></span><span class=line><span class=cl>$ git flow release publish RELEASE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 签出release版本的远程变更
+</span></span><span class=line><span class=cl>$ git flow release track RELEASE
+</span></span></code></pre></div><a class=anchor id=完成预发布版本></a><h3>完成预发布版本 <a href=#%e5%ae%8c%e6%88%90%e9%a2%84%e5%8f%91%e5%b8%83%e7%89%88%e6%9c%ac aria-hidden=true>#</a></h3><p>完成 release 版本分支操作，主要执行下面几个动作：A) 合并 release 分支到 master 分支；B) 用 release 分支名打 tag；C) 归并 release 分支到 develop；D) 移除 release 分支。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git flow release finish RELEASE
+</span></span></code></pre></div><a class=anchor id=紧急修复></a><h2>紧急修复 <a href=#%e7%b4%a7%e6%80%a5%e4%bf%ae%e5%a4%8d aria-hidden=true>#</a></h2><p>当生产环境的版本突然发现一个严重 bug 时，需要立即修正；此时，有可能是需要修正 master 分支上某个 tag 标记的生产版本。</p><a class=anchor id=开始></a><h3>开始 <a href=#%e5%bc%80%e5%a7%8b aria-hidden=true>#</a></h3><p>像其它 git flow 命令一样, 可以通过如下命令创建一个紧急修复分支。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git flow hotfix start VERSION [BASENAME]
+</span></span></code></pre></div><p>VERSION 参数标记着修正版本，可以从 [BASENAME] 开始，[BASENAME] 为 finish release 时填写的版本号。</p><a class=anchor id=完成></a><h3>完成 <a href=#%e5%ae%8c%e6%88%90 aria-hidden=true>#</a></h3><p>当完成紧急修复分支后，代码归并回 develop 和 master 分支，相应地，master 分支打上修正版本的 tag 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git flow hotfix finish VERSION
+</span></span></code></pre></div><a class=anchor id=其它-1></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83-1 aria-hidden=true>#</a></h2><a class=anchor id=unable-to-start-editor></a><h4>unable to start editor <a href=#unable-to-start-editor aria-hidden=true>#</a></h4><p>可以通过 <code>git config --global core.editor "vim"</code> 命令设置。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>关于 Git 的分支介绍可以参考 <a href=https://git-scm.com/doc>git-scm.com/doc</a> 中的介绍，另外，还有一本不错介绍 Git 的资料 <a href=http://git-scm.com/book/>Pro Git Book</a>；另外一个不错的文档 <a href=http://marklodato.github.io/visual-git-guide/index-zh-cn.html>图解Git</a>，或者 <a href=/reference/misc/git_graphs.mht>本地文档</a> 。</li><li>对于一种不错的 Git 分支管理模式，也即如上的介绍，可以参考 <a href=http://nvie.com/posts/a-successful-git-branching-model/>A successful Git branching model</a> 或者 [本地文档](/reference/misc/A successful Git branching model.mht) 。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#分支>分支</a><ul><li><a href=#追踪分支>追踪分支</a></li><li><a href=#fast-forward>fast-forward</a></li><li><a href=#常用场景>常用场景</a></li><li><a href=#合并冲突>合并冲突</a></li></ul></li><li><a href=#经典-branch-工作模式>经典 branch 工作模式</a><ul><li><a href=#main-branches>Main Branches</a></li><li><a href=#feature-branches>Feature Branches</a></li><li><a href=#release-branches>Release Branches</a></li><li><a href=#hotfix-branches>Hotfix Branches</a></li></ul></li><li><a href=#git-flow>git-flow</a><ul><li><a href=#安装>安装</a></li><li><a href=#初始化>初始化</a></li><li><a href=#新特性>新特性</a></li><li><a href=#预发布版本>预发布版本</a></li><li><a href=#紧急修复>紧急修复</a></li><li><a href=#其它-1>其它</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

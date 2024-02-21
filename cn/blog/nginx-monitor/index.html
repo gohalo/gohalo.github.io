@@ -1,0 +1,65 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Nginx 监控 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Nginx 服务器在生产环境中运行时，可以通过类似 Nagios、Zabbix、Munin 之类的网络监控软件。然而，很多时候处理问题时，只需要快速简单的查看当前 Nginx 服务器的状态请求。
+可以使用一个 Python 编写的工具 ngxtop，可以直接从 www.github.com 上下载相应的源码。
+接下来介绍一下该工具的使用方法。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Nginx 监控</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-04-30</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/web/ role=button>web</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/software/ role=button>software</a></div></div><hr><div class=content><p>Nginx 服务器在生产环境中运行时，可以通过类似 Nagios、Zabbix、Munin 之类的网络监控软件。然而，很多时候处理问题时，只需要快速简单的查看当前 Nginx 服务器的状态请求。</p><p>可以使用一个 Python 编写的工具 ngxtop，可以直接从 <a href=https://github.com/lebinh/ngxtop>www.github.com</a> 上下载相应的源码。</p><p>接下来介绍一下该工具的使用方法。</p><a class=anchor id=ngxtop></a><h1>ngxtop <a href=#ngxtop aria-hidden=true>#</a></h1><p>ngxtop 会实时解析 nginx 的访问日志 (access log)，并且会将处理结果输出到终端，其功能类似于系统命令 top，通过 ngxtop 再也不需要 tail 日志看屏幕刷新了。</p><a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>ngxtop 是 Python 源码编写的程序，可以直接通过源码安装，也可以通过 pip 安装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ wget https://github.com/lebinh/ngxtop/archive/master.zip -O ngxtop-master.zip
+</span></span><span class=line><span class=cl>$ unzip ngxtop-master.zip
+</span></span><span class=line><span class=cl>$ cd ngxtop-master
+</span></span><span class=line><span class=cl># python setup.py install
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>Finished processing dependencies for ngxtop==0.0.1
+</span></span></code></pre></div><p>或者通过 pip 安装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># pip install ngxtop
+</span></span></code></pre></div><p>其中详细的使用方法可以参考 <a href=https://github.com/lebinh/ngxtop>https://github.com/lebinh/ngxtop</a> 中的帮助文档。</p><a class=anchor id=使用></a><h2>使用 <a href=#%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h2><p>ngxtop 默认会从其配置文件 <code>/etc/nginx/nginx.conf</code> 中查找 Nginx 日志的地址，如果使用的是该文件，那么可以直接运行 ngxtop 命令，这将会列出 10 个 Nginx 服务，按请求数量排序。</p><p>首先会解析配置文件的内容，解析后的结果可以通过 info 子命令查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看解析配置文件的基本信息
+</span></span><span class=line><span class=cl>$ ngxtop info
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 显示前 20 个最频繁的请求，按照顺序排列
+</span></span><span class=line><span class=cl>$ ngxtop -n 20
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 显示自定义的请求变量
+</span></span><span class=line><span class=cl>$ ngxtop print request http_user_agent remote_addr
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 显示请求最多的客户端IP地址
+</span></span><span class=line><span class=cl>$ ngxtop top remote_addr
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 显示状态码是404的请求
+</span></span><span class=line><span class=cl>$ ngxtop -i &#39;status == 404&#39; print request status
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 404前十的请求
+</span></span><span class=line><span class=cl>$ ngxtop top request_path --filter &#39;status == 404&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 总流量前十的请求
+</span></span><span class=line><span class=cl>$ ngxtop --order-by &#39;avg(bytes_sent) * count&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 输出400以上状态吗的请求以及请求来源
+</span></span><span class=line><span class=cl>$ ngxtop -i &#39;status &gt;= 400&#39; print request status http_referer
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 返回为200的请求，且请求地址为foo，打印消息体的平均长度
+</span></span><span class=line><span class=cl>$ ngxtop avg bytes_sent --filter &#39;status == 200 and request_path.startswith(&#34;foo&#34;)&#39;
+</span></span></code></pre></div><a class=anchor id=http_stub_status_module></a><h2>http_stub_status_module <a href=#http_stub_status_module aria-hidden=true>#</a></h2><p>另外，可以通过 Nginx 模块监控其状态，不过需要在编译时添加 <code>--with-http_stub_status_module</code> 选项，默认该选项不会包含在内。</p><p>然后在配置文件中添加如下内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>http {
+</span></span><span class=line><span class=cl>    ... ...
+</span></span><span class=line><span class=cl>    server {
+</span></span><span class=line><span class=cl>        ... ...
+</span></span><span class=line><span class=cl>        location /status {
+</span></span><span class=line><span class=cl>            stub_status on;
+</span></span><span class=line><span class=cl>            access_log off;
+</span></span><span class=line><span class=cl>            allow 127.0.0.1;
+</span></span><span class=line><span class=cl>            deny all;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>修改完之后重新加载配置即可，然后可以通过 <a href=http://localhost/status>http://localhost/status</a> 查看，此时会显示如下信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Active connections: 557             # 对后端发起的活动连接数
+</span></span><span class=line><span class=cl>server accepts handled requests     # 总共处理的链接数；成功握手次数；总共处理的请求
+</span></span><span class=line><span class=cl>35 35 65
+</span></span><span class=line><span class=cl>Reading: 3 Writing: 16 Waiting: 8   # 读取到客户端Header信息数；返回给客户端的Header信息数；等待下次请求的驻留连接
+</span></span></code></pre></div><p>注意，对于最后一行 Waiting 在开启 keep-alive 时，该值等于 <code>active-(reading+writing)</code>，意思就是说已经处理完正在等候下一次请求指令的驻留连接。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#ngxtop>ngxtop</a><ul><li><a href=#安装>安装</a></li><li><a href=#使用>使用</a></li><li><a href=#http_stub_status_module>http_stub_status_module</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

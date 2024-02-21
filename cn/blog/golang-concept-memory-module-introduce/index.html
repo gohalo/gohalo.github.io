@@ -1,0 +1,197 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>GoLang 内存模型 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="在 Golang 中所谓的内存模型，定义的是，对多个协程中共享的变量，一个协程中怎样可以看到其它协程的写入。
+当多个协程同时操作一个数据时，可以通过管道、同步原语 (sync 包中的 Mutex 以及 RWMutex)、原子操作 (sync/atomic 包中)。
+除此之外，为了保证语义的正确性，Golang 还对一些常见的场景做了语义上的约束。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>GoLang 内存模型</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-05-01</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><p>在 Golang 中所谓的内存模型，定义的是，对多个协程中共享的变量，一个协程中怎样可以看到其它协程的写入。</p><p>当多个协程同时操作一个数据时，可以通过管道、同步原语 (sync 包中的 Mutex 以及 RWMutex)、原子操作 (sync/atomic 包中)。</p><p>除此之外，为了保证语义的正确性，Golang 还对一些常见的场景做了语义上的约束。</p><a class=anchor id=内存模型></a><h1>内存模型 <a href=#%e5%86%85%e5%ad%98%e6%a8%a1%e5%9e%8b aria-hidden=true>#</a></h1><p>那么什么是内存模型？它定义了什么？为什么要讨论内存模型？</p><p>原文的定义为。</p><blockquote><p>The Go memory model specifies the conditions under which reads of a variable in one goroutine can be guaranteed to observe values produced by writes to the same variable in a different goroutine.</p></blockquote><a class=anchor id=happens-before></a><h1>Happens Before <a href=#happens-before aria-hidden=true>#</a></h1><p>该概念比较难理解，很容易理解为时间顺序，而且不止 Golang 语言才有，在并发编程里很常见。</p><p>通常定义如下：</p><p>假设 A 和 B 表示一个多线程程序执行的两个操作，如果 A Happens-Before B，那么就意味着 A 操作对内存的影响，将对执行 B 的线程 (且在执行 B 之前) 可见。</p><p>这里有个约束，如果 A 和 B 在相同线程中执行，且 A 操作声明在 B 之前，那么 A Happens-Before B 。</p><p>注意，Happens-Before 并不意味着时间上的顺序。</p><ol><li>A happens-before B 并不意味着 A 在 B 之前发生。</li><li>A 在 B 之前发生并不意味着 A happens-before B。</li></ol><p>另外，需要注意，这里所谓的 A B 操作，对于代码或者 CPU 来说，可能不止一条命令。</p><a class=anchor id=tip-1></a><h2>Tip #1 <a href=#tip-1 aria-hidden=true>#</a></h2><p>这里的是示例采用 C 语言，如下代码。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=n>A</span><span class=p>,</span> <span class=n>B</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>foobar</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=n>A</span> <span class=o>=</span> <span class=n>B</span> <span class=o>+</span> <span class=mi>1</span><span class=p>;</span>  <span class=c1>// &lt;1&gt;
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>B</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>      <span class=c1>// &lt;2&gt;
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>可以通过 <code>gcc -O2 -S foobar.c</code> 得到汇编程序，如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>movl	B(%rip), %eax
+</span></span><span class=line><span class=cl>movl	$0, B(%rip)       // store to B
+</span></span><span class=line><span class=cl>addl	$1, %eax
+</span></span><span class=line><span class=cl>movl	%eax, A(%rip)     // store to A
+</span></span></code></pre></div><p>也就是说，最终在执行的时候，实际上是先执行的 <code>&lt;2></code> 然后再执行 <code>&lt;1></code> ，也即是说即使 <code>&lt;1></code> Happens-Before <code>&lt;2></code> ，那么实际执行的时候顺序相反。</p><a class=anchor id=tip-2></a><h2>Tip #2 <a href=#tip-2 aria-hidden=true>#</a></h2><p>如下的示例中，<code>&lt;1></code> + <code>&lt;2></code> 以及 <code>&lt;3></code> + <code>&lt;4></code> 都满足 Happens-Before 条件，<code>&lt;3></code> 只有在满足 <code>&lt;2></code> 时才会执行，也就是说，<code>&lt;2></code> 发生在 <code>&lt;3></code> 之前，但是并不意味着 <code>&lt;2></code> Happens-Before <code>&lt;3></code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=n>ready</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=n>answer</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>publish</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=n>answer</span> <span class=o>=</span> <span class=mi>42</span><span class=p>;</span>  <span class=c1>// (1)
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>ready</span> <span class=o>=</span> <span class=mi>1</span><span class=p>;</span>    <span class=c1>// (2)  A
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>consume</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>ready</span><span class=p>)</span>                  <span class=c1>// (3)  B
+</span></span></span><span class=line><span class=cl><span class=c1></span>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>answer</span><span class=p>);</span> <span class=c1>// (4)
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>这也就意味着，对于上述的代码，有可能 <code>publish()</code> 和 <code>consume()</code> 分别在不同的线程中执行，而打印的值有可能仍然是 <code>0</code> 。</p><a class=anchor id=总结></a><h2>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h2><p>简单来说，个人理解为，所谓的 <code>Happens-Before</code> 以及 <code>Happens-After</code> 实际上对应了变量何时可见。</p><a class=anchor id=同步机制></a><h1>同步机制 <a href=#%e5%90%8c%e6%ad%a5%e6%9c%ba%e5%88%b6 aria-hidden=true>#</a></h1><p>针对不同的场景，有不同的语义定义。</p><a class=anchor id=初始化></a><h2>初始化 <a href=#%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h2><p>程序的初始化操作通过单个协程实现，但是这个初始化协程可能会再创建一个协程，这就可能会导致两者并发运行。</p><blockquote><p>If a package p imports package q, the completion of q&rsquo;s init functions happens before the start of any of p&rsquo;s.</p></blockquote><p>这也就意味着， <code>main.main()</code> 函数会 <code>Happens-After</code> 所有的 init 函数。</p><a class=anchor id=协程></a><h2>协程 <a href=#%e5%8d%8f%e7%a8%8b aria-hidden=true>#</a></h2><p>包括了协程的创建和销毁。</p><a class=anchor id=创建></a><h3>创建 <a href=#%e5%88%9b%e5%bb%ba aria-hidden=true>#</a></h3><blockquote><p>The go statement that starts a new goroutine happens before the goroutine&rsquo;s execution begins.</p></blockquote><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;sync&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>a</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>wg</span> <span class=nx>sync</span><span class=p>.</span><span class=nx>WaitGroup</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>foobar</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Print</span><span class=p>(</span><span class=nx>a</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Done</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>hello</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=p>=</span> <span class=s>&#34;Hello World\n&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>foobar</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Add</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nf>hello</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述代码，会保证 <code>a</code> 的赋值发生在 <code>foobar()</code> 之前，所以最终会输出 <code>Hello World</code> 字符串。</p><p>注意，因为协程调度的原因，字符串的输出可能会发生在 <code>foobar()</code> 执行完成之后。</p><a class=anchor id=销毁></a><h3>销毁 <a href=#%e9%94%80%e6%af%81 aria-hidden=true>#</a></h3><p>对于协程的退出，是没有任何的关于 <code>Happens-Before</code> 的保证。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;sync&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>a</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>wg</span> <span class=nx>sync</span><span class=p>.</span><span class=nx>WaitGroup</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>hello</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=p>=</span> <span class=s>&#34;Hello World\n&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Done</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Add</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>hello</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nb>print</span><span class=p>(</span><span class=nx>a</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在赋值给 <code>a</code> 变量之后，没有带任何的同步机制，所以该变量的赋值并不能保证对其它协程可见。</p><p>如果需要保证逻辑顺序，那么就应该通过锁或者管道机制建立相对的执行顺序。</p><a class=anchor id=管道></a><h2>管道 <a href=#%e7%ae%a1%e9%81%93 aria-hidden=true>#</a></h2><p>其实 Golang 一直提倡 <code>Do not communicate by sharing memory; instead, share memory by communicating.</code> ，而管道又是承载通讯的实现方式。</p><p>所以，在 Golang 的代码中有大量的关于管道的通讯，对于管道需要遵循如下规则。</p><ol><li>A send on a channel happens before the corresponding receive from that channel completes.</li><li>The closing of a channel happens before a receive that returns a zero value because the channel is closed.</li><li>A receive from an unbuffered channel happens before the send on that channel completes.</li><li>The kth receive on a channel with capacity C happens before the k+Cth send from that channel completes.</li></ol><p>接下来，逐条讲解其具体的含义。</p><a class=anchor id=tip-1-1></a><h3>Tip #1 <a href=#tip-1-1 aria-hidden=true>#</a></h3><p>保证发送 happens-before 接收。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=nx>c</span> <span class=p>=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>,</span> <span class=mi>10</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>f</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=p>=</span> <span class=s>&#34;Hello World\n&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=nx>c</span> <span class=o>&lt;-</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>f</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=o>&lt;-</span><span class=nx>c</span>
+</span></span><span class=line><span class=cl>        <span class=nb>print</span><span class=p>(</span><span class=nx>a</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述的代码可以确保输出 <code>Hello World\n</code> 字符串，因为 更新 a 变量 Happens-Before 通过管道 c 发送，而发送 Happens-Before 接收，接收 Happens-Before 打印数据。</p><p>所以，通过传递性，可以确保最终输出的字符串。</p><a class=anchor id=tip-2-1></a><h3>Tip #2 <a href=#tip-2-1 aria-hidden=true>#</a></h3><p>实际上确保了关闭管道时的行为，也就意味着在上述的代码中，如果将 <code>c &lt;- 0</code> 替换为 <code>close(c)</code> 最终的效果也是一样的。</p><a class=anchor id=tip-3></a><h3>Tip #3 <a href=#tip-3 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=nx>c</span> <span class=p>=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>f</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=p>=</span> <span class=s>&#34;Hello World\n&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=o>&lt;-</span><span class=nx>c</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>f</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>c</span> <span class=o>&lt;-</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>        <span class=nb>print</span><span class=p>(</span><span class=nx>a</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述的代码同样可以保证输出字符串，依赖的关系为，更新 a 变量 Happens-Before 从 c 管道接收，而接收 Happens-Before 发送，发送 Happens-Before 打印数据。</p><p>但是，如果将管道设置为带缓冲区的，那么就不能保证输出字符串了，可能输出字符串，可能是空 (多数情况)，也可能会引起程序的崩溃。</p><a class=anchor id=tip-4></a><h3>Tip #4 <a href=#tip-4 aria-hidden=true>#</a></h3><p>例如，从容量为 3 的通道接受第 3 个元素 Happens-Before 向通道第 3+3 次写入完成。</p><p>这条规则实际上是对第三条的扩充，主要应用在带有缓冲区的管道。</p><p>最常应用的场景通过缓冲管道实现一个信号量：当前管道大小对应了已经消耗信号，容量代表了最大信号量个数，向管道写入表示获取一个信号量，读取则表示释放信号量。</p><p>因此，也可以通过带有缓冲区的管道作为并发的限制。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;math/rand&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;sync&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>limit</span> <span class=p>=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>,</span> <span class=mi>3</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>wg</span> <span class=nx>sync</span><span class=p>.</span><span class=nx>WaitGroup</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Hello</span><span class=p>(</span><span class=nx>index</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>r</span> <span class=o>:=</span> <span class=nx>rand</span><span class=p>.</span><span class=nf>Intn</span><span class=p>(</span><span class=mi>5</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;#%d sleep %d seconds.\n&#34;</span><span class=p>,</span> <span class=nx>index</span><span class=p>,</span> <span class=nx>r</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>time</span><span class=p>.</span><span class=nf>Sleep</span><span class=p>(</span><span class=nx>time</span><span class=p>.</span><span class=nf>Duration</span><span class=p>(</span><span class=nx>r</span><span class=p>)</span> <span class=o>*</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Done</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>work</span> <span class=p>[]</span><span class=kd>func</span><span class=p>(</span><span class=kt>int</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>work</span> <span class=o>:=</span> <span class=nb>append</span><span class=p>(</span><span class=nx>work</span><span class=p>,</span> <span class=nx>Hello</span><span class=p>,</span> <span class=nx>Hello</span><span class=p>,</span> <span class=nx>Hello</span><span class=p>,</span> <span class=nx>Hello</span><span class=p>,</span> <span class=nx>Hello</span><span class=p>,</span> <span class=nx>Hello</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Add</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=nx>work</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>i</span><span class=p>,</span> <span class=nx>w</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>work</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>go</span> <span class=kd>func</span><span class=p>(</span><span class=nx>w</span> <span class=kd>func</span><span class=p>(</span><span class=kt>int</span><span class=p>),</span> <span class=nx>index</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>limit</span> <span class=o>&lt;-</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>                        <span class=nf>w</span><span class=p>(</span><span class=nx>index</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                        <span class=o>&lt;-</span><span class=nx>limit</span>
+</span></span><span class=line><span class=cl>                <span class=p>}(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>i</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述的程序会立即启动 <code>work</code> 数组中的函数，但是实际运行的时候只有三个同时运行。</p><a class=anchor id=总结-1></a><h3>总结 <a href=#%e6%80%bb%e7%bb%93-1 aria-hidden=true>#</a></h3><p>其实比较好理解发送数据 Happens-Before 接收数据，但是第三条是 WTF !!! 感觉这个是特意用来进行同步的，而非作为数据传输的通道。</p><a class=anchor id=locks></a><h2>Locks <a href=#locks aria-hidden=true>#</a></h2><p>在 sync 包中，包含了两类锁类型，分别是 <code>sync.Mutex</code> 以及 <code>sync.RWMutex</code> 。</p><blockquote><p>For any sync.Mutex or sync.RWMutex variable l and n &lt; m, call n of l.Unlock() happens before call m of l.Lock() returns.</p></blockquote><a class=anchor id=once></a><h2>Once <a href=#once aria-hidden=true>#</a></h2><p>在 sync 包中，提供了 <code>Once()</code> 机制，可以在多个协程中调用，不过最终只会在某个协程中执行，而其它协程会阻塞并直到该函数执行完成。</p><blockquote><p>A single call of f() from once.Do(f) happens (returns) before any call of once.Do(f) returns.</p></blockquote><p>测试程序如下，不过暂时没有想清楚如何构造异常的场景。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;sync&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>a</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>once</span> <span class=nx>sync</span><span class=p>.</span><span class=nx>Once</span>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>wg</span> <span class=nx>sync</span><span class=p>.</span><span class=nx>WaitGroup</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>setup</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=p>=</span> <span class=s>&#34;Hello World\n&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>doprint</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>once</span><span class=p>.</span><span class=nf>Do</span><span class=p>(</span><span class=nx>setup</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nb>print</span><span class=p>(</span><span class=nx>a</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Done</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Add</span><span class=p>(</span><span class=mi>2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>doprint</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>doprint</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wg</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>即使通过多个协程调用 <code>doprint()</code> 函数，实际最终只调用一次 <code>setup()</code> 函数，然后会再调用 <code>print()</code> 函数，也就是说 <code>setup()</code> Happens-Before <code>print()</code> ，所以最终会打印两次 <code>Hello World</code> 。</p><a class=anchor id=坑></a><h1>坑 <a href=#%e5%9d%91 aria-hidden=true>#</a></h1><p>其实是什么时候会发生一些不正确 (或者不符合预期) 的案例。</p><p>一般来说，如果读写发生了并发，并不意味着满足时间上的顺序关系，详见上面关于 Happens-Before 的讨论。</p><a class=anchor id=tip-1-2></a><h2>Tip #1 <a href=#tip-1-2 aria-hidden=true>#</a></h2><p>对于如下的代码，实际上是没有任何的同步机制的，可能会出现各种异常的场景。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>a</span><span class=p>,</span> <span class=nx>b</span> <span class=kt>int</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>f</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=p>=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>        <span class=nx>b</span> <span class=p>=</span> <span class=mi>2</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>g</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nb>print</span><span class=p>(</span><span class=nx>b</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nb>print</span><span class=p>(</span><span class=nx>a</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>f</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nf>g</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>可能会打印 <code>00</code> <code>20</code> <code>01</code> <code>21</code> 几种，如果在运行时添加 <code>-race</code> 检测可以看到报错。</p><a class=anchor id=tip-2-2></a><h2>Tip #2 <a href=#tip-2-2 aria-hidden=true>#</a></h2><p>采用 Double-Checked 的方式，该实现在 Java 中比较常见，暂时不太确定其使用场景。</p><p>简单来说，就是尝试通过 Double-Checked 的方式，来避免对同步机制的开销。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li><a href=https://golang.org/ref/mem>The Go Memory Model</a> 关于 Golang 的内存模型的官方文档介绍。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#内存模型>内存模型</a></li><li><a href=#happens-before>Happens Before</a><ul><li><a href=#tip-1>Tip #1</a></li><li><a href=#tip-2>Tip #2</a></li><li><a href=#总结>总结</a></li></ul></li><li><a href=#同步机制>同步机制</a><ul><li><a href=#初始化>初始化</a></li><li><a href=#协程>协程</a></li><li><a href=#管道>管道</a></li><li><a href=#locks>Locks</a></li><li><a href=#once>Once</a></li></ul></li><li><a href=#坑>坑</a><ul><li><a href=#tip-1-2>Tip #1</a></li><li><a href=#tip-2-2>Tip #2</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

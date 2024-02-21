@@ -1,0 +1,111 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 的防火墙 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Linux 防火墙是由 Netfilter 和 iptables 两个组件组成，其中前者在内核空间中；后者是一个用户程序，用于插入、修改和删除相应的防火墙规则。
+通过 Netfilter+iptables 可以实现数据包过滤、网络地址转换和数据报文处理等功能。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 的防火墙</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2015-06-23</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/network/ role=button>network</a></div></div><hr><div class=content><p>Linux 防火墙是由 Netfilter 和 iptables 两个组件组成，其中前者在内核空间中；后者是一个用户程序，用于插入、修改和删除相应的防火墙规则。</p><p>通过 Netfilter+iptables 可以实现数据包过滤、网络地址转换和数据报文处理等功能。</p><a class=anchor id=netfilter-简介></a><h1>Netfilter 简介 <a href=#netfilter-%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>Netfilter 框架用来在网络协议栈的内核路径上过滤数据包，就像一条路上的关卡，一个数据包在被处理的路径上在经过这些关卡时会被检查，如果符合条件就进行处理，结果就是若干个动作，包括接受、丢弃、排队、导入其它路径等。</p><a class=anchor id=hook链></a><h2>Hook/链 <a href=#hook%e9%93%be aria-hidden=true>#</a></h2><p>Netfilter 是一个设计良好的框架，之所以说它是一个框架是因为它提供了最基本的底层支撑，而对于实现的关注度却没有那么高，这种底层支撑实际上就是其 5 个 HOOK 点。</p><p>各个 hook 点其实就是固定的"检查点"，这些检查点是内嵌于网络协议栈的，它将检查点无条件的安插在协议栈中，这些检查点的检查是无条件执行的。</p><p><img alt=netfiler src=images/netfilter_packet_flow.png class="mx-auto d-block"></p><p>如上图所示，Netfilter 包括了五个检查节点。</p><ol><li>PREROUTING：报文进入网络层但是还未到达路由前</li><li>FORWARD：报文经过路由后，确定需要转发之后</li><li>INPUT：报文经过路由之后，确定要本地接收之后</li><li>OUTPUT：本地数据包发送</li><li>POSTROUTING：数据包通过本机马上发出去之前</li></ol><p>在内核中，通过如下的宏定义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define NF_IP_PRE_ROUTING   0
+</span></span></span><span class=line><span class=cl><span class=cp>#define NF_IP_LOCAL_IN      1
+</span></span></span><span class=line><span class=cl><span class=cp>#define NF_IP_FORWARD       2
+</span></span></span><span class=line><span class=cl><span class=cp>#define NF_IP_LOCAL_OUT     3
+</span></span></span><span class=line><span class=cl><span class=cp>#define NF_IP_POST_ROUTING  4
+</span></span></span></code></pre></div><p>每个节点可以有多个规则，数据报文会按照顺序一个一个匹配这些规则，这些规则串起来就像一个链，所以也被称为 &ldquo;链&rdquo; 。其中 <code>PreRouting</code> 和 <code>PostRouting</code> 一般作为 DNAT 以及 SNAT，剩余的三个会作为 filter ，后面会详细介绍。</p><p>对于应用常见来说，Input 和 Output 通常用在主机防火墙中，针对本机进出数据做安全控制；而 Forward、PreRouting 和 PostRouting 更多用在网络防火墙中，特别是防火墙作为网关使用时。</p><a class=anchor id=表></a><h2>表 <a href=#%e8%a1%a8 aria-hidden=true>#</a></h2><p>每条链上可以有多个规则，很多相似的规则就组成了一个表，iptables 提供了四个表，每个表通过内核中的 iptables_XXX 模块支持。</p><a class=anchor id=filter-表></a><h4>filter 表 <a href=#filter-%e8%a1%a8 aria-hidden=true>#</a></h4><p>用作数据包的过滤，可以根据规则处理包 (Drop、Accept、Reject、Log)，所谓的防火墙主要是指改规则。</p><a class=anchor id=nat-表></a><h4>nat 表 <a href=#nat-%e8%a1%a8 aria-hidden=true>#</a></h4><p>网络地址转换，用来修改数据包的 IP 地址、端口号等信息，常见操作有 SNAT、DNAT、Masquerade、Rediect 。</p><p>注意，当一个包经过了一次之后，剩余的包不会再经过这个表，剩余包会自动做相应的转换。</p><a class=anchor id=mangle-表></a><h4>mangle 表 <a href=#mangle-%e8%a1%a8 aria-hidden=true>#</a></h4><p>修改包中的内容，一般会解包、修改、封装，通常修改数据包中的 TOS、TTL、Mark 等标记，以实现 Qos 或者策略路由等，需要依赖特定的路由设备支持，使用并不广泛。</p><a class=anchor id=raw-表></a><h4>raw 表 <a href=#raw-%e8%a1%a8 aria-hidden=true>#</a></h4><p>主要用于决定数据包是否被跟踪机制处理，其优先级会高于其它的表。)</p><a class=anchor id=关系></a><h2>关系 <a href=#%e5%85%b3%e7%b3%bb aria-hidden=true>#</a></h2><p>虽然数据包是按照链上的顺序匹配规则，实际上每一类是放到一块的，而且会按照 raw mangle nat filter 的规则进行匹配。</p><p><img alt="hello world logo" src=images/iptables-hook-list.png class="mx-auto d-block"></p><a class=anchor id=规则和动作></a><h2>规则和动作 <a href=#%e8%a7%84%e5%88%99%e5%92%8c%e5%8a%a8%e4%bd%9c aria-hidden=true>#</a></h2><p>一般 iptables 的处理方式是，匹配一个规则，然后进行相关的处理。</p><a class=anchor id=动作></a><h3>动作 <a href=#%e5%8a%a8%e4%bd%9c aria-hidden=true>#</a></h3><a class=anchor id=accept></a><h5>Accept <a href=#accept aria-hidden=true>#</a></h5><p>允许数据包通过。</p><a class=anchor id=drop></a><h5>Drop <a href=#drop aria-hidden=true>#</a></h5><p>不向客户端返回任何信息，直接丢弃数据包，客户端只能通过超时机制处理。</p><a class=anchor id=reject></a><h5>Reject <a href=#reject aria-hidden=true>#</a></h5><p>拒绝数据包，客户端会收到一个数据包被丢弃的响应消息。</p><a class=anchor id=snat></a><h5>SNAT <a href=#snat aria-hidden=true>#</a></h5><p>源地址转换，用来解决使用相同公网 IP 上网问题。</p><p>在经过路由之后，且在转发之前会将源地址改写，并在本机建立一个 NAT 表，当数据返回时，根据 NAT 表中的内容再次将目标地址修改。</p><a class=anchor id=masquerade></a><h5>Masquerade <a href=#masquerade aria-hidden=true>#</a></h5><p>也是 SNAT 的一种形式，用于动态、临时的 IP 上。</p><a class=anchor id=dnat></a><h5>DNAT <a href=#dnat aria-hidden=true>#</a></h5><p>目的地址转换，解决私网服务端接收公网请求的问题，可以隐藏后端服务器的真实地址。</p><p>在路由之前会修改目标地址，同样会建立 NAT 表，然后数据返回时，会根据 NAT 表修改地址发送给远程主机。</p><a class=anchor id=rediect></a><h5>Rediect <a href=#rediect aria-hidden=true>#</a></h5><p>在本机做端口映射。</p><a class=anchor id=log></a><h5>Log <a href=#log aria-hidden=true>#</a></h5><p>会在 <code>/var/log/message</code> 中记录日志。</p><p>注意，当前三条的规则匹配之后，就不会再向下进行处理了，所以规则的顺序十分关键。</p><a class=anchor id=state></a><h1>State <a href=#state aria-hidden=true>#</a></h1><p>以 SSH 服务为例，在作为客户端通过 SSH 连接到服务端之后，本地会随机一个端口，而远端则仍然为 22 端口。最简单的规则是开放 22 端口的发送和接收，这样的话会导致本地的 22 端口被暴露，那么可以增加 IP 白名单，但是维护成本又会很高。</p><p>实际上，iptables 的 state 扩展模块可以解决上述的问题，也就是实现连接跟踪。</p><p>这里的连接并不仅限于类似 TCP 的方式，实际上 UDP ICMP 都可以，主要两台机器之间有通讯即可。</p><a class=anchor id=状态类型></a><h2>状态类型 <a href=#%e7%8a%b6%e6%80%81%e7%b1%bb%e5%9e%8b aria-hidden=true>#</a></h2><p>连接的报文分成了五种：New、Established、Invalid、Untracked ，其中比较难理解的是 Related 状态。</p><p>在一个服务中，可能开启了两个进程，而且这两个进程都需要跟服务器进行通信，例如 FTP 有两个通信链路，命令链路和传输数据的链路，这两个链路就是存在关系的，所以他们属于 RELATED 状态。</p><p>所以，正常来说，对于主动发起的请求，可以放行 ESTABLISHED ，为了保证类似 FTP 这种的请求，可以同时放行 RELATED 这一状态。</p><a class=anchor id=iptables></a><h1>iptables <a href=#iptables aria-hidden=true>#</a></h1><p>该工具在 CentOS 中是默认安装，如果没有可以通过 <code>yum install iptables</code> 安装。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>关于添加、除去、编辑规则的命令的一般语法如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>iptables [-t table] command [chain] [match] [target]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- command，指定管理规则的方式，如插入、增加、删除以及查看等
+</span></span><span class=line><span class=cl>-A, --append  该命令将一条规则附加到链的末尾
+</span></span><span class=line><span class=cl>-L, --list    列出指定链中的所有规则，默认查看filter表，要查看NAT表，可加上-t NAT参数
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- match，条件匹配分为基本匹配和扩展匹配，拓展匹配又分为隐式扩展和显示扩展
+</span></span><span class=line><span class=cl>-p  指定规则协议，如tcp, udp,icmp等，可以使用all来指定所有协议
+</span></span><span class=line><span class=cl>-s  指定数据包的源地址参数，可以使IP地址、网络地址、主机名
+</span></span><span class=line><span class=cl>-d  指定目的地址
+</span></span><span class=line><span class=cl>-i  输入接口
+</span></span><span class=line><span class=cl>-o  输出接口
+</span></span></code></pre></div><a class=anchor id=常用操作></a><h2>常用操作 <a href=#%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><a class=anchor id=查看></a><h4>查看 <a href=#%e6%9f%a5%e7%9c%8b aria-hidden=true>#</a></h4><p>首先是查看当前的记录，默认查看的是 filter 表，如果要查看 NAT 表，可以加上 <code>-t nat</code> 参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># iptables --line-number -nvL POSTROUTING -t nat
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>如上参数包括：
+</span></span><span class=line><span class=cl>   -n    不对IP进行反查，显示速度会快很多
+</span></span><span class=line><span class=cl>   -v    输出详细信息，包括通过该规则的数据包数量、总字节数、相应的网络接口
+</span></span><span class=line><span class=cl>   -x    通过-v会显示统计信息，一般会做单位转换，该选项会严格显示字节
+</span></span><span class=line><span class=cl>   --line-number   显示规则的序列号，这个参数在删除或修改规则时会用到
+</span></span></code></pre></div><p>默认是查看所有的链，也可以通过最后一个参数指定对应的链，注意，链名称必须要全大写。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># iptables -nvL
+</span></span><span class=line><span class=cl>Chain INPUT (policy ACCEPT 2055 packets, 2419K bytes)   INPUT链上的规则，默认规则是ACCEPT
+</span></span><span class=line><span class=cl> pkts bytes target     prot opt in     out     source               destination         
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+</span></span><span class=line><span class=cl> pkts bytes target     prot opt in     out     source               destination         
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Chain OUTPUT (policy ACCEPT 1928 packets, 2396K bytes)
+</span></span><span class=line><span class=cl> pkts bytes target     prot opt in     out     source               destination 
+</span></span></code></pre></div><p>当增加了 <code>-v</code> 参数之后，在列表中会添加 <code>pkts</code> <code>bytes</code> <code>in</code> <code>out</code> 几个监控的指标，其中 <code>target</code> 可以是动作 (Accept、Drop等)，也可以是另外一条规则，详见如下示例。</p><p>上述实际包含了一个默认的参数 <code>-t filter</code> 也就是过滤表，而过滤只在 Input Forward Output 链中出现。</p><a class=anchor id=添加></a><h4>添加 <a href=#%e6%b7%bb%e5%8a%a0 aria-hidden=true>#</a></h4><p>有两个参数：1) <code>-A</code> 添加到规则的末尾；2) <code>-I</code> 插入到指定位置，默认插入到规则的首部。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 添加一条规则到尾部
+</span></span><span class=line><span class=cl># iptables -A INPUT -s 192.168.1.5 -j DROP
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 插入一条规则到第三行
+</span></span><span class=line><span class=cl># iptables -I INPUT 3 -s 192.168.1.3 -j DROP
+</span></span></code></pre></div><a class=anchor id=删除></a><h4>删除 <a href=#%e5%88%a0%e9%99%a4 aria-hidden=true>#</a></h4><p>结下来可以通过如下方式删除。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 删除之前添加的规则
+</span></span><span class=line><span class=cl># iptables -D INPUT -s 192.168.1.5 -j DROP
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 如果规则太长，直接通过行号删除，如下删除第2行
+</span></span><span class=line><span class=cl># iptables -D INPUT 2
+</span></span></code></pre></div><p>接下来看看如何修改规则。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 接下来先查找对应的规则号
+</span></span><span class=line><span class=cl># iptables -nL --line-number
+</span></span><span class=line><span class=cl>Chain INPUT (policy ACCEPT)
+</span></span><span class=line><span class=cl>num  target     prot opt source               destination
+</span></span><span class=line><span class=cl>1    DROP       all  --  192.168.1.1          0.0.0.0/0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 然后将第一条规则改为ACCEPT
+</span></span><span class=line><span class=cl># iptables -R INPUT 1 -j ACCEPT
+</span></span></code></pre></div><a class=anchor id=持久化保存></a><h4>持久化保存 <a href=#%e6%8c%81%e4%b9%85%e5%8c%96%e4%bf%9d%e5%ad%98 aria-hidden=true>#</a></h4><p>设置完成之后，可以直接通过 <code>iptables-save</code> 保存为文件，默认打印到 stdout 中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- RHEL/CentOS
+</span></span><span class=line><span class=cl># iptables-save &gt; /etc/sysconfig/iptables
+</span></span><span class=line><span class=cl># iptables-restore &lt; /etc/sysconfig/iptables
+</span></span><span class=line><span class=cl>----- Debian/Ubuntu
+</span></span><span class=line><span class=cl># iptables-save &gt; /etc/iptables/rules.v4
+</span></span><span class=line><span class=cl># iptables-restore &lt; /etc/iptables/rules.v4
+</span></span></code></pre></div><p>注意，如果使用了 IPv6 则对应 <code>ip6tables-save</code> 命令以及 <code>/etc/iptables/rules.v6</code>、<code>/etc/sysconfig/ip6tables</code> 。</p><a class=anchor id=常用实例></a><h2>常用实例 <a href=#%e5%b8%b8%e7%94%a8%e5%ae%9e%e4%be%8b aria-hidden=true>#</a></h2><p>下面是常用的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 允许访问22端口，如果需要拒绝访问，则将ACCEPT改为DROP即可
+</span></span><span class=line><span class=cl># iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+</span></span><span class=line><span class=cl>----- 允许192.168.1.123访问本机的1521端口
+</span></span><span class=line><span class=cl># iptables -I INPUT -s 192.168.1.123 -p tcp --dport 1521 -j ACCEPT
+</span></span><span class=line><span class=cl>-A INPUT -s 192.30.19.82/32 -p tcp -m tcp --dport 21005 -j ACCEPT
+</span></span><span class=line><span class=cl>----- 在指定位置插入，如果时-A参数则是在末尾添加
+</span></span><span class=line><span class=cl># iptables -I INPUT 3 -p tcp -m tcp --dport 20 -j ACCEPT
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 添加NAT规则，对192.168.10.0/24进行地址伪装
+</span></span><span class=line><span class=cl># iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -j MASQUERADE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看filter表规则，显示编号，常用于删除
+</span></span><span class=line><span class=cl># iptables -L -n --line-number
+</span></span><span class=line><span class=cl>----- 查看NAT表规则
+</span></span><span class=line><span class=cl># iptables -t nat -vnL POSTROUTING --line-number
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改规则，改为DROP
+</span></span><span class=line><span class=cl># iptables -R INPUT 3 -j DROP
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 重置所有统计信息
+</span></span><span class=line><span class=cl># iptables -Z
+</span></span><span class=line><span class=cl># iptables -Z INPUT
+</span></span><span class=line><span class=cl># iptables -Z INPUT 1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除input的第3条规则
+</span></span><span class=line><span class=cl># iptables -D INPUT 3
+</span></span><span class=line><span class=cl>----- 删除nat表中postrouting的第一条规则
+</span></span><span class=line><span class=cl># iptables -t nat -D POSTROUTING 1
+</span></span><span class=line><span class=cl>----- 清空filter表INPUT所有规则
+</span></span><span class=line><span class=cl># iptables -F INPUT
+</span></span><span class=line><span class=cl>----- 清空所有规则
+</span></span><span class=line><span class=cl># iptables -F
+</span></span><span class=line><span class=cl>----- 清空nat表POSTROUTING所有规则
+</span></span><span class=line><span class=cl># iptables -t nat -F POSTROUTING
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>---- 设置filter表INPUT默认规则是DROP
+</span></span><span class=line><span class=cl># iptables -P INPUT DROP
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>---- 清理所有非默认的chain信息
+</span></span><span class=line><span class=cl># iptables -X
+</span></span></code></pre></div><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><p>目前除了 iptables 之外，还有 <a href=http://www.hipac.org/index.html>nf-hipac</a> 。曾经有网友测试过，nf-hipac 比 iptables 优化的不是一星半点，而且前者在加载 20000 个条目时，使用 iperf 的测试结果基本根裸奔相差无几。不过该项目基本已经停滞，现在是通过 <a href=http://ipset.netfilter.org/>ipset</a> 替换之 ^_^</p><p>目前有个 <a href=http://www.netfilter.org/projects/nftables/index.html>Netfilter</a> 的项目，用来取代现有的 {ip,ip6,arp,eb}tables 等工具，不过现在还在开发过程中。</p><p>另外，内核中提供了 BPF (BSD Packet Filter) 支持，包括现在的 tcpdump 等程序，都是使用的这一规则。据说，其速度是 iptables 的几倍，采用综合状态机、JIT，可以在很短的时间内完成数据包的匹配判断，可以参考 <a href=http://www.brendangregg.com/blog/2015-05-15/ebpf-one-small-step.html>eBPF: One Small Step</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#netfilter-简介>Netfilter 简介</a><ul><li><a href=#hook链>Hook/链</a></li><li><a href=#表>表</a></li><li><a href=#关系>关系</a></li><li><a href=#规则和动作>规则和动作</a></li></ul></li><li><a href=#state>State</a><ul><li><a href=#状态类型>状态类型</a></li></ul></li><li><a href=#iptables>iptables</a><ul><li><a href=#示例>示例</a></li><li><a href=#常用操作>常用操作</a></li><li><a href=#常用实例>常用实例</a></li></ul></li><li><a href=#其它>其它</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

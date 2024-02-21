@@ -1,0 +1,104 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>StarRocks DDL 基本介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>StarRocks DDL 基本介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2023-09-21</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/warehouse/ role=button>warehouse</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/starrocks/ role=button>starrocks</a></div></div><hr><div class=content><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>StarRocks 支持轻量级表结构变更，开始被称为 Light Schema Change 后修改为 Fast Schema Evolution，加减列或者修改列类型无需停服务，无需重导历史数据。最常见的是增加索引、修改分区、修改表属性等，尤其在分布式表中限制会比较多甚至是比较重的操作。</p><p>需要在建表时通过 <code>fast_schema_evolution=true</code> 指定，或者配置 <code>enable_fast_schema_evolution</code> 的 FE 全局配置。</p><p>将表结构变更分成三种：</p><ul><li>Sorted Schema Change 这里会改变列的排序方式，例如删除排序列中的一列 <code>ALTER TABLE foobar DROP COLUMN col</code>。</li><li>Direct Schema Change 无需调整排序，只需要对数据进行转换，例如修改列类型 <code>ALTER TABLE foobar MODIFY COLUMN col VARCHAR(64)</code>。</li><li>Linked Schema Change 无需转换可以直接完成，新数据按照新的 Schema 处理，旧数据直接用默认值填充，例如添加列 <code>ALTER TABLE foobar ADD COLUMN col BITINT SUM DEFAULT 0</code>。</li></ul><p>而 Online/Light 实际上针对的是 Linked 的优化实现。</p><p>如下是常见的 SQL 语句。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=line><span class=cl><span class=k>CREATE</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=n>user_info</span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>id</span><span class=w> </span><span class=n>STRING</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>name</span><span class=w> </span><span class=n>STRING</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>gender</span><span class=w> </span><span class=n>STRING</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>age</span><span class=w> </span><span class=nb>INT</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>addr</span><span class=w> </span><span class=n>STRING</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>DUPLICATE</span><span class=w> </span><span class=k>KEY</span><span class=p>(</span><span class=n>id</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>DISTRIBUTED</span><span class=w> </span><span class=k>BY</span><span class=w> </span><span class=n>HASH</span><span class=p>(</span><span class=o>`</span><span class=n>id</span><span class=o>`</span><span class=p>)</span><span class=w> </span><span class=n>BUCKETS</span><span class=w> </span><span class=mi>1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>PROPERTIES</span><span class=w> </span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=s2>&#34;fast_schema_evolution&#34;</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s2>&#34;true&#34;</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=s2>&#34;replication_num&#34;</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s2>&#34;1&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>SHOW</span><span class=w> </span><span class=n>TABLETS</span><span class=w> </span><span class=k>FROM</span><span class=w> </span><span class=n>user_info</span><span class=err>\</span><span class=k>G</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>ALTER</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=n>user_info</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>ADD</span><span class=w> </span><span class=k>COLUMN</span><span class=w> </span><span class=n>col1</span><span class=w> </span><span class=nb>INT</span><span class=w> </span><span class=k>DEFAULT</span><span class=w> </span><span class=s2>&#34;1&#34;</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>ADD</span><span class=w> </span><span class=k>COLUMN</span><span class=w> </span><span class=n>col2</span><span class=w> </span><span class=nb>INT</span><span class=w> </span><span class=k>DEFAULT</span><span class=w> </span><span class=s2>&#34;2&#34;</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>ALTER</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=n>user_info</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>DROP</span><span class=w> </span><span class=k>COLUMN</span><span class=w> </span><span class=n>col1</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>DROP</span><span class=w> </span><span class=k>COLUMN</span><span class=w> </span><span class=n>col2</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>----- 所有表结构变更是异步操作，可以通过如下命令查看当前状态
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>SHOW</span><span class=w> </span><span class=k>ALTER</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=k>COLUMN</span><span class=w> </span><span class=k>ORDER</span><span class=w> </span><span class=k>BY</span><span class=w> </span><span class=n>CreateTime</span><span class=w> </span><span class=k>DESC</span><span class=w> </span><span class=k>LIMIT</span><span class=w> </span><span class=mi>10</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>----- 查看修改任务超时时间，默认是 86400 秒，也就是一天
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>ADMIN</span><span class=w> </span><span class=k>SHOW</span><span class=w> </span><span class=n>FRONTEND</span><span class=w> </span><span class=n>CONFIG</span><span class=w> </span><span class=k>LIKE</span><span class=w> </span><span class=s1>&#39;alter_table_timeout_second%&#39;</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>ADMIN</span><span class=w> </span><span class=k>SET</span><span class=w> </span><span class=n>FRONTEND</span><span class=w> </span><span class=n>CONFIG</span><span class=p>(</span><span class=s2>&#34;alter_table_timeout_second&#34;</span><span class=o>=</span><span class=s2>&#34;86400&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>----- 可以手动取消任务
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>CANCEL</span><span class=w> </span><span class=k>ALTER</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=k>COLUMN</span><span class=w> </span><span class=k>FROM</span><span class=w> </span><span class=n>foobar</span><span class=p>;</span><span class=w>
+</span></span></span></code></pre></div><a class=anchor id=源码解析></a><h1>源码解析 <a href=#%e6%ba%90%e7%a0%81%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h1><p>语句通过 <code>AlterTableStmt</code> 解析处理，最终会调用 <code>AlterJobMgr.processAlterTable()</code> 实现，然后创建 <code>AlterJobV2</code> 任务。</p><p>真正运行是在 <code>SchemaChangeHandler.runAfterCatalogReady()</code> 中执行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Light Schema Change
+</span></span><span class=line><span class=cl>https://github.com/StarRocks/starrocks/issues/24341
+</span></span><span class=line><span class=cl>https://my.oschina.net/u/5735652/blog/5591562
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>导入数据时会通过 tablet_writer_open() 接口调用，同时会将 Schema 通过 PTabletWriterOpenRequest 参数传入，详见 NodeChannel::_open() 实现。
+</span></span><span class=line><span class=cl>其中 _parent 对应了 OlapTableSink 对象，其中包含了 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>// gensrc/thrift/Planner.thrift
+</span></span><span class=line><span class=cl>struct TPlanFragment {
+</span></span><span class=line><span class=cl>    5: optional DataSinks.TDataSink output_sink
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>// gensrc/thrift/DataSinks.thrift
+</span></span><span class=line><span class=cl>struct TDataSink {
+</span></span><span class=line><span class=cl>  1: required TDataSinkType type
+</span></span><span class=line><span class=cl>  2: optional TDataStreamSink stream_sink
+</span></span><span class=line><span class=cl>  3: optional TResultSink result_sink
+</span></span><span class=line><span class=cl>  5: optional TMysqlTableSink mysql_table_sink
+</span></span><span class=line><span class=cl>  6: optional TExportSink export_sink
+</span></span><span class=line><span class=cl>  7: optional TOlapTableSink olap_table_sink
+</span></span><span class=line><span class=cl>  8: optional TMemoryScratchSink memory_scratch_sink
+</span></span><span class=line><span class=cl>  9: optional TMultiCastDataStreamSink multi_cast_stream_sink
+</span></span><span class=line><span class=cl>  10: optional TSchemaTableSink schema_table_sink
+</span></span><span class=line><span class=cl>  11: optional TIcebergTableSink iceberg_table_sink
+</span></span><span class=line><span class=cl>  12: optional THiveTableSink hive_table_sink
+</span></span><span class=line><span class=cl>  13: optional TTableFunctionTableSink table_function_table_sink
+</span></span><span class=line><span class=cl>  14: optional TDictionaryCacheSink dictionary_cache_sink
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>struct TOlapTableSink {
+</span></span><span class=line><span class=cl>    1: required Types.TUniqueId load_id
+</span></span><span class=line><span class=cl>    2: required i64 txn_id
+</span></span><span class=line><span class=cl>    3: required i64 db_id
+</span></span><span class=line><span class=cl>    4: required i64 table_id
+</span></span><span class=line><span class=cl>    5: required i32 tuple_id
+</span></span><span class=line><span class=cl>    6: required i32 num_replicas
+</span></span><span class=line><span class=cl>    7: required bool need_gen_rollup // Deprecated
+</span></span><span class=line><span class=cl>    8: optional string db_name
+</span></span><span class=line><span class=cl>    9: optional string table_name
+</span></span><span class=line><span class=cl>    10: required Descriptors.TOlapTableSchemaParam schema  &lt;--- 关键
+</span></span><span class=line><span class=cl>    11: required Descriptors.TOlapTablePartitionParam partition
+</span></span><span class=line><span class=cl>    12: required Descriptors.TOlapTableLocationParam location
+</span></span><span class=line><span class=cl>    13: required Descriptors.TNodesInfo nodes_info
+</span></span><span class=line><span class=cl>    14: optional i64 load_channel_timeout_s // the timeout of load channels in second
+</span></span><span class=line><span class=cl>    15: optional bool is_lake_table
+</span></span><span class=line><span class=cl>    16: optional string txn_trace_parent
+</span></span><span class=line><span class=cl>    17: optional Types.TKeysType keys_type
+</span></span><span class=line><span class=cl>    18: optional Types.TWriteQuorumType write_quorum_type
+</span></span><span class=line><span class=cl>    19: optional bool enable_replicated_storage
+</span></span><span class=line><span class=cl>    20: optional string merge_condition
+</span></span><span class=line><span class=cl>    21: optional bool null_expr_in_auto_increment
+</span></span><span class=line><span class=cl>    22: optional bool miss_auto_increment_column
+</span></span><span class=line><span class=cl>    23: optional bool abort_delete // Deprecated
+</span></span><span class=line><span class=cl>    24: optional i32 auto_increment_slot_id
+</span></span><span class=line><span class=cl>    25: optional Types.TPartialUpdateMode partial_update_mode
+</span></span><span class=line><span class=cl>    26: optional string label
+</span></span><span class=line><span class=cl>    // enable colocated for sync mv
+</span></span><span class=line><span class=cl>    27: optional bool enable_colocate_mv_index
+</span></span><span class=line><span class=cl>    28: optional i64 automatic_bucket_size
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>OlapTable.getUseFastSchemaEvolution() 确认是否支持
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>PropertyAnalyzer.analyzeUseFastSchemaEvolution()
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#源码解析>源码解析</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

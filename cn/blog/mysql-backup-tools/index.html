@@ -1,0 +1,168 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 备份工具 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="为了保证数据安全，都会对硬件做高可用，防止出现单点故障，但是无论如何都无法取代备份，尤其对于数据库中所保存的数据而言。
+在此，介绍一下 MySQL 中常用的备份方法。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL 备份工具</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2015-08-25</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a></div></div><hr><div class=content><p>为了保证数据安全，都会对硬件做高可用，防止出现单点故障，但是无论如何都无法取代备份，尤其对于数据库中所保存的数据而言。</p><p>在此，介绍一下 MySQL 中常用的备份方法。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>MySQL 自带了 mysqldump、mysqlbinlog 两个备份工具，percona 又提供了强大的 XtraBackup，加上开源的 mydumper，还有基于主从同步的延迟备份、从库冷备等方式，以及基于文件系统快照的备份，其实选择已经多到眼花缭乱。</p><p>备份本身是为了能在出现故障时，可以迅速、准确恢复到原有状态，如果同时可以简单实用，那就最好不过了。接下来，我们看看这几种常用的备份工具。</p><a class=anchor id=mysqldump-mydumper></a><h1>mysqldump mydumper <a href=#mysqldump-mydumper aria-hidden=true>#</a></h1><p>mysqldump 是最简单的逻辑备份方式，在备份 myisam 表的时候，如果要得到一致的数据，就需要锁表。</p><p>备份 innodb 表时，加上 <code>--master-data=1 --single-transaction</code> 选项，在事务开始记录下 binlog pos 点，然后利用 mvcc 来获取一致的数据，由于是一个长事务，在写入和更新量很大的数据库上，将产生非常多的 undo，显著影响性能，所以要慎用。</p><p>这种方式可以针对单表备份，可以导出表结构。</p><p>mydumper 是 mysqldump 的开源加强版，支持压缩，支持并行备份和恢复，速度比要快很多，但是由于是逻辑备份，仍不是很快。</p><a class=anchor id=xtrabackup></a><h1>XtraBackup <a href=#xtrabackup aria-hidden=true>#</a></h1><p>这是 percona 开发的一个物理备份工具，可以在线对 InnoDB/XtraDB 引擎的表进行物理备份，相比于 mysqldump 来说，效率很不错。</p><p>XtraBackup 包含了两个主要的工具 xtrabackup、innobackupex，其中 xtrabackup 只能备份 InnoDB 和 XtraDB 两种数据表；innobackupex 则封装了 xtrabackup 同时可以备份 MyISAM 数据表。</p><p>如果通过源码进行编译，需要 boost 库才可以，为了简单起见，可以直接安装二进制文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># yum install libev
+</span></span><span class=line><span class=cl># rpm -ivh percona-xtrabackup-xxx.rpm
+</span></span></code></pre></div><p>如果是源码安装，可以直接从 <a href=https://github.com/percona/percona-xtrabackup>Github - Percona XtraBackup</a> 下载。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>innobackupex
+</span></span><span class=line><span class=cl>xbcrypt
+</span></span><span class=line><span class=cl>xbstream
+</span></span><span class=line><span class=cl>xtrabackup
+</span></span></code></pre></div><p>实际上，在 2.3 版本之前，innobackupex 是通过 perl 实现的，而在此之后则采用 C 进行了重写；为了保持向前兼容，该文件实际上是指向 xtrabackup 的一个符号连接。</p><a class=anchor id=apply-log></a><h2>apply-log <a href=#apply-log aria-hidden=true>#</a></h2><p>一般情况下，在备份完成后，数据尚且不能用于恢复操作，因为备份的数据中可能会包含尚未提交的事务或已经提交但尚未同步至数据文件中的事务。也就是说，此时数据文件仍处理不一致状态；需要回滚未提交的事务及同步已经提交的事务至数据文件，使得数据文件处于一致性状态。</p><p>innobakupex 命令通过的 <code>--apply-log</code> 选项可用于实现上述功能。</p><a class=anchor id=备份></a><h2>备份 <a href=#%e5%a4%87%e4%bb%bd aria-hidden=true>#</a></h2><p>如 <a href=/cn/blog/mysql-replication/>MySQL 复制</a> 中所示，假设搭建了一个 Master 服务器。</p><a class=anchor id=全量备份></a><h3>全量备份 <a href=#%e5%85%a8%e9%87%8f%e5%a4%87%e4%bb%bd aria-hidden=true>#</a></h3><p>可以通过如下步骤进行全量备份。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 全量备份到/tmp/percon目录下
+</span></span><span class=line><span class=cl>$ innobackupex --defaults-file=/tmp/my-master.cnf --user=root \
+</span></span><span class=line><span class=cl>     --socket=/tmp/mysql-master.sock /tmp/percon
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>MySQL binlog position: filename &#39;mysql-bin.000001&#39;, position &#39;1687589&#39;, GTID of the last change &#39;0-1-5439&#39;
+</span></span><span class=line><span class=cl>161205 20:56:49 [00] Writing backup-my.cnf
+</span></span><span class=line><span class=cl>161205 20:56:49 [00]        ...done
+</span></span><span class=line><span class=cl>161205 20:56:49 [00] Writing xtrabackup_info
+</span></span><span class=line><span class=cl>161205 20:56:49 [00]        ...done
+</span></span><span class=line><span class=cl>xtrabackup: Transaction log of lsn (4397451) to (4397451) was copied.
+</span></span><span class=line><span class=cl>161205 20:56:49 completed OK!
+</span></span></code></pre></div><p>当结尾为 <strong>completed OK!</strong> 时，说明备份成功。备份完成之后，在目录下会有几个比较重要的元数据文件，简单介绍如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat xtrabackup_checkpoints
+</span></span><span class=line><span class=cl>backup_type = full-backuped          # 备份类型
+</span></span><span class=line><span class=cl>from_lsn = 0
+</span></span><span class=line><span class=cl>to_lsn = 4397451
+</span></span><span class=line><span class=cl>last_lsn = 4397451                   # LSN号
+</span></span><span class=line><span class=cl>compact = 0
+</span></span><span class=line><span class=cl>recover_binlog_info = 0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ cat xtrabackup_binlog_info         # 备份时binlog文件及其位置
+</span></span><span class=line><span class=cl>mysql-bin.000001        1687589 0-1-5439
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ cat xtrabackup_binlog_pos_innodb   # 同上，不包括GTID信息
+</span></span><span class=line><span class=cl>mysql-bin.000001        1687589
+</span></span></code></pre></div><p>在使用 innobackupex 进行备份时，可以使用 <code>--no-timestamp</code> 选项来阻止命令自动创建一个以时间命名的目录；此时，该命令将会创建一个 BACKUP-DIR 目录来存储备份数据。</p><a class=anchor id=全量恢复></a><h3>全量恢复 <a href=#%e5%85%a8%e9%87%8f%e6%81%a2%e5%a4%8d aria-hidden=true>#</a></h3><p>假设将其中的一个数据库删除掉，然后可以通过上述的备份恢复该数据库。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 关闭数据库
+</span></span><span class=line><span class=cl>$ mysqladmin -uroot -S /tmp/mysql-master.sock shutdown
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 备份源数据库，并新建相同目录
+</span></span><span class=line><span class=cl>$ mv /tmp/mysql-master /tmp/mysql-master-bak
+</span></span><span class=line><span class=cl>$ mkdir /tmp/mysql-master
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 准备备份的全量数据
+</span></span><span class=line><span class=cl>$ innobackupex --apply-log /tmp/percon/2015-08-23_20-55-32/
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>xtrabackup: starting shutdown with innodb_fast_shutdown = 1
+</span></span><span class=line><span class=cl>InnoDB: FTS optimize thread exiting.
+</span></span><span class=line><span class=cl>InnoDB: Starting shutdown...
+</span></span><span class=line><span class=cl>InnoDB: Shutdown completed; log sequence number 4406415
+</span></span><span class=line><span class=cl>161205 21:27:15 completed OK!
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 恢复全量数据
+</span></span><span class=line><span class=cl>$ innobackupex --defaults-file=/tmp/my-master.cnf --copy-back --rsync /tmp/percon/2015-08-23_20-55-32/
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>161205 21:34:36 completed OK!
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 启动服务器
+</span></span><span class=line><span class=cl>$ /opt/mariadb/bin/mysqld --defaults-file=/tmp/my-master.cnf --basedir=/opt/mariadb \
+</span></span><span class=line><span class=cl>       --datadir=/tmp/mysql-master
+</span></span></code></pre></div><a class=anchor id=增量备份></a><h3>增量备份 <a href=#%e5%a2%9e%e9%87%8f%e5%a4%87%e4%bb%bd aria-hidden=true>#</a></h3><p>注意，增量备份需要先有一个全量的备份，假设仍使用上述的备份。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; INSERT INTO test.foobar VALUES(5, &#34;Hobart&#34;), (6, &#34;Raymond&#34;);
+</span></span><span class=line><span class=cl>Query OK, 2 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>Records: 2  Duplicates: 0  Warnings: 0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 执行增量备份
+</span></span><span class=line><span class=cl>$ innobackupex --defaults-file=/tmp/my-master.cnf --user=root \
+</span></span><span class=line><span class=cl>   --socket=/tmp/mysql-master.sock --incremental /tmp/percon/ \
+</span></span><span class=line><span class=cl>    --incremental-basedir=/tmp/percon/2015-08-23_20-55-23/ --parallel=2
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>xtrabackup: Transaction log of lsn (4408143) to (4408143) was copied.
+</span></span><span class=line><span class=cl>161205 21:49:34 completed OK!
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; INSERT INTO test.foobar VALUES(7, &#34;Jeremy&#34;), (8, &#34;Philip&#34;);
+</span></span><span class=line><span class=cl>Query OK, 2 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>Records: 2  Duplicates: 0  Warnings: 0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ innobackupex --defaults-file=/tmp/my-master.cnf --user=root \
+</span></span><span class=line><span class=cl>   --socket=/tmp/mysql-master.sock --incremental /tmp/percon/ \
+</span></span><span class=line><span class=cl>    --incremental-basedir=/tmp/percon/2015-08-23_21-48-23/ --parallel=2
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>xtrabackup: Transaction log of lsn (4408743) to (4408743) was copied.
+</span></span><span class=line><span class=cl>161205 21:59:20 completed OK!
+</span></span></code></pre></div><a class=anchor id=增量备份恢复></a><h3>增量备份恢复 <a href=#%e5%a2%9e%e9%87%8f%e5%a4%87%e4%bb%bd%e6%81%a2%e5%a4%8d aria-hidden=true>#</a></h3><p>对于如上的增量备份，恢复时需要执行如下的 3 个步骤。</p><ol><li>准备完全备份；</li><li>将增量备份恢复到完全备份，开始恢复的增量备份要添加 <code>--redo-only</code> 参数，到最后一次增量备份要去掉该参数；</li><li>对整体的完全备份进行恢复，回滚未提交的数据。</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; DROP DATABASE TEST;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将增量1应用到完全备份
+</span></span><span class=line><span class=cl>$ innobackupex --apply-log --redo-only /tmp/percon/2015-08-23_20-55-23/ \
+</span></span><span class=line><span class=cl>    --incremental-dir=/tmp/percon/2015-08-23_21-48-23/
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将增量2应用到完全备份
+</span></span><span class=line><span class=cl>$ innobackupex --apply-log /tmp/percon/2015-08-23_21-48-23 --incremental-dir=/tmp/pecon/2015-08-23_21-58-40/
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 把所有合在一起的完全备份整体进行一次apply操作，回滚未提交的数据
+</span></span><span class=line><span class=cl>$ innobackupex --apply-log /tmp/percon/2015-08-23_20-55-23/
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 恢复数据
+</span></span><span class=line><span class=cl>$ innobackupex --defaults-file=/tmp/my-master.cnf --copy-back --rsync /tmp/percon/2015-08-23_20-55-23/
+</span></span></code></pre></div><p>另外，可以对数据进行压缩，在此暂不讨论。</p><a class=anchor id=执行流程></a><h2>执行流程 <a href=#%e6%89%a7%e8%a1%8c%e6%b5%81%e7%a8%8b aria-hidden=true>#</a></h2><p>如下是 xtrabackup 执行的详细流程。</p><p><img alt="mysql percona xtrabackup procedure" src=images/pxb-backup-procedure.png class="mx-auto d-block"></p><a class=anchor id=mysqlbinlog></a><h1>mysqlbinlog <a href=#mysqlbinlog aria-hidden=true>#</a></h1><p>上述备份方式，都只能把数据库恢复到备份时的时间点：A) mysqldump、mydumper、snapshot 是备份开始的时间点；B) XtraBackup 是备份结束的时间点。</p><p>如果要实现 point in time 恢复，还必须备份 binlog；开启 binlog 非常简单，可以通过修改如下配置文件打开。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ vi /etc/my.cnf
+</span></span><span class=line><span class=cl>binlog_format = mixed
+</span></span><span class=line><span class=cl>log-bin       = mysql-bin
+</span></span></code></pre></div><p>其中 mysql 5.6 提供了远程备份 binlog 的能力，我么可以直接通过如下命令远程备份。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ mysqlbinlog --raw --read-from-remote-server --stop-never
+</span></span></code></pre></div><p>该命令会伪装成 mysql 从库，从远程获取 binlog 然后进行转储，不过这样状态监控需要单独部署；当然，还可以通过 blackhole 来备份全量的 binlog 。</p><a class=anchor id=常用解析></a><h2>常用解析 <a href=#%e5%b8%b8%e7%94%a8%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h2><p>通过 mysqlbinlog 工具可以将 binlog 或者 relay-log 文件解析成文本文件，两者的格式相同。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ mysqlbinlog binlog.0000003
+</span></span></code></pre></div><p>如上命令将会解析 binlog ，并输出该文件中的所有语句及其相关信息，例如每个语句花费的时间、客户发出的线程ID、发出线程时的时间戳等等。</p><p>也可以通过 mysql 客户端查看 binlog 相关信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW BINARY LOGS;                           # 查看binlog日志
+</span></span><span class=line><span class=cl>+-----------------+-----------+
+</span></span><span class=line><span class=cl>| Log_name        | File_size |
+</span></span><span class=line><span class=cl>+-----------------+-----------+
+</span></span><span class=line><span class=cl>| mysql-bin.000001|       409 |
+</span></span><span class=line><span class=cl>| mysql-bin.000002|       346 |
+</span></span><span class=line><span class=cl>+-----------------+-----------+
+</span></span><span class=line><span class=cl>2 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; SHOW BINLOG EVENTS;                         # 查看执行的SQL，默认是1
+</span></span><span class=line><span class=cl>mysql&gt; SHOW BINLOG EVENTS IN &#39;mysql-bin.000002&#39;;   # 查看指定binlog文件的内容
+</span></span><span class=line><span class=cl>mysql&gt; SHOW BINLOG EVENTS FROM 213;                # 指定位置binlog的内容
+</span></span></code></pre></div><p>接下来看看如何通过 mysqlbinlog 方式提取 binlog 日志。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 提取整个binlog日志，压缩，执行
+</span></span><span class=line><span class=cl>$ mysqlbinlog mysql-bin.000001
+</span></span><span class=line><span class=cl>$ mysqlbinlog mysql-bin.000001 | gzip &gt; foobar.sql.gz
+</span></span><span class=line><span class=cl>$ mysqlbinlog mysql-bin.000001 | mysql -uroot -p
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 提取指定位置的binlog日志
+</span></span><span class=line><span class=cl>$ mysqlbinlog --start-position=&#34;120&#34; --stop-position=&#34;332&#34; mysql-bin.000001
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 指定数据库、字符集、开始时间、结束时间的binlog并输出到日志文件
+</span></span><span class=line><span class=cl>$ mysqlbinlog --database=test --set-charset=utf8 \
+</span></span><span class=line><span class=cl>   --start-datetime=&#34;2015-08-23 21:15:23&#34; --stop-datetime=&#34;2015-08-23 22:15:23&#34; \
+</span></span><span class=line><span class=cl>   --result-file=foobar.sql mysql-bin.000002 mysql-bin.000003
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 远程提取日志，指定结束时间
+</span></span><span class=line><span class=cl># mysqlbinlog -uroot -p -h127.1 -P3306 --stop-datetime=&#34;2015-08-23 22:30:23&#34; \
+</span></span><span class=line><span class=cl>   --read-from-remote-server mysql-bin.000033 | less
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 远程提取使用row格式的binlog日志并输出到本地文件
+</span></span><span class=line><span class=cl># mysqlbinlog -uroot -p -P3306 -h127.1 --read-from-remote-server -vv \
+</span></span><span class=line><span class=cl>   mysql-bin.000005 &gt; foobar.sql
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>常用参数：
+</span></span><span class=line><span class=cl>   -p, --password[=name]      # 密码
+</span></span><span class=line><span class=cl>   -P, --port[=num]           # 端口号
+</span></span><span class=line><span class=cl>   -u, --user=name            # 登陆用户名
+</span></span><span class=line><span class=cl>   -h, --host=name            # 主机地址
+</span></span><span class=line><span class=cl>   -S, --socket=name          # 套接字文件
+</span></span><span class=line><span class=cl>   -d, --database=name        # 只列出该数据库的条目(只适用本地日志)
+</span></span><span class=line><span class=cl>   --protocol=name            # 连接协议
+</span></span><span class=line><span class=cl>   --server-id[=num]          # 仅提取指定id的binlog日志
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   --set-charset=name         # 添加SET NAMES character_set到输出
+</span></span><span class=line><span class=cl>   -r, --result-file=name     # 输出指向给定文件
+</span></span><span class=line><span class=cl>   -s, --short-form           # 只显示包含的语句
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   --start-datetime=name      # 等于或大于该值的事件
+</span></span><span class=line><span class=cl>   --stop-datetime=name       # 小于或等于该值的事件
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   -j, --start-position[=num] # 从指定位置开始读取事件
+</span></span><span class=line><span class=cl>   --stop-position[=num]      # 到该位置停止
+</span></span><span class=line><span class=cl>   -o, --offset[=num]         # 跳过前num个条目
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   -f, --force-read
+</span></span><span class=line><span class=cl>       无法识别二进制事件，打印警告并忽略该事件继续；否则停止
+</span></span><span class=line><span class=cl>   -H, --hexdump
+</span></span><span class=line><span class=cl>       在注释中显示日志的十六进制转储，可以用于调试
+</span></span></code></pre></div><p>mysqlbinlog 可以基于 server_id，以及基于数据库级别提取日志，不支持表级别。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>关于 XtraBackup 可以直接参考官方网站 <a href=https://www.percona.com/doc/percona-xtrabackup/index.html>Percona XtraBackup - Documentation</a>。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#mysqldump-mydumper>mysqldump mydumper</a></li><li><a href=#xtrabackup>XtraBackup</a><ul><li><a href=#apply-log>apply-log</a></li><li><a href=#备份>备份</a></li><li><a href=#执行流程>执行流程</a></li></ul></li><li><a href=#mysqlbinlog>mysqlbinlog</a><ul><li><a href=#常用解析>常用解析</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

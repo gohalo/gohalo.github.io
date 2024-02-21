@@ -1,0 +1,115 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Redis 简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="REmote DIctionary Server (Redis) 是一个由 Salvatore Sanfilippo 写的 KV 存储系统，采用 C 语言实现，同时提供了多种语言的 API 。
+Redis 是完全开源免费的高性能 KV 数据库，相比其它的 KV 数据库来说，Redis 还支持持久化，可以将内存中的数据保存到磁盘中，重启时再次加载；除了 KV 接口，还支持 list、set、hash 等多种数据库结构；同时支持备份以及集群模式。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Redis 简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-07-18</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/software/ role=button>software</a></div></div><hr><div class=content><p>REmote DIctionary Server (Redis) 是一个由 Salvatore Sanfilippo 写的 KV 存储系统，采用 C 语言实现，同时提供了多种语言的 API 。</p><p>Redis 是完全开源免费的高性能 KV 数据库，相比其它的 KV 数据库来说，Redis 还支持持久化，可以将内存中的数据保存到磁盘中，重启时再次加载；除了 KV 接口，还支持 list、set、hash 等多种数据库结构；同时支持备份以及集群模式。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>Redis 是一个高性能的内存非关系型数据库，如下是一些特性：</p><ul><li>提供多种持久化方式，可以将内存中的数据保存在磁盘中，并在重启时进行数据恢复。</li><li>提供了 5 种数据结构类型分别为 STRING、LIST、SET、HASH 和 ZSET (有序集合)，同时提供了原子性操作。</li><li>支持主备模式的数据备份。</li><li>支持集群模式。</li></ul><p>常用于缓存、队列等场景。</p><a class=anchor id=常用命令></a><h1>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h1><p>可以使用命令行直接获取。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 通过YUM直接安装
+</span></span><span class=line><span class=cl># yum --enablerepo=epel install redis
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># redis-cli shutdown
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># redis-cli
+</span></span><span class=line><span class=cl>127.0.0.1:6379&gt; set foo bar
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6379&gt; get foo
+</span></span><span class=line><span class=cl>&#34;bar&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看服务器信息
+</span></span><span class=line><span class=cl># redis-cli info
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>------ 通过管道批量执行
+</span></span><span class=line><span class=cl># cat cmds.txt | redis-cli &gt; cmds_out.txt
+</span></span></code></pre></div><a class=anchor id=hash-类型操作></a><h2>Hash 类型操作 <a href=#hash-%e7%b1%bb%e5%9e%8b%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 设置单个或者多个值
+</span></span><span class=line><span class=cl>hset key field value
+</span></span><span class=line><span class=cl>hmset key field value [field value ...]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 获取值
+</span></span><span class=line><span class=cl>hget key field
+</span></span><span class=line><span class=cl>hmget key field [key field ...]
+</span></span><span class=line><span class=cl>hgetall key                             # 获取字段的名称及其值
+</span></span><span class=line><span class=cl>hvals key                               # 只获取字段对应的值
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除字段，会返回删除字段的个数
+</span></span><span class=line><span class=cl>hdel key field [field ...]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 判断是否存在
+</span></span><span class=line><span class=cl>hexists key field
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 当字段不存在时赋值
+</span></span><span class=line><span class=cl>hsetnx key field value
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 增加int类型的字段值，每次增加NUM
+</span></span><span class=line><span class=cl>hincrby key field NUM
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 其它
+</span></span><span class=line><span class=cl>hkeys key               # 获取KEY字段名
+</span></span><span class=line><span class=cl>hlen key                # 获取KEY字段数量
+</span></span></code></pre></div><a class=anchor id=list-类型操作></a><h2>List 类型操作 <a href=#list-%e7%b1%bb%e5%9e%8b%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>lpush key value [value ...]
+</span></span><span class=line><span class=cl>lpushx key value                # 插入到头部
+</span></span><span class=line><span class=cl>lrange key start stop
+</span></span><span class=line><span class=cl>lpop key
+</span></span><span class=line><span class=cl>llen key                        # 查看链表中的数量
+</span></span><span class=line><span class=cl>lrem key count value
+</span></span><span class=line><span class=cl>lset key index value
+</span></span><span class=line><span class=cl>lindex key index
+</span></span><span class=line><span class=cl>ltrim key start stop
+</span></span></code></pre></div><a class=anchor id=set-类型操作></a><h2>Set 类型操作 <a href=#set-%e7%b1%bb%e5%9e%8b%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><p>Set 是 string 类型对象的无序集合，对对象操作的时间复杂度是 <code>O(1)</code>，最多可以包含 <code>2^32 - 1</code> 个对象，使用 SET 操作时，原有的值会被覆盖，即使是不同的类型。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 添加成员，返回增加元素的个数，对相同的add，只保存最早的一份
+</span></span><span class=line><span class=cl>sadd key member [member ...]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 获取key的所有成员
+</span></span><span class=line><span class=cl>smembers key
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 计算多个set的并集
+</span></span><span class=line><span class=cl>sunion key [key ...]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 计算多个set的交集
+</span></span><span class=line><span class=cl>sinter key [key ...]
+</span></span></code></pre></div><p>另外一种类型就是有序的 SET，也就是 zset，在 set 的基础上增加了顺序，形成一个有序的集合。</p><a class=anchor id=持久化></a><h1>持久化 <a href=#%e6%8c%81%e4%b9%85%e5%8c%96 aria-hidden=true>#</a></h1><p>Redis 可以将数据同步保存到磁盘做数据持久化，用于重启后的数据恢复，目前主要由两种方式：A) Snapshot(RDB) 默认方式；B) Append Only File(AOF) 方式。</p><a class=anchor id=rdb></a><h2>RDB <a href=#rdb aria-hidden=true>#</a></h2><p>默认持久化方式，将当前数据的快照保存成一个数据文件，可以按照一定的策略周期性的将数据保存到磁盘，其对应产生的数据文件为 dump.rdb ，通过配置文件中的 save 参数来定义快照的周期，也可以通过客户端 save/bgsave 手动做快照持久化。</p><p>实际上 Redis 借助了 fork 命令的 Copy On Write 机制，在生成快照时，将当前进程 fork 出一个子进程，然后在子进程中循环所有的数据，将数据写成为 RDB 文件。</p><p>另外需要注意，save 操作是在主线程中保存快照，而且 Redis 是通过主线程来处理所有客户端请求，因此这种方式会阻塞所有客户端的请求，因此不推荐使用。而且，每次快照持久化都是将内存数据完整写入到磁盘一次，而非增量同步，当数据量大时，会引起大量的磁盘 IO ，从而严重影响性能。</p><p>关于 RDB 文件一致性的问题，实际上写操作是在一个新进程中完成的，会先将数据写入到一个临时文件中，然后利用文件系统的原子 rename 操作将文件重命名为 RDB 文件，从而可以保证故障是 RDB 文件的完整性。</p><a class=anchor id=配置项></a><h3>配置项 <a href=#%e9%85%8d%e7%bd%ae%e9%a1%b9 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>save 60 10000                    # 设置备份频率，也就是多少秒内至少要多个key被修改
+</span></span><span class=line><span class=cl>stop-writes-on-bgsave-error yes  # 当备份出现错误时停止备份
+</span></span><span class=line><span class=cl>rdbcompression yes               # 在进行镜像备份时是否压缩，yes压缩，也就是时间换空间
+</span></span><span class=line><span class=cl>rdbchecksum yes                  # 会在文件末尾添加CRC64校验，当保存或者加载时会有部分的性能损耗
+</span></span><span class=line><span class=cl>dbfilename dump.rdb              # 快照的文件名
+</span></span><span class=line><span class=cl>dir /var/lib/redis               # 以及存放快照的目录
+</span></span></code></pre></div><a class=anchor id=aof></a><h2>AOF <a href=#aof aria-hidden=true>#</a></h2><p>Append Only File 持久化会将每个收到的写命令都通过 Write 函数追加到文件最后，类似于 MySQL 的 binlog ，当重启时会重新执行文件中保存的写命令来在内存中重建整个数据库的内容。</p><p>这种方式会导致 AOF 文件越来越大，为此提供了 bgrewriteaof 命令可以通过类似 RDB 的方式进行数据保存。</p><p><strong>注意</strong> 如果同时配置了 RBD 和 AOF ，那么启动时只加载 AOF 文件恢复数据。</p><a class=anchor id=配置项-1></a><h3>配置项 <a href=#%e9%85%8d%e7%bd%ae%e9%a1%b9-1 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>appendonly yes                   # 是否开启AOF，默认关闭
+</span></span><span class=line><span class=cl>appendfilename appendonly.aof    # 指定 AOF 文件名
+</span></span><span class=line><span class=cl>appendfsync everysec             # 刷新模式总共三种，always每条命令都会刷新，everysec每秒钟刷新一次，no依赖OS刷新机制
+</span></span><span class=line><span class=cl>no-appendfsync-on-rewrite yes    # 日志重写时不做fsync操作，暂时缓存在内存中
+</span></span><span class=line><span class=cl>auto-aof-rewrite-percentage 100  # 当前AOF文件是上次重写AOF二倍时，自动启动新的日志重写
+</span></span><span class=line><span class=cl>auto-aof-rewrite-min-size 64mb   # 启动新日志重写的最小值，避免频繁重写
+</span></span></code></pre></div><a class=anchor id=比较></a><h2>比较 <a href=#%e6%af%94%e8%be%83 aria-hidden=true>#</a></h2><p>从上面处理逻辑可以看出，两种方式都是顺序 IO 操作，性能都很高；在恢复时一般也是顺序加载，同样只有很少的随机读。</p><p>通常，如果想要提供很高的数据保障性，可以同时使用两种持久化方式；如果可以接受丢失几分钟数据，那么可以仅使用 RDB ，因为 RDB 可以经常做数据的完整快照，并提供更快的重启，所以最好还是使用 RDB 。</p><p>RDB 的启动时间更短原因主要有两个：A) 文件中每条数据只有一条记录，而 AOF 对于同一条数据可能需要操作多次；B) RDB 中的数据存储格式跟 Redis 内存编码格式相同，无需编码转换。</p><p>注意，在执行备份时，如果会有频繁的更新，可能会导致内存 double 。例如，fork 出来进行 dump 操作的子进程会占用与父进程一样的内存，如果在 dump 期间，内存被修改执行了 Copy-On-Write 操作，最大就可能会占用 12G 内存空间，所以在使用时一定要做好容量规划。</p><p>目前，一般的设计思路是利用 Replication 机制来弥补 Snapshot、AOF 在性能上的不足，也就是 Master 不做备份保证性能，在 Slave 则可以同时开启 Snapshot 和 AOF 来进行持久化，保证数据的安全性。</p><a class=anchor id=常用概念></a><h1>常用概念 <a href=#%e5%b8%b8%e7%94%a8%e6%a6%82%e5%bf%b5 aria-hidden=true>#</a></h1><a class=anchor id=数据库></a><h2>数据库 <a href=#%e6%95%b0%e6%8d%ae%e5%ba%93 aria-hidden=true>#</a></h2><p>Redis 可以划分逻辑数据库，类似于命名空间，不同的数据库中命名不会冲突，只是不能对其进行命名，只能是通过一个整数索引进行标识(从0开始)，默认连接到 0 ，可以通过 SELECT 选择不同的数据库。</p><p>可以在配置文件中，通过 <code>databases 64</code> 配置项限制支持的最大数量，默认是 16 个。</p><p>在持久化时，会将所有的数据库保存在相同的文件中，但是部分命令可以针对单独的数据库，例如 FLUSHDB、SWAPDB、RANDOMKEY ，而 FLUSHALL 会清除所有 DB 。</p><p>实际使用时，建议不要将多个应用通过 DB 隔离。另外需要注意，在集群模式中，只有 0 这个数据库。</p><a class=anchor id=客户端></a><h1>客户端 <a href=#%e5%ae%a2%e6%88%b7%e7%ab%af aria-hidden=true>#</a></h1><a class=anchor id=python></a><h2>Python <a href=#python aria-hidden=true>#</a></h2><p>Redis-py 是 Python 中的客户端，可以通过模块与 Redis 服务器进行交互。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 可以通过PIP安装
+</span></span><span class=line><span class=cl># apt-get install python-pip
+</span></span><span class=line><span class=cl># pip install --proxy=http://your-proxy-ip:port redis
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 或者使用easy_install方式安装
+</span></span><span class=line><span class=cl># easy_install redis
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 也可以通过源码安装
+</span></span><span class=line><span class=cl># tar -xf redis-2.10.6.tar.gz &amp;&amp; cd redis-2.10.6
+</span></span><span class=line><span class=cl># python setup.py install
+</span></span></code></pre></div><p>详细内容可以参考 https://pypi.python.org/pypi/redis 以及 https://github.com/andymccurdy/redis-py 。</p><a class=anchor id=连接池></a><h3>连接池 <a href=#%e8%bf%9e%e6%8e%a5%e6%b1%a0 aria-hidden=true>#</a></h3><p>Redis-py 使用连接池维护与 Redis 服务器的连接，默认每次创建都会返回一个连接池实例，也可以在创建时指定一个现有的连接池。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>pool = redis.ConnectionPool(host=&#39;localhost&#39;, port=6379, db=0)
+</span></span><span class=line><span class=cl>r = redis.Redis(connection_pool=pool)
+</span></span></code></pre></div><p>Redis 连接实例是线程安全的，可以直接将连接作为全局变量使用，没有实现 SELECT 接口，如果需要链接到另一个 Redis 实例时，就需要重新创建 Redis 连接实例来获取一个新的连接。</p><p>Python 链接库的实现接口与 Redis 提供的 API 略有区别，如上诉的 SELECT 接口。</p><p><strong>注意</strong> 对于链接池，如果使用了 SELECT 命令，那么在返还连接的时候该链接除非显示重新调用 SELECT 指令，否则会导致不一致问题。</p><a class=anchor id=基本脚本></a><h3>基本脚本 <a href=#%e5%9f%ba%e6%9c%ac%e8%84%9a%e6%9c%ac aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>import</span> <span class=nn>redis</span>
+</span></span><span class=line><span class=cl><span class=n>r</span> <span class=o>=</span> <span class=n>redis</span><span class=o>.</span><span class=n>Redis</span><span class=p>(</span><span class=n>host</span><span class=o>=</span><span class=s1>&#39;localhost&#39;</span><span class=p>,</span><span class=n>port</span><span class=o>=</span><span class=mi>6379</span><span class=p>,</span><span class=n>db</span><span class=o>=</span><span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>r</span><span class=o>.</span><span class=n>set</span><span class=p>(</span><span class=s1>&#39;foobar&#39;</span><span class=p>,</span> <span class=s1>&#39;Hello World!&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>r</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;foobar&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>r</span><span class=p>[</span><span class=s1>&#39;foobar&#39;</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=n>r</span><span class=o>.</span><span class=n>keys</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=n>r</span><span class=o>.</span><span class=n>dbsize</span><span class=p>()</span>         <span class=c1># 当前数据库包含多少条数据</span>
+</span></span><span class=line><span class=cl><span class=n>r</span><span class=o>.</span><span class=n>delete</span><span class=p>(</span><span class=s1>&#39;guo&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>r</span><span class=o>.</span><span class=n>save</span><span class=p>()</span>           <span class=c1># 将内存中的数据写回磁盘，会阻塞</span>
+</span></span><span class=line><span class=cl><span class=n>r</span><span class=o>.</span><span class=n>flushdb</span><span class=p>()</span>        <span class=c1># 清空当前数据库中的所有数据</span>
+</span></span></code></pre></div><a class=anchor id=批量执行></a><h3>批量执行 <a href=#%e6%89%b9%e9%87%8f%e6%89%a7%e8%a1%8c aria-hidden=true>#</a></h3><p>通过管道可以将多个命令通过单个请求发送到服务器，可以有效减少服务器和客户端之间反复的 TCP 数据交互，提高执行批量执行命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>p = r.pipeline()
+</span></span><span class=line><span class=cl>p.set(&#39;hello&#39;,&#39;redis&#39;)
+</span></span><span class=line><span class=cl>p.sadd(&#39;faz&#39;,&#39;baz&#39;)
+</span></span><span class=line><span class=cl>p.incr(&#39;num&#39;)
+</span></span><span class=line><span class=cl>p.execute()
+</span></span></code></pre></div><p>甚至也可以将多个命令合并到一起。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>p.set(&#39;hello&#39;,&#39;redis&#39;).sadd(&#39;faz&#39;,&#39;baz&#39;).incr(&#39;num&#39;).execute()
+</span></span></code></pre></div><p>默认的情况下，管道里执行的命令会保证原子性，可以在初始化的时候进行设置，也就是通过 <code>pipe = r.pipeline(transaction=False)</code> 禁用这一特性。</p><a class=anchor id=监控></a><h1>监控 <a href=#%e7%9b%91%e6%8e%a7 aria-hidden=true>#</a></h1><p>在 Redis 中可以通过 <code>CONFIG SET</code> 去修改配置，不过这个只会修改内存，不会持久化到配置文件，为了防止出现不一致，需要通过定期巡检检查是否一致。</p><p>Redis 提供了很多命令用户查看当前的执行状态，例如当前客户端信息可以通过 <code>CLIENT LIST</code> 命令查看，集群信息可以通过 <code>CLUSTER INFO</code> 命令查看等等。</p><p>其中使用最多的是通过 INFO 查看系统整体的状态信息，在 Python 中可以通过如下方式采集内存相关状态信息。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>中文社区 <a href=http://www.redis.cn/>www.redis.cn</a>，<a href=https://github.com/redis/hiredis>C 客户端hiredis</a>，<a href=https://redis.io/commands>Redis.io 命令参考</a> 。</p><p><a href=https://github.com/twitter/twemproxy>twemproxy</a> 一个 Redis 和 Memcached 的代理，由 twitter 开发并开源。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#常用命令>常用命令</a><ul><li><a href=#hash-类型操作>Hash 类型操作</a></li><li><a href=#list-类型操作>List 类型操作</a></li><li><a href=#set-类型操作>Set 类型操作</a></li></ul></li><li><a href=#持久化>持久化</a><ul><li><a href=#rdb>RDB</a></li><li><a href=#aof>AOF</a></li><li><a href=#比较>比较</a></li></ul></li><li><a href=#常用概念>常用概念</a><ul><li><a href=#数据库>数据库</a></li></ul></li><li><a href=#客户端>客户端</a><ul><li><a href=#python>Python</a></li></ul></li><li><a href=#监控>监控</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

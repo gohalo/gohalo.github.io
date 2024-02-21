@@ -1,0 +1,148 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>InnoDB 崩溃恢复 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="如果 InnoDB 没有正常关闭，会在服务器启动的时候执行崩溃恢复 (Crash Recovery)，这一流程比较复杂，涉及到了 redo log、undo log 甚至包括了 binlog 。
+在此简单介绍下 InnoDB 崩溃恢复的流程。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>InnoDB 崩溃恢复</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2020-09-03</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/innodb/ role=button>innodb</a></div></div><hr><div class=content><p>如果 InnoDB 没有正常关闭，会在服务器启动的时候执行崩溃恢复 (Crash Recovery)，这一流程比较复杂，涉及到了 redo log、undo log 甚至包括了 binlog 。</p><p>在此简单介绍下 InnoDB 崩溃恢复的流程。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>如果 InnoDB 意外宕机了，那么会不会丢数据？</p><p>当然，这一问题比较复杂，根据不同的情况，可能会有数据丢失，不过至少有一点可以肯定，不会导致全部数据丢失。而这一过程，便涉及到了数据恢复。</p><a class=anchor id=初始化></a><h2>初始化 <a href=#%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h2><p>在 MySQL 的主函数中，最终会通过 <code>plugin_init()</code> 对插件进行初始化，此时，会依次调用各个插件的初始化函数，同时也会调用 InnoDB 对应的初始化函数。</p><p>详细的调用流程如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysqld_main()
+</span></span><span class=line><span class=cl> |-init_server_components()
+</span></span><span class=line><span class=cl>   |-plugin_init()
+</span></span><span class=line><span class=cl>     |-plugin_initialize()
+</span></span><span class=line><span class=cl>       |-ha_initialize_handlerton()
+</span></span><span class=line><span class=cl>         |-innobase_init()
+</span></span><span class=line><span class=cl>           |-innobase_start_or_create_for_mysql()
+</span></span></code></pre></div><p>InnoDB 崩溃恢复相关的入口是 <code>innobase_start_or_create_for_mysql()</code> 函数。首先，InnoDB 会检查上次数据库是否正常关闭，如果是则不需要恢复，否则就进入崩溃恢复的流程。</p><a class=anchor id=系统检查></a><h2>系统检查 <a href=#%e7%b3%bb%e7%bb%9f%e6%a3%80%e6%9f%a5 aria-hidden=true>#</a></h2><p>数据库启动后，InnoDB 会通过 <code>read_lsn_and_check_flags()</code> 函数读取系统表空间中 <code>flushed_lsn</code>，这一个 LSN 只在系统表空间的第一个页中存在，而且只有在正常关闭的时候写入。</p><p>系统正常关闭时，会调用 <code>logs_empty_and_mark_files_at_shutdown() -> fil_write_flushed_lsn()</code> ，也就是在执行一次 sharp checkpoint 之后，将 LSN 写入。</p><blockquote><p>flushed_lsn 只有在系统表空间的第一页存在，偏移量为 FIL_PAGE_FILE_FLUSH_LSN(26)，也就是保证至少在此 LSN 之前的页已经刷型到磁盘。</p></blockquote><p>另外需要注意的是，写 <code>flushed_lsn</code> 时会同时写入到 Double Write Buffer，如果 <code>flushed_lsn</code> 对应的页损坏，则可以从 dbwl 中进行恢复。</p><p>接下来，InnoDB 会通过 redo-log 日志找到最近一次提交的 checkpoint，读取该 checkpoint 对应的 LSN 。其中，checkpoint 信息会保存在 redo-log 的第一个文件中，在两个固定偏移中轮流写入；所以，需要同时读取两个，并比较获取较大的一个值。</p><p>比较获得的 <code>flushed_lsn</code> 以及 <code>checkpoint_lsn</code>，如果两者相同，则说明正常关闭；否则，就需要进行故障恢复。</p><a class=anchor id=重做日志></a><h1>重做日志 <a href=#%e9%87%8d%e5%81%9a%e6%97%a5%e5%bf%97 aria-hidden=true>#</a></h1><p>简单来说，如果需要执行崩溃恢复，会从上述读取的 checkpoint 信息，直接找到 redo-log 文件中相应的偏移量，也就是从 checkpoint 指定的位置开始读取日志，并保存到一个哈希表中，最后通过遍历哈希表中的 redo log 信息，读取相关页进行恢复。</p><a class=anchor id=日志扫描></a><h2>日志扫描 <a href=#%e6%97%a5%e5%bf%97%e6%89%ab%e6%8f%8f aria-hidden=true>#</a></h2><p>假设，从上述 checkpoint 定位到开始恢复的 redo log 位置是在 <code>ib_logfile1</code> 文件中的某个位置，那么整个 redo log 扫描的过程可能是这样的：</p><ul><li>从 <code>ib_logfile1</code> 的指定位置开始读取 redo log，每次读取 <code>RECV_SCAN_SIZE (4*page_size=64k)</code> 大小，写入时是以 <code>block(512B)</code> 为单位；</li><li>将从文件中读取的日志保存在 <code>recv_sys->buf</code> 中，然后进行校验，并解析日志，然后将结果保存在以 <code>(space, page_no)</code> 做 key 的 <code>recv_sys->addr_hash</code> 表中，这样一个 key 就对应了一个数据页的修改；</li></ul><p>redo log 被保存到哈希表中之后，InnoDB 就可以开始进行数据恢复，只需要轮询哈希表中的每个节点获取 redo 信息，根据 <code>(space, page_no)</code> 读取指定的数据页，并进行日志覆盖。</p><a class=anchor id=优化></a><h2>优化 <a href=#%e4%bc%98%e5%8c%96 aria-hidden=true>#</a></h2><p>如上，在恢复时，需要获取 space id 与 <code>*.ibd</code> 文件的对应关系，这就需要打开所有的 ibd 文件获取，如果文件有成百上千，甚至以万计的时候，那么这一操作将会非常耗时。</p><p>为此，5.7 在 redo log 中添加了两个新的类型：<code>MLOG_FILE_NAME</code> 记录在 checkpoint 之后，所有被修改过的信息(space, filepath)；<code>MLOG_CHECKPOINT</code> 用于标志 <code>MLOG_FILE_NAME</code> 的结束。</p><a class=anchor id=源码分析></a><h1>源码分析 <a href=#%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90 aria-hidden=true>#</a></h1><p>InnoDB 的数据恢复是一个很复杂的过程，在其恢复过程中，需要 redolog、binlog、undolog 等参与，接下来从源码角度具体了解下整个恢复的过程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>innobase_init()
+</span></span><span class=line><span class=cl> |-innobase_start_or_create_for_mysql()
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-recv_sys_create()   创建崩溃恢复所需要的内存对象
+</span></span><span class=line><span class=cl>   |-recv_sys_init()
+</span></span><span class=line><span class=cl>   | |-hash_create()
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-srv_sys_space.check_file_spce()                检查系统表空间是否正常
+</span></span><span class=line><span class=cl>   |-srv_sys_space.open_or_create()              1. 打开系统表空间，并获取flushed_lsn
+</span></span><span class=line><span class=cl>   | |-read_lsn_and_check_flags()
+</span></span><span class=line><span class=cl>   |   |-open_or_create()
+</span></span><span class=line><span class=cl>   |   |-read_first_page()
+</span></span><span class=line><span class=cl>   |   |-buf_dblwr_init_or_load_pages()             将双写缓存加载到内存中，如果ibdata日志损坏，则通过dblwr恢复
+</span></span><span class=line><span class=cl>   |   |-validate_first_page()                      校验第一个页是否正常，并读取flushed_lsn
+</span></span><span class=line><span class=cl>   |   | |-mach_read_from_8()                       读取LSN，偏移为FIL_PAGE_FILE_FLUSH_LSN
+</span></span><span class=line><span class=cl>   |   |-restore_from_doublewrite()                 如果有异常，则从dblwr恢复
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-log_group_init()                               redo log的结构初始化
+</span></span><span class=line><span class=cl>   |-srv_undo_tablespaces_init()                    对于undo log表空间恢复结构初始化
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-recv_recovery_from_checkpoint_start()       2. 从redo-log的checkpoint开始恢复；注意，正常启动也会调用
+</span></span><span class=line><span class=cl>   | |-buf_flush_init_flush_rbt()                   创建一个红黑树，用于加速插入flush list
+</span></span><span class=line><span class=cl>   | |                                              通过force_recovery判断是否大于SRV_FORCE_NO_LOG_REDO
+</span></span><span class=line><span class=cl>   | |-recv_find_max_checkpoint()                   查找最新的checkpoint点，在此会校验redo log的头部信息
+</span></span><span class=line><span class=cl>   | | |-log_group_header_read()                    读取512字节的头部信息
+</span></span><span class=line><span class=cl>   | | |-mach_read_from_4()                         读取redo log的版本号LOG_HEADER_FORMAT
+</span></span><span class=line><span class=cl>   | | |-recv_check_log_header_checksum()           版本1则校验页的完整性
+</span></span><span class=line><span class=cl>   | | | |-log_block_get_checksum()                 获取页中的checksum，也就是页中的最后四个字节
+</span></span><span class=line><span class=cl>   | | | |-log_block_calc_checksum_crc32()          并与计算后的checksum比较
+</span></span><span class=line><span class=cl>   | | |-recv_find_max_checkpoint_0()
+</span></span><span class=line><span class=cl>   | |   |-log_group_header_read()
+</span></span><span class=line><span class=cl>   | |
+</span></span><span class=line><span class=cl>   | |-recv_group_scan_log_recs()                3.1 从checkpoint-lsn处开始查找MLOG_CHECKPOINT
+</span></span><span class=line><span class=cl>   | | |-log_group_read_log_seg()                   从文件中读取64K日志，并未校验
+</span></span><span class=line><span class=cl>   | | |-recv_scan_log_recs()
+</span></span><span class=line><span class=cl>   | |   |-log_block_get_hdr_no()
+</span></span><span class=line><span class=cl>   | |   |-log_block_convert_lsn_to_no()
+</span></span><span class=line><span class=cl>   | |   |-log_block_checksum_is_ok()               校验页是否正常
+</span></span><span class=line><span class=cl>   | |   |-recv_parse_log_recs()                    解析redo-log，并添加到hash表中
+</span></span><span class=line><span class=cl>   | |     |-recv_add_to_hash_table()
+</span></span><span class=line><span class=cl>   | |       |-recv_hash()
+</span></span><span class=line><span class=cl>   | |
+</span></span><span class=line><span class=cl>   | |-recv_group_scan_log_recs()
+</span></span><span class=line><span class=cl>   | |                                              ##如果flushed_lsn和checkponit lsn不同则恢复
+</span></span><span class=line><span class=cl>   | |-recv_init_crash_recovery()
+</span></span><span class=line><span class=cl>   | |-recv_init_crash_recovery_spaces()
+</span></span><span class=line><span class=cl>   | |
+</span></span><span class=line><span class=cl>   | |-recv_group_scan_log_recs()
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-trx_sys_init_at_db_start()
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-recv_apply_hashed_log_recs()                    当页LSN小于log-record中的LSN时，应用redo日志
+</span></span><span class=line><span class=cl>   | |-recv_recover_page()                           实际调用recv_recover_page_func()
+</span></span><span class=line><span class=cl>   |   |-recv_parse_or_apply_log_rec_body()
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-recv_recovery_from_checkpoint_finish()          完成崩溃恢复
+</span></span></code></pre></div><p>接下来，首先重点看下 redo-log 的扫描函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=k>static</span> <span class=kt>bool</span> <span class=nf>recv_group_scan_log_recs</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=n>log_group_t</span><span class=o>*</span>    <span class=n>group</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=n>lsn_t</span><span class=o>*</span>      <span class=n>contiguous_lsn</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=kt>bool</span>        <span class=n>last_phase</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>mutex_enter</span><span class=p>(</span><span class=o>&amp;</span><span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>len</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>recovered_offset</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>n_addrs</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_sys_empty_hash</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=n>srv_start_lsn</span> <span class=o>=</span> <span class=o>*</span><span class=n>contiguous_lsn</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>parse_start_lsn</span> <span class=o>=</span> <span class=o>*</span><span class=n>contiguous_lsn</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>scanned_lsn</span> <span class=o>=</span> <span class=o>*</span><span class=n>contiguous_lsn</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>recovered_lsn</span> <span class=o>=</span> <span class=o>*</span><span class=n>contiguous_lsn</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>scanned_checkpoint_no</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_previous_parsed_rec_type</span> <span class=o>=</span> <span class=n>MLOG_SINGLE_REC_FLAG</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_previous_parsed_rec_offset</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>recv_previous_parsed_rec_is_multi</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>ut_ad</span><span class=p>(</span><span class=n>recv_max_page_lsn</span> <span class=o>==</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>ut_ad</span><span class=p>(</span><span class=n>last_phase</span> <span class=o>||</span> <span class=o>!</span><span class=n>recv_writer_thread_active</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>mutex_exit</span><span class=p>(</span><span class=o>&amp;</span><span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>lsn_t</span>   <span class=n>checkpoint_lsn</span>  <span class=o>=</span> <span class=o>*</span><span class=n>contiguous_lsn</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>lsn_t</span>   <span class=n>start_lsn</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>lsn_t</span>   <span class=n>end_lsn</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 在此会根据三个不同的阶段调用不同的变量
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// 1. 如果还没有扫描到MLOG_CHECKPOINT，则为STORE_NO
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// 2. 第二次扫描则为STORE_YES
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// 3. 第三次扫描则为STORE_IF_EXISTS
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>store_t</span> <span class=n>store_to_hash</span>   <span class=o>=</span> <span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>mlog_checkpoint_lsn</span> <span class=o>==</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>        <span class=o>?</span> <span class=nl>STORE_NO</span> <span class=p>:</span> <span class=p>(</span><span class=n>last_phase</span> <span class=o>?</span> <span class=nl>STORE_IF_EXISTS</span> <span class=p>:</span> <span class=n>STORE_YES</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>ulint</span>   <span class=n>available_mem</span>   <span class=o>=</span> <span class=n>UNIV_PAGE_SIZE</span>
+</span></span><span class=line><span class=cl>        <span class=o>*</span> <span class=p>(</span><span class=n>buf_pool_get_n_pages</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>           <span class=o>-</span> <span class=p>(</span><span class=n>recv_n_pool_free_frames</span> <span class=o>*</span> <span class=n>srv_buf_pool_instances</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>end_lsn</span> <span class=o>=</span> <span class=o>*</span><span class=n>contiguous_lsn</span> <span class=o>=</span> <span class=n>ut_uint64_align_down</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=o>*</span><span class=n>contiguous_lsn</span><span class=p>,</span> <span class=n>OS_FILE_LOG_BLOCK_SIZE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>do</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>last_phase</span> <span class=o>&amp;&amp;</span> <span class=n>store_to_hash</span> <span class=o>==</span> <span class=n>STORE_NO</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>store_to_hash</span> <span class=o>=</span> <span class=n>STORE_IF_EXISTS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=cm>/* We must not allow change buffer
+</span></span></span><span class=line><span class=cl><span class=cm>            merge here, because it would generate
+</span></span></span><span class=line><span class=cl><span class=cm>            redo log records before we have
+</span></span></span><span class=line><span class=cl><span class=cm>            finished the redo log scan. */</span>
+</span></span><span class=line><span class=cl>            <span class=n>recv_apply_hashed_log_recs</span><span class=p>(</span><span class=n>FALSE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>start_lsn</span> <span class=o>=</span> <span class=n>end_lsn</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>end_lsn</span> <span class=o>+=</span> <span class=n>RECV_SCAN_SIZE</span><span class=p>;</span> <span class=c1>// 每次读取的大小
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>        <span class=c1>// 从磁盘中读取数据
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=n>log_group_read_log_seg</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=n>log_sys</span><span class=o>-&gt;</span><span class=n>buf</span><span class=p>,</span> <span class=n>group</span><span class=p>,</span> <span class=n>start_lsn</span><span class=p>,</span> <span class=n>end_lsn</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 从缓存中读取日志，并解析，当hash表满时则直接执行
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=p>}</span> <span class=k>while</span> <span class=p>(</span><span class=o>!</span><span class=n>recv_scan_log_recs</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>             <span class=n>available_mem</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>store_to_hash</span><span class=p>,</span> <span class=n>log_sys</span><span class=o>-&gt;</span><span class=n>buf</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>             <span class=n>RECV_SCAN_SIZE</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>             <span class=n>checkpoint_lsn</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>             <span class=n>start_lsn</span><span class=p>,</span> <span class=n>contiguous_lsn</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>group</span><span class=o>-&gt;</span><span class=n>scanned_lsn</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>found_corrupt_log</span> <span class=o>||</span> <span class=n>recv_sys</span><span class=o>-&gt;</span><span class=n>found_corrupt_fs</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>DBUG_RETURN</span><span class=p>(</span><span class=nb>false</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>DBUG_RETURN</span><span class=p>(</span><span class=n>store_to_hash</span> <span class=o>==</span> <span class=n>STORE_NO</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#初始化>初始化</a></li><li><a href=#系统检查>系统检查</a></li></ul></li><li><a href=#重做日志>重做日志</a><ul><li><a href=#日志扫描>日志扫描</a></li><li><a href=#优化>优化</a></li></ul></li><li><a href=#源码分析>源码分析</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

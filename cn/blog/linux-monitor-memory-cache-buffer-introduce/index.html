@@ -1,0 +1,148 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Cache 能否回收 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Cache 能否回收</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2013-04-20</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kernel/ role=button>kernel</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>分析了cache能被回收的情况，那么有没有不能被回收的cache呢？当然有。我们先来看第一种情况：</p><a class=anchor id=tmpfs></a><h2>tmpfs <a href=#tmpfs aria-hidden=true>#</a></h2><p>Linux 中有个 tmpfs 作为临时文件系统，可以将内存中的一部分空间作为文件系统使用，常见的是 <code>/dev/shm</code> 这个目录，也可以手动创建。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># mkdir /tmp/ramdisk
+</span></span><span class=line><span class=cl># mount -t tmpfs -o size=500M none /tmp/ramdisk
+</span></span><span class=line><span class=cl># umount /tmp/ramdisk
+</span></span></code></pre></div><p>因为是文件系统，那么正常来说使用的应该是 Page Cache ，可以通过如下命令进行测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># echo 3 &gt; /proc/sys/vm/drop_caches
+</span></span><span class=line><span class=cl># free -m
+</span></span><span class=line><span class=cl>              total        used        free      shared  buff/cache   available
+</span></span><span class=line><span class=cl>Mem:          15359        4946        9437         686         974        9371
+</span></span><span class=line><span class=cl>Swap:          4095         427        3668
+</span></span><span class=line><span class=cl># dd if=/dev/zero of=/tmp/ramdisk/file bs=1M count=400
+</span></span><span class=line><span class=cl>400+0 records in
+</span></span><span class=line><span class=cl>400+0 records out
+</span></span><span class=line><span class=cl>419430400 bytes (419 MB) copied, 0.243054 s, 1.7 GB/s
+</span></span><span class=line><span class=cl># free -m
+</span></span><span class=line><span class=cl>              total        used        free      shared  buff/cache   available
+</span></span><span class=line><span class=cl>Mem:          15359        4947        9033        1086        1378        8969
+</span></span><span class=line><span class=cl>Swap:          4095         427        3668
+</span></span></code></pre></div><p>可以看到 <code>shared</code> <code>buff/cache</code> 有所增加，而 <code>free</code> <code>available</code> 同时减少，如果再次尝试释放内存仍然是无效的，只有当文件被释放掉之后才能被使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># free -m
+</span></span><span class=line><span class=cl>             total       used       free     shared    buffers     cached
+</span></span><span class=line><span class=cl>Mem:          3833        750       3083          0          0         49
+</span></span><span class=line><span class=cl>-/+ buffers/cache:        700       3133
+</span></span><span class=line><span class=cl>Swap:         4091        410       3681
+</span></span><span class=line><span class=cl># dd if=/dev/zero of=/tmp/ramdisk/file bs=1M count=400
+</span></span><span class=line><span class=cl>400+0 records in
+</span></span><span class=line><span class=cl>400+0 records out
+</span></span><span class=line><span class=cl>419430400 bytes (419 MB) copied, 0.208524 s, 2.0 GB/s
+</span></span><span class=line><span class=cl># free -m
+</span></span><span class=line><span class=cl>             total       used       free     shared    buffers     cached
+</span></span><span class=line><span class=cl>Mem:          3833       1151       2682          0          0        450
+</span></span><span class=line><span class=cl>-/+ buffers/cache:        700       3133
+</span></span><span class=line><span class=cl>Swap:         4091        410       3681
+</span></span></code></pre></div><a class=anchor id=共享内存></a><h2>共享内存 <a href=#%e5%85%b1%e4%ba%ab%e5%86%85%e5%ad%98 aria-hidden=true>#</a></h2><p>这是一种常用的进程间通信 (IPC) 方式，不过不能在 Shell 申请和使用，如下是一个简单的测试用例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/ipc.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/shm.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/wait.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define MEMSIZE 100 * 1024 * 1024
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>shmid</span><span class=p>,</span> <span class=n>rc</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>shmid_ds</span> <span class=n>buf</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>pid_t</span> <span class=n>pid</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=o>*</span><span class=n>ptr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>shmid</span> <span class=o>=</span> <span class=nf>shmget</span><span class=p>(</span><span class=n>IPC_PRIVATE</span><span class=p>,</span> <span class=n>MEMSIZE</span><span class=p>,</span> <span class=mo>0600</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>shmid</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>perror</span><span class=p>(</span><span class=s>&#34;shmget()&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=n>rc</span> <span class=o>=</span> <span class=nf>shmctl</span><span class=p>(</span><span class=n>shmid</span><span class=p>,</span> <span class=n>IPC_STAT</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>buf</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>rc</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>perror</span><span class=p>(</span><span class=s>&#34;shmctl()&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;shmid: %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>shmid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;shmsize: %ld</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>buf</span><span class=p>.</span><span class=n>shm_segsz</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>pid</span> <span class=o>=</span> <span class=nf>fork</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>pid</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>perror</span><span class=p>(</span><span class=s>&#34;fork()&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=n>pid</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>ptr</span> <span class=o>=</span> <span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=p>)</span><span class=nf>shmat</span><span class=p>(</span><span class=n>shmid</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>,</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>ptr</span> <span class=o>==</span> <span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=p>)</span><span class=o>-</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nf>perror</span><span class=p>(</span><span class=s>&#34;shmat()&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nf>bzero</span><span class=p>(</span><span class=n>ptr</span><span class=p>,</span> <span class=n>MEMSIZE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>strcpy</span><span class=p>(</span><span class=n>ptr</span><span class=p>,</span> <span class=s>&#34;Hello!&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>wait</span><span class=p>(</span><span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>ptr</span> <span class=o>=</span> <span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=p>)</span><span class=nf>shmat</span><span class=p>(</span><span class=n>shmid</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>,</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>ptr</span> <span class=o>==</span> <span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=p>)</span><span class=o>-</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nf>perror</span><span class=p>(</span><span class=s>&#34;shmat()&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nf>puts</span><span class=p>(</span><span class=n>ptr</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>程序很简单，就是申请一块约 400M 的共享内存，然后打开一个子进程对这段共享内存做一个初始化操作，父进程等子进程初始化完之后输出一下共享内存的内容，然后退出。</p><p>注意，上述的程序在退出之前并没有删除这段共享内存，同样可以通过 <code>free</code> 命令查看其内存的使用情况。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># free -m
+</span></span><span class=line><span class=cl>              total        used        free      shared  buff/cache   available
+</span></span><span class=line><span class=cl>Mem:          15359        5329        9051         686         977        8987
+</span></span><span class=line><span class=cl>Swap:          4095         427        3668
+</span></span><span class=line><span class=cl># ./test
+</span></span><span class=line><span class=cl>shmid: 491522
+</span></span><span class=line><span class=cl>shmsize: 419430400
+</span></span><span class=line><span class=cl>Hello!
+</span></span><span class=line><span class=cl># free -m
+</span></span><span class=line><span class=cl>              total        used        free      shared  buff/cache   available
+</span></span><span class=line><span class=cl>Mem:          15359        5330        8627        1086        1401        8574
+</span></span><span class=line><span class=cl>Swap:          4095         427        3668
+</span></span></code></pre></div><p>简单来说，这段共享内存即使没人使用，仍然会长期存放在 cache 中，直到其被删除。删除方法有两种，一种是程序中使用 <code>shmctl(IPC_RMDI)</code> 去删除，或者使用 ipcrm 命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看当前系统的所有共享内存
+</span></span><span class=line><span class=cl># ipcs -m
+</span></span><span class=line><span class=cl>----- 删除指定的共享内存
+</span></span><span class=line><span class=cl># ipcrm -m 491522
+</span></span></code></pre></div><p>实际上，内核底层在实现共享内存 (shm)、消息队列 (msg) 和信号量 (sem) 这些 IPC 机制时，使用的都是 tmpfs，这也是为什么共享内存的操作逻辑与 tmpfs 类似的原因。</p><p>只是，一般情况下 shm 占用的内存更多。</p><a class=anchor id=mmap></a><h2>mmap <a href=#mmap aria-hidden=true>#</a></h2><p>该系统函数将一个文件映射到进程的虚拟内存地址，然后就可以用类似操作内存的方式对文件的内容进行操作。</p><p>实际上，其使用范围要更广泛些，例如：A) 通过 <code>malloc()</code> 申请内存时，小段内存内核使用 <code>sbrk()</code> 处理，而大段内存使用 <code>mmap()</code>；B) 通过系统调用 <code>exec()</code> 族函数执行时，其本质上是将一个可执行文件加载到内存执行，同样使用 <code>mmap()</code>；C) 同时也可以作为共享内存申请使用。</p><p>同样，如下是一个简单的测试程序：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;fcntl.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;strings.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/mman.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define MEMSIZE  400 * 1024 * 1024
+</span></span></span><span class=line><span class=cl><span class=cp>#define MMAPFILE &#34;/tmp/mmapfile&#34;
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>void</span> <span class=o>*</span><span class=n>ptr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>fd</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>fd</span> <span class=o>=</span> <span class=nf>open</span><span class=p>(</span><span class=n>MMAPFILE</span><span class=p>,</span> <span class=n>O_RDWR</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>fd</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>perror</span><span class=p>(</span><span class=s>&#34;open()&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>ptr</span> <span class=o>=</span> <span class=nf>mmap</span><span class=p>(</span><span class=nb>NULL</span><span class=p>,</span> <span class=n>MEMSIZE</span><span class=p>,</span> <span class=n>PROT_READ</span><span class=o>|</span><span class=n>PROT_WRITE</span><span class=p>,</span> <span class=n>MAP_SHARED</span><span class=o>|</span><span class=n>MAP_ANON</span><span class=p>,</span> <span class=n>fd</span><span class=p>,</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>ptr</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>perror</span><span class=p>(</span><span class=s>&#34;malloc()&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%p</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>ptr</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>bzero</span><span class=p>(</span><span class=n>ptr</span><span class=p>,</span> <span class=n>MEMSIZE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>sleep</span><span class=p>(</span><span class=mi>100</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>munmap</span><span class=p>(</span><span class=n>ptr</span><span class=p>,</span> <span class=n>MEMSIZE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>close</span><span class=p>(</span><span class=n>fd</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述功能很简单，申请一块 400M 的内存，然后等待 100s 后释放，可以用同样的方式查看。</p><p>注意，在使用前要先创建一个相应大小的文件 <code>dd if=/dev/zero of=/tmp/mmapfile bs=1M count=400</code>。</p><p>同样，在程序退出之后 cached 占用的空间被释放。当使用 <code>mmap()</code> 申请标志状态为 <code>MAP_SHARED</code> 的内存时，内核也是使用的 cache 进行存储的。</p><p>实际上，<code>mmap()</code> 的 <code>MAP_SHARED</code> 方式申请的内存，在内核中也是由 <code>tmpfs</code> 实现的。</p><a class=anchor id=总结></a><h2>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h2><p>简单来说，<code>shmget</code> <code>mmap</code> 的共享内存，在内核层都是通过 <code>tmpfs</code> 实现的，而 <code>tmpfs</code> 实现的存储用的都是 cache ，这样只有当使用的空间被删除之后对应的内存才可能会被删除。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#tmpfs>tmpfs</a></li><li><a href=#共享内存>共享内存</a></li><li><a href=#mmap>mmap</a></li><li><a href=#总结>总结</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

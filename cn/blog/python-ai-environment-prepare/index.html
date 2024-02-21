@@ -1,0 +1,50 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Python AI 环境准备 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="目前大部分的 AI 相关工具包、框架等都是通过 Python 实现的，包括了常用的 Numpy、Scikit-Learn、TensorFlow、PyTorch 等等。
+所以，这里搭建的环境主要也就是 Python 相关的，另外还有基本的 MNIST 数据集。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Python AI 环境准备</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-05-09</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/python/ role=button>python</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/ai/ role=button>ai</a></div></div><hr><div class=content><p>目前大部分的 AI 相关工具包、框架等都是通过 Python 实现的，包括了常用的 Numpy、Scikit-Learn、TensorFlow、PyTorch 等等。</p><p>所以，这里搭建的环境主要也就是 Python 相关的，另外还有基本的 MNIST 数据集。</p><a class=anchor id=依赖包></a><h1>依赖包 <a href=#%e4%be%9d%e8%b5%96%e5%8c%85 aria-hidden=true>#</a></h1><p>这里主要是最基本的依赖包，在 Python 的数据挖掘或者 ML 中，经常遇到如下的几种包。</p><ul><li><code>Numpy</code> 提供了数组支持，可以有效的提高处理速度，核心部分通过 C/C++ 实现，同时很多高级扩展包依赖它。</li><li><code>Scipy</code> 提供矩阵支持，以及矩阵相关的数值计算模块。</li><li><code>Pandas</code> 是 Panel Data 简写，提供了强大数据分析和探索工具，因金融数据分析工具而开发，支持类似 SQL 的数据增删改查，支持时间序列分析，灵活处理缺失数据。</li><li><code>Scikit-Learn</code> 用于数据挖掘和数据分析的简单且有效的工具，它的基本功能主要被分为六个部分：分类(Classification)、回归(Regression)、聚类(Clustering)、数据降维(Dimensionality Reduction)、模型选择(Model Selection)、数据预处理(Preprocessing)。</li><li><code>Matplotlib</code> 用于绘图和绘表，强大的数据可视化工具，另外，Seaborn 也是数据可视化的工具包。</li></ul><a class=anchor id=安装></a><h1>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h1><p>为了防止一些包冲突，可以通过 virtualenv 创建一个临时的环境。在安装时，建议使用 <code>pip</code> 命令而非 <code>yum</code> ，一般来说后者的包会比较老。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 生成临时环境
+</span></span><span class=line><span class=cl>$ mkdir -p ~/Workspace/tensorflow &amp;&amp; cd ~/Workspace
+</span></span><span class=line><span class=cl>$ virtualenv --no-site-packages tensorflow
+</span></span><span class=line><span class=cl>$ source tensorflow/bin/activate
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 会同时安装像Tkinter这类的库
+</span></span><span class=line><span class=cl># yum install python-tools
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 安装TensorFlow
+</span></span><span class=line><span class=cl>$ pip install --upgrade tensorflow
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 安装Numpy
+</span></span><span class=line><span class=cl>$ pip install --upgrade numpy
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 安装Matplotlib
+</span></span><span class=line><span class=cl>$ pip install --upgrade matplotlib
+</span></span><span class=line><span class=cl># yum install python-matplotlib
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 安装Scikit-Learn
+</span></span><span class=line><span class=cl>$ pip install -U scikit-learn
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 安装StatsModels
+</span></span><span class=line><span class=cl>$ pip install statsmodels
+</span></span><span class=line><span class=cl>$ conda install statsmodels
+</span></span></code></pre></div><p>然后通过如下代码进行测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ python
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; import tensorflow as tf
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; hello = tf.constant(&#34;Hello TensorFlow&#34;)
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; sess = tf.Session()
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; print sess.run(hello)
+</span></span><span class=line><span class=cl>Hello TensorFlow
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; a = tf.constant(10)
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; b = tf.constant(32)
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; print sess.run(a + b)
+</span></span><span class=line><span class=cl>42
+</span></span></code></pre></div><p>对于 Numpy 源码可以直接从 <a href=http://www.numpy.org/>www.numpy.org</a> 上下载，如果是离线则下载完包之后直接通过如下命令安装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ python setup.py build
+</span></span><span class=line><span class=cl>$ python setup.py install
+</span></span></code></pre></div><p>另外，PyTorch 可以参考 <a href=https://pytorch.org>官网</a> 中的相关命令。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#依赖包>依赖包</a></li><li><a href=#安装>安装</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

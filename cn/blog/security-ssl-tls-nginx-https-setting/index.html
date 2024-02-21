@@ -1,0 +1,71 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Nginx HTTPS 配置 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="简单介绍如何使用 Nginx 搭建 https 服务。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Nginx HTTPS 配置</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2014-12-27</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/web/ role=button>web</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/software/ role=button>software</a></div></div><hr><div class=content><p>简单介绍如何使用 Nginx 搭建 https 服务。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>在 CentOS 中，默认根目录为 <code>/usr/share/nginx/html</code> ，这里使用域名 <code>www.foobar.com</code> 测试，直接将配置添加到 <code>/etc/hosts</code> 文件中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>127.0.0.1   www.foobar.com
+</span></span></code></pre></div><a class=anchor id=1-确认支持-ssl></a><h3>1. 确认支持 SSL <a href=#1-%e7%a1%ae%e8%ae%a4%e6%94%af%e6%8c%81-ssl aria-hidden=true>#</a></h3><p>通过 <code>-V</code> 参数查看编译时是否添加了 <code>--with-http_ssl_module</code> 参数，对于 CentOS 来说，一般是已经安装了的，否则需要重新从源码编译。</p><a class=anchor id=2-生成证书></a><h3>2. 生成证书 <a href=#2-%e7%94%9f%e6%88%90%e8%af%81%e4%b9%a6 aria-hidden=true>#</a></h3><p>可以通过以下步骤生成一个简单的自签名证书，保存在 <code>/etc/pki/nginx</code> 目录下。</p><a class=anchor id=21-生成自签-ca-证书></a><h4>2.1 生成自签 CA 证书 <a href=#21-%e7%94%9f%e6%88%90%e8%87%aa%e7%ad%be-ca-%e8%af%81%e4%b9%a6 aria-hidden=true>#</a></h4><p>对于私钥需要妥善保存。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 生成根证书私钥pem，也可以通过AES进行加密
+</span></span><span class=line><span class=cl>openssl genrsa -out cakey.pem 2048
+</span></span><span class=line><span class=cl>openssl genrsa -aes256 -passout pass:123456 -out cakey.pem 2048
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 生成根证书签发申请文件csr
+</span></span><span class=line><span class=cl>openssl req -new -key cakey.pem -out ca.csr    \
+</span></span><span class=line><span class=cl>	-subj &#34;/C=CN/ST=MyProvince/L=MyCity/O=MyOrganization/OU=MyGroup/CN=MyCA&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 自签发根证书 cer
+</span></span><span class=line><span class=cl>openssl x509 -req -days 3650 -sha1 -extensions v3_ca -signkey cakey.pem -in ca.csr -out cacert.pem
+</span></span></code></pre></div><a class=anchor id=22-生成服务端私钥和证书></a><h4>2.2 生成服务端私钥和证书 <a href=#22-%e7%94%9f%e6%88%90%e6%9c%8d%e5%8a%a1%e7%ab%af%e7%a7%81%e9%92%a5%e5%92%8c%e8%af%81%e4%b9%a6 aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 生成服务端私钥
+</span></span><span class=line><span class=cl>openssl genrsa -out key.pem 2048
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 生成证书请求文件
+</span></span><span class=line><span class=cl>openssl req -new -key key.pem -out server.csr  \
+</span></span><span class=line><span class=cl>	-subj &#34;/C=CN/ST=MyProvince/L=MyCity/O=MyOrganization/OU=MyGroup/CN=*.foobar.com&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 使用根证书签发服务端证书
+</span></span><span class=line><span class=cl>openssl x509 -req -days 365 -sha1 -extensions v3_req -CA cacert.pem     \
+</span></span><span class=line><span class=cl>	-CAkey cakey.pem -CAserial ca.srl -CAcreateserial -in server.csr -out cert.pem
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 使用CA证书验证server端证书
+</span></span><span class=line><span class=cl>openssl verify -CAfile cacert.pem cert.pem
+</span></span></code></pre></div><p>注意上述的 <code>CN</code> 设置，需要匹配访问的网站，可以使用通配符 <code>*</code>，不过只能匹配一级，上述可以满足 <code>www.foobar.com</code> 但不能满足 <code>main.www.foobar.com</code> 域名。</p><a class=anchor id=3-修改配置文件></a><h3>3. 修改配置文件 <a href=#3-%e4%bf%ae%e6%94%b9%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h3><p>在默认的配置文件 <code>/etc/nginx/nginx.conf</code> 文件中，添加如下的内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>server {
+</span></span><span class=line><span class=cl>    listen       80 default_server;
+</span></span><span class=line><span class=cl>    listen       [::]:80 default_server;
+</span></span><span class=line><span class=cl>    server_name  www.foobar.com;
+</span></span><span class=line><span class=cl>    rewrite ^(.*) https://$server_name$1 permanent;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>server {
+</span></span><span class=line><span class=cl>    listen       443 ssl default_server;
+</span></span><span class=line><span class=cl>    listen       [::]:443 ssl default_server;
+</span></span><span class=line><span class=cl>    server_name  www.foobar.com;
+</span></span><span class=line><span class=cl>    root         /usr/share/nginx/html;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    ssl_certificate &#34;/etc/pki/nginx/cert.pem&#34;;
+</span></span><span class=line><span class=cl>    ssl_certificate_key &#34;/etc/pki/nginx/key.pem&#34;;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>会将 <code>http</code> 的请求跳转到 <code>https</code> 中。</p><a class=anchor id=4-重启-nginx></a><h3>4. 重启 Nginx <a href=#4-%e9%87%8d%e5%90%af-nginx aria-hidden=true>#</a></h3><p>需要注意的是，如果采用 <code>systemctl</code> 重启，上述的配置不能保存在 tmp 目录下，因为 systemd 会为进程启动不同的 tmp 目录，从而导致无法查找到上述的配置文件。</p><p>这样就可以访问 <a href=https://www.foobar.com>https://www.foobar.com</a>，注意需要将 <code>www.foobar.com</code> 添加到 <code>/etc/hosts</code> 中。另外，还可以加入如下代码实现 80 端口重定向到 443。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>server {
+</span></span><span class=line><span class=cl>    listen 80;
+</span></span><span class=line><span class=cl>    server_name www.foobar.com;
+</span></span><span class=line><span class=cl>    rewrite ^(.*) https://$server_name$1 permanent;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>不过现在无法识别根证书，在访问时会有些安全提示，对于不同的浏览器可以通过如下方式设置。</p><a class=anchor id=firefox></a><h4>Firefox <a href=#firefox aria-hidden=true>#</a></h4><p>在 <code>Preference->Privacy&amp;Security->Certificates->Certificate Manager</code> 选项中导入上述生成的 <code>cacert.pem</code> 文件即可，列表中是按照 Organize 排序的。</p><a class=anchor id=5-其它></a><h3>5. 其它 <a href=#5-%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h3><p>在 2 中的配置中，可设置密钥，此时会在重启 nginx 时输入密码，不过会导致 systemctl 失效。</p><a class=anchor id=tlsv13></a><h1>TLSv1.3 <a href=#tlsv13 aria-hidden=true>#</a></h1><p>通过 <code>-V</code> 参数检查编译时使用的 OpenSSL 版本，</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>server {
+</span></span><span class=line><span class=cl>	... ...
+</span></span><span class=line><span class=cl>	ssl_protocols TLSv1.3 TLSv1.2 TLSv1.1;
+</span></span><span class=line><span class=cl>	#ssl_ciphers TLS13-AES-256-GCM-SHA384:TLS13-CHACHA20-POLY1305-SHA256;
+</span></span><span class=line><span class=cl>	... ...
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=验证></a><h2>验证 <a href=#%e9%aa%8c%e8%af%81 aria-hidden=true>#</a></h2><p>可以通过如下方式进行验证。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ openssl s_client -connect www.foobar.com:443 -tls1_3
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+</span></span><span class=line><span class=cl>Server public key is 2048 bit
+</span></span><span class=line><span class=cl>Secure Renegotiation IS NOT supported
+</span></span><span class=line><span class=cl>... ...
+</span></span></code></pre></div><p>或者打开浏览器也可以看到具体的 TLS 版本号。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li></li></ul></li><li><a href=#tlsv13>TLSv1.3</a><ul><li><a href=#验证>验证</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

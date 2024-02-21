@@ -1,0 +1,252 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>HAProxy 简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="HAProxy 是一个免费的负载均衡软件，可以运行于大部分主流的 Linux 操作系统上，提供了 L4 和 L7 两种负载均衡能力，可媲美商用负载均衡器的性能和稳定性，使其不仅仅是免费负载均衡软件的首选，更几乎成为了唯一选择。
+这里简单介绍下 HAProxy 的使用方式。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>HAProxy 简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2014-11-28</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>HAProxy 是一个免费的负载均衡软件，可以运行于大部分主流的 Linux 操作系统上，提供了 L4 和 L7 两种负载均衡能力，可媲美商用负载均衡器的性能和稳定性，使其不仅仅是免费负载均衡软件的首选，更几乎成为了唯一选择。</p><p>这里简单介绍下 HAProxy 的使用方式。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>相比 Nginx 来说，HAProxy 支持自定义 URL 健康监测；会话保持除了可以使用 <code>IP_HASH</code> 外，还可以使用 <code>URL_HASH</code> 算法；支持多种负载均衡等等，如下是 HAProxy 提供的主要功能：</p><ul><li>负载均衡。提供 L4 和 L7 两种模式，支持 <code>RoundRobin</code>、<code>Static RoundRobin</code>、<code>LeastConnection</code>、<code>Source IP Hash</code>、<code>URI Hash</code>、<code>URL_PARAM Hash</code>、<code>HTTP_HEADER Hash</code> 等丰富的负载均衡算法；</li><li>健康检查。支持 <code>TCP</code>、<code>HTTP</code>、<code>SSL</code>、<code>MySQL</code>、<code>Redis</code> 等多种健康检查模式；</li><li>会话保持。对于未实现会话共享的应用集群，可通过 <code>Insert Cookie</code>、<code>Rewrite Cookie</code>、<code>Prefix Cookie</code> 以及上述的多种 <code>Hash</code> 方式实现会话保持；</li><li>SSL 支持。可以解析 <code>HTTPS</code> 协议，并能够将请求解密为 <code>HTTP</code> 后向后端传输；</li><li>HTTP。可以对请求进行重写与重定向，支持多种 <code>HTTP</code> 模式；</li><li>监控与统计。提供了基于 Web 的统计页面，展现健康状态和流量数据。</li></ul><p>在配置文件中可以通过 <code>balance</code> 参数指定算法，如下仅介绍一些常用的算法：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>roundrobin:
+</span></span><span class=line><span class=cl>  轮询，适用于短链接，会根据权重比选择服务器，支持4096个后端服务器；注意，这里的权重信息可以动态修改。
+</span></span><span class=line><span class=cl>static-rr:
+</span></span><span class=line><span class=cl>  与上类似，只是这里的服务器权重不能动态修改，而且对于服务器的数量没有限制，消耗CPU相对也较少。
+</span></span><span class=line><span class=cl>leastconn:
+</span></span><span class=line><span class=cl>  选择链接数最少的服务器建立链接，通常在使用长连接时，例如MySQL、LDAP等，对于短链接HTTP不建议使用；
+</span></span><span class=line><span class=cl>  这里的服务器权重可以动态调整。
+</span></span><span class=line><span class=cl>first:
+</span></span><span class=line><span class=cl>  忽略权重信息，选择第一个可用服务器，需要设置服务器的最大连接数，适用于长连接；常用于动态扩容的场景，
+</span></span><span class=line><span class=cl>  一般有工具用于动态监测，提供动态伸缩服务。
+</span></span><span class=line><span class=cl>source
+</span></span><span class=line><span class=cl>  源地址算法，通过客户端的原IP地址进行hash，只要没有服务器宕机，那么一个客户端的请求都会由同一台服务器处理。
+</span></span><span class=line><span class=cl>uri
+</span></span><span class=line><span class=cl>  算法，需要使用HTTP服务，通过 HTTP URI 地址来选择对应服务器。
+</span></span><span class=line><span class=cl>hdr
+</span></span><span class=line><span class=cl>  通过 HTTP eder 内容来选择对应服务器。
+</span></span></code></pre></div><p>在源码中，其实现在 <code>lb_XXX.c</code> 文件中，关于 HAProxy 的健康检查可以参考 <a href=https://www.haproxy.com/doc/aloha/7.0/haproxy/healthchecks.html>Health checking</a> 。</p><a class=anchor id=配置文件></a><h1>配置文件 <a href=#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h1><p>详细可以查看官方的文档 <a href=http://www.haproxy.org/download/1.7/doc/configuration.txt>doc/configuration.txt</a> ，这里简单介绍常见的概念。</p><p>如下是常见的运维操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 测试配置文件是否有语法错误
+</span></span><span class=line><span class=cl># haproxy -c -f /etc/haproxy/haproxy.cfg
+</span></span><span class=line><span class=cl>----- 没有问题则尝试启动
+</span></span><span class=line><span class=cl># haproxy -f /etc/haproxy/haproxy.cfg
+</span></span><span class=line><span class=cl>----- 重新加载
+</span></span><span class=line><span class=cl># haproxy -f /etc/haproxy/haproxy.cfg -sf `cat /var/run/haproxy.pid`
+</span></span></code></pre></div><p>在通过 <code>systemctl status haproxy</code> 启动时，也就是使用 systemd 时，实际会有一个 wrap 程序启动，所以会看到有多个进程启动。</p><p>HAProxy 配置文件由全局配置+代理配置两部分组成，又分为五段：global、defaults、frontend、backend、listen。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>global:
+</span></span><span class=line><span class=cl>  全局配置内容，用于定义全局参数，属于进程级的配置，通常和操作系统配置有关。
+</span></span><span class=line><span class=cl>default:
+</span></span><span class=line><span class=cl>  作为frontend、backend、listen的默认配置参数。
+</span></span><span class=line><span class=cl>frontend:
+</span></span><span class=line><span class=cl>  接收请求的前端虚拟节点，在1.3版本引入，用于简化haproxy配置文件复杂度，可以通过ACL规则指定要使用的后端backend。
+</span></span><span class=line><span class=cl>backend:
+</span></span><span class=line><span class=cl>  后端服务器配置。
+</span></span><span class=line><span class=cl>listen:
+</span></span><span class=line><span class=cl>  frontend+backend结合体，1.3版本之前使用，主要为了保持兼容性。
+</span></span></code></pre></div><a class=anchor id=日志配置></a><h2>日志配置 <a href=#%e6%97%a5%e5%bf%97%e9%85%8d%e7%bd%ae aria-hidden=true>#</a></h2><p>在 <code>global</code> 中设置日志的级别，然后通过 syslog 进行保存。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat /etc/haproxy/haproxy.conf
+</span></span><span class=line><span class=cl>global
+</span></span><span class=line><span class=cl>  log 127.0.0.1 local2 info
+</span></span></code></pre></div><p>使用 <code>rsyslog</code> 保存。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 确认添加了include子目录，因为如下的HAProxy配置会放置到子目录下。
+</span></span><span class=line><span class=cl>cat /etc/rsyslog.conf | grep &#34;IncludeConfig&#34;
+</span></span><span class=line><span class=cl>----- 修改rsyslog的主配置文件，开启远程日志，查看是否开启UDP端口
+</span></span><span class=line><span class=cl>cat /etc/sysconfig/rsyslog | grep &#34;SYSLOGD_OPTIONS&#34;
+</span></span><span class=line><span class=cl>SYSLOGD_OPTIONS=&#34;-c 2 -r -m 0&#34;
+</span></span><span class=line><span class=cl>#-c 2 使用兼容模式，默认是 -c 5
+</span></span><span class=line><span class=cl>#-r 开启远程日志
+</span></span><span class=line><span class=cl>#-m 0 标记时间戳。单位是分钟，为0时，表示禁用该功能
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 添加HAProxy配置文件，需要注意最后一行，否则会同时写入haproxy.log和message文件
+</span></span><span class=line><span class=cl>cat /etc/rsyslog.d/haproxy.conf
+</span></span><span class=line><span class=cl>$ModLoad imudp
+</span></span><span class=line><span class=cl>$UDPServerRun 514
+</span></span><span class=line><span class=cl>local2.*     /var/log/haproxy.log
+</span></span><span class=line><span class=cl>&amp;~
+</span></span></code></pre></div><a class=anchor id=配置文件-1></a><h2>配置文件 <a href=#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6-1 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl># Global settings
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl>global
+</span></span><span class=line><span class=cl>    # to have these messages end up in /var/log/haproxy.log you will
+</span></span><span class=line><span class=cl>    # need to:
+</span></span><span class=line><span class=cl>    # 1) configure syslog to accept network log events.  This is done
+</span></span><span class=line><span class=cl>    #    by adding the &#39;-r&#39; option to the SYSLOGD_OPTIONS in
+</span></span><span class=line><span class=cl>    #    /etc/sysconfig/[r]syslog
+</span></span><span class=line><span class=cl>    # 2) configure local2 events to go to the /var/log/haproxy.log
+</span></span><span class=line><span class=cl>    #   file. A line like the following can be added to
+</span></span><span class=line><span class=cl>    #   /etc/sysconfig/syslog
+</span></span><span class=line><span class=cl>    #    local2.*                       /var/log/haproxy.log
+</span></span><span class=line><span class=cl>    log         127.0.0.1 local2 debug
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    chroot      /var/lib/haproxy
+</span></span><span class=line><span class=cl>    pidfile     /var/run/haproxy.pid
+</span></span><span class=line><span class=cl>    maxconn     4000
+</span></span><span class=line><span class=cl>    user        haproxy
+</span></span><span class=line><span class=cl>    group       haproxy
+</span></span><span class=line><span class=cl>    daemon
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    # turn on stats unix socket
+</span></span><span class=line><span class=cl>    stats socket /var/run/haproxy.sock level admin process 1
+</span></span><span class=line><span class=cl>    stats timeout 5m                   # 设置等待输入超时时间为5min
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl># common defaults that all the &#39;listen&#39; and &#39;backend&#39; sections will
+</span></span><span class=line><span class=cl># use if not designated in their block
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl>defaults
+</span></span><span class=line><span class=cl>    mode                    http
+</span></span><span class=line><span class=cl>    log                     global
+</span></span><span class=line><span class=cl>    option                  tcplog                 # 默认只打印很少的信息，指定打印详细信息
+</span></span><span class=line><span class=cl>    option                  httplog
+</span></span><span class=line><span class=cl>    option                  dontlognull            # 默认会将保活等信息记录到日志，可通过该选项关闭
+</span></span><span class=line><span class=cl>    option http-server-close
+</span></span><span class=line><span class=cl>    option                  redispatch             # 使用cookies后会发送到指定服务器，如果服务器不可用则重新调度
+</span></span><span class=line><span class=cl>    retries                 3                      # 3次连接失败则认为服务不可用
+</span></span><span class=line><span class=cl>    timeout http-request    10s                    # 默认http请求超时时间
+</span></span><span class=line><span class=cl>    timeout queue           1m                     # 默认队列超时时间
+</span></span><span class=line><span class=cl>    timeout connect         10s                    # 默认连接超时时间
+</span></span><span class=line><span class=cl>    timeout client          1m                     # 默认客户端超时时间
+</span></span><span class=line><span class=cl>    timeout server          1m                     # 默认服务器超时时间
+</span></span><span class=line><span class=cl>    timeout http-keep-alive 10s                    # 默认持久连接超时时间
+</span></span><span class=line><span class=cl>    timeout check           10s                    # 默认检查时间间隔
+</span></span><span class=line><span class=cl>    maxconn                 3000                   # 最大连接数
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl># main frontend which proxys to the backends
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl>frontend  main *:5000
+</span></span><span class=line><span class=cl>    # 新建acl策略path_beg以/static /images等开头的访问路径，-i忽略大小写 
+</span></span><span class=line><span class=cl>    acl url_static       path_beg       -i /static /images /javascript /stylesheets
+</span></span><span class=line><span class=cl>    # 新建acl策略path_end以.jpg .gif等结尾的访问路径，-i忽略大小写 
+</span></span><span class=line><span class=cl>    acl url_static       path_end       -i .jpg .gif .png .css .js
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    # 如果匹配url_static这个acl策略，则使用static这个后端 
+</span></span><span class=line><span class=cl>    use_backend static          if url_static
+</span></span><span class=line><span class=cl>    # 没有任何配置的情况下，使用默认的后端app 
+</span></span><span class=line><span class=cl>    default_backend             app
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl># static backend for serving up images, stylesheets and such
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl>backend static
+</span></span><span class=line><span class=cl>    balance     roundrobin
+</span></span><span class=line><span class=cl>    server      static 127.0.0.1:4331 check
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl># round robin balancing between the various backends
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl>backend app
+</span></span><span class=line><span class=cl>    balance     roundrobin
+</span></span><span class=line><span class=cl>    server  app1 127.0.0.1:5001 check
+</span></span><span class=line><span class=cl>    server  app2 127.0.0.1:5002 check
+</span></span><span class=line><span class=cl>    server  app3 127.0.0.1:5003 check
+</span></span><span class=line><span class=cl>    server  app4 127.0.0.1:5004 check
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl># 1.3之前使用，为了保持向后兼容，建议使用frontend+backend代替
+</span></span><span class=line><span class=cl># 关于server的详细配置选项可以参考Server and default-server options
+</span></span><span class=line><span class=cl>#  * maxconn NUM 每个后端服务器的最大链接数，超过该值则保存在队列中
+</span></span><span class=line><span class=cl>#  * maxqueue NUM 超过该队列后会重新选择后端服务器
+</span></span><span class=line><span class=cl>#---------------------------------------------------------------------
+</span></span><span class=line><span class=cl>listen http-proxy 192.168.1.201:80
+</span></span><span class=line><span class=cl>    mode http
+</span></span><span class=line><span class=cl>    option httpchk GET /test
+</span></span><span class=line><span class=cl>    balance roundrobin
+</span></span><span class=line><span class=cl>    timeout server 30s
+</span></span><span class=line><span class=cl>    timeout client 30s
+</span></span><span class=line><span class=cl>    server server-01 192.168.1.101:80 check inter 2s
+</span></span><span class=line><span class=cl>    server server-02 192.168.1.102:80 check inter 2s
+</span></span><span class=line><span class=cl>    server server-03 192.168.1.103:80 check inter 2s
+</span></span></code></pre></div><a class=anchor id=源码解析></a><h1>源码解析 <a href=#%e6%ba%90%e7%a0%81%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h1><p><code>HAProxy is a single-threaded, event-driven, non-blocking daemon.</code></p><p>启动非常简单，只需要一个可执行文件+配置文件即可，启动之后基本处理如下的三个操作：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>1. 处理链接；
+</span></span><span class=line><span class=cl>   1.1 从frontend指定的监听端口创建链接；
+</span></span><span class=line><span class=cl>   1.2 应用frontend指定的规则，包括了阻塞、修改头部信息、统计等；
+</span></span><span class=line><span class=cl>   1.3 将链接传递给backend指定的服务器；
+</span></span><span class=line><span class=cl>   1.4 应用backend指定的规则；
+</span></span><span class=line><span class=cl>   1.5 根据策略决定将链接发送给那个服务器；
+</span></span><span class=line><span class=cl>   1.6 对响应数据应用backend指定的规则；
+</span></span><span class=line><span class=cl>   1.7 对响应数据应用frontend指定的规则；
+</span></span><span class=line><span class=cl>   1.8 发送日志；
+</span></span><span class=line><span class=cl>   1.9 如果是HTTP那么会等待新请求，否则就关闭链接；
+</span></span><span class=line><span class=cl>2. 周期性检查服务器的状态；
+</span></span><span class=line><span class=cl>3. 与其它HAProxy节点交换数据；
+</span></span></code></pre></div><p>然后，直接看下源码解析过程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>main()
+</span></span><span class=line><span class=cl> |-init()                                  ← 所有的初始化操作，包括各个模块初始化、命令行解析等
+</span></span><span class=line><span class=cl> | |-cfgfiles_expand_directories()         ← 处理配置文件，参数解析会将配置文件保存在cfg_cfgfiles
+</span></span><span class=line><span class=cl> | |-init_default_instance()               ← 初始化默认配置
+</span></span><span class=line><span class=cl> | |-readcfgfile()                         ← 读取配置文件，并调用sections-&gt;section_parser()对应的函数
+</span></span><span class=line><span class=cl> | | |-cfg_parse_listen()                  ← 对于frontend、backend、listen段的参数解析验证
+</span></span><span class=line><span class=cl> | |   |-str2listener()
+</span></span><span class=line><span class=cl> | |     |-l-&gt;frontend=curproxy
+</span></span><span class=line><span class=cl> | |     |-tcpv4_add_listener()            ← 添加到proto_tcpv4对象中的链表，真正监听会在proto_XXX.c文件中
+</span></span><span class=line><span class=cl> | |       |-listener-&gt;proto=&amp;proto_tcpv4  ← 会设置该变量，后续的接收链接也就对应了accept变量
+</span></span><span class=line><span class=cl> | |-check_config_validity()               ← 配置文件格式校验
+</span></span><span class=line><span class=cl> | | |-listener-&gt;frontend=curproxy         ← 在上面解析，实际上curporxy-&gt;accept=frontend_accept
+</span></span><span class=line><span class=cl> | | |-listener-&gt;accept=session_accept_fd
+</span></span><span class=line><span class=cl> | | |-listener-&gt;handler=process_stream
+</span></span><span class=line><span class=cl> | | |-根据不同的后端服务器选择算法选择
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | | &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;解析完配置文件&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-start_checks()                        ← 执行后端检查任务
+</span></span><span class=line><span class=cl> | | |-start_check_task()
+</span></span><span class=line><span class=cl> | |   |-process_chk()
+</span></span><span class=line><span class=cl> | |     |-process_chk_conn()
+</span></span><span class=line><span class=cl> | |       |-connect_conn_chk()
+</span></span><span class=line><span class=cl> | |         |-event_srv_chk_r()           ← 健康检查，在check_conn_cb变量中定义，通过conn_attach()绑定
+</span></span><span class=line><span class=cl> | |           |-tcpcheck_main()           ← 如果是TCP检查PR_O2_TCPCHK_CHK
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-init_pollers()                        ← 选择多路复用方法，也就是设置cur_poller
+</span></span><span class=line><span class=cl> |   |-calloc()                            ← 分配资源fd_cache+fd_updt，其大小是global.maxsock
+</span></span><span class=line><span class=cl> |   |-bp-&gt;init()                          ← 调用各个可用poll方法的初始化函数，选择第一个可用方法
+</span></span><span class=line><span class=cl> |   |-memcpy()                            ← 复制到cur_poller全局变量中
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-start_proxies()                         ← 开始启动，调用各协议bind接口，对TCPv4就是tcp_bind_listener()
+</span></span><span class=line><span class=cl> |-protocol_bind_all()
+</span></span><span class=line><span class=cl> |-protocol_enable_all()                   ← 启动各个协议，例如ipv4/ipv6/unix等
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> | &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;主循环处理流程&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-run_poll_loop()
+</span></span><span class=line><span class=cl> | |-tv_update_date()
+</span></span><span class=line><span class=cl> | | ###WHILE###BEGIN
+</span></span><span class=line><span class=cl> | |-process_runnable_tasks()              ← 调用可运行任务
+</span></span><span class=line><span class=cl> | | |-process_stream()                    ← 一般是调用该函数，也可执行struct task.process中自定义函数
+</span></span><span class=line><span class=cl> | |   |
+</span></span><span class=line><span class=cl> | |   | &lt;&lt;PHASE:解析请求&gt;&gt;                ← 会根据定义的各种规则选择后端
+</span></span><span class=line><span class=cl> | |   |-process_switching_rules()         ← 除了默认使用的后端服务器之外，会根据规则再次选择&lt;&lt;RULES&gt;&gt;
+</span></span><span class=line><span class=cl> | |   | |-stream_set_backend()            ← 选择该后端，&lt;&lt;STAT:be-&gt;beconn&gt;&gt;
+</span></span><span class=line><span class=cl> | |   |   |-proxy_inc_be_ctr()            ← 后端统计值的更新
+</span></span><span class=line><span class=cl> | |   |-http_process_tarpit()
+</span></span><span class=line><span class=cl> | |   |
+</span></span><span class=line><span class=cl> | |   | &lt;&lt;PHASE:解析响应&gt;&gt;
+</span></span><span class=line><span class=cl> | |   |-process_store_rules()             ← 处理规则
+</span></span><span class=line><span class=cl> | |   |
+</span></span><span class=line><span class=cl> | |   | &lt;&lt;PAHSE:正式处理请求&gt;&gt;
+</span></span><span class=line><span class=cl> | |   |-sess_prepare_conn_req()           ← 选择后端的服务器
+</span></span><span class=line><span class=cl> | |     |-srv_redispatch_connect()
+</span></span><span class=line><span class=cl> | |       |-assign_server_and_queue()     ← 选择后端的服务器，并添加到队列中
+</span></span><span class=line><span class=cl> | |         |-assign_server()             ← 根据负载均衡配置选择后端服务器
+</span></span><span class=line><span class=cl> | |         | |-get_server_sh()
+</span></span><span class=line><span class=cl> | |         |   |-chash_get_server_hash() ← 使用一致性hash算法
+</span></span><span class=line><span class=cl> | |         |-sess_change_server()
+</span></span><span class=line><span class=cl> | |         |-pendconn_add()              ← 如果后端服务器已满，则添加到proxy队列中&lt;&lt;STAT:px-&gt;nbpend++&gt;&gt;
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-signal_process_queue()                ← 信号队列，如果捕获了信号则处理
+</span></span><span class=line><span class=cl> | |-wake_expired_tasks()                  ← 超时任务
+</span></span><span class=line><span class=cl> | |-cur_poller.poll()                     ← 不同平台的多路复用技术
+</span></span><span class=line><span class=cl> | | |-_do_poll()                          ← 以ev_epoll.c中的epoll为例
+</span></span><span class=line><span class=cl> | |   |-epoll_wait()
+</span></span><span class=line><span class=cl> | |   |-fd_may_recv()
+</span></span><span class=line><span class=cl> | |   | |-fd_update_cache()               ← 在处理函数中只添加到cache中，真正的处理过程在后面
+</span></span><span class=line><span class=cl> | |   |-fd_may_send()
+</span></span><span class=line><span class=cl> | |     |-fd_update_cache()
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-fd_process_cached_events()            ← 真正处理epoll()中触发的事件
+</span></span><span class=line><span class=cl> | | |-fdtab[fd].iocb(fd)                  ← 调用注册的回调函数，一般是conn_fd_handler()
+</span></span><span class=line><span class=cl> | |   |-conn-&gt;data-&gt;recv(conn)            ← 实际调用si_conn_recv_cb()函数，也就是负责接收的函数
+</span></span><span class=line><span class=cl> | |   | |-conn-&gt;xprt-&gt;rcv_pipe()          ← 如果不启用SSL则调用raw_sock_to_pipe()，否则调用下面的buff函数
+</span></span><span class=line><span class=cl> | |   | |-conn-&gt;xprt-&gt;rcv_buf()           ← 不启用SSL则调用raw_sock_to_buf()，否则调用ssl_sock_to_buf()
+</span></span><span class=line><span class=cl> | |   |-conn-&gt;data-&gt;recv(conn)            ← 实际调用si_conn_send_cb()函数，也就是负责发送的函数
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-applet_run_active()
+</span></span><span class=line><span class=cl> | | ###WHILE###END
+</span></span><span class=line><span class=cl> |-deinit() 清理操作
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>官方网站为 <a href=http://www.haproxy.org/>www.haproxy.org</a>，源码可以直接从 <a href=https://github.com/haproxy/haproxy>https://github.com/haproxy/haproxy</a> 下载，很多帮助文档可以直接查看源码中的 doc 目录。</li><li>关于帮助文档也可以查看 <a href=http://cbonte.github.io/haproxy-dconv/>haproxy-dconv</a>，另外有个监控工具 <a href=http://feurix.org/projects/hatop/>HATop</a> 。</li><li><a href=http://severalnines.com/tutorials/mysql-load-balancing-haproxy-tutorial>MySQL Load Balancing with HAProxy - Tutorial</a> 同时包含了一个不错的终端录制工具 <a href=https://asciinema.org/>asciinema.org</a> 。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#配置文件>配置文件</a><ul><li><a href=#日志配置>日志配置</a></li><li><a href=#配置文件-1>配置文件</a></li></ul></li><li><a href=#源码解析>源码解析</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

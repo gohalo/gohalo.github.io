@@ -1,0 +1,196 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 通讯协议详解 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Client/Server 通讯协议用于客户端链接、代理、主备复制等，支持 SSL、压缩，在链接阶段进行认证，在执行命令时可以支持 Prepared Statements 以及 Stored Procedures 。
+当打算编写数据库代理、中间件、对 MySQL 数据包进行审核时，都需要了解底层的通信协议。在本文中，主要介绍 MySQL 通讯协议相关的内容。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL 通讯协议详解</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-12-08</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a></div></div><hr><div class=content><p>Client/Server 通讯协议用于客户端链接、代理、主备复制等，支持 SSL、压缩，在链接阶段进行认证，在执行命令时可以支持 Prepared Statements 以及 Stored Procedures 。</p><p>当打算编写数据库代理、中间件、对 MySQL 数据包进行审核时，都需要了解底层的通信协议。在本文中，主要介绍 MySQL 通讯协议相关的内容。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>服务器启动后，会使用 TCP 监听一个本地端口，当客户端的连接请求到达时，就会执行三段握手以及 MySQL 的权限验证；验证成功后，客户端开始发送请求，服务器会以响应的报文格式返回数据；当客户端发送完成后，会发送一个特殊的报文，告知服务器已结束会话。</p><p>MySQL 定义了几种包类型，A) 客户端->服务器，登录时的 auth 包、执行 SQL 时的 CMD 包；B) 服务器->客户端，登录时的握手包、数据包、数据流结束包、成功包(OK Packet)、错误信息包。</p><p>协议定义了基本的数据类型，如 int、string 等；数据的传送格式等。</p><a class=anchor id=协议></a><h2>协议 <a href=#%e5%8d%8f%e8%ae%ae aria-hidden=true>#</a></h2><p>MySQL 的客户端与服务器之间支持多种通讯方式，最广泛使用的是 TCP 通讯；另外，还支持命名管道和共享内存，而 TCP 就是最通用的一种方式，在此仅介绍 TCP 方式。</p><p>在 C/S 之间，实际采用的是一种类似半双工式的模式收发数据，即在一个 TCP 链路上，客户端发出请求数据后，只有在接收完所有的服务端响应数据以后才能发下一次请求，中间不能发其它数据，需要有很强的顺序性要求。</p><p>MySQL 客户端与服务器的交互主要分为两个阶段，分别为握手认证阶段和命令执行阶段，详细来说一次正常的过程如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>1. 三次握手建立 TCP 连接。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2. 建立 MySQL 连接，也就是认证阶段。
+</span></span><span class=line><span class=cl>    服务端 -&gt; 客户端：发送握手初始化包 (Handshake Initialization Packet)。
+</span></span><span class=line><span class=cl>    客户端 -&gt; 服务端：发送验证包 (Client Authentication Packet)。
+</span></span><span class=line><span class=cl>    服务端 -&gt; 客户端：认证结果消息。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>3. 认证通过之后，客户端开始与服务端之间交互，也就是命令执行阶段。
+</span></span><span class=line><span class=cl>    客户端 -&gt; 服务端：发送命令包 (Command Packet)。
+</span></span><span class=line><span class=cl>    服务端 -&gt; 客户端：发送回应包 (OK Packet, or Error Packet, or Result Set Packet)。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>4. 断开 MySQL 连接。
+</span></span><span class=line><span class=cl>    客户端 -&gt; 服务器：发送退出命令包。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>5. 四次握手断开 TCP 连接。
+</span></span></code></pre></div><p>从服务器发往客户端的数据包有四种：数据包、数据结束包、成功报告包以及错误消息包。Result Set Packet 首先发送包头+列包+EOF包+行包+EOF包。</p><a class=anchor id=报文格式></a><h2>报文格式 <a href=#%e6%8a%a5%e6%96%87%e6%a0%bc%e5%bc%8f aria-hidden=true>#</a></h2><p>所有的包有统一的格式，并通过函数 <code>my_net_write()@sql/net_serv.cc</code> 写入 buffer 等待发送。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>+-------------------+--------------+---------------------------------------------------+
+</span></span><span class=line><span class=cl>|      3 Bytes      |    1 Byte    |                   N Bytes                         |
+</span></span><span class=line><span class=cl>+-------------------+--------------+---------------------------------------------------+
+</span></span><span class=line><span class=cl>|&lt;= length of msg =&gt;|&lt;= sequence =&gt;|&lt;==================== data =======================&gt;|
+</span></span><span class=line><span class=cl>|&lt;============= header ===========&gt;|&lt;==================== body =======================&gt;|
+</span></span></code></pre></div><p>MySQL 报文格式如上，消息头包含了 A) 报文长度，标记当前请求的实际数据长度，以字节为单位；B) 序号，为了保证交互时报文的顺序，每次客户端发起请求时，序号值都会从 0 开始计算。</p><p>消息体用于存放报文的具体数据，长度由消息头中的长度值决定。</p><blockquote><p>单个报文的最大长度为 (2^24-1)Bytes ，也即 (16M-1)Bytes，对于包长为 (2^24-1)Bytes 也会拆为两个包发送。这是因为最初没有考虑 16M 的限制，从而没有预留任何字段来标志这个包的数据不完整，所以只好把长度为 (2^24-1) 的包视做不完整的包，直到后面收到一个长度小于 (2^24-1) 的包，然后拼起来。</p><p>这也意味着最后一个包的长度有可能是 0。</p></blockquote><a class=anchor id=基本类型></a><h2>基本类型 <a href=#%e5%9f%ba%e6%9c%ac%e7%b1%bb%e5%9e%8b aria-hidden=true>#</a></h2><p>接下来介绍一下报文中的数据类型，也就是不同的数据类型在报文中的表现形式。</p><a class=anchor id=整型值></a><h3>整型值 <a href=#%e6%95%b4%e5%9e%8b%e5%80%bc aria-hidden=true>#</a></h3><p>MySQL 报文中整型值分别有 1、2、3、4、8 字节长度，使用小字节序传输。</p><a class=anchor id=二进制数据></a><h3>二进制数据 <a href=#%e4%ba%8c%e8%bf%9b%e5%88%b6%e6%95%b0%e6%8d%ae aria-hidden=true>#</a></h3><p>也就是 Length Coded Binary，其数据长度不固定，长度值由数据前的 1-9 个字节决定，其中长度值所占的字节数不定，字节数由第 1 个字节决定，如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>第一个字节值    后续字节数  长度值说明
+</span></span><span class=line><span class=cl>    0-250            0   第一个字节值即为数据的真实长度
+</span></span><span class=line><span class=cl>      251            0   空数据，数据的真实长度为零
+</span></span><span class=line><span class=cl>      252            2   后续额外2个字节标识了数据的真实长度
+</span></span><span class=line><span class=cl>      253            3   后续额外3个字节标识了数据的真实长度
+</span></span><span class=line><span class=cl>      254            8   后续额外8个字节标识了数据的真实长度
+</span></span></code></pre></div><a class=anchor id=字符串></a><h3>字符串 <a href=#%e5%ad%97%e7%ac%a6%e4%b8%b2 aria-hidden=true>#</a></h3><p>根据是否以 NULL 结尾，分为了有两种形式：</p><ul><li>以 NULL 结尾，Null-Terminated String 字符串长度不固定，当遇到 <code>'NULL'(0x00)</code> 字符时结束。</li><li>长度编码，Length Coded String 字符串长度不固定，无 <code>'NULL'(0x00)</code> 结束符，编码方式与上面的二进制数据相同。</li></ul><a class=anchor id=客户端请求报文></a><h2>客户端请求报文 <a href=#%e5%ae%a2%e6%88%b7%e7%ab%af%e8%af%b7%e6%b1%82%e6%8a%a5%e6%96%87 aria-hidden=true>#</a></h2><p>也就是从客户端发送到服务端的请求命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>+-------------------+------------------------------------------------------------------+
+</span></span><span class=line><span class=cl>|      1 Bytes      |                             N Bytes                              |
+</span></span><span class=line><span class=cl>+-------------------+------------------------------------------------------------------+
+</span></span><span class=line><span class=cl>|&lt;==== command ====&gt;|&lt;============================ arguments =========================&gt;|
+</span></span></code></pre></div><p>客户端向服务端发送的请求，其中第一个字节用于标识当前请求消息的类型，这也就定义了请求的种类，其中包括了：切换数据库 <code>COM_INIT_DB(0x02)</code>、查询命令 <code>COM_QUERY(0x03)</code> 等。</p><p>命令的宏定义在 <code>include/mysql_com.h</code> 文件中，该命令会在 <code>dispatch_command()</code> 中根据不同的命令进入不同代码处理逻辑。</p><p>报文中的参数内容是用户在 MySQL 客户端输入的命令，不包括每行命令结尾的 <code>';'</code> 分号，采用的是非 NULL 结尾的字符串表示方法。</p><p>例如：当在 MySQL 客户端中执行 <code>use mysql;</code> 命令时，发送的请求报文数据会是下面的样子：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0x02 0x6d 0x79 0x73 0x71 0x6c
+</span></span></code></pre></div><p><code>0x02</code> 为请求类型值 <code>COM_INIT_DB</code>，后面的 <code>0x6d 0x79 0x73 0x71 0x6c</code> 为 ASCII 字符 mysql 。</p><a class=anchor id=错误码></a><h2>错误码 <a href=#%e9%94%99%e8%af%af%e7%a0%81 aria-hidden=true>#</a></h2><p>也就是当发生了错误之后，服务端发送给客户端的报文。</p><p>MySQL 的错误包含了三部分：A) MySQL 特定的错误码，数字类型，不通用；B) SQLSTATE，为 5 个字符的字符串，采用 ANSI SQL 和 ODBC 的标准；C) 错误信息。</p><p>对于错误报文的格式可以参照参考文件，其中第二字节表示由 MySQL 定义的错误编码，服务器状态实际是 ANSI SQL 对应的编码，两者并非一一对应。</p><p>在 MySQL 中可以通过 perror ERROR 查看；详细的文档，可以参考官方文档 <a href=http://dev.mysql.com/doc/refman/en/error-handling.html>Appendix B Errors, Error Codes, and Common Problems</a> 。</p><a class=anchor id=抓包分析></a><h2>抓包分析 <a href=#%e6%8a%93%e5%8c%85%e5%88%86%e6%9e%90 aria-hidden=true>#</a></h2><p>可以通过 tcpdump 捕获包并保存在文件中，然后通过 Wireshark 打开文件，查看网络包的内容，相对来说比较方便。可以通过 <code>tcpdump -D</code> 查看支持的网卡接口，通过 <code>-i</code> 指定接口，在此使用 <code>lo</code>。</p><p>注意，tcpdump 不能捕获 unix socket，链接时不能使用 <code>-S /tmp/mysql.sock</code> 或者 <code>-h localhost</code> 参数，应当使用 <code>-h 127.1</code> 。</p><p>可以将 tcpdump 的包输出到 stdout 或者通过 <code>-w</code> 保存到文件，然后用 Wireshark 分析。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 将抓包的数据保存到文件
+</span></span><span class=line><span class=cl># tcpdump -i lo port 3306 -w filename
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 当然，也可以打印到终端，然后处理数据
+</span></span><span class=line><span class=cl># tcpdump -i lo port 3306 -nn -X -q
+</span></span><span class=line><span class=cl># tcpdump -i any -s 0 -l -w - dst port 3306 | strings | grep -iE &#39;select|update&#39;
+</span></span></code></pre></div><a class=anchor id=认证协议></a><h1>认证协议 <a href=#%e8%ae%a4%e8%af%81%e5%8d%8f%e8%ae%ae aria-hidden=true>#</a></h1><p>认证稍微有点复杂，单独拉出来。</p><p>MySQL 的用户管理模块信息存储在系统表 <code>mysql.user</code> 中，其中包括了授权用户的基本信息以及一些权限信息。在登陆时，只会用到 host、user、passwd 三个字段，也就是说登陆认证需要 host+user 关联，当然可以使用 <code>*</code> 通配符。</p><p>服务器在收到新的连接请求时，会调用 <code>login_connection()</code> 作身份验证，先根据 IP 做 ACL 检查，然后才进入用户名密码验证阶段。</p><p>其中报文的格式如下。</p><p><img alt="auth protocol" src=images/auth_protocol_handshake.png class="mx-auto d-block"></p><p>MySQL 认证采用经典的 CHAP 协议，即挑战握手认证协议，在 <code>native_password_authenticate()</code> 函数的注释中简单介绍了该协议的执行过程：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>1. the server sends the random scramble to the client.
+</span></span><span class=line><span class=cl>2. client sends the encrypted password back to the server.
+</span></span><span class=line><span class=cl>3. the server checks the password.
+</span></span></code></pre></div><p>random scramble 在 4.1 之前的版本中是 8 字节整数，在 4.1 以及后续版本是 20 字节整数，该值是通过 <code>create_random_string()</code> 函数生成。</p><p>根据版本不同，分为了两类。</p><a class=anchor id=源码分析></a><h1>源码分析 <a href=#%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90 aria-hidden=true>#</a></h1><p>接下来分别介绍客户端、服务端的程序。</p><a class=anchor id=客户端></a><h2>客户端 <a href=#%e5%ae%a2%e6%88%b7%e7%ab%af aria-hidden=true>#</a></h2><p>对于 mysql 客户端，源码保存在 <code>client/mysql.cc</code> 文件中，下面是 <code>main()</code> 函数的主要执行流程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>main()
+</span></span><span class=line><span class=cl> |-sql_connect()
+</span></span><span class=line><span class=cl> | |-sql_real_connect()
+</span></span><span class=line><span class=cl> |   |-mysql_init()                             # 调用MySQL初始化
+</span></span><span class=line><span class=cl> |   |-mysql_options()                          # 设置链接选项
+</span></span><span class=line><span class=cl> |   |-mysql_real_connect()                     # sql-common/client.c
+</span></span><span class=line><span class=cl> |     |-connect_sync_or_async()                # 通过该函数尝试链接
+</span></span><span class=line><span class=cl> |     | |-my_connect()                         # 实际通过该函数建立链接
+</span></span><span class=line><span class=cl> |     |-cli_safe_read()                        # 等待第一个handshake包
+</span></span><span class=line><span class=cl> |     |-run_plugin_auth()                      # 通过插件实现认证
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-put_info()                                   # 打印客户端的欢迎信息
+</span></span><span class=line><span class=cl> |-read_and_execute()                           # 开始等待输入、执行SQL
+</span></span></code></pre></div><p>客户端最终会调用 <code>mysql_real_connect()</code>，实际调用的是 <code>cli_mysql_real_connect()</code>，通过该函数建立链接，其中认证方式可以通过 <code>run_plugin_auth()</code> 时用插件实现。</p><p>然后，会输出一系列的欢迎信息，并通过 <code>read_and_execute()</code> 执行 SQL 命令。</p><p>在 MySQL 客户端执行时，并非所有的命令都是需要发送到服务端的，其中有一个数组定义了常见的命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>static</span> <span class=n>COMMANDS</span> <span class=n>commands</span><span class=p>[]</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span> <span class=s>&#34;?&#34;</span><span class=p>,</span>      <span class=sc>&#39;?&#39;</span><span class=p>,</span> <span class=n>com_help</span><span class=p>,</span>   <span class=mi>1</span><span class=p>,</span> <span class=s>&#34;Synonym for `help&#39;.&#34;</span> <span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span> <span class=s>&#34;clear&#34;</span><span class=p>,</span>  <span class=sc>&#39;c&#39;</span><span class=p>,</span> <span class=n>com_clear</span><span class=p>,</span>  <span class=mi>0</span><span class=p>,</span> <span class=s>&#34;Clear the current input statement.&#34;</span><span class=p>},</span>
+</span></span><span class=line><span class=cl>  <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></div><p>每次读取一行都会通过 <code>find_command()</code> 函数进行检测，如果满足对应的命令，且对应的函数变量非空，则直接执行，如 clear，此时不需要输入分号即可；如果没有找到，则必须要等待输入分号。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>int read_and_execute(bool interactive)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    while (!aborted) {
+</span></span><span class=line><span class=cl>        if (!interactive) {                               // 是否为交互模式
+</span></span><span class=line><span class=cl>            ... ...   // 非交互模式，直接执行
+</span></span><span class=line><span class=cl>        } else {                                          // 交互模式
+</span></span><span class=line><span class=cl>            char *prompt = ...;                           // 首先会设置提示符
+</span></span><span class=line><span class=cl>            line = readline(prompt);                      // 从命令行读取
+</span></span><span class=line><span class=cl>            if ( ... &amp;&amp; (com= find_command(line))) {      // 从commands[]中查找
+</span></span><span class=line><span class=cl>                (*com-&gt;func)(&amp;glob_buffer,line);          // 如果是help、edit等指令，则直接执行
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>            add_line(...);                                // 常见的SQL，最终在此执行
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int com_go(String *buffer,char *line)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    timer=start_timer();                                                // 设置时间
+</span></span><span class=line><span class=cl>    error= mysql_real_query_for_lazy(buffer-&gt;ptr(),buffer-&gt;length());   // 执行查询SQL
+</span></span><span class=line><span class=cl>    do {
+</span></span><span class=line><span class=cl>        // 获取结果
+</span></span><span class=line><span class=cl>    } while(!(err= mysql_next_result(&amp;mysql)));
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>在 <code>add_line()</code> 函数中，最终会调用 <code>com_go()</code> 函数，该函数是执行的主要函数，会最终调用 MySQL API 执行相应的 SQL、返回结果、输出时间等统计信息。</p><a class=anchor id=服务端></a><h2>服务端 <a href=#%e6%9c%8d%e5%8a%a1%e7%ab%af aria-hidden=true>#</a></h2><p>服务端通过 <code>network_init()</code> 执行一系列初始化之后，会阻塞在 <code>handle_connections_sockets()</code> 函数的 <code>select()/poll()</code> 函数处。</p><p>对于 one_thread_per_connection 这种方式，会新建一个线程执行 <code>handle_one_connection()</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>handle_one_connection()
+</span></span><span class=line><span class=cl> |-thd_prepare_connection()
+</span></span><span class=line><span class=cl>   |-login_connection()
+</span></span><span class=line><span class=cl>     |-check_connection()
+</span></span><span class=line><span class=cl>       |-acl_authenticate()
+</span></span></code></pre></div><p>源码内容如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>/* sql/sql_connect.cc */
+</span></span><span class=line><span class=cl>int check_connection(THD *thd)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    if (!thd-&gt;main_security_ctx.host) {  // 通过TCP/IP连接，或者本地用-h 127.1
+</span></span><span class=line><span class=cl>         if (acl_check_host(...))        // 检查hostname
+</span></span><span class=line><span class=cl>    } else {                             // 使用unix sock连接，不会进行检测
+</span></span><span class=line><span class=cl>        ... ...
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    return acl_authenticate(thd, connect_errors, 0)
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>/* sql/sql_acl.cc */
+</span></span><span class=line><span class=cl>bool acl_authenticate(THD *thd, uint connect_errors, uint com_change_user_pkt_len)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    if (command == COM_CHANGE_USER) {
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    } else {
+</span></span><span class=line><span class=cl>        do_auth_once()                      // 执行认证模式
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>在 <code>acl_check_host()</code> 会检查两个对象，一个是 hash 表 acl_check_hosts；另一个是动态数组 acl_wild_hosts 。这2个对象是在启动的时候，通过 <code>init_check_host()</code> 从 mysq.users 表里读出并加载的，其中 acl_wild_hosts 用于存放有统配符的主机，acl_check_hosts 存放具体的主机。</p><p>最终会调用 <code>acl_authenticate()</code> 这是主要的认证函数。</p><a class=anchor id=插件实现></a><h2>插件实现 <a href=#%e6%8f%92%e4%bb%b6%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h2><p>MySQL 的认证授权采用插件实现。</p><p>默认采用 mysql_native_password 插件，也就是使用 <code>native_password_auth_client()</code> 作用户端的认证，实际有效的函数是 <code>scramble()</code>。</p><p>上述的函数通过用户输入的 password、服务器返回的 scramble 生成 reply，返回给服务端；可以通过 <code>password('string')</code> 查看加密后的密文。</p><p>以 <code>plugin/auth/</code> 目录下的插件为例，在启动服务器时，可添加 <code>--plugin-load=auth_test_plugin.so</code> 参数自动加载相应的授权插件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 获得foobar的加密格式
+</span></span><span class=line><span class=cl>mysql&gt; select password(&#39;foobar&#39;);
+</span></span><span class=line><span class=cl>----- 旧的加密格式
+</span></span><span class=line><span class=cl>mysql&gt; select old_password(&#39;foobar&#39;);
+</span></span><span class=line><span class=cl>----- 默认方式
+</span></span><span class=line><span class=cl>mysql&gt; create user &#39;foobar2&#39;@&#39;localhost&#39; identified via mysql_native_password using &#39;xxx&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 也可以动态加载
+</span></span><span class=line><span class=cl>mysql&gt; install plugin test_plugin_server soname &#39;auth_test_plugin.so&#39;;
+</span></span><span class=line><span class=cl>----- 查看当前支持的插件
+</span></span><span class=line><span class=cl>mysql&gt; select * from information_schema.plugins where plugin_type=&#39;authentication&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; create user &#39;foobar&#39;@&#39;localhost&#39; identified with test_plugin_server;
+</span></span><span class=line><span class=cl>mysql&gt; SET PASSWORD FOR &#39;foobar&#39;@&#39;localhost&#39;=PASSWORD(&#39;new_password&#39;);
+</span></span><span class=line><span class=cl>mysql&gt; DROP USER &#39;foobar&#39;@&#39;localhost&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH PRIVILEGES;
+</span></span><span class=line><span class=cl>mysql&gt; SELECT host, user, password, plugin FROM mysql.user;
+</span></span></code></pre></div><p>在 plugin 目录下有很多 auth 插件可供参考，详细可参考官网 <a href=http://dev.mysql.com/doc/refman/en/writing-authentication-plugins.html>Writing Authentication Plugins</a> 。</p><a class=anchor id=总结></a><h1>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h1><p>在如下列举客户端与服务端的详细交互过程，其中客户端代码在 client 目录下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>### Client(mysql)  ###                       ### Server(mysqld) ###
+</span></span><span class=line><span class=cl>----------------------------------------     --------------------------------------------------
+</span></span><span class=line><span class=cl>main()                                       mysqld_main()
+</span></span><span class=line><span class=cl> |-sql_connect()                              |-init_ssl()
+</span></span><span class=line><span class=cl> | |-sql_real_connect() {for(;;)}             |-network_init()
+</span></span><span class=line><span class=cl> |   |-mysql_init()                           |-handle_connections_sockets()
+</span></span><span class=line><span class=cl> |   |-init_connection_options()                |-select()/poll()
+</span></span><span class=line><span class=cl> |   |-mysql_real_connect()                     |
+</span></span><span class=line><span class=cl> |     |-cli_mysql_real_connect()               |
+</span></span><span class=line><span class=cl> |       |-socket()                             |
+</span></span><span class=line><span class=cl> |       |-vio_new()                            |
+</span></span><span class=line><span class=cl> |       |-vio_socket_connect()                 |
+</span></span><span class=line><span class=cl> |       | |-mysql_socket_connect()             |
+</span></span><span class=line><span class=cl> |       |   |-connect()                        |
+</span></span><span class=line><span class=cl> |       |   |                                  |
+</span></span><span class=line><span class=cl> |       |   |        [Socket Connect]          |
+</span></span><span class=line><span class=cl> |       |   |&gt;&gt;==========&gt;&gt;==========&gt;&gt;======&gt;&gt;|
+</span></span><span class=line><span class=cl> |       |                                      |-accept()
+</span></span><span class=line><span class=cl> |       |-vio_keepalive()                      |-vio_new()
+</span></span><span class=line><span class=cl> |       |-my_net_set_read_timeout()            |-my_net_init()
+</span></span><span class=line><span class=cl> |       |-my_net_set_write_timeout()           |-create_new_thread()
+</span></span><span class=line><span class=cl> |       |-vio_io_wait()                          |-handle_one_connection()    {新线程}
+</span></span><span class=line><span class=cl> |       |                                          |-thd_prepare_connection() {for(;;)}
+</span></span><span class=line><span class=cl> |       |                                          | |-login_connection()
+</span></span><span class=line><span class=cl> |       |                                          |   |-check_connection()
+</span></span><span class=line><span class=cl> |       |                                          |     |-acl_check_host()
+</span></span><span class=line><span class=cl> |       |                                          |     |-vio_keepalive()
+</span></span><span class=line><span class=cl> |       |                                          |     |-acl_authenticate()
+</span></span><span class=line><span class=cl> |       |                                          |       |-do_auth_once()
+</span></span><span class=line><span class=cl> |       |                                          |       | |-native_password_authenticate()  {插件实现}
+</span></span><span class=line><span class=cl> |       |                                          |       |   |-create_random_string()
+</span></span><span class=line><span class=cl> |       |                                          |       |   |-send_server_handshake_packet()
+</span></span><span class=line><span class=cl> |       |                                          |       |   |
+</span></span><span class=line><span class=cl> |       |              [Handshake Initialization]  |       |   |
+</span></span><span class=line><span class=cl> |       |&lt;&lt;==&lt;&lt;==========&lt;&lt;==========&lt;&lt;==========&lt;&lt;==========&lt;&lt;|
+</span></span><span class=line><span class=cl> |       |-cli_safe_read()                          |       |   |-my_net_read()
+</span></span><span class=line><span class=cl> |       |-run_plugin_auth()                        |       |   |
+</span></span><span class=line><span class=cl> |       | |-native_password_auth_client()          |       |   |
+</span></span><span class=line><span class=cl> |       |   |-scramble()                           |       |   |
+</span></span><span class=line><span class=cl> |       |     |-my_net_write()                     |       |   |
+</span></span><span class=line><span class=cl> |       |     |                                    |       |   |
+</span></span><span class=line><span class=cl> |       |     |            [Client Authentication] |       |   |
+</span></span><span class=line><span class=cl> |       |     |&gt;&gt;==========&gt;&gt;==========&gt;&gt;==========&gt;&gt;========&gt;&gt;|
+</span></span><span class=line><span class=cl> |       |                                          |       |   |-check_scramble()
+</span></span><span class=line><span class=cl> |       |                                          |       |-mysql_change_db()
+</span></span><span class=line><span class=cl> |       |                                          |       |-my_ok()
+</span></span><span class=line><span class=cl> |       |                      [OK]                |       |
+</span></span><span class=line><span class=cl> |       |&lt;&lt;==========&lt;&lt;==========&lt;&lt;==========&lt;&lt;==========&lt;&lt;|
+</span></span><span class=line><span class=cl> |       |-cli_safe_read()                          |
+</span></span><span class=line><span class=cl> |                                                  |
+</span></span><span class=line><span class=cl> |                                                  |
+</span></span><span class=line><span class=cl> |                                                  |
+</span></span><span class=line><span class=cl> |                                                  |
+</span></span><span class=line><span class=cl> |-put_info() {Welcome Info}                        |
+</span></span><span class=line><span class=cl> |-read_and_execute() [for(;;)]                     |
+</span></span><span class=line><span class=cl>                                                    |-thd_is_connection_alive()  [while()]
+</span></span><span class=line><span class=cl>                                                    |-do_command()
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>关于 MySQL的认证流程，包括客户端和服务器端，可以参考本地 <a href=/reference/databases/mysql/MySQL_Auth_Procotol.mht>MySQL认证协议</a>；详细的协议介绍可以参考 <a href=http://dev.mysql.com/doc/internals/en/client-server-protocol.html>MySQL Client/Server Protocol</a>，或者 <a href=http://blog.geekcome.com/archives/270>中文资料</a>，或者保存的本地资料 <a href=/reference/databases/mysql/MySQL_Client_Server_Protocol.mht>MySQL服务器和客户端通信协议分析</a> 。</p><p>MySQL 的认证授权可以采用插件，在 plugin 目录下有很多 auth 插件可供参考，具体可以参考官网的 <a href=http://dev.mysql.com/doc/refman/en/writing-authentication-plugins.html>MySQL Reference - Writing Authentication Plugins</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#协议>协议</a></li><li><a href=#报文格式>报文格式</a></li><li><a href=#基本类型>基本类型</a></li><li><a href=#客户端请求报文>客户端请求报文</a></li><li><a href=#错误码>错误码</a></li><li><a href=#抓包分析>抓包分析</a></li></ul></li><li><a href=#认证协议>认证协议</a></li><li><a href=#源码分析>源码分析</a><ul><li><a href=#客户端>客户端</a></li><li><a href=#服务端>服务端</a></li><li><a href=#插件实现>插件实现</a></li></ul></li><li><a href=#总结>总结</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

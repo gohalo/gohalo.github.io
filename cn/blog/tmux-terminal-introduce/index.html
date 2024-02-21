@@ -1,233 +1,238 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>TMUX 简介 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="TMUX 类似于 screen，是一个窗口管理器，而且功能更加强大，提供了强劲的、易于使用的命令行界面，可横向和纵向分割窗口，支持 UTF-8 编码及 256 色终端等特性。
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>TMUX 简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="TMUX 类似于 screen，是一个窗口管理器，而且功能更加强大，提供了强劲的、易于使用的命令行界面，可横向和纵向分割窗口，支持 UTF-8 编码及 256 色终端等特性。
 接下来简单介绍下 TMUX 的使用。
-"><link rel=canonical href=https://gohalo.github.io/cn/blog/tmux-terminal-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/tmux-terminal-introduce/","url":"https://gohalo.github.io/cn/blog/tmux-terminal-introduce/","name":"TMUX 简介","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2014-05-21T19:49:37CET","dateModified":"2014-05-21T19:49:37CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/tmux-terminal-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/tmux-terminal-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/tmux-terminal-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/tmux-terminal-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/tmux-terminal-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"TMUX 简介","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/tmux-terminal-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/tmux-terminal-introduce/"},"datePublished":"2014-05-21T19:49:37CET","dateModified":"2014-05-21T19:49:37CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/tmux-terminal-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/tmux-terminal-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"TMUX 简介"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
-<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
-<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
-<span>页面目录</span>
-<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li><li><a href=#启动>启动</a></li></ul></li><li><a href=#常用快捷键>常用快捷键</a><ul><li><a href=#常见操作>常见操作</a></li><li><a href=#窗口windows操作>窗口(Windows)操作</a></li><li><a href=#面板panes操作>面板(Panes)操作</a></li><li><a href=#复制粘贴>复制粘贴</a></li></ul></li><li><a href=#定制-tmux>定制 tmux</a><ul><li><a href=#定制-tmux-启动脚本>定制 tmux 启动脚本</a></li><li><a href=#颜色设置>颜色设置</a></li><li><a href=#设置状态栏>设置状态栏</a></li><li><a href=#合作>合作</a></li></ul></li><li><a href=#其它>其它</a><ul><li></li><li><a href=#putty-乱码设置>putty 乱码设置</a></li><li><a href=#背景设置>背景设置</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li><li><a href=#启动>启动</a></li></ul></li><li><a href=#常用快捷键>常用快捷键</a><ul><li><a href=#常见操作>常见操作</a></li><li><a href=#窗口windows操作>窗口(Windows)操作</a></li><li><a href=#面板panes操作>面板(Panes)操作</a></li><li><a href=#复制粘贴>复制粘贴</a></li></ul></li><li><a href=#定制-tmux>定制 tmux</a><ul><li><a href=#定制-tmux-启动脚本>定制 tmux 启动脚本</a></li><li><a href=#颜色设置>颜色设置</a></li><li><a href=#设置状态栏>设置状态栏</a></li><li><a href=#合作>合作</a></li></ul></li><li><a href=#其它>其它</a><ul><li></li><li><a href=#putty-乱码设置>putty 乱码设置</a></li><li><a href=#背景设置>背景设置</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>TMUX 简介</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2014-05-21</span>
-<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/linux/ role=button>linux</a></div></div><hr><div class=content-body><p>TMUX 类似于 screen，是一个窗口管理器，而且功能更加强大，提供了强劲的、易于使用的命令行界面，可横向和纵向分割窗口，支持 UTF-8 编码及 256 色终端等特性。</p><p>接下来简单介绍下 TMUX 的使用。</p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>如上所述 tmux 是一个终端复用软件，类似于 GUN Screen，可以在终端中、SSH 中使用，而且可以开启多个控制台。</p><p><img src=images/tmux-examples.png alt="tmux example" title="tmux example"></p><p>上图是官网上的一个截图，将屏幕分为了多个窗口，方便进行管理。</p><p>tmux 使用 C/S 模型构建，分为以下单元模块：</p><ul><li>Server 服务器。一个 tmux 命令执行后启动一个 tmux 服务；</li><li>Session 会话。一个 tmux 服务可以拥有多个 session ，一个 session 可看作 tmux 管理下伪终端的集合；</li><li>Window 窗口。一个 session 可能会有多个 window 与之关联，每个 window 都是一个伪终端，会占据整个屏幕；</li><li>Pane 面板。一个 window 可以被分割成多个 pane ，每个都是 pty ，可以通过 tty 命令查看。</li></ul><p>基本结构如下图所示。</p><p><img src=images/tmux-session-window-pane.jpg alt="tmux session window pane" title="tmux session window pane"></p><p>tmux 所支持的特性包括了：</p><ul><li>支持 UTF-8 编码及 256 色终端。</li><li>可在多个缓冲区进行复制和粘贴。</li><li>可通过交互式菜单来选择窗口、会话及客户端。</li><li>支持跨窗口搜索。</li><li>支持自动及手动锁定窗口。</li></ul><p>另外，通过 libevent 提供高性能。</p><h2 id=安装>安装 <a href=#%e5%ae%89%e8%a3%85 class=anchor aria-hidden=true>#</a></h2><p>在 CentOS 中可以通过 yum 安装，也可以采用源码安装。先从 <a href=http://tmux.sourceforge.net/>tmux.sourceforge.net</a> 上下载源码。tmux 需要有 ncurses 和 libevent 的支持，需要 libevent-2.0 版本，而通过 yum 只能安装低版本的，所以使用源码编译，安装过程如下。</p><pre tabindex=0><code># yum install ncurses-devel         # 安装 ncurses 和 libevent 库
-$ cd ~/libevent2
-$ ./configure --prefix=/usr/local
-$ make
-# make install
-
-$ cd ~/tmux                         # 编译安装 tmux
-$ LDFLAGS=&#34;-L/usr/local/lib -Wl,-rpath=/usr/local/lib&#34; ./configure --prefix=/usr/local
-$ make
-# make install
-</code></pre><p>在 Ubuntu 中可以通过 <code>apt-get install tmux</code> 直接安装。</p><h2 id=启动>启动 <a href=#%e5%90%af%e5%8a%a8 class=anchor aria-hidden=true>#</a></h2><p>第一次会产生一个新的 session 和 window ，在下方会显示其状态，如果意外断开 (detach) 连接，session 仍会在后台运行，每个窗口可以分为多个 pane 。</p><p>启动时的参数选项有：</p><ul><li><code>-2</code> 强制 tmux 假设终端支持 256 色。</li><li><code>-8</code> 类似于 <code>-2</code>，不过是强制 tmux 假设终端支持 88 色。</li><li><code>-c shell-command</code> 使用默认的 shell 执行命令，主要用于当 tmux 作为 login shell 时使用。</li><li><code>-f file</code> 指定配置文件，默认检查 <code>/etc/tmux.conf</code>、<code>~/.tmux.conf</code>，如果有命令错误，则会直接退出。</li><li><code>-V</code> 查看版本号。</li></ul><p>默认 tmux 会创建的匿名的 session ，可以通过如下命令创建一个命名的 session ， Ctrl-b 是命令前缀(Command prefix)，通过前缀告知 tmux 下面的命令是发给 tmux 的，而非终端。</p><p>常见操作如下。</p><pre tabindex=0><code>$ tmux new-session -s basic    # 创建一个名为 basic 的 session
-$ tmux new -s basic -d         # 同上，但是不会连接到终端，在后台运行
-$ tmux new -s basic -n win     # 同上，并将第一个窗口命令为 win
-[Ctrl-b d]                     # detach
-
-$ tmux ls                      # 列出现在的 sessions ，等同 tmux list-sessioin
-$ tmux attach                  # 如果只有一个 session
-$ tmux attach -t basic         # 指定名称，-t 表示 target
-
-$ tmux kill-session -t basic   # 关闭一个 session
-</code></pre><p>如下是各种常用的命令。</p><h1 id=常用快捷键>常用快捷键 <a href=#%e5%b8%b8%e7%94%a8%e5%bf%ab%e6%8d%b7%e9%94%ae class=anchor aria-hidden=true>#</a></h1><p>默认采用 <code>Ctrl-b</code> 作为 prefix，用于激活控制台。</p><h2 id=常见操作>常见操作 <a href=#%e5%b8%b8%e8%a7%81%e6%93%8d%e4%bd%9c class=anchor aria-hidden=true>#</a></h2><p>如何在 tmux 内新建会话。</p><pre tabindex=0><code>?                                 → 列出所有快捷键，按q返回
-r                                 → 强制重绘未脱离的会话口，等同于刷新
-~                                 → 列出提示信息缓存；包含了tmux返回的各种提示信息
-source-file ~/.tmux.conf          → 重新设置完配置文件后，使用该命令刷新
-:                                 → 进入命令行模式，如kill-server可以关闭服务器
-
-d                                 → 脱离(detach)当前会话，仍在后台运行
-D                                 → 通过列表选择需要退出的会话
-$ tmux attach -t work             → 通过attach命令重新连接
-
-s                                 → 列出所有会话，选择切换会话
-(                                 → 切换到前一个Session
-)                                 → 切换到后一个Session
-
-:resize-pane -L|D|R|U [NUM]       → 将pane左|下|右|上移动NUM行，默认是1行
-:set-option -g status-interval 40 → 设置状态栏的更新时间，单位为秒
-</code></pre><h2 id=窗口windows操作>窗口(Windows)操作 <a href=#%e7%aa%97%e5%8f%a3windows%e6%93%8d%e4%bd%9c class=anchor aria-hidden=true>#</a></h2><p>如果窗口没有命名，会以当前命令作为窗口名。</p><pre tabindex=0><code>c                                 → 创建新窗口
-&amp;                                 → 关闭当前窗口，也可以使用exit命令
-,                                 → 重命名当前窗口，这样便于识别
-.                                 → 修改当前窗口编号，相当于窗口重新排序
-p                                 → 切换至上一窗口
-n                                 → 切换至下一窗口
-&lt;NUM&gt;                             → 切换至指定窗口，每个窗口默认从0开始编号
-f                                 → 通过名称切换窗口，窗口必须之前已经命名
-w                                 → 通过窗口列表切换窗口，此时会列出所有的窗口
-</code></pre><h2 id=面板panes操作>面板(Panes)操作 <a href=#%e9%9d%a2%e6%9d%bfpanes%e6%93%8d%e4%bd%9c class=anchor aria-hidden=true>#</a></h2><pre tabindex=0><code>&#34;                                 → 将当前面板平分为上下两块，修改为-
-%                                 → 将当前面板平分为左右两块，修改为|
-x                                 → 关闭当前面板，会提示是否关闭
-
-o                                 → 在当前窗口中选择下一面板
-方向键                             → 移动光标以选择面板
-;                                 → 切换到最后一个使用的面板
-q                                 → 显示面板编号，输入编号调转到相应面板
-
-Alt+o                             → 逆时针旋转当前窗口的面板
-Ctrl+o                            → 顺时针旋转当前窗口的面板
-{                                 → 向前置换当前面板
-}                                 → 向后置换当前面板
-
-!                                 → 当前面板置于新窗口，仅包含当前面板内容
-
-Alt+方向键                         → 以5个单元格为单位移动边缘以调整当前面板大小
-</code></pre><p>另外，可以通过 <code>&lt;prefix>+space</code> 在预置的面板布局中循环切换；依次包括 even-horizontal (横向平铺)、even-vertical(垂直平铺)、main-horizontal(大的 panes 在顶部，底部会有很多小的 panes )、main-vertical(大的 pane 在左边，右边很多小的 panes )、tiled(平均分配各个窗口) 。</p><h2 id=复制粘贴>复制粘贴 <a href=#%e5%a4%8d%e5%88%b6%e7%b2%98%e8%b4%b4 class=anchor aria-hidden=true>#</a></h2><p>因为 TMUX 有面板的概念，如果直接使用终端默认的 <code>Ctrl-Shift-C/V</code> 的方式进行复制，会导致异常，当然也可以将面板最大化之后复制。</p><p>其实，TMUX 有自己的复制粘贴方式。</p><p>默认是通过 <code>Ctrl-b [</code> 进入到复制模式 (可以映射到 <code>Ctrl-b y</code> 快捷键)，然后可以通过 vim 的方式选择范围，通过 <code>Space</code> (默认) 或者 <code>v</code> (vim模式) 开始选择，完成后直接回车，然后通过 <code>Ctrl-b ]</code> (可以映射到 <code>Ctrl-b p</code> 快捷键) 粘贴。</p><p>注意，进入到复制模式后，可以翻页查找之前的内容，如果通过 <code>set-window-option -g mode-keys vi</code> 绑定了 VIM 模式，就可以直接使用 VIM 常用的一些快捷键。</p><p>另外，TMUX 会维护多个复制缓冲区，可以通过 <code>Ctrl-b =</code> 查看，包含了可以直接通过回车选择。</p><h1 id=定制-tmux>定制 tmux <a href=#%e5%ae%9a%e5%88%b6-tmux class=anchor aria-hidden=true>#</a></h1><p>tmux 的系统级配置文件为 <code>/etc/tmux.conf</code> ，用户级配置文件为 <code>~/.tmux.conf</code> 。</p><p>有些资料中建议修改 Prefix 组合键，如 CapsLock 和 A 相邻，可以将 CapsLock 映射为 Ctrl (需要使用操作系统的键盘映射)，并将 Prefix 的 <code>Ctrl-b</code> 重定义为 <code>Ctrl-a</code>，这样可以方便使用。</p><p>但是在 Linux 操作中会与 Bash 的 <code>Ctrl-A</code> 冲突，因此没有修改该键，主要是因为 Prefix 只有在调整 tmux 才会使用。如上的配置，可以在命令行中执行如下命令查看：</p><pre tabindex=0><code>$ tmux show-options -g
-$ tmux show-window-options -g
-</code></pre><p>如下是常用的配置文件示例。</p><pre tabindex=0><code>set -g prefix C-a                # 设置Prefix为Ctrl-a而非默认Ctrl-b，-g表示全局，set为set-option的简写
-unbind C-b                       # 解除 Ctrl-b 与 Prefix 的对应关系
-
-set-option -g display-time 5000  # 提示信息的持续时间，单位为毫秒
-set-option -g repeat-time 1000   # 通过&lt;prefix&gt;激活控制台后持续时间，避免每次都要先激活控制台，单位为毫秒
-set-option -g status-keys vi     # 操作状态栏时的默认键盘布局；可以设置为vi或emacs
-
-set -sg escape-time 1      # tmux在发送命令时，会添加了一个延迟，可能会对其它软件如vim造成干扰
-                           # 该选项可以增加其响应速度，单位毫秒
-
-set -g base-index 1        # 将session中的窗口序列初始值设置为从1开始
-setw -g pane-base-index 1  # 将panes的开始设置为1，setw是set-window-option的缩写
-
-bind r source-file ~/.tmux.conf\; display &#34;Reloaded!&#34;
-                           # 将PREFIX r设置为执行命令source-file ~/.tmux.conf，并回显Reload!
-                           # 多条命令之间可以通过\; 进行分割。bind是bind-key的缩写
-
-bind-key -n C-r source-file ~/.tmux.conf
-                           # 不使用PREFIX，只使用Ctrl-r，可能对其它造成影响
-bind C-a send-prefix       # 通过Prefix + Ctrl-a ，将Prefix发送给应用程序
-
-bind | split-window -h -c &#34;#{pane_current_path}&#34; # 垂直分开panes
-bind - split-window -v -c &#34;#{pane_current_path}&#34; # 水平，-v画个水平线，即垂直分配
-bind c new-window -c &#34;#{pane_current_path}&#34;      # 新建
-
-bind h select-pane -L      # 切换panes，用于替换方向键，使用hjkl代替
-bind j select-pane -D
-bind k select-pane -U
-bind l select-pane -R
-
-bind -r C-h select-window -t :-   # 实现PREFIX Ctrl-h或PRFIX Ctrl-l的循环切换
-bind -r C-l select-window -t :+
-
-bind H resize-pane -L 5    # 调整 panes 的大小
-bind J resize-pane -D 5
-bind K resize-pane -U 5
-bind L resize-pane -R 5
-
-bind -r H resize-pane -L 5 # 调整 panes 的大小，可以在一定时间内连续按 H ，-r 表示 repeatable
-bind -r J resize-pane -D 5 # 可以通过 repeat-time 设置时间，默认是 500 毫秒。
-bind -r K resize-pane -U 5
-bind -r L resize-pane -R 5
-
-setw -g mode-mouse on            # 响应鼠标的事件，包括选中 pane ，使用滚轮查看 buffer
-set -g mouse-select-pane on      # 可以选择 pane ，如果要关闭直接使用上一句即可
-set -g mouse-resize-pane on      # 可以调整 pane 大小
-set -g mouse-select-window on    # 可以通过窗口列表选择窗口
-
-set -g default-terminal &#34;screen-256color&#34; # 设置使用 256 色
-set -g status-fg white           # 设置状态栏的前景色和后景色
-set -g status-bg black
-setw -g window-status-fg cyan
-setw -g window-status-bg default # default 表示从状态栏继承
-setw -g window-status-attr dim
-setw -g window-status-current-fg white   # 改变当前窗口
-setw -g window-status-current-bg red
-setw -g window-status-current-attr bright
-set -g pane-border-fg green      # 设置 pane 的边框
-set -g pane-border-bg black
-set -g pane-active-border-fg white
-set -g pane-active-border-bg yellow
-set -g message-fg white          # 设置消息栏，包括命令栏
-set -g message-bg black
-set -g message-attr bright
-
-set -g status-left-length 40     # 设置左状态栏的长度
-set -g status-left &#34;#[fg=green]#S #[fg=yellow]#I #[fg=cyan]#P&#34;       # 设置左状态栏
-set -g status-right &#34;#[fg=cyan]%d %b %R&#34;  # 时间格式可以通过 strftime() 设置
-set -g status-utf8 on            # 设置状态栏
-set -g status-interval 60        # 设置状态栏的更新间隔时间，单位为秒
-set -g status-justify centre     # 将窗口列表居中显示
-setw -g monitor-activity on      # 设置监控其它窗口
-set -g visual-activity on        # 当其他窗口有消息时会提示
-
-setw -g mode-keys vi                    # 使用 vi 的快捷键
-
-bind h select-layout even-horizontal    # 将当前面板布局切换为 even-horizontal
-bind v select-layout even-vertical      # 将当前面板布局切换为 even-vertical
-</code></pre><h2 id=定制-tmux-启动脚本>定制 tmux 启动脚本 <a href=#%e5%ae%9a%e5%88%b6-tmux-%e5%90%af%e5%8a%a8%e8%84%9a%e6%9c%ac class=anchor aria-hidden=true>#</a></h2><p>tmux 脚本，可以参考 <a href=/reference/linux/tmux_basic>tmux_basic</a> 脚本，实际上是一个 shell 脚本，可以通过如下命令的进行不同的组合。也就是通过运行该脚本，生成最终的 tmux 初始环境。</p><pre tabindex=0><code>### 1. 创建一个可执行文件
-$ touch ~/development &amp;&amp; chmod +x ~/development
-
-### 2. 判断是否存在basic会话，否则下面命令将会出错
-tmux has-session -t basic
-
-### 3. 创建一个新session名称为basic，新窗口为名为editor，并detach
-tmux new-session -s basic -n editor -d
-
-### 4. 向指定pane发送命令，C-m表示回车，使用session:window:pane指定特定的pane
-tmux send-keys -t basic &#39;cd ~&#39; C-m
-
-### 5. 将窗口分为上下两部分，-h分为左右两部分，并通过-p指定比例，下和右所占比例
-tmux split-window -v -p 10 -t basic
-
-### 6. 也可以选择一个默认的分布
-tmux select-layout -t basic main-horizontal
-
-### 7. 创建一个新的窗口
-tmux new-window -n editor -t basic
-
-### 8. 选择一个默认窗口
-tmux select-window -t basic:1
-
-### 9. 最后连接到basic
-tmux attach -t basic
-</code></pre><p>实际是一个 Shell 脚本，当然 tmux 的配置文件也可以进行相同的设置。</p><p>可以将上述的命令放置到 tmux.conf 配置文件中，此时将会自动执行，也可以将其放置到不同的文件中，然后通过 tmux -f 指定相应的配置文件，第一行中指定需要加载默认配置文件。</p><pre tabindex=0><code># ~/.tmux/aiduppconf
-source-file ~/.tmux.conf      # 加载默认的配置选项，非强制，但是建议使用
-........ your commands
-</code></pre><p>tmux 的默认行为是新建一个 session ，因此如果没有使用 attach 选项，那么实际会再新建一个 session ，此时会导致有两个 session 。</p><h2 id=颜色设置>颜色设置 <a href=#%e9%a2%9c%e8%89%b2%e8%ae%be%e7%bd%ae class=anchor aria-hidden=true>#</a></h2><p>可以从 <a href="http://www.vim.org/scripts/download_script.php?src_id=4568">colortest</a> 上下载该文件，也可以使用 <a href=/reference/linux/tmux_colortest>本地文档</a>，通过如下命令测试终端；并在 ~/.bashrc 添加如下内容，此时只会在 TMUX 外设置 TERM ，而 TMUX 会设置自己的终端。</p><pre tabindex=0><code>$ perl colortest -w
-
-### 在 ~/.bashrc 中添加如下内容
-[ -z &#34;$TMUX&#34; ] &amp;&amp; export TERM=xterm-256color
-</code></pre><p>tmux 支持指定特定的颜色，包括了 black, red, green, yellow, blue, magenta, cyan 和 white，也可以使用 colour0 到 colour255 ，可以简单的通过如下命令查看。</p><pre tabindex=0><code>for i in {0..255}; do printf &#34;\x1b[38;5;${i}mcolour${i}  &#34;; done
-</code></pre><p>tmux 的各个组件可以通过前景色和后景色进行设置。</p><p>在 Putty 中，<code>右击 -> Change Settings... -> Window -> Colours</code> 选中，<code>Allow terminal to specify ANSI colours</code> 和 <code>Allow terminal to use xterm 256-colour mode</code>，并在 <code>Indicate bolded text by changing: The colour</code>。</p><p>tmux 启动时可以使用 <code>-2</code> 参数，此时 tmux 会强制假设终端支持 256 色。</p><h2 id=设置状态栏>设置状态栏 <a href=#%e8%ae%be%e7%bd%ae%e7%8a%b6%e6%80%81%e6%a0%8f class=anchor aria-hidden=true>#</a></h2><p>状态栏由三部分组成：右面板、窗口列表、左面板。左右面板可以使用文本和变量，常见变量如下所示。</p><pre tabindex=0><code>#H                主机名
-#h                主机名，不含域名
-#F                当前窗口的 flag
-#I                当前窗口的序号
-#P                当前面板的序号
-#S                当前 session 名
-#T                当前窗口的 title
-#W                当前窗口的名称
-##                字符 #
-#(shell-command)  shell 命令输出的第一行
-#[attributs]      改变颜色或者属性
-</code></pre><h2 id=合作>合作 <a href=#%e5%90%88%e4%bd%9c class=anchor aria-hidden=true>#</a></h2><p>通过 tmux 可以两个人进行合作，在一个窗口上的操作可以被另一个人看到。最简单的是同一个用户 (Shared Account)，此时一个人创建一个窗口，另一个人 attach 即可。</p><pre tabindex=0><code>$ tmux new-session -s Pairing     # 一个用户
-$ tmux attach -t Pairing          # 另一个用户
-</code></pre><p>使用同一个用户 (Shared Account) 和分类会话 (Grouped Sessions) ，此时与上述的相似，不过当一个用户切换时，另一个用户不会看到。这样的话，当两个人需要使用不同的编辑器进行编译时，可以各自创建一个新的窗口，各自不会影响。</p><pre tabindex=0><code>$ tmux new-session -s Pairing     # 一个用户
-$ tmux attach -t Pairing -s my    # 另一个用户
-</code></pre><p>使用不同的用户，假设为 foo 和 bar 。这种情况下，两个人可以使用不同的配置选项，如快捷键、状态栏等属性。</p><pre tabindex=0><code>$ sudo adduser ted            # 添加用户
-$ sudo adduser barney
-
-$ sudo addgroup tmux          # 添加用户组
-$ sudo mkdir /var/tmux
-
-$ sudo chgrp tmux /var/tmux   # 修改用户组
-
-$ sudo chmod g+ws /var/tmux   # 修改属性
-
-$ sudo usermod -aG tmux ted   # 添加到用户组
-$ sudo usermod -aG tmux barney
-
-$ tmux -S /var/tmux/pairing   # 一个用户在创建时指定 Sockets
-$ tmux -S /var/tmux/pairing attach # 另一个用户连接
-</code></pre><h1 id=其它>其它 <a href=#%e5%85%b6%e5%ae%83 class=anchor aria-hidden=true>#</a></h1><h3 id=1-pane-转为-window>1. pane 转为 window <a href=#1-pane-%e8%bd%ac%e4%b8%ba-window class=anchor aria-hidden=true>#</a></h3><p>通过 Prefix ! 可以将一个 pane 转作 window。</p><h3 id=2-pane-合并到-window>2. pane 合并到 window <a href=#2-pane-%e5%90%88%e5%b9%b6%e5%88%b0-window class=anchor aria-hidden=true>#</a></h3><p>如果想将一个 pane 合并到 window ，可以在 tmux 中通过如下命令执行。</p><pre tabindex=0><code>join-pane -s 1.0 -t 2
-</code></pre><p>如果没有通过 <code>-t</code> 指定目标，那么默认为当前的 window ，在指定 pane 时，目标通过 <code>[session_name]:[window].[pane]</code> 指定。</p><h3 id=3-判断是否存在-session>3. 判断是否存在 session <a href=#3-%e5%88%a4%e6%96%ad%e6%98%af%e5%90%a6%e5%ad%98%e5%9c%a8-session class=anchor aria-hidden=true>#</a></h3><p>在一个 Bash 脚本中，可以通过如下的命令查看是否存在一个 Session 。</p><pre tabindex=0><code>if ! tmux has-session -t remote; then
-   exec tmux new-session -s development -d
-   # other setup commands before attaching....
-fi
-exec tmux attach -t development
-</code></pre><h3 id=4-设置默认-bash>4. 设置默认 bash <a href=#4-%e8%ae%be%e7%bd%ae%e9%bb%98%e8%ae%a4-bash class=anchor aria-hidden=true>#</a></h3><p>tmux 默认使用的是 bash ，如果要使用其它的终端，可以在 tmux.conf 中通过如下的命令指定。</p><pre tabindex=0><code>set -g default-command /bin/zsh
-set -g default-shell /bin/zsh
-</code></pre><h3 id=5-term设置>5. TERM设置 <a href=#5-term%e8%ae%be%e7%bd%ae class=anchor aria-hidden=true>#</a></h3><p>当 tmux 运行时，会将 TERM 变量设置为 &ldquo;screen&rdquo; 或者配置文件中 default-terminal 指定的值，在 <code>.bashrc</code> 中可以通过判断该变量来确定现在是否在 tmux 中。</p><pre tabindex=0><code>if [[ &#34;$TERM&#34; != &#34;screen-256color&#34; ]]; then
-   tmux attach-session -t &#34;$USER&#34; || tmux new-session -s &#34;$USER&#34;
-   exit
-fi
-</code></pre><p>如果不在 tmux 中，那么首先尝试连接 $USER ，也就是 Session 为用户名；如果链接失败则会尝试新建一个，然后退出脚本。</p><p>当启动 tmux 时，仍会执行配置文件，但是由于这次在 tmux 中，因此跳过这段指令。</p><h3 id=6-窗口切换>6. 窗口切换 <a href=#6-%e7%aa%97%e5%8f%a3%e5%88%87%e6%8d%a2 class=anchor aria-hidden=true>#</a></h3><p>将窗口在 Session 之间进行切换，使用时通过 Prefix . ，并在命令行中输入想要切换的 Session。当热也可以通过如下的命令执行</p><pre tabindex=0><code>$ tmux move-window -s processes:1 -t editor
-</code></pre><p>将 processes 的第一个 window 移动到 editor 。</p><h2 id=putty-乱码设置>putty 乱码设置 <a href=#putty-%e4%b9%b1%e7%a0%81%e8%ae%be%e7%bd%ae class=anchor aria-hidden=true>#</a></h2><p>在通过 putty 链接 tmux 时，可能会出现乱码，此时需要设置字符集。<code>[右键] => [Change Settings...] => [Windows/Translation] => [Remote character set:]</code> 改为 <code>UTF-8</code> 。</p><h2 id=背景设置>背景设置 <a href=#%e8%83%8c%e6%99%af%e8%ae%be%e7%bd%ae class=anchor aria-hidden=true>#</a></h2><p>在新的版本中如果仍然使用老的配置会有 <code>invalid option: pane-border-fg</code> 配置，在 Tmux 1.9 版本之前，属性是通过三个参数配置的：A) 前景色；B) 背景色；C) 属性。在 1.9 版本之后整合为了一个参数，而且在 2.9 版本中将老的参数移除。</p><pre tabindex=0><code>----- 老的参数项
-set -g mode-fg yellow
-set -g mode-bg red
-set -g mode-attr blink,underline
------ 新的参数项
-set -g mode-style fg=yellow,bg=red,blink,underline
-</code></pre><h1 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h1><ul><li>详细内容可以参考官方网站 <a href=http://tmux.github.io/>tmux.github.io</a>。</li><li>当然也可以通过 <a href=https://github.com/erikw/tmux-powerline>tmux-powerline</a> 配置状态栏；关于按键的绑定可以参考 <a href=https://www.emacswiki.org/emacs/MovingTheCtrlKey>Moving The Ctrl Key</a>，以及参考配置文件 <a href=reference/tmux.conf>tmux.conf</a> 。</li></ul></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/cheatsheet-markdown/>Markdown 使用介绍</a></li><li><a class=text-body href=/cn/blog/topic-linux-security/>【专题】Linux 安全相关</a></li><li><a class=text-body href=/cn/blog/topic-linux-environment-setup/>【专题】Linux 环境搭建</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>TMUX 简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2014-05-21</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>TMUX 类似于 screen，是一个窗口管理器，而且功能更加强大，提供了强劲的、易于使用的命令行界面，可横向和纵向分割窗口，支持 UTF-8 编码及 256 色终端等特性。</p><p>接下来简单介绍下 TMUX 的使用。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>如上所述 tmux 是一个终端复用软件，类似于 GUN Screen，可以在终端中、SSH 中使用，而且可以开启多个控制台。</p><p><img alt="tmux example" src=images/tmux-examples.png class="mx-auto d-block"></p><p>上图是官网上的一个截图，将屏幕分为了多个窗口，方便进行管理。</p><p>tmux 使用 C/S 模型构建，分为以下单元模块：</p><ul><li>Server 服务器。一个 tmux 命令执行后启动一个 tmux 服务；</li><li>Session 会话。一个 tmux 服务可以拥有多个 session ，一个 session 可看作 tmux 管理下伪终端的集合；</li><li>Window 窗口。一个 session 可能会有多个 window 与之关联，每个 window 都是一个伪终端，会占据整个屏幕；</li><li>Pane 面板。一个 window 可以被分割成多个 pane ，每个都是 pty ，可以通过 tty 命令查看。</li></ul><p>基本结构如下图所示。</p><p><img alt="tmux session window pane" src=images/tmux-session-window-pane.jpg class="mx-auto d-block"></p><p>tmux 所支持的特性包括了：</p><ul><li>支持 UTF-8 编码及 256 色终端。</li><li>可在多个缓冲区进行复制和粘贴。</li><li>可通过交互式菜单来选择窗口、会话及客户端。</li><li>支持跨窗口搜索。</li><li>支持自动及手动锁定窗口。</li></ul><p>另外，通过 libevent 提供高性能。</p><a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>在 CentOS 中可以通过 yum 安装，也可以采用源码安装。先从 <a href=http://tmux.sourceforge.net/>tmux.sourceforge.net</a> 上下载源码。tmux 需要有 ncurses 和 libevent 的支持，需要 libevent-2.0 版本，而通过 yum 只能安装低版本的，所以使用源码编译，安装过程如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># yum install ncurses-devel         # 安装 ncurses 和 libevent 库
+</span></span><span class=line><span class=cl>$ cd ~/libevent2
+</span></span><span class=line><span class=cl>$ ./configure --prefix=/usr/local
+</span></span><span class=line><span class=cl>$ make
+</span></span><span class=line><span class=cl># make install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ cd ~/tmux                         # 编译安装 tmux
+</span></span><span class=line><span class=cl>$ LDFLAGS=&#34;-L/usr/local/lib -Wl,-rpath=/usr/local/lib&#34; ./configure --prefix=/usr/local
+</span></span><span class=line><span class=cl>$ make
+</span></span><span class=line><span class=cl># make install
+</span></span></code></pre></div><p>在 Ubuntu 中可以通过 <code>apt-get install tmux</code> 直接安装。</p><a class=anchor id=启动></a><h2>启动 <a href=#%e5%90%af%e5%8a%a8 aria-hidden=true>#</a></h2><p>第一次会产生一个新的 session 和 window ，在下方会显示其状态，如果意外断开 (detach) 连接，session 仍会在后台运行，每个窗口可以分为多个 pane 。</p><p>启动时的参数选项有：</p><ul><li><code>-2</code> 强制 tmux 假设终端支持 256 色。</li><li><code>-8</code> 类似于 <code>-2</code>，不过是强制 tmux 假设终端支持 88 色。</li><li><code>-c shell-command</code> 使用默认的 shell 执行命令，主要用于当 tmux 作为 login shell 时使用。</li><li><code>-f file</code> 指定配置文件，默认检查 <code>/etc/tmux.conf</code>、<code>~/.tmux.conf</code>，如果有命令错误，则会直接退出。</li><li><code>-V</code> 查看版本号。</li></ul><p>默认 tmux 会创建的匿名的 session ，可以通过如下命令创建一个命名的 session ， Ctrl-b 是命令前缀(Command prefix)，通过前缀告知 tmux 下面的命令是发给 tmux 的，而非终端。</p><p>常见操作如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ tmux new-session -s basic    # 创建一个名为 basic 的 session
+</span></span><span class=line><span class=cl>$ tmux new -s basic -d         # 同上，但是不会连接到终端，在后台运行
+</span></span><span class=line><span class=cl>$ tmux new -s basic -n win     # 同上，并将第一个窗口命令为 win
+</span></span><span class=line><span class=cl>[Ctrl-b d]                     # detach
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ tmux ls                      # 列出现在的 sessions ，等同 tmux list-sessioin
+</span></span><span class=line><span class=cl>$ tmux attach                  # 如果只有一个 session
+</span></span><span class=line><span class=cl>$ tmux attach -t basic         # 指定名称，-t 表示 target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ tmux kill-session -t basic   # 关闭一个 session
+</span></span></code></pre></div><p>如下是各种常用的命令。</p><a class=anchor id=常用快捷键></a><h1>常用快捷键 <a href=#%e5%b8%b8%e7%94%a8%e5%bf%ab%e6%8d%b7%e9%94%ae aria-hidden=true>#</a></h1><p>默认采用 <code>Ctrl-b</code> 作为 prefix，用于激活控制台。</p><a class=anchor id=常见操作></a><h2>常见操作 <a href=#%e5%b8%b8%e8%a7%81%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><p>如何在 tmux 内新建会话。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>?                                 → 列出所有快捷键，按q返回
+</span></span><span class=line><span class=cl>r                                 → 强制重绘未脱离的会话口，等同于刷新
+</span></span><span class=line><span class=cl>~                                 → 列出提示信息缓存；包含了tmux返回的各种提示信息
+</span></span><span class=line><span class=cl>source-file ~/.tmux.conf          → 重新设置完配置文件后，使用该命令刷新
+</span></span><span class=line><span class=cl>:                                 → 进入命令行模式，如kill-server可以关闭服务器
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>d                                 → 脱离(detach)当前会话，仍在后台运行
+</span></span><span class=line><span class=cl>D                                 → 通过列表选择需要退出的会话
+</span></span><span class=line><span class=cl>$ tmux attach -t work             → 通过attach命令重新连接
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>s                                 → 列出所有会话，选择切换会话
+</span></span><span class=line><span class=cl>(                                 → 切换到前一个Session
+</span></span><span class=line><span class=cl>)                                 → 切换到后一个Session
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>:resize-pane -L|D|R|U [NUM]       → 将pane左|下|右|上移动NUM行，默认是1行
+</span></span><span class=line><span class=cl>:set-option -g status-interval 40 → 设置状态栏的更新时间，单位为秒
+</span></span></code></pre></div><a class=anchor id=窗口windows操作></a><h2>窗口(Windows)操作 <a href=#%e7%aa%97%e5%8f%a3windows%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><p>如果窗口没有命名，会以当前命令作为窗口名。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>c                                 → 创建新窗口
+</span></span><span class=line><span class=cl>&amp;                                 → 关闭当前窗口，也可以使用exit命令
+</span></span><span class=line><span class=cl>,                                 → 重命名当前窗口，这样便于识别
+</span></span><span class=line><span class=cl>.                                 → 修改当前窗口编号，相当于窗口重新排序
+</span></span><span class=line><span class=cl>p                                 → 切换至上一窗口
+</span></span><span class=line><span class=cl>n                                 → 切换至下一窗口
+</span></span><span class=line><span class=cl>&lt;NUM&gt;                             → 切换至指定窗口，每个窗口默认从0开始编号
+</span></span><span class=line><span class=cl>f                                 → 通过名称切换窗口，窗口必须之前已经命名
+</span></span><span class=line><span class=cl>w                                 → 通过窗口列表切换窗口，此时会列出所有的窗口
+</span></span></code></pre></div><a class=anchor id=面板panes操作></a><h2>面板(Panes)操作 <a href=#%e9%9d%a2%e6%9d%bfpanes%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&#34;                                 → 将当前面板平分为上下两块，修改为-
+</span></span><span class=line><span class=cl>%                                 → 将当前面板平分为左右两块，修改为|
+</span></span><span class=line><span class=cl>x                                 → 关闭当前面板，会提示是否关闭
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>o                                 → 在当前窗口中选择下一面板
+</span></span><span class=line><span class=cl>方向键                             → 移动光标以选择面板
+</span></span><span class=line><span class=cl>;                                 → 切换到最后一个使用的面板
+</span></span><span class=line><span class=cl>q                                 → 显示面板编号，输入编号调转到相应面板
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Alt+o                             → 逆时针旋转当前窗口的面板
+</span></span><span class=line><span class=cl>Ctrl+o                            → 顺时针旋转当前窗口的面板
+</span></span><span class=line><span class=cl>{                                 → 向前置换当前面板
+</span></span><span class=line><span class=cl>}                                 → 向后置换当前面板
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>!                                 → 当前面板置于新窗口，仅包含当前面板内容
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Alt+方向键                         → 以5个单元格为单位移动边缘以调整当前面板大小
+</span></span></code></pre></div><p>另外，可以通过 <code>&lt;prefix>+space</code> 在预置的面板布局中循环切换；依次包括 even-horizontal (横向平铺)、even-vertical(垂直平铺)、main-horizontal(大的 panes 在顶部，底部会有很多小的 panes )、main-vertical(大的 pane 在左边，右边很多小的 panes )、tiled(平均分配各个窗口) 。</p><a class=anchor id=复制粘贴></a><h2>复制粘贴 <a href=#%e5%a4%8d%e5%88%b6%e7%b2%98%e8%b4%b4 aria-hidden=true>#</a></h2><p>因为 TMUX 有面板的概念，如果直接使用终端默认的 <code>Ctrl-Shift-C/V</code> 的方式进行复制，会导致异常，当然也可以将面板最大化之后复制。</p><p>其实，TMUX 有自己的复制粘贴方式。</p><p>默认是通过 <code>Ctrl-b [</code> 进入到复制模式 (可以映射到 <code>Ctrl-b y</code> 快捷键)，然后可以通过 vim 的方式选择范围，通过 <code>Space</code> (默认) 或者 <code>v</code> (vim模式) 开始选择，完成后直接回车，然后通过 <code>Ctrl-b ]</code> (可以映射到 <code>Ctrl-b p</code> 快捷键) 粘贴。</p><p>注意，进入到复制模式后，可以翻页查找之前的内容，如果通过 <code>set-window-option -g mode-keys vi</code> 绑定了 VIM 模式，就可以直接使用 VIM 常用的一些快捷键。</p><p>另外，TMUX 会维护多个复制缓冲区，可以通过 <code>Ctrl-b =</code> 查看，包含了可以直接通过回车选择。</p><a class=anchor id=定制化></a><h1>定制化 <a href=#%e5%ae%9a%e5%88%b6%e5%8c%96 aria-hidden=true>#</a></h1><p>tmux 的系统级配置文件为 <code>/etc/tmux.conf</code> ，用户级配置文件为 <code>~/.tmux.conf</code> 。</p><p>有些资料中建议修改 Prefix 组合键，如 CapsLock 和 A 相邻，可以将 CapsLock 映射为 Ctrl (需要使用操作系统的键盘映射)，并将 Prefix 的 <code>Ctrl-b</code> 重定义为 <code>Ctrl-a</code>，这样可以方便使用。</p><p>但是在 Linux 操作中会与 Bash 的 <code>Ctrl-A</code> 冲突，因此没有修改该键，主要是因为 Prefix 只有在调整 tmux 才会使用。如上的配置，可以在命令行中执行如下命令查看：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ tmux show-options -g
+</span></span><span class=line><span class=cl>$ tmux show-window-options -g
+</span></span></code></pre></div><p>如下是常用的配置文件示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>set -g prefix C-a                # 设置Prefix为Ctrl-a而非默认Ctrl-b，-g表示全局，set为set-option的简写
+</span></span><span class=line><span class=cl>unbind C-b                       # 解除 Ctrl-b 与 Prefix 的对应关系
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>set-option -g display-time 5000  # 提示信息的持续时间，单位为毫秒
+</span></span><span class=line><span class=cl>set-option -g repeat-time 1000   # 通过&lt;prefix&gt;激活控制台后持续时间，避免每次都要先激活控制台，单位为毫秒
+</span></span><span class=line><span class=cl>set-option -g status-keys vi     # 操作状态栏时的默认键盘布局；可以设置为vi或emacs
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>set -sg escape-time 1      # tmux在发送命令时，会添加了一个延迟，可能会对其它软件如vim造成干扰
+</span></span><span class=line><span class=cl>                           # 该选项可以增加其响应速度，单位毫秒
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>set -g base-index 1        # 将session中的窗口序列初始值设置为从1开始
+</span></span><span class=line><span class=cl>setw -g pane-base-index 1  # 将panes的开始设置为1，setw是set-window-option的缩写
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bind r source-file ~/.tmux.conf\; display &#34;Reloaded!&#34;
+</span></span><span class=line><span class=cl>                           # 将PREFIX r设置为执行命令source-file ~/.tmux.conf，并回显Reload!
+</span></span><span class=line><span class=cl>                           # 多条命令之间可以通过\; 进行分割。bind是bind-key的缩写
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bind-key -n C-r source-file ~/.tmux.conf
+</span></span><span class=line><span class=cl>                           # 不使用PREFIX，只使用Ctrl-r，可能对其它造成影响
+</span></span><span class=line><span class=cl>bind C-a send-prefix       # 通过Prefix + Ctrl-a ，将Prefix发送给应用程序
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bind | split-window -h -c &#34;#{pane_current_path}&#34; # 垂直分开panes
+</span></span><span class=line><span class=cl>bind - split-window -v -c &#34;#{pane_current_path}&#34; # 水平，-v画个水平线，即垂直分配
+</span></span><span class=line><span class=cl>bind c new-window -c &#34;#{pane_current_path}&#34;      # 新建
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bind h select-pane -L      # 切换panes，用于替换方向键，使用hjkl代替
+</span></span><span class=line><span class=cl>bind j select-pane -D
+</span></span><span class=line><span class=cl>bind k select-pane -U
+</span></span><span class=line><span class=cl>bind l select-pane -R
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bind -r C-h select-window -t :-   # 实现PREFIX Ctrl-h或PRFIX Ctrl-l的循环切换
+</span></span><span class=line><span class=cl>bind -r C-l select-window -t :+
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bind H resize-pane -L 5    # 调整 panes 的大小
+</span></span><span class=line><span class=cl>bind J resize-pane -D 5
+</span></span><span class=line><span class=cl>bind K resize-pane -U 5
+</span></span><span class=line><span class=cl>bind L resize-pane -R 5
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bind -r H resize-pane -L 5 # 调整 panes 的大小，可以在一定时间内连续按 H ，-r 表示 repeatable
+</span></span><span class=line><span class=cl>bind -r J resize-pane -D 5 # 可以通过 repeat-time 设置时间，默认是 500 毫秒。
+</span></span><span class=line><span class=cl>bind -r K resize-pane -U 5
+</span></span><span class=line><span class=cl>bind -r L resize-pane -R 5
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>setw -g mode-mouse on            # 响应鼠标的事件，包括选中 pane ，使用滚轮查看 buffer
+</span></span><span class=line><span class=cl>set -g mouse-select-pane on      # 可以选择 pane ，如果要关闭直接使用上一句即可
+</span></span><span class=line><span class=cl>set -g mouse-resize-pane on      # 可以调整 pane 大小
+</span></span><span class=line><span class=cl>set -g mouse-select-window on    # 可以通过窗口列表选择窗口
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>set -g default-terminal &#34;screen-256color&#34; # 设置使用 256 色
+</span></span><span class=line><span class=cl>set -g status-fg white           # 设置状态栏的前景色和后景色
+</span></span><span class=line><span class=cl>set -g status-bg black
+</span></span><span class=line><span class=cl>setw -g window-status-fg cyan
+</span></span><span class=line><span class=cl>setw -g window-status-bg default # default 表示从状态栏继承
+</span></span><span class=line><span class=cl>setw -g window-status-attr dim
+</span></span><span class=line><span class=cl>setw -g window-status-current-fg white   # 改变当前窗口
+</span></span><span class=line><span class=cl>setw -g window-status-current-bg red
+</span></span><span class=line><span class=cl>setw -g window-status-current-attr bright
+</span></span><span class=line><span class=cl>set -g pane-border-fg green      # 设置 pane 的边框
+</span></span><span class=line><span class=cl>set -g pane-border-bg black
+</span></span><span class=line><span class=cl>set -g pane-active-border-fg white
+</span></span><span class=line><span class=cl>set -g pane-active-border-bg yellow
+</span></span><span class=line><span class=cl>set -g message-fg white          # 设置消息栏，包括命令栏
+</span></span><span class=line><span class=cl>set -g message-bg black
+</span></span><span class=line><span class=cl>set -g message-attr bright
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>set -g status-left-length 40     # 设置左状态栏的长度
+</span></span><span class=line><span class=cl>set -g status-left &#34;#[fg=green]#S #[fg=yellow]#I #[fg=cyan]#P&#34;       # 设置左状态栏
+</span></span><span class=line><span class=cl>set -g status-right &#34;#[fg=cyan]%d %b %R&#34;  # 时间格式可以通过 strftime() 设置
+</span></span><span class=line><span class=cl>set -g status-utf8 on            # 设置状态栏
+</span></span><span class=line><span class=cl>set -g status-interval 60        # 设置状态栏的更新间隔时间，单位为秒
+</span></span><span class=line><span class=cl>set -g status-justify centre     # 将窗口列表居中显示
+</span></span><span class=line><span class=cl>setw -g monitor-activity on      # 设置监控其它窗口
+</span></span><span class=line><span class=cl>set -g visual-activity on        # 当其他窗口有消息时会提示
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>setw -g mode-keys vi                    # 使用 vi 的快捷键
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bind h select-layout even-horizontal    # 将当前面板布局切换为 even-horizontal
+</span></span><span class=line><span class=cl>bind v select-layout even-vertical      # 将当前面板布局切换为 even-vertical
+</span></span></code></pre></div><a class=anchor id=启动脚本></a><h2>启动脚本 <a href=#%e5%90%af%e5%8a%a8%e8%84%9a%e6%9c%ac aria-hidden=true>#</a></h2><p>tmux 脚本，可以参考 <a href=/reference/linux/tmux_basic>tmux_basic</a> 脚本，实际上是一个 shell 脚本，可以通过如下命令的进行不同的组合。也就是通过运行该脚本，生成最终的 tmux 初始环境。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>### 1. 创建一个可执行文件
+</span></span><span class=line><span class=cl>$ touch ~/development &amp;&amp; chmod +x ~/development
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>### 2. 判断是否存在basic会话，否则下面命令将会出错
+</span></span><span class=line><span class=cl>tmux has-session -t basic
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>### 3. 创建一个新session名称为basic，新窗口为名为editor，并detach
+</span></span><span class=line><span class=cl>tmux new-session -s basic -n editor -d
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>### 4. 向指定pane发送命令，C-m表示回车，使用session:window:pane指定特定的pane
+</span></span><span class=line><span class=cl>tmux send-keys -t basic &#39;cd ~&#39; C-m
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>### 5. 将窗口分为上下两部分，-h分为左右两部分，并通过-p指定比例，下和右所占比例
+</span></span><span class=line><span class=cl>tmux split-window -v -p 10 -t basic
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>### 6. 也可以选择一个默认的分布
+</span></span><span class=line><span class=cl>tmux select-layout -t basic main-horizontal
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>### 7. 创建一个新的窗口
+</span></span><span class=line><span class=cl>tmux new-window -n editor -t basic
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>### 8. 选择一个默认窗口
+</span></span><span class=line><span class=cl>tmux select-window -t basic:1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>### 9. 最后连接到basic
+</span></span><span class=line><span class=cl>tmux attach -t basic
+</span></span></code></pre></div><p>实际是一个 Shell 脚本，当然 tmux 的配置文件也可以进行相同的设置。</p><p>可以将上述的命令放置到 tmux.conf 配置文件中，此时将会自动执行，也可以将其放置到不同的文件中，然后通过 tmux -f 指定相应的配置文件，第一行中指定需要加载默认配置文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># ~/.tmux/aiduppconf
+</span></span><span class=line><span class=cl>source-file ~/.tmux.conf      # 加载默认的配置选项，非强制，但是建议使用
+</span></span><span class=line><span class=cl>........ your commands
+</span></span></code></pre></div><p>tmux 的默认行为是新建一个 session ，因此如果没有使用 attach 选项，那么实际会再新建一个 session ，此时会导致有两个 session 。</p><a class=anchor id=颜色设置></a><h2>颜色设置 <a href=#%e9%a2%9c%e8%89%b2%e8%ae%be%e7%bd%ae aria-hidden=true>#</a></h2><p>可以从 <a href="http://www.vim.org/scripts/download_script.php?src_id=4568">colortest</a> 上下载该文件，也可以使用 <a href=/reference/linux/tmux_colortest>本地文档</a>，通过如下命令测试终端；并在 ~/.bashrc 添加如下内容，此时只会在 TMUX 外设置 TERM ，而 TMUX 会设置自己的终端。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ perl colortest -w
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>### 在 ~/.bashrc 中添加如下内容
+</span></span><span class=line><span class=cl>[ -z &#34;$TMUX&#34; ] &amp;&amp; export TERM=xterm-256color
+</span></span></code></pre></div><p>tmux 支持指定特定的颜色，包括了 black, red, green, yellow, blue, magenta, cyan 和 white，也可以使用 colour0 到 colour255 ，可以简单的通过如下命令查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>for i in {0..255}; do printf &#34;\x1b[38;5;${i}mcolour${i}  &#34;; done
+</span></span></code></pre></div><p>tmux 的各个组件可以通过前景色和后景色进行设置。</p><p>在 Putty 中，<code>右击 -> Change Settings... -> Window -> Colours</code> 选中，<code>Allow terminal to specify ANSI colours</code> 和 <code>Allow terminal to use xterm 256-colour mode</code>，并在 <code>Indicate bolded text by changing: The colour</code>。</p><p>tmux 启动时可以使用 <code>-2</code> 参数，此时 tmux 会强制假设终端支持 256 色。</p><a class=anchor id=设置状态栏></a><h2>设置状态栏 <a href=#%e8%ae%be%e7%bd%ae%e7%8a%b6%e6%80%81%e6%a0%8f aria-hidden=true>#</a></h2><p>状态栏由三部分组成：右面板、窗口列表、左面板。左右面板可以使用文本和变量，常见变量如下所示。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#H                主机名
+</span></span><span class=line><span class=cl>#h                主机名，不含域名
+</span></span><span class=line><span class=cl>#F                当前窗口的 flag
+</span></span><span class=line><span class=cl>#I                当前窗口的序号
+</span></span><span class=line><span class=cl>#P                当前面板的序号
+</span></span><span class=line><span class=cl>#S                当前 session 名
+</span></span><span class=line><span class=cl>#T                当前窗口的 title
+</span></span><span class=line><span class=cl>#W                当前窗口的名称
+</span></span><span class=line><span class=cl>##                字符 #
+</span></span><span class=line><span class=cl>#(shell-command)  shell 命令输出的第一行
+</span></span><span class=line><span class=cl>#[attributs]      改变颜色或者属性
+</span></span></code></pre></div><a class=anchor id=合作></a><h2>合作 <a href=#%e5%90%88%e4%bd%9c aria-hidden=true>#</a></h2><p>通过 tmux 可以两个人进行合作，在一个窗口上的操作可以被另一个人看到。最简单的是同一个用户 (Shared Account)，此时一个人创建一个窗口，另一个人 attach 即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ tmux new-session -s Pairing     # 一个用户
+</span></span><span class=line><span class=cl>$ tmux attach -t Pairing          # 另一个用户
+</span></span></code></pre></div><p>使用同一个用户 (Shared Account) 和分类会话 (Grouped Sessions) ，此时与上述的相似，不过当一个用户切换时，另一个用户不会看到。这样的话，当两个人需要使用不同的编辑器进行编译时，可以各自创建一个新的窗口，各自不会影响。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ tmux new-session -s Pairing     # 一个用户
+</span></span><span class=line><span class=cl>$ tmux attach -t Pairing -s my    # 另一个用户
+</span></span></code></pre></div><p>使用不同的用户，假设为 foo 和 bar 。这种情况下，两个人可以使用不同的配置选项，如快捷键、状态栏等属性。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ sudo adduser ted            # 添加用户
+</span></span><span class=line><span class=cl>$ sudo adduser barney
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ sudo addgroup tmux          # 添加用户组
+</span></span><span class=line><span class=cl>$ sudo mkdir /var/tmux
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ sudo chgrp tmux /var/tmux   # 修改用户组
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ sudo chmod g+ws /var/tmux   # 修改属性
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ sudo usermod -aG tmux ted   # 添加到用户组
+</span></span><span class=line><span class=cl>$ sudo usermod -aG tmux barney
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ tmux -S /var/tmux/pairing   # 一个用户在创建时指定 Sockets
+</span></span><span class=line><span class=cl>$ tmux -S /var/tmux/pairing attach # 另一个用户连接
+</span></span></code></pre></div><a class=anchor id=插件></a><h1>插件 <a href=#%e6%8f%92%e4%bb%b6 aria-hidden=true>#</a></h1><p>从 <code>1.9</code> 版本开始支持插件机制，可以通过如下方式配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback></code></pre></div><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><a class=anchor id=1-pane-转为-window></a><h3>1. pane 转为 window <a href=#1-pane-%e8%bd%ac%e4%b8%ba-window aria-hidden=true>#</a></h3><p>通过 Prefix ! 可以将一个 pane 转作 window。</p><a class=anchor id=2-pane-合并到-window></a><h3>2. pane 合并到 window <a href=#2-pane-%e5%90%88%e5%b9%b6%e5%88%b0-window aria-hidden=true>#</a></h3><p>如果想将一个 pane 合并到 window ，可以在 tmux 中通过如下命令执行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>join-pane -s 1.0 -t 2
+</span></span></code></pre></div><p>如果没有通过 <code>-t</code> 指定目标，那么默认为当前的 window ，在指定 pane 时，目标通过 <code>[session_name]:[window].[pane]</code> 指定。</p><a class=anchor id=3-判断是否存在-session></a><h3>3. 判断是否存在 session <a href=#3-%e5%88%a4%e6%96%ad%e6%98%af%e5%90%a6%e5%ad%98%e5%9c%a8-session aria-hidden=true>#</a></h3><p>在一个 Bash 脚本中，可以通过如下的命令查看是否存在一个 Session 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>if ! tmux has-session -t remote; then
+</span></span><span class=line><span class=cl>   exec tmux new-session -s development -d
+</span></span><span class=line><span class=cl>   # other setup commands before attaching....
+</span></span><span class=line><span class=cl>fi
+</span></span><span class=line><span class=cl>exec tmux attach -t development
+</span></span></code></pre></div><a class=anchor id=4-设置默认-bash></a><h3>4. 设置默认 bash <a href=#4-%e8%ae%be%e7%bd%ae%e9%bb%98%e8%ae%a4-bash aria-hidden=true>#</a></h3><p>tmux 默认使用的是 bash ，如果要使用其它的终端，可以在 tmux.conf 中通过如下的命令指定。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>set -g default-command /bin/zsh
+</span></span><span class=line><span class=cl>set -g default-shell /bin/zsh
+</span></span></code></pre></div><a class=anchor id=5-term设置></a><h3>5. TERM设置 <a href=#5-term%e8%ae%be%e7%bd%ae aria-hidden=true>#</a></h3><p>当 tmux 运行时，会将 TERM 变量设置为 &ldquo;screen&rdquo; 或者配置文件中 default-terminal 指定的值，在 <code>.bashrc</code> 中可以通过判断该变量来确定现在是否在 tmux 中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>if [[ &#34;$TERM&#34; != &#34;screen-256color&#34; ]]; then
+</span></span><span class=line><span class=cl>   tmux attach-session -t &#34;$USER&#34; || tmux new-session -s &#34;$USER&#34;
+</span></span><span class=line><span class=cl>   exit
+</span></span><span class=line><span class=cl>fi
+</span></span></code></pre></div><p>如果不在 tmux 中，那么首先尝试连接 $USER ，也就是 Session 为用户名；如果链接失败则会尝试新建一个，然后退出脚本。</p><p>当启动 tmux 时，仍会执行配置文件，但是由于这次在 tmux 中，因此跳过这段指令。</p><a class=anchor id=6-窗口切换></a><h3>6. 窗口切换 <a href=#6-%e7%aa%97%e5%8f%a3%e5%88%87%e6%8d%a2 aria-hidden=true>#</a></h3><p>将窗口在 Session 之间进行切换，使用时通过 Prefix . ，并在命令行中输入想要切换的 Session。当热也可以通过如下的命令执行</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ tmux move-window -s processes:1 -t editor
+</span></span></code></pre></div><p>将 processes 的第一个 window 移动到 editor 。</p><a class=anchor id=putty-乱码设置></a><h2>putty 乱码设置 <a href=#putty-%e4%b9%b1%e7%a0%81%e8%ae%be%e7%bd%ae aria-hidden=true>#</a></h2><p>在通过 putty 链接 tmux 时，可能会出现乱码，此时需要设置字符集。<code>[右键] => [Change Settings...] => [Windows/Translation] => [Remote character set:]</code> 改为 <code>UTF-8</code> 。</p><a class=anchor id=背景设置></a><h2>背景设置 <a href=#%e8%83%8c%e6%99%af%e8%ae%be%e7%bd%ae aria-hidden=true>#</a></h2><p>在新的版本中如果仍然使用老的配置会有 <code>invalid option: pane-border-fg</code> 配置，在 Tmux 1.9 版本之前，属性是通过三个参数配置的：A) 前景色；B) 背景色；C) 属性。在 1.9 版本之后整合为了一个参数，而且在 2.9 版本中将老的参数移除。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 老的参数项
+</span></span><span class=line><span class=cl>set -g mode-fg yellow
+</span></span><span class=line><span class=cl>set -g mode-bg red
+</span></span><span class=line><span class=cl>set -g mode-attr blink,underline
+</span></span><span class=line><span class=cl>----- 新的参数项
+</span></span><span class=line><span class=cl>set -g mode-style fg=yellow,bg=red,blink,underline
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>详细内容可以参考官方网站 <a href=http://tmux.github.io/>tmux.github.io</a>。</li><li>当然也可以通过 <a href=https://github.com/erikw/tmux-powerline>tmux-powerline</a> 配置状态栏；关于按键的绑定可以参考 <a href=https://www.emacswiki.org/emacs/MovingTheCtrlKey>Moving The Ctrl Key</a>，以及参考配置文件 <a href=reference/tmux.conf>tmux.conf</a> 。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li><li><a href=#启动>启动</a></li></ul></li><li><a href=#常用快捷键>常用快捷键</a><ul><li><a href=#常见操作>常见操作</a></li><li><a href=#窗口windows操作>窗口(Windows)操作</a></li><li><a href=#面板panes操作>面板(Panes)操作</a></li><li><a href=#复制粘贴>复制粘贴</a></li></ul></li><li><a href=#定制化>定制化</a><ul><li><a href=#启动脚本>启动脚本</a></li><li><a href=#颜色设置>颜色设置</a></li><li><a href=#设置状态栏>设置状态栏</a></li><li><a href=#合作>合作</a></li></ul></li><li><a href=#插件>插件</a></li><li><a href=#其它>其它</a><ul><li></li><li><a href=#putty-乱码设置>putty 乱码设置</a></li><li><a href=#背景设置>背景设置</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

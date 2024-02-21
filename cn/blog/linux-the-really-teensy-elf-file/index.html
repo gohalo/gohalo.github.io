@@ -1,0 +1,225 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>最小的ELF文件 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="从最经典 &amp;ldquo;Hello World&amp;rdquo; C 程序实例，逐步演示如何通过各种常用工具来分析 ELF 文件，并逐步精简代码，尽量减少可执行文件的大小。
+接下来，看看一个可打印 &amp;ldquo;Hello World&amp;rdquo; 的可执行文件能够小到什么样的地步。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>最小的ELF文件</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2015-08-26</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a></div></div><hr><div class=content><p>从最经典 &ldquo;Hello World&rdquo; C 程序实例，逐步演示如何通过各种常用工具来分析 ELF 文件，并逐步精简代码，尽量减少可执行文件的大小。</p><p>接下来，看看一个可打印 &ldquo;Hello World&rdquo; 的可执行文件能够小到什么样的地步。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>为了最小化可执行文件，需要了解可执行文件的格式，链接生成可执行文件时的后台细节，有哪些内容被链接到了目标代码中，通过选择合适的可执行文件格式并剔除对可执行文件的最终运行没有影响的内容，就可以实现目标代码的裁减。</p><p>因此，通过探索减少可执行文件大小的方法，就相当于实践性地去探索了可执行文件的格式以及链接过程的细节。</p><a class=anchor id=可执行文件格式></a><h2>可执行文件格式 <a href=#%e5%8f%af%e6%89%a7%e8%a1%8c%e6%96%87%e4%bb%b6%e6%a0%bc%e5%bc%8f aria-hidden=true>#</a></h2><p>需要找到一个目标系统支持该可执行文件格式，在 *NIX 平台下主要包括了以下的三种可执行文件格式，这三种格式基本上代表了可执行文件的一个发展过程：</p><ul><li><code>a.out</code> 非常紧凑，只包含了程序运行所必须的信息 (文本、数据、BSS)，而且每个 section 的顺序是固定的。</li><li><code>coff</code> 引入了分区表以支持更多分区信息，重定位在链接时就已经完成，因此不支持动态链接，不过扩展 coff 支持。</li><li><code>elf</code> 不仅支持动态链接，而且有很好的扩展性，可描述可重定位文件、可执行文件和可共享文件 (动态链接库) 三类文件。</li></ul><p>如下是 ELF 文件的结构图：</p><p><img alt="linux elf format" src=images/elf-format.png class="mx-auto d-block"></p><p>无论是文件头部、程序头部表、节区头部表还是各个节区，都是通过特定的结构体描述的，这些结构在 elf.h 文件中定义，例如 CentOS 保存在 <code>/usr/include/elf.h</code> 文件中。</p><p>文件头部用于描述整个文件的类型、大小、运行平台、程序入口、程序头部表和节区头部表等信息，可以通过如下方式查看文件头部信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- Hello World示例程序
+</span></span><span class=line><span class=cl>$ cat &lt;&lt; EOF &gt; hello.c
+</span></span><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>int main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    printf(&#34;Hello World!\n&#34;);
+</span></span><span class=line><span class=cl>    return 0;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>EOF
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 编译产生可重定向的目标代码，查看类型
+</span></span><span class=line><span class=cl>$ gcc -c hello.c
+</span></span><span class=line><span class=cl>$ readelf -h hello.o | grep Type
+</span></span><span class=line><span class=cl>  Type:                              REL (Relocatable file)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 生成可执行文件，查看类型
+</span></span><span class=line><span class=cl>$ gcc -o hello hello.o
+</span></span><span class=line><span class=cl>$ readelf -h hello | grep Type
+</span></span><span class=line><span class=cl>  Type:                              EXEC (Executable file)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 生成共享库，并查看文件类型
+</span></span><span class=line><span class=cl>$ gcc -fpic -shared -W1,-soname,libhello.so.0 -o libhello.so.0.0 hello.o
+</span></span><span class=line><span class=cl>$ readelf -h libhello.so.0.0 | grep Type
+</span></span><span class=line><span class=cl>  Type:                              DYN (Shared object file)
+</span></span></code></pre></div><p>那么 <code>Section Header Table, SHT</code> 和 <code>Program Header Table, PHT</code> 有什么用呢？前者只对可重定向文件有用，而后者只对可执行文件和可共享文件有用。</p><a class=anchor id=section-header-table></a><h2>Section Header Table <a href=#section-header-table aria-hidden=true>#</a></h2><p>SHT 用来描述各分区，包括各分区的名字、大小、类型、虚拟内存中的位置、相对文件头的位置等，连接器可以根据文件头部表和节区表的描述信息对各种输入的可重定位文件进行合适的链接。</p><p>可以通过 <code>readelf -S</code> 或者 <code>objdump -h</code> 查看分区表信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 可执行文件、可共享库、可重定位文件默认都生成有分区表
+</span></span><span class=line><span class=cl>$ readelf -S hello
+</span></span><span class=line><span class=cl>...
+</span></span><span class=line><span class=cl>Section Headers:
+</span></span><span class=line><span class=cl>  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+</span></span><span class=line><span class=cl>  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+</span></span><span class=line><span class=cl>  [ 1] .interp           PROGBITS        08048114 000114 000013 00   A  0   0  1
+</span></span><span class=line><span class=cl>  [ 2] .note.ABI-tag     NOTE            08048128 000128 000020 00   A  0   0  4
+</span></span><span class=line><span class=cl>  [ 3] .hash             HASH            08048148 000148 000028 04   A  5   0  4
+</span></span><span class=line><span class=cl>...
+</span></span><span class=line><span class=cl>  [ 7] .gnu.version      VERSYM          0804822a 00022a 00000a 02   A  5   0  2
+</span></span><span class=line><span class=cl>...
+</span></span><span class=line><span class=cl>  [11] .init             PROGBITS        08048274 000274 000030 00  AX  0   0  4
+</span></span><span class=line><span class=cl>...
+</span></span><span class=line><span class=cl>  [13] .text             PROGBITS        080482f0 0002f0 000148 00  AX  0   0 16
+</span></span><span class=line><span class=cl>  [14] .fini             PROGBITS        08048438 000438 00001c 00  AX  0   0  4
+</span></span><span class=line><span class=cl>...
+</span></span></code></pre></div><p>其中不同文件类型，其分区会有所区别，不过有部分分区，包括 <code>.text</code>、<code>.data</code>、<code>.bss</code> 是必须的，如果使用了动态链接库，那么需要 <code>.interp</code> 分区告知系统使用什么动态连接器程序来进行动态符号链接，进行某些符号地址的重定位。</p><a class=anchor id=program-header-table></a><h2>Program Header Table <a href=#program-header-table aria-hidden=true>#</a></h2><p>虽然上述的三类文件都包含一些分区，不过分区表只有可重定位文件才是必须的，而程序的执行并不需要分区表，只需要程序头部表以便知道如何加载和执行文件。另外，如果需要对可执行文件或者动态连接库进行调试，那么分区表是必要的，否则调试器将无法工作。</p><p>下面来介绍程序头部表，可通过 <code>readelf -l</code> 或者 <code>objdump -p</code> 查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 对于可重定向文件，gcc没有产生程序头部，因为它对可重定向文件没用
+</span></span><span class=line><span class=cl>$ readelf -l hello.o
+</span></span><span class=line><span class=cl>There are no program headers in this file.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 可执行文件和可共享文件都有程序头部
+</span></span><span class=line><span class=cl>$  readelf -l hello
+</span></span><span class=line><span class=cl>...
+</span></span><span class=line><span class=cl>Program Headers:
+</span></span><span class=line><span class=cl>  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+</span></span><span class=line><span class=cl>  PHDR           0x000034 0x08048034 0x08048034 0x000e0 0x000e0 R E 0x4
+</span></span><span class=line><span class=cl>  INTERP         0x000114 0x08048114 0x08048114 0x00013 0x00013 R   0x1
+</span></span><span class=line><span class=cl>      [Requesting program interpreter: /lib/ld-linux.so.2]
+</span></span><span class=line><span class=cl>  LOAD           0x000000 0x08048000 0x08048000 0x00470 0x00470 R E 0x1000
+</span></span><span class=line><span class=cl>  LOAD           0x000470 0x08049470 0x08049470 0x0010c 0x00110 RW  0x1000
+</span></span><span class=line><span class=cl>  DYNAMIC        0x000484 0x08049484 0x08049484 0x000d0 0x000d0 RW  0x4
+</span></span><span class=line><span class=cl>  NOTE           0x000128 0x08048128 0x08048128 0x00020 0x00020 R   0x4
+</span></span><span class=line><span class=cl>  GNU_STACK      0x000000 0x00000000 0x00000000 0x00000 0x00000 RW  0x4
+</span></span><span class=line><span class=cl> Section to Segment mapping:
+</span></span><span class=line><span class=cl>  Segment Sections...
+</span></span><span class=line><span class=cl>   00
+</span></span><span class=line><span class=cl>   01     .interp
+</span></span><span class=line><span class=cl>   02     .interp .note.ABI-tag .hash .gnu.hash .dynsym .dynstr .gnu.version ...
+</span></span><span class=line><span class=cl>   03     .ctors .dtors .jcr .dynamic .got .got.plt .data .bss
+</span></span><span class=line><span class=cl>   04     .dynamic
+</span></span><span class=line><span class=cl>   05     .note.ABI-tag
+</span></span></code></pre></div><p>从上面可看出程序头部表描述了一些段 (Segment)，这些段对应着一个或者多个 Sections，可以通过 <code>readelf -l</code> 显示了各个段与分区的映射。</p><p>简单来说，Linux 支持多种可执行文件格式，但是目前 ELF 较通用，所以这里选择 ELF 作为讨论对象。</p><a class=anchor id=最小化></a><h1>最小化 <a href=#%e6%9c%80%e5%b0%8f%e5%8c%96 aria-hidden=true>#</a></h1><p>仅仅从是否影响一个 C 语言程序运行的角度上说，GCC 默认链接到可执行文件的几个可重定位文件 (<code>crt1.o</code> <code>rti.o</code> <code>crtbegin.o</code> <code>crtend.o</code> <code>crtn.o</code> ) 并不是必须的。</p><p>不过需要注意的是，如果没有链接那些文件但在程序末尾使用了 return 语句，<code>main()</code> 将无法返回，需要替换为 <code>_exit()</code>。</p><p>下面以 Hello World 为例，尝试最小化示例程序。</p><a class=anchor id=1-默认大小></a><h2>1. 默认大小 <a href=#1-%e9%bb%98%e8%ae%a4%e5%a4%a7%e5%b0%8f aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat &lt;&lt; EOF &gt; hello.c
+</span></span><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>int main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    printf(&#34;Hello World!\n&#34;);
+</span></span><span class=line><span class=cl>    return 0;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>EOF
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 生成二进制文件，并查看其大小
+</span></span><span class=line><span class=cl>$ gcc -o hello hello.c
+</span></span><span class=line><span class=cl>$ wc -c hello
+</span></span><span class=line><span class=cl>8520 hello
+</span></span></code></pre></div><a class=anchor id=2-自定义编译></a><h2>2. 自定义编译 <a href=#2-%e8%87%aa%e5%ae%9a%e4%b9%89%e7%bc%96%e8%af%91 aria-hidden=true>#</a></h2><p>可以考虑把 <code>return 0</code> 替换成 <code>_exit(0)</code> 并包含定义该函数的 <code>unistd.h</code> 头文件，然后接着使用如下的 <code>Makefile</code> 进行编译。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat &lt;&lt; EOF &gt; hello.c
+</span></span><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>#include &lt;unistd.h&gt;
+</span></span><span class=line><span class=cl>int main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    printf(&#34;Hello World!\n&#34;);
+</span></span><span class=line><span class=cl>    _exit(0);
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>EOF
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 生成汇编语言
+</span></span><span class=line><span class=cl>$ gcc -S hello.c
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将main入口替换为_start
+</span></span><span class=line><span class=cl>$ sed -i -e &#34;s/main/_start/g&#34; hello.s
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 编译链接生成可执行文件
+</span></span><span class=line><span class=cl>$ gcc -c hello.s
+</span></span><span class=line><span class=cl>$ ld -o hello hello.o -lc -dynamic-linker /lib64/ld-linux-x86-64.so.2
+</span></span><span class=line><span class=cl>$ wc -c hello
+</span></span><span class=line><span class=cl>6192 hello
+</span></span></code></pre></div><p>如果报 <code>Accessing a corrupted shared library</code> 错误，那么可能是由于 ld 与编译的程序位数不同，对于 32-bits 的程序，可以通过如下方式编译链接。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gcc -m32 -S hello.c
+</span></span><span class=line><span class=cl>$ gcc -m32 -c hello.s
+</span></span><span class=line><span class=cl>$ ld -o hello hello.o -m elf_i386 -lc -dynamic-linker /lib/ld-linux.so.2
+</span></span></code></pre></div><a class=anchor id=3-删除无用分区></a><h2>3. 删除无用分区 <a href=#3-%e5%88%a0%e9%99%a4%e6%97%a0%e7%94%a8%e5%88%86%e5%8c%ba aria-hidden=true>#</a></h2><p>部分分区对于程序的运行并非必要的，可以通过 <code>strip -R</code> 或者 <code>objcop -R</code> 删除。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看分区信息
+</span></span><span class=line><span class=cl>$ readelf -l hello | grep &#34;Segment Sections...&#34; -A 10
+</span></span><span class=line><span class=cl>  Segment Sections...
+</span></span><span class=line><span class=cl>   00     
+</span></span><span class=line><span class=cl>   01     .interp 
+</span></span><span class=line><span class=cl>   02     .interp .hash .dynsym .dynstr .gnu.version .gnu.version_r .rela.plt .plt .text .rodata .eh_frame 
+</span></span><span class=line><span class=cl>   03     .dynamic .got.plt 
+</span></span><span class=line><span class=cl>   04     .dynamic 
+</span></span><span class=line><span class=cl>   05     
+</span></span><span class=line><span class=cl>   06     .dynamic 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除两个无用的分区
+</span></span><span class=line><span class=cl>$ strip -R .hash hello
+</span></span><span class=line><span class=cl>$ strip -R .gnu.version hello
+</span></span><span class=line><span class=cl>$ wc -c hello
+</span></span><span class=line><span class=cl>5192 hello
+</span></span></code></pre></div><p>另外，可以从 <a href=http://www.muppetlabs.com/~breadbox/software/elfkickers.html>Kickers of ELF</a> 下载编译 sstrip 程序，然后执行 <code>sstrip hello</code> 删除分区表，在此就不再测试了。</p><a class=anchor id=4-使用汇编></a><h2>4. 使用汇编 <a href=#4-%e4%bd%bf%e7%94%a8%e6%b1%87%e7%bc%96 aria-hidden=true>#</a></h2><p>接下来看看如何通过汇编进行优化，如下是直接通过 <code>gcc -S hello.c</code> 生成的汇编语言，然后以此为基础进行修改。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-asm data-lang=asm><span class=line><span class=cl>        <span class=na>.file</span>   <span class=s>&#34;hello.c&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=na>.section</span>        <span class=no>.rodata</span>
+</span></span><span class=line><span class=cl><span class=nl>.LC0:</span>
+</span></span><span class=line><span class=cl>        <span class=na>.string</span> <span class=s>&#34;Hello World!&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=na>.text</span>
+</span></span><span class=line><span class=cl><span class=na>.globl</span> <span class=no>main</span>
+</span></span><span class=line><span class=cl>        <span class=na>.type</span>   <span class=no>main</span><span class=p>,</span> <span class=na>@function</span>
+</span></span><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl><span class=nl>.LFB0:</span>
+</span></span><span class=line><span class=cl>        <span class=na>.cfi_startproc</span>
+</span></span><span class=line><span class=cl>        <span class=nf>pushq</span>   <span class=nv>%rbp</span>
+</span></span><span class=line><span class=cl>        <span class=na>.cfi_def_cfa_offset</span> <span class=mi>16</span>
+</span></span><span class=line><span class=cl>        <span class=na>.cfi_offset</span> <span class=mi>6</span><span class=p>,</span> <span class=p>-</span><span class=mi>16</span>
+</span></span><span class=line><span class=cl>        <span class=nf>movq</span>    <span class=nv>%rsp</span><span class=p>,</span> <span class=nv>%rbp</span>
+</span></span><span class=line><span class=cl>        <span class=na>.cfi_def_cfa_register</span> <span class=mi>6</span>
+</span></span><span class=line><span class=cl>        <span class=nf>movl</span>    <span class=no>$.LC0</span><span class=p>,</span> <span class=nv>%edi</span>
+</span></span><span class=line><span class=cl>        <span class=nf>call</span>    <span class=no>puts</span>
+</span></span><span class=line><span class=cl>        <span class=nf>movl</span>    <span class=no>$0</span><span class=p>,</span> <span class=nv>%edi</span>
+</span></span><span class=line><span class=cl>        <span class=nf>call</span>    <span class=no>_exit</span>
+</span></span><span class=line><span class=cl>        <span class=na>.cfi_endproc</span>
+</span></span><span class=line><span class=cl><span class=nl>.LFE0:</span>
+</span></span><span class=line><span class=cl>        <span class=na>.size</span>   <span class=no>_start</span><span class=p>,</span> <span class=no>.-_start</span>
+</span></span><span class=line><span class=cl>        <span class=na>.ident</span>  <span class=s>&#34;GCC: (GNU) 4.8.5 20150623 (Red Hat 4.8.5-11)&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=na>.section</span>        <span class=no>.note.GNU-stack</span><span class=p>,</span><span class=s>&#34;&#34;</span><span class=p>,</span><span class=na>@progbits</span>
+</span></span></code></pre></div><p>修改为如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-asm data-lang=asm><span class=line><span class=cl><span class=nl>.LC0:</span>
+</span></span><span class=line><span class=cl>        <span class=na>.string</span> <span class=s>&#34;Hello World!&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=na>.text</span>
+</span></span><span class=line><span class=cl><span class=na>.globl</span> <span class=no>main</span>
+</span></span><span class=line><span class=cl>        <span class=na>.type</span>   <span class=no>main</span><span class=p>,</span> <span class=na>@function</span>
+</span></span><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>        <span class=na>.cfi_startproc</span>
+</span></span><span class=line><span class=cl>        <span class=nf>pushq</span>   <span class=nv>%rbp</span>
+</span></span><span class=line><span class=cl>        <span class=na>.cfi_def_cfa_offset</span> <span class=mi>16</span>
+</span></span><span class=line><span class=cl>        <span class=na>.cfi_offset</span> <span class=mi>6</span><span class=p>,</span> <span class=p>-</span><span class=mi>16</span>
+</span></span><span class=line><span class=cl>        <span class=nf>movq</span>    <span class=nv>%rsp</span><span class=p>,</span> <span class=nv>%rbp</span>
+</span></span><span class=line><span class=cl>        <span class=na>.cfi_def_cfa_register</span> <span class=mi>6</span>
+</span></span><span class=line><span class=cl>        <span class=nf>movl</span>    <span class=no>$.LC0</span><span class=p>,</span> <span class=nv>%edi</span>
+</span></span><span class=line><span class=cl>        <span class=nf>call</span>    <span class=no>puts</span>
+</span></span><span class=line><span class=cl>        <span class=nf>movl</span>    <span class=no>$0</span><span class=p>,</span> <span class=nv>%edi</span>
+</span></span><span class=line><span class=cl>        <span class=nf>call</span>    <span class=no>_exit</span>
+</span></span><span class=line><span class=cl>        <span class=na>.cfi_endproc</span>
+</span></span></code></pre></div><p>接着看看直接通过 <code>_start()</code> 作为入口。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 替换掉main
+</span></span><span class=line><span class=cl>$ sed -i -e &#34;s/main/_start/g&#34; hello.s
+</span></span><span class=line><span class=cl>----- 编译链接
+</span></span><span class=line><span class=cl>$ as --64 -o  hello.o hello.s
+</span></span><span class=line><span class=cl>$ ld -o hello hello.o -lc -dynamic-linker /lib64/ld-linux-x86-64.so.2
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除两个无用的分区以及分区表
+</span></span><span class=line><span class=cl>$ strip -R .hash hello
+</span></span><span class=line><span class=cl>$ strip -R .gnu.version hello
+</span></span><span class=line><span class=cl>$ sstrip hello
+</span></span><span class=line><span class=cl>$ wc -c hello
+</span></span><span class=line><span class=cl>4136 hello
+</span></span></code></pre></div><a class=anchor id=5-使用系统调用></a><h2>5. 使用系统调用 <a href=#5-%e4%bd%bf%e7%94%a8%e7%b3%bb%e7%bb%9f%e8%b0%83%e7%94%a8 aria-hidden=true>#</a></h2><p>也可以直接使用系统调用，此时链接时就不需要依赖 lib 库了。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat hello.s
+</span></span><span class=line><span class=cl>    .global _start
+</span></span><span class=line><span class=cl>    .text
+</span></span><span class=line><span class=cl>_start:
+</span></span><span class=line><span class=cl>    # write(1, message, 13)
+</span></span><span class=line><span class=cl>    mov     $1, %rax                # system call 1 is write
+</span></span><span class=line><span class=cl>    mov     $1, %rdi                # file handle 1 is stdout
+</span></span><span class=line><span class=cl>    mov     $message, %rsi          # address of string to output
+</span></span><span class=line><span class=cl>    mov     $13, %rdx               # number of bytes
+</span></span><span class=line><span class=cl>    syscall                         # invoke operating system to do the write
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    # exit(0)
+</span></span><span class=line><span class=cl>    mov     $60, %rax               # system call 60 is exit
+</span></span><span class=line><span class=cl>    xor     %rdi, %rdi              # we want return code 0
+</span></span><span class=line><span class=cl>    syscall                         # invoke operating system to exit
+</span></span><span class=line><span class=cl>message:
+</span></span><span class=line><span class=cl>    .ascii  &#34;Hello World!\n&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 编译链接
+</span></span><span class=line><span class=cl>$ gcc -c hello.s
+</span></span><span class=line><span class=cl>$ ld -o hello hello.o
+</span></span><span class=line><span class=cl>$ readelf -l hello
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Elf file type is EXEC (Executable file)
+</span></span><span class=line><span class=cl>Entry point 0x400078
+</span></span><span class=line><span class=cl>There are 1 program headers, starting at offset 64
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Program Headers:
+</span></span><span class=line><span class=cl>  Type           Offset             VirtAddr           PhysAddr
+</span></span><span class=line><span class=cl>                 FileSiz            MemSiz              Flags  Align
+</span></span><span class=line><span class=cl>  LOAD           0x0000000000000000 0x0000000000400000 0x0000000000400000
+</span></span><span class=line><span class=cl>                 0x00000000000000af 0x00000000000000af  R E    200000
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl> Section to Segment mapping:
+</span></span><span class=line><span class=cl>  Segment Sections...
+</span></span><span class=line><span class=cl>   00     .text 
+</span></span><span class=line><span class=cl>$ sstrip hello
+</span></span><span class=line><span class=cl>$ wc -c hello
+</span></span><span class=line><span class=cl>175 hello
+</span></span></code></pre></div><p>也可以通过 <code>gcc -nostdlib hello.s -o hello</code> 进行编译，不过对应的字节会较多，当然，也可以参考 <a href=www.tinylab.org/as-an-executable-file-to-slim-down>为可执行文件"减肥"</a> 中的介绍在汇编上进行优化。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>关于最小化可执行 ELF 文件可以参考 <a href=http://www.muppetlabs.com/~breadbox/software/tiny/>The Teensy Files</a> 中的相关文章，以及相关的 ELF 操作程序 <a href=https://github.com/BR903/ELFkickers>github BR903/ELFkickers</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#可执行文件格式>可执行文件格式</a></li><li><a href=#section-header-table>Section Header Table</a></li><li><a href=#program-header-table>Program Header Table</a></li></ul></li><li><a href=#最小化>最小化</a><ul><li><a href=#1-默认大小>1. 默认大小</a></li><li><a href=#2-自定义编译>2. 自定义编译</a></li><li><a href=#3-删除无用分区>3. 删除无用分区</a></li><li><a href=#4-使用汇编>4. 使用汇编</a></li><li><a href=#5-使用系统调用>5. 使用系统调用</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

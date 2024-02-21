@@ -1,0 +1,177 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 资源限制 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="如何通过最简单的设置来实现最有效的性能调优，在有限资源的条件下保证程序的运作，ulimit 是在处理这些问题时，经常使用的一种简单手段。
+ulimit 是一种 Linux 系统的内键功能，它具有一套参数集，用于为由它生成的 shell 进程及其子进程的资源使用设置限制。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 资源限制</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-05-09</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>如何通过最简单的设置来实现最有效的性能调优，在有限资源的条件下保证程序的运作，ulimit 是在处理这些问题时，经常使用的一种简单手段。</p><p>ulimit 是一种 Linux 系统的内键功能，它具有一套参数集，用于为由它生成的 shell 进程及其子进程的资源使用设置限制。</p><a class=anchor id=fork-炸弹></a><h1>Fork 炸弹 <a href=#fork-%e7%82%b8%e5%bc%b9 aria-hidden=true>#</a></h1><p>简单来说，这是一个恶意程序，它的内部是一个不断在 fork 进程的无限递归循环，不需要有特别的权限即可对系统造成破坏。</p><p>Jaromil 在 2002 年通过 Bash 设计了最为精简的一个 fork 炸弹，也就是 <code>:() { :|:& };:</code> 或者 <code>.() { .|.& };.</code> 。</p><p>这行命令如果这样写成如下的多行 Bash Script 就不难理解了：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>:()
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>:|: &amp;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>;
+</span></span><span class=line><span class=cl>:
+</span></span></code></pre></div><ul><li>第 1 行说明下面要定义一个函数，函数名为小数点或者冒号，没有可选参数。</li><li>第 2 行表示函数体开始。</li><li>第 3 行是函数体真正要做的事情，首先它递归调用本函数，然后利用管道调用一个新进程（它要做的事情也是递归调用本函数），并将其放到后台执行。</li><li>第 4 行表示函数体结束。</li><li>第 5 行并不会执行什么操作，在命令行中用来分隔两个命令用。从总体来看，它表明这段程序包含两个部分，首先定义了一个函数，然后调用这个函数。</li><li>第 6 行表示调用本函数。</li></ul><p>冒号或者逗号其实是函数名，这个脚本就是在不断的执行该函数，然后不断 fork 出新的进程。</p><p>那么，有没有办法扼制这种情况的发生呢？答案是肯定的，只需设置进程的 limit 数即可。</p><p>在上面的例子中，我们将用户可以创建的最大进程数限制为 128，执行fork炸弹会迅速 fork 出大量进程，此后会由于资源不足而无法继续执行。使用工具ulimit即可设置各种限制数，具体的请参考该工具的man或help。</p><a class=anchor id=linux-资源限制></a><h1>Linux 资源限制 <a href=#linux-%e8%b5%84%e6%ba%90%e9%99%90%e5%88%b6 aria-hidden=true>#</a></h1><p>一般最常使用的是文件句柄和进程数，这里简单通过这两个介绍。</p><p>其中设置时使用最多的是 <code>limits.conf</code> 和 <code>sysctl.conf</code> 区别在于，前者只针对用户，而后者是针对整个系统参数配置的。</p><p>默认的文件句柄限制是 1024，可以通过 <code>ulimit -n</code> 查看；系统总的限制保存在 <code>/proc/sys/fs/file-max</code> 文件中，可以通过 <code>/etc/sysctl.conf</code> 配置文件修改，当前整个系统的文件句柄使用数可以查看 <code>/proc/sys/fs/file-nr</code> 。</p><p>注意，在改变资源限制的时候需要保证如下的几个准则：</p><ul><li>进程的软限制需要小于等于硬限制；</li><li>普通用户只能缩小硬限制，而且不可逆；只有超级用户可以扩大限制。</li></ul><p>也就是说，通过硬限制来控制用户的软限制，而通过软限制控制用户对资源的使用。其中可以配置的资源选项可以通过 <code>man 3 prlimit</code> 查看。</p><p>注意，Linux 中的 <code>ulimit</code> 命令只对当前会话有效，已启动进程没法用这个命令修改限制，在 2.6.36 内核版本之后，新增了 <code>prlimit</code> API 用于动态修改某个进程的 rlimits ，也可以直接使用 <code>prlimit</code> 命令进行修改。</p><a class=anchor id=ulimit></a><h2>ulimit <a href=#ulimit aria-hidden=true>#</a></h2><p>该命令是 bash 内键命令，可以通过 <code>type ulimit</code> 查看，它具有一套参数集，用来为由它生成的 shell 进程及其子进程的资源使用设置限制，针对的是 Per-Process 而非 Per-User 。</p><p>ulimit 用于 shell 启动进程所占用的资源，可以用来设置系统的限制，通过 <code>ulimit -a</code> 可以查看当前的资源限制，如果通过命令行设置，则只对当前的终端生效。</p><a class=anchor id=永久生效></a><h4>永久生效 <a href=#%e6%b0%b8%e4%b9%85%e7%94%9f%e6%95%88 aria-hidden=true>#</a></h4><p>一般有两种方法：</p><ul><li>命令写到 profile 或 bashrc 中，也即登陆时自动修改限制，如 <code>ulimit -S -c 0 > /dev/null 2>&amp;1</code>；</li><li>在 <code>/etc/security/limits.conf</code> 文件中添加记录，并且在 <code>/etc/pam.d/</code> 中的 seesion 有使用到 limit 模块，注意需要重启生效。</li></ul><p>一般配置文件中的格式如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>domain type item value
+</span></span><span class=line><span class=cl>   domain 指定用户名或者通过@指定用户组，其中*表示所有用户
+</span></span><span class=line><span class=cl>   type 也就是软设置或者硬设置，也就是hard或者soft，通过-标示同时设置两个值；
+</span></span><span class=line><span class=cl>   item 指定想限制的资源，例如cpu nproc maxlogins等；
+</span></span><span class=line><span class=cl>   value 相关指标对应的值，其中 unlimited 表示不限制。
+</span></span></code></pre></div><a class=anchor id=hard-vs-soft></a><h4>Hard VS. Soft <a href=#hard-vs-soft aria-hidden=true>#</a></h4><p>其中的硬限制是实际的限制，而软限制，是 Warnning 限制，只会做出 Warning；在通过 ulimit 设置时分软硬设置，加 <code>-H</code> 就是硬，加 <code>-S</code> 就是软，默认是 <code>-S</code> 。</p><p>如果打开文件过多，会导致 <code>Too many open files</code> 报错，</p><a class=anchor id=ulimit-limitsconf-pam_limits></a><h2>ulimit limits.conf pam_limits <a href=#ulimit-limitsconf-pam_limits aria-hidden=true>#</a></h2><p>在 Linux 中，每个进程都可以调用 <code>getrlimit()</code> 来查看自己的 limits，也可以调用 <code>setrlimit()</code> 来改变自身的 soft limits，如果要修改 hard limit，则需要确保进程有 <code>CAP_SYS_RESOURCE</code> 权限。</p><p>另外，进程 fork() 出来的子进程，会继承父进程的 limits 设定。</p><p><code>ulimit</code> 是 shell 的内置命令，同样是调用上述的接口获取改变自身的 limits ，当在 shell 中执行应用程序时，相应的进程就会继承当前 shell 的 limits 设置。</p><p>而 shell 的初始 limits 是在启动时通过 <code>pam_limits</code> 设定的，这是一个 PAM 模块，用户登录会根据 <code>limits.conf</code> 定义的值进行配置。</p><p>可以开启 <code>pam_limits</code> 的 debug 来查看大致过程：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat /etc/security/limits.conf
+</span></span><span class=line><span class=cl>$ grep pam_limits /etc/pam.d/password-auth-ac
+</span></span><span class=line><span class=cl>session     required      pam_limits.so debug
+</span></span><span class=line><span class=cl>$ tail /var/log/secure
+</span></span></code></pre></div><p>也即是说：</p><ol><li>用户进行登录时触发 <code>pam_limits</code> 模块；</li><li><code>pam_limits</code> 会读取 <code>limits.conf</code> 中的配置，并设定用户所登陆 shell 的 limits；</li><li>用户登陆 shell 之后，可以通过 ulimit 命令查看或者修改当前 shell 的 limits;</li><li>当用户在 shell 中执行程序时，该程序进程会继承 shell 的 limits 值，从而使子进程相关的配置生效。</li></ol><a class=anchor id=关于pam></a><h4>关于PAM <a href=#%e5%85%b3%e4%ba%8epam aria-hidden=true>#</a></h4><p>在通过第二种方式配置永久生效时，可以查看 <code>/etc/pam.d/login</code> 文件，确保有 <code>session required /lib/security/pam_limits.so</code> 配置项。</p><p>简单来说，<code>limits.conf</code> 文件实际是 Linux PAM 中 <code>pam_limits.so</code> 的配置文件。</p><p>例如，限制 admin 用户登录到 sshd 的服务不能超过 2 个。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 在/etc/pam.d/sshd中添加
+</span></span><span class=line><span class=cl>session required pam_limits.so
+</span></span><span class=line><span class=cl>----- 在/etc/security/limits.conf中添加
+</span></span><span class=line><span class=cl>admin - maxlogins 2
+</span></span></code></pre></div><p>如果要查看应用程序知否支持 PAM ，最简答的是通过 ldd 查看动态库。</p><a class=anchor id=查看进程的限制></a><h2>查看进程的限制 <a href=#%e6%9f%a5%e7%9c%8b%e8%bf%9b%e7%a8%8b%e7%9a%84%e9%99%90%e5%88%b6 aria-hidden=true>#</a></h2><p>进程自己可以通过 <code>getrlimit()</code> <code>prlimit()</code> 来获得当前 limits 配置，调用 <code>getrusage()</code> 获取自身的资源使用量，也可以通过 <code>/proc/PID/limits</code> 获取某个进程的 limits 设置。</p><p>要查看某个进程的资源使用量，通常可以通过 <code>/proc/PID/{stat,status}</code> 查看。具体某个值的含义，可以参考 proc 的手册。</p><a class=anchor id=资源限制方法></a><h1>资源限制方法 <a href=#%e8%b5%84%e6%ba%90%e9%99%90%e5%88%b6%e6%96%b9%e6%b3%95 aria-hidden=true>#</a></h1><p>如下是在 CentOS 上系统的默认配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ ulimit -a
+</span></span><span class=line><span class=cl>core file size          (blocks, -c) 0
+</span></span><span class=line><span class=cl>data seg size           (kbytes, -d) unlimited
+</span></span><span class=line><span class=cl>scheduling priority             (-e) 0             # 优先级限定
+</span></span><span class=line><span class=cl>file size               (blocks, -f) unlimited
+</span></span><span class=line><span class=cl>pending signals                 (-i) 31136         # 最大Pending的信号数
+</span></span><span class=line><span class=cl>max locked memory       (kbytes, -l) 64            # 内存锁定
+</span></span><span class=line><span class=cl>max memory size         (kbytes, -m) unlimited
+</span></span><span class=line><span class=cl>open files                      (-n) 1024          # 最大打开文件
+</span></span><span class=line><span class=cl>pipe size            (512 bytes, -p) 8
+</span></span><span class=line><span class=cl>POSIX message queues     (bytes, -q) 819200        # POSIX消息队列的最大值
+</span></span><span class=line><span class=cl>real-time priority              (-r) 0             # 实时调度的优先级设置
+</span></span><span class=line><span class=cl>stack size              (kbytes, -s) 8192
+</span></span><span class=line><span class=cl>cpu time               (seconds, -t) unlimited     # CPU实际使用时间
+</span></span><span class=line><span class=cl>max user processes              (-u) 4096
+</span></span><span class=line><span class=cl>virtual memory          (kbytes, -v) unlimited
+</span></span><span class=line><span class=cl>file locks                      (-x) unlimited
+</span></span></code></pre></div><a class=anchor id=c-api></a><h4>C-API <a href=#c-api aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/time.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/resource.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>getrlimit</span><span class=p>(</span><span class=kt>int</span> <span class=n>resource</span><span class=p>,</span> <span class=k>struct</span> <span class=n>rlimit</span> <span class=o>*</span><span class=n>rlim</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>setrlimit</span><span class=p>(</span><span class=kt>int</span> <span class=n>resource</span><span class=p>,</span> <span class=k>const</span> <span class=k>struct</span> <span class=n>rlimit</span> <span class=o>*</span><span class=n>rlim</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>prlimit</span><span class=p>(</span><span class=kt>pid_t</span> <span class=n>pid</span><span class=p>,</span> <span class=kt>int</span> <span class=n>resource</span><span class=p>,</span> <span class=k>const</span> <span class=k>struct</span> <span class=n>rlimit</span> <span class=o>*</span><span class=n>new_limit</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                   <span class=k>struct</span> <span class=n>rlimit</span> <span class=o>*</span><span class=n>old_limit</span><span class=p>);</span>
+</span></span></code></pre></div><p>在内核中，其暴露的接口包括 <code>prlimit()</code> <code>setrlimit()</code> <code>getrlimit()</code> ，详细可以通过 <code>man 3 prlimit</code> 查看，其中 <code>struct rlimit</code> 对应的结构如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>struct rlimit {
+</span></span><span class=line><span class=cl>	rlim_t rlim_cur;  /* Soft limit */
+</span></span><span class=line><span class=cl>	rlim_t rlim_max;  /* Hard limit (ceiling for rlim_cur) */
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></div><p>实际上最后都会调用内核中的 <code>do_prlimit()</code> 函数。</p><p>为了方便测试，同时提供了一个测试程序。</p><a class=anchor id=优先级限定></a><h2>优先级限定 <a href=#%e4%bc%98%e5%85%88%e7%ba%a7%e9%99%90%e5%ae%9a aria-hidden=true>#</a></h2><p><code>Scheduling Priority</code> 也就是进程的 nice 值设置，注意，只对普通用户其作用，超级用户由于拥有 <code>CAP_SYS_NICE</code> 权限导致控制无效。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 硬限制设置为-15~20，并查看
+</span></span><span class=line><span class=cl># ulimit -H -e 35
+</span></span><span class=line><span class=cl># ulimit -He
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 软限制设置为-10~20，并查看
+</span></span><span class=line><span class=cl># ulimit -S -e 30
+</span></span><span class=line><span class=cl># ulimit -Se
+</span></span><span class=line><span class=cl># nice -n -11 ls /tmp
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 切换到非root用户并执行ls命令
+</span></span><span class=line><span class=cl># su foobar
+</span></span><span class=line><span class=cl>$ nice -n -10 ls /tmp
+</span></span><span class=line><span class=cl>$ nice -n -11 ls /tmp
+</span></span><span class=line><span class=cl>nice: cannot set niceness: Permission denied
+</span></span></code></pre></div><p>如上，当超过了软限制之后会直接报 <code>Permission denied</code> 错误，而 root 用户实际上不会被限制的。</p><a class=anchor id=内存锁定值限定></a><h2>内存锁定值限定 <a href=#%e5%86%85%e5%ad%98%e9%94%81%e5%ae%9a%e5%80%bc%e9%99%90%e5%ae%9a aria-hidden=true>#</a></h2><p><code>Max Locked Memory</code> 同样由于 <code>CAP_IPC_LOCK</code> 参数，实际上不会限制 root 用户的使用。</p><p>由于 Linux 采用的是虚拟内存，通常虚拟地址要远大于实际的物理内存，有时物理内存的数据会被换到交换区中，而有时交换区的内存会换到物理内存中。</p><p>常见的场景有：</p><ol><li>出于性能考虑，例如数据库通常会将数据锁定到物理内存中。</li><li>安全需要，比如用户名、密码等内容被交换到 swap 后有泄密的可能。</li></ol><p>其中锁定内存的动作由 <code>mlock(3)</code> 函数来完成。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 设置锁定内存大小，直接执行会报错
+</span></span><span class=line><span class=cl># ulimit -H -l 64
+</span></span><span class=line><span class=cl># ulimit -S -l 4
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 然后执行测试程序
+</span></span><span class=line><span class=cl>$ ./tulimit -l
+</span></span><span class=line><span class=cl>lock memory failed, Cannot allocate memory
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将锁定内存大小软上限提高
+</span></span><span class=line><span class=cl># ulimit -S -l 8
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 然后重新执行执行测试程序
+</span></span><span class=line><span class=cl>$ ./tulimit -l
+</span></span></code></pre></div><p>注意，实际上要多于 <code>2~3KB</code> 大小，因为有其它的动态库在使用 mlock 。</p><a class=anchor id=最大文件></a><h2>最大文件 <a href=#%e6%9c%80%e5%a4%a7%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h2><p>通过 <code>/proc/sys/fs/file-max</code> 可以查看整个系统可以使用的文件句柄数量，可以通过 <code>echo 1000000 > /proc/sys/fs/file-max</code> 临时修改，或者在 <code>/etc/sysctl.conf</code> 中设置 <code>fs.file-max = 1000000</code> 永久修改。</p><p>其中 <code>/proc/sys/fs/nr_open</code> 会标识单个进程可分配的最大文件数，实际的设置值为 <code>ulimit -n</code> ，默认是软资源限制，可以通过 <code>ulimit -Hn</code> 查看硬资源限制。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 设置锁定内存大小，直接执行会报错
+</span></span><span class=line><span class=cl># ulimit -H -n 512
+</span></span><span class=line><span class=cl># ulimit -S -n 128
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 然后执行测试程序
+</span></span><span class=line><span class=cl>$ ./tulimit -n
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>info : #124 files opened.
+</span></span><span class=line><span class=cl>error: open file failed, Too many open files.
+</span></span></code></pre></div><a class=anchor id=信号挂起数></a><h2>信号挂起数 <a href=#%e4%bf%a1%e5%8f%b7%e6%8c%82%e8%b5%b7%e6%95%b0 aria-hidden=true>#</a></h2><p><code>Pending Signals</code> 可以针对所有的用户，用于设置可以被挂起、阻塞的最大信号量，注意，这里使用的是实时信号，非实时的只能接收一次。</p><p>如下的示例中，默认是可以接收三次的，如果设置其大小，那么其接收的信号数将减小，就是说实际发送了三次，但是实际上只接受到了两次。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 执行测试程序，正常可以发送接收三次
+</span></span><span class=line><span class=cl>$ ./tulimit -i
+</span></span><span class=line><span class=cl>info : parent sleep 1 seconds.
+</span></span><span class=line><span class=cl>info : signal 34 sent from child.
+</span></span><span class=line><span class=cl>info : signal 34 sent from child.
+</span></span><span class=line><span class=cl>info : signal 34 sent from child.
+</span></span><span class=line><span class=cl>info : parent wake up.
+</span></span><span class=line><span class=cl>info : handle signal 34.
+</span></span><span class=line><span class=cl>info : handle signal 34.
+</span></span><span class=line><span class=cl>info : handle signal 34.
+</span></span><span class=line><span class=cl>info : exit.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改为接收2次
+</span></span><span class=line><span class=cl>$ ulimit -S -i 2
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 然后重新测试
+</span></span><span class=line><span class=cl>$ ./tulimit -i
+</span></span><span class=line><span class=cl>info : parent sleep 1 seconds.
+</span></span><span class=line><span class=cl>info : signal 34 sent from child.
+</span></span><span class=line><span class=cl>info : signal 34 sent from child.
+</span></span><span class=line><span class=cl>info : signal 34 sent from child.
+</span></span><span class=line><span class=cl>info : parent wake up.
+</span></span><span class=line><span class=cl>info : handle signal 34.
+</span></span><span class=line><span class=cl>info : handle signal 34.
+</span></span><span class=line><span class=cl>info : exit.
+</span></span></code></pre></div><a class=anchor id=消息队列最大值></a><h2>消息队列最大值 <a href=#%e6%b6%88%e6%81%af%e9%98%9f%e5%88%97%e6%9c%80%e5%a4%a7%e5%80%bc aria-hidden=true>#</a></h2><p><code>POSIX Message Queues</code> 也就是对消息队列进行限制。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 修改为1000字节
+</span></span><span class=line><span class=cl>$ ulimit -q 1000
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 执行测试，实际至少需要1280字节，不过报错有点奇怪
+</span></span><span class=line><span class=cl>$ ./tlimit -q
+</span></span><span class=line><span class=cl>error: open POSIX message queue failed, Too many open files.
+</span></span></code></pre></div><p>通过 strace 命令查看时，会发现在通过 <code>mq_open()</code> 申请内存时报错，也就是 <code>ENOMEM</code> ，其中需要的字节为 <code>128*10</code> 。</p><a class=anchor id=cpu-使用时间></a><h2>CPU 使用时间 <a href=#cpu-%e4%bd%bf%e7%94%a8%e6%97%b6%e9%97%b4 aria-hidden=true>#</a></h2><p>也就是程序占用 CPU 的时间进行限制，注意，这里是占用 CPU 的耗时，如果程序中有类似 <code>sleep</code> 的操作，那么实际上不会计入 CPU 耗时的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 将CPU占用的时间设置为2秒
+</span></span><span class=line><span class=cl>$ ulimit -t 2
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 然后执行测试
+</span></span><span class=line><span class=cl>$ time ./tlimit -t
+</span></span><span class=line><span class=cl>Killed
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>real    0m2.008s
+</span></span><span class=line><span class=cl>user    0m1.997s
+</span></span><span class=line><span class=cl>sys     0m0.004s
+</span></span></code></pre></div><p>可以通过 time 命令查看。</p><p>感觉这里是配置的连续 CPU 使用多久，如果中间有主动的 sleep 实际上是无效的。</p><a class=anchor id=实时优先级限制></a><h2>实时优先级限制 <a href=#%e5%ae%9e%e6%97%b6%e4%bc%98%e5%85%88%e7%ba%a7%e9%99%90%e5%88%b6 aria-hidden=true>#</a></h2><p><code>Real Time Priority</code> 注意，仍然只针对普通用户，可以通过如下方式进行测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 尝试用实时优先级20运行sleep程序
+</span></span><span class=line><span class=cl>$ chrt -f 20 sleep 3
+</span></span><span class=line><span class=cl>chrt: failed to set pid 0&#39;s policy: Operation not permitted
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 切换到root并调整优先级再进行测试
+</span></span><span class=line><span class=cl>$ sudo su -
+</span></span><span class=line><span class=cl># ulimit -r 20
+</span></span><span class=line><span class=cl># su foobar
+</span></span><span class=line><span class=cl>$ chrt -f 20 sleep 3
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 如果以50运行程序，那么仍然会报错，也就是说ulimit的限制起了作用.
+</span></span><span class=line><span class=cl>$ chrt -r 50 sleep 3
+</span></span><span class=line><span class=cl>chrt: failed to set pid 0&#39;s policy: Operation not permitted
+</span></span></code></pre></div><a class=anchor id=fork进程数限制></a><h2>fork进程数限制 <a href=#fork%e8%bf%9b%e7%a8%8b%e6%95%b0%e9%99%90%e5%88%b6 aria-hidden=true>#</a></h2><p><code>Max User Processes</code> 同样只对普通用户有效，可以使用如下方式测试，此时会生成 14 个进程。</p><p>测试貌似还有些问题。</p><a class=anchor id=最大进程数></a><h1>最大进程数 <a href=#%e6%9c%80%e5%a4%a7%e8%bf%9b%e7%a8%8b%e6%95%b0 aria-hidden=true>#</a></h1><a class=anchor id=理论最大数></a><h4>理论最大数 <a href=#%e7%90%86%e8%ae%ba%e6%9c%80%e5%a4%a7%e6%95%b0 aria-hidden=true>#</a></h4><p>简单来说就是通过全局的段描述符统计，不过太复杂了，后面补充。</p><a class=anchor id=实际数目></a><h4>实际数目 <a href=#%e5%ae%9e%e9%99%85%e6%95%b0%e7%9b%ae aria-hidden=true>#</a></h4><p>Linux 中通过 Process Identification Value, PID 来标示进程，其类型为 pid_t 实际上就是 int 类型。</p><p>当前系统可创建的最大进程数可通过 <code>/proc/sys/kernel/pid_max</code> 方式查看，可以通过 <code>sysctl -w kernel.pid_max=65535</code> 命令进行修改。</p><a class=anchor id=最大线程数></a><h1>最大线程数 <a href=#%e6%9c%80%e5%a4%a7%e7%ba%bf%e7%a8%8b%e6%95%b0 aria-hidden=true>#</a></h1><p>通过 <code>/usr/include/bits/local_lim.h</code> 中的 <code>PTHREAD_THREADS_MAX</code> 宏定义最大线程数，一般来说，对于 LinuxThreads 一般是 1024；对于目前最常用的 ntpl 是没有硬性限制的，仅受限于系统资源。</p><p>这个系统的资源主要就是线程的 stack 所占用的内存，用 <code>ulimit -s</code> 可以查看默认的线程栈大小，一般情况下，这个值是 <code>8M=8192KB</code> 。</p><p>可以写一段简单的代码验证最多可以创建多少个线程</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=n>include</span> <span class=o>&lt;</span><span class=n>stdio</span><span class=p>.</span><span class=n>h</span><span class=o>&gt;</span>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;pthread.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>func</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>pthread_t</span> <span class=kr>thread</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>while</span> <span class=p>(</span> <span class=mi>1</span> <span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=nf>pthread_create</span><span class=p>(</span><span class=o>&amp;</span><span class=kr>thread</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>,</span> <span class=n>func</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>)</span> <span class=o>!=</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>i</span><span class=o>++</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;i = %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>i</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>EXIT_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=理论最大线程数></a><h2>理论最大线程数 <a href=#%e7%90%86%e8%ae%ba%e6%9c%80%e5%a4%a7%e7%ba%bf%e7%a8%8b%e6%95%b0 aria-hidden=true>#</a></h2><p>对于 32 位系统来说，最大可创建 381 个线程左右，因为 32 位 Linux 下的进程用户空间是 3G 的大小，也就是 3072M，用 3072M/8M=384，但是实际上代码段和数据段等还要占用一些空间，这个值应该向下取整到 383，再减去主线程，得到 382。</p><p>为了突破内存的限制，可以有两种方法：</p><ul><li>用 ulimit -s 1024 减小默认栈大小；</li><li>调用pthread_create的时候用pthread_attr_getstacksize设置一个较小的栈大小。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#fork-炸弹>Fork 炸弹</a></li><li><a href=#linux-资源限制>Linux 资源限制</a><ul><li><a href=#ulimit>ulimit</a></li><li><a href=#ulimit-limitsconf-pam_limits>ulimit limits.conf pam_limits</a></li><li><a href=#查看进程的限制>查看进程的限制</a></li></ul></li><li><a href=#资源限制方法>资源限制方法</a><ul><li></li><li><a href=#优先级限定>优先级限定</a></li><li><a href=#内存锁定值限定>内存锁定值限定</a></li><li><a href=#最大文件>最大文件</a></li><li><a href=#信号挂起数>信号挂起数</a></li><li><a href=#消息队列最大值>消息队列最大值</a></li><li><a href=#cpu-使用时间>CPU 使用时间</a></li><li><a href=#实时优先级限制>实时优先级限制</a></li><li><a href=#fork进程数限制>fork进程数限制</a></li></ul></li><li><a href=#最大进程数>最大进程数</a><ul><li></li></ul></li><li><a href=#最大线程数>最大线程数</a><ul><li><a href=#理论最大线程数>理论最大线程数</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

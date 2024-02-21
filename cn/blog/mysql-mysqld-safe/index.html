@@ -1,0 +1,966 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 启动脚本 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="mysqld_safe 是一个 shell 脚本，通常用来启动 MySQL 服务进程，在这篇文章中，我们看下该脚本具体做了什么。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL 启动脚本</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-03-08</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a></div></div><hr><div class=content><p>mysqld_safe 是一个 shell 脚本，通常用来启动 MySQL 服务进程，在这篇文章中，我们看下该脚本具体做了什么。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>该 shell 脚本，详细交代了 MySQL 的启动流程：查找 MySQL 相关目录；解析配置文件；调用 mysqld 程序来启动实例。常见的配置项有：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>--help
+</span></span><span class=line><span class=cl>    查看帮助。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>--no-defaults
+</span></span><span class=line><span class=cl>    不要读任何配置项文件。如果给出，必须首选该选项。
+</span></span><span class=line><span class=cl>--defaults-extra-file=path
+</span></span><span class=line><span class=cl>    除了通用选项文件所读取的选项文件名。如果给出，必须首选该选项。
+</span></span><span class=line><span class=cl>--defaults-file=path
+</span></span><span class=line><span class=cl>    读取的代替通用选项文件的选项文件名。如果给出，必须首选该选项。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>--basedir=path
+</span></span><span class=line><span class=cl>    指定 MySQL 安装目录的路径。
+</span></span><span class=line><span class=cl>--datadir=path
+</span></span><span class=line><span class=cl>    数据目录的路径。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>--syslog, --skip-syslog
+</span></span><span class=line><span class=cl>    是否使用syslog记录mysqld_safe的日志。如果是skip-syslog，会写到文件中，默认是hostname.err。
+</span></span><span class=line><span class=cl>--log-error
+</span></span><span class=line><span class=cl>    指定错误日志的文件路径，需要同时设置--skip-syslog 。
+</span></span></code></pre></div><p>接下来看看 mysqld_safe 是如何执行的。</p><a class=anchor id=执行流程简介></a><h2>执行流程简介 <a href=#%e6%89%a7%e8%a1%8c%e6%b5%81%e7%a8%8b%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h2><p>如下是其简单的处理流程。</p><a class=anchor id=1-检查系统和选项></a><h4>1. 检查系统和选项 <a href=#1-%e6%a3%80%e6%9f%a5%e7%b3%bb%e7%bb%9f%e5%92%8c%e9%80%89%e9%a1%b9 aria-hidden=true>#</a></h4><p>强制设置四个选项，并检查其有效性，包括了默认配置、basedir、datadir、plugin-dir 。</p><a class=anchor id=2-检查myisam表></a><h4>2. 检查MyISAM表 <a href=#2-%e6%a3%80%e6%9f%a5myisam%e8%a1%a8 aria-hidden=true>#</a></h4><p>默认是注释掉的，也可以在启动前检查 MyISAM 表。</p><a class=anchor id=3-监控服务></a><h4>3. 监控服务 <a href=#3-%e7%9b%91%e6%8e%a7%e6%9c%8d%e5%8a%a1 aria-hidden=true>#</a></h4><p>在 MySQL 服务器异常宕机时，mysqld_safe 默认会自动重启服务，而正常关闭则不会重启服务，那么它是如何判断 MySQL 是否是正常关闭的呢？能否控制不自动重启呢？</p><p>如果 MySQL 服务正常关闭，默认会删除 PID 文件，mysqld_safe 会通过判断是否存在该文件来决定是否要重新拉起 MySQL 服务；当然，如果想即使 MySQL 服务宕机也不启动文件，也可以新建一个名为 PID 文件名+ <code>.shutdown</code> 的文件即可，例如 <code>/tmp/mysql.pid.shutdown</code> 。</p><p>在此，还有些异常处理：</p><ol><li>如果在 MySQL 服务在一秒以内重启，则说明有异常，此时会通过 <code>sleep 1</code> 休眠一秒。</li><li>在发现 MySQL 宕后，默认会检查是否有 mysqld 进程 hanging ，如果有，则直接通过 <code>kill -9</code> 强制关闭。</li></ol><a class=anchor id=4-记录日志></a><h4>4. 记录日志 <a href=#4-%e8%ae%b0%e5%bd%95%e6%97%a5%e5%bf%97 aria-hidden=true>#</a></h4><p>将 mysqld 的错误消息发送到数据目录中的 <code>host_name.err</code> 文件，或者写入到 syslog 中。</p><a class=anchor id=源码解析></a><h1>源码解析 <a href=#%e6%ba%90%e7%a0%81%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h1><p>该脚本实际上最终会通过 <code>eval_log_error()</code> 函数启动 MySQL 服务，并将输出日志记录到文件或者 syslog 中，这个函数应该是 mysqld_safe 脚本的核心处理函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=cp>#!/bin/sh
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=c1>#----- 首先是一些变量参数的定义</span>
+</span></span><span class=line><span class=cl><span class=nv>KILL_MYSQLD</span><span class=o>=</span>1<span class=p>;</span>              <span class=c1># 试图kill多余的mysqld_safe程序，1表示需要kill</span>
+</span></span><span class=line><span class=cl><span class=nv>MYSQLD</span><span class=o>=</span>                     <span class=c1># mysqld二进制可执行文件的目录名称</span>
+</span></span><span class=line><span class=cl><span class=nv>niceness</span><span class=o>=</span><span class=m>0</span>                  <span class=c1># 进程的调度优先级</span>
+</span></span><span class=line><span class=cl><span class=nv>mysqld_ld_preload</span><span class=o>=</span>          <span class=c1># 通常指定libjemalloc.so.1所在路径</span>
+</span></span><span class=line><span class=cl><span class=nv>mysqld_ld_library_path</span><span class=o>=</span>     <span class=c1># 库目录</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#----- 下面的变量用于设置日志，默认不打开错误日志，不使用syslog</span>
+</span></span><span class=line><span class=cl><span class=nv>logging</span><span class=o>=</span>init                <span class=c1># 日志记录状态，init(输出到终端)，可以查看log_generic()</span>
+</span></span><span class=line><span class=cl><span class=nv>want_syslog</span><span class=o>=</span><span class=m>0</span>               <span class=c1># 是否要使用syslog</span>
+</span></span><span class=line><span class=cl><span class=nv>syslog_tag</span><span class=o>=</span>                 <span class=c1># 如果使用，则需要增加的标示</span>
+</span></span><span class=line><span class=cl><span class=nv>user</span><span class=o>=</span><span class=s1>&#39;mysql&#39;</span>                <span class=c1># 启动时使用的用户，也就是指定--user的选项值</span>
+</span></span><span class=line><span class=cl><span class=nv>pid_file</span><span class=o>=</span>                   <span class=c1># pid文件的路径</span>
+</span></span><span class=line><span class=cl><span class=nv>err_log</span><span class=o>=</span>                    <span class=c1># 错误日志的路径</span>
+</span></span><span class=line><span class=cl><span class=nv>timestamp_format</span><span class=o>=</span>UTC        <span class=c1># 使用UTC时间格式</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#----- 定义的syslog中标志位，在后面需要写入日志到syslog中时使用</span>
+</span></span><span class=line><span class=cl><span class=nv>syslog_tag_mysqld</span><span class=o>=</span>mysqld
+</span></span><span class=line><span class=cl><span class=nv>syslog_tag_mysqld_safe</span><span class=o>=</span>mysqld_safe
+</span></span><span class=line><span class=cl><span class=nv>syslog_facility</span><span class=o>=</span>daemon
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>trap</span> <span class=s1>&#39;&#39;</span> <span class=m>1</span> <span class=m>2</span> <span class=m>3</span> <span class=m>15</span>            <span class=c1># 不允许程序在终端上被kill，包括挂起、中断、退出、系统终止</span>
+</span></span><span class=line><span class=cl><span class=nb>trap</span> <span class=s1>&#39;&#39;</span> <span class=m>13</span>                  <span class=c1># 也包括SIGPIPE，可以通过kill -l查看数字对应的信号量</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#----- 设置默认权限为770，可以查看umask(2)，为了兼容所以处理的时候比较复杂</span>
+</span></span><span class=line><span class=cl><span class=nb>umask</span> <span class=m>007</span>                               <span class=c1># fallback</span>
+</span></span><span class=line><span class=cl><span class=nv>UMASK</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>UMASK</span><span class=p>-0640</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>fmode</span><span class=o>=</span><span class=sb>`</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$UMASK</span><span class=s2>&#34;</span> <span class=p>|</span> sed -e <span class=s1>&#39;s/[^0246]//g&#39;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl><span class=nv>octalp</span><span class=o>=</span><span class=sb>`</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$fmode</span><span class=s2>&#34;</span><span class=p>|</span>cut -c1<span class=sb>`</span>
+</span></span><span class=line><span class=cl><span class=nv>fmlen</span><span class=o>=</span><span class=sb>`</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$fmode</span><span class=s2>&#34;</span><span class=p>|</span>wc -c<span class=p>|</span>sed -e <span class=s1>&#39;s/ //g&#39;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[</span> <span class=s2>&#34;x</span><span class=nv>$octalp</span><span class=s2>&#34;</span> !<span class=o>=</span> <span class=s2>&#34;x0&#34;</span> -o <span class=s2>&#34;x</span><span class=nv>$UMASK</span><span class=s2>&#34;</span> !<span class=o>=</span> <span class=s2>&#34;x</span><span class=nv>$fmode</span><span class=s2>&#34;</span> -o <span class=s2>&#34;x</span><span class=nv>$fmlen</span><span class=s2>&#34;</span> !<span class=o>=</span> <span class=s2>&#34;x5&#34;</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>fmode</span><span class=o>=</span><span class=m>0640</span>
+</span></span><span class=line><span class=cl>  <span class=nb>echo</span> <span class=s2>&#34;UMASK must be a 3-digit mode with an additional leading 0 to indicate octal.&#34;</span> &gt;<span class=p>&amp;</span><span class=m>2</span>
+</span></span><span class=line><span class=cl>  <span class=nb>echo</span> <span class=s2>&#34;The first digit will be corrected to 6, the others may be 0, 2, 4, or 6.&#34;</span> &gt;<span class=p>&amp;</span><span class=m>2</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=nv>fmode</span><span class=o>=</span><span class=sb>`</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$fmode</span><span class=s2>&#34;</span><span class=p>|</span>cut -c3-4<span class=sb>`</span>
+</span></span><span class=line><span class=cl><span class=nv>fmode</span><span class=o>=</span><span class=s2>&#34;6</span><span class=nv>$fmode</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[</span> <span class=s2>&#34;x</span><span class=nv>$UMASK</span><span class=s2>&#34;</span> !<span class=o>=</span> <span class=s2>&#34;x0</span><span class=nv>$fmode</span><span class=s2>&#34;</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nb>echo</span> <span class=s2>&#34;UMASK corrected from </span><span class=nv>$UMASK</span><span class=s2> to 0</span><span class=nv>$fmode</span><span class=s2> ...&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#----- 使用的默认配置文件，可以在命令行中指定</span>
+</span></span><span class=line><span class=cl><span class=nv>defaults</span><span class=o>=</span>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=s2>&#34;</span><span class=nv>$1</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>  --no-defaults<span class=p>|</span>--defaults-file<span class=o>=</span>*<span class=p>|</span>--defaults-extra-file<span class=o>=</span>*<span class=o>)</span>
+</span></span><span class=line><span class=cl>   <span class=nv>defaults</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$1</span><span class=s2>&#34;</span><span class=p>;</span> <span class=nb>shift</span>
+</span></span><span class=line><span class=cl>   <span class=p>;;</span>
+</span></span><span class=line><span class=cl><span class=k>esac</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#----- 使用--help选项时输出的使用帮助信息</span>
+</span></span><span class=line><span class=cl>usage <span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>        cat <span class=s>&lt;&lt;EOF
+</span></span></span><span class=line><span class=cl><span class=s>Usage: $0 [OPTIONS]
+</span></span></span><span class=line><span class=cl><span class=s>  --no-defaults              Don&#39;t read the system defaults file
+</span></span></span><span class=line><span class=cl><span class=s>  ... ...
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span><span class=line><span class=cl>        <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#----- 相当于which，检索$PATH中的路径，打印出命令的全路径</span>
+</span></span><span class=line><span class=cl>my_which <span class=o>()</span>        <span class=c1># 该函数只在my_which logger用到，也就是转换为/usr/bin/logger</span>
+</span></span><span class=line><span class=cl><span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=nv>save_ifs</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>IFS</span><span class=p>-UNSET</span><span class=si>}</span><span class=s2>&#34;</span>     <span class=c1># 保存当前的分隔符，用于后面恢复IFS</span>
+</span></span><span class=line><span class=cl>  <span class=nv>IFS</span><span class=o>=</span>:                       <span class=c1># 使用:来分割PATH中的路径</span>
+</span></span><span class=line><span class=cl>  <span class=nv>ret</span><span class=o>=</span><span class=m>0</span>
+</span></span><span class=line><span class=cl>  <span class=k>for</span> file                    <span class=c1># 等同于for file in $*</span>
+</span></span><span class=line><span class=cl>  <span class=k>do</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> dir in <span class=nv>$PATH</span>
+</span></span><span class=line><span class=cl>    <span class=k>do</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=o>[</span> -f <span class=s2>&#34;</span><span class=nv>$dir</span><span class=s2>/</span><span class=nv>$file</span><span class=s2>&#34;</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl>      <span class=k>then</span>
+</span></span><span class=line><span class=cl>        <span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$dir</span><span class=s2>/</span><span class=nv>$file</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>continue</span> <span class=m>2</span>            <span class=c1># 跳出外层循环</span>
+</span></span><span class=line><span class=cl>      <span class=k>fi</span>
+</span></span><span class=line><span class=cl>    <span class=k>done</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nv>ret</span><span class=o>=</span><span class=m>1</span>  <span class=c1>#signal an error</span>
+</span></span><span class=line><span class=cl>	<span class=nb>break</span>
+</span></span><span class=line><span class=cl>  <span class=k>done</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> <span class=s2>&#34;</span><span class=nv>$save_ifs</span><span class=s2>&#34;</span> <span class=o>=</span> UNSET <span class=o>]</span>  <span class=c1># 重置IFS变量</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nb>unset</span> IFS
+</span></span><span class=line><span class=cl>  <span class=k>else</span>
+</span></span><span class=line><span class=cl>    <span class=nv>IFS</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$save_ifs</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=nv>$ret</span>  <span class=c1># Success</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#----- 通用的日志输出，被log_error和log_notice函数调用</span>
+</span></span><span class=line><span class=cl>log_generic <span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=nv>priority</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$1</span><span class=s2>&#34;</span>        <span class=c1># 日志级别，有daemon.error和daemon.notice两种类别</span>
+</span></span><span class=line><span class=cl>  <span class=nb>shift</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=nv>msg</span><span class=o>=</span><span class=s2>&#34;`eval </span><span class=nv>$DATE</span><span class=s2>` mysqld_safe </span><span class=nv>$*</span><span class=s2>&#34;</span>     <span class=c1># 设置日志格式，时间+mysqld_safe+日志</span>
+</span></span><span class=line><span class=cl>  <span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$msg</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nv>$logging</span> in
+</span></span><span class=line><span class=cl>    init<span class=o>)</span> <span class=p>;;</span>                            <span class=c1># 只输出到命令行，不记录到日志</span>
+</span></span><span class=line><span class=cl>    file<span class=o>)</span> <span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$msg</span><span class=s2>&#34;</span> &gt;&gt; <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span> <span class=p>;;</span>  <span class=c1># 输出到错误日志文件</span>
+</span></span><span class=line><span class=cl>    <span class=c1># 用logger命令将日志记录到系统日志syslog</span>
+</span></span><span class=line><span class=cl>    syslog<span class=o>)</span> logger -t <span class=s2>&#34;</span><span class=nv>$syslog_tag_mysqld_safe</span><span class=s2>&#34;</span> -p <span class=s2>&#34;</span><span class=nv>$priority</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=nv>$*</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    both<span class=o>)</span> <span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$msg</span><span class=s2>&#34;</span> &gt;&gt; <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span><span class=p>;</span> logger -t <span class=s2>&#34;</span><span class=nv>$syslog_tag_mysqld_safe</span><span class=s2>&#34;</span> -p <span class=s2>&#34;</span><span class=nv>$priority</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=nv>$*</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    *<span class=o>)</span>
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=s2>&#34;Internal program error (non-fatal):&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>           <span class=s2>&#34; unknown logging method &#39;</span><span class=nv>$logging</span><span class=s2>&#39;&#34;</span> &gt;<span class=p>&amp;</span><span class=m>2</span>
+</span></span><span class=line><span class=cl>      <span class=p>;;</span>
+</span></span><span class=line><span class=cl>  <span class=k>esac</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>log_error <span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  log_generic <span class=si>${</span><span class=nv>syslog_facility</span><span class=si>}</span>.error <span class=s2>&#34;</span><span class=nv>$@</span><span class=s2>&#34;</span> &gt;<span class=p>&amp;</span><span class=m>2</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>log_notice <span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  log_generic <span class=si>${</span><span class=nv>syslog_facility</span><span class=si>}</span>.notice <span class=s2>&#34;</span><span class=nv>$@</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#----- 记录日志的初始化操作，会根据日志类新记录一些初始化日志</span>
+</span></span><span class=line><span class=cl>eval_log_error <span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=nv>cmd</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$1</span><span class=s2>&#34;</span>                              <span class=c1># 最后的eval命令会解析$cmd中的值并执行命令</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nv>$logging</span> in
+</span></span><span class=line><span class=cl>    file<span class=o>)</span> <span class=nv>cmd</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$cmd</span><span class=s2> &gt;&gt; &#34;</span><span class=sb>`</span>shell_quote_string <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span><span class=sb>`</span><span class=s2>&#34; 2&gt;&amp;1&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    syslog<span class=o>)</span>
+</span></span><span class=line><span class=cl>      <span class=nv>cmd</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$cmd</span><span class=s2> 2&gt;&amp;1 | logger -t &#39;</span><span class=nv>$syslog_tag_mysqld</span><span class=s2>&#39; -p daemon.error&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    *<span class=o>)</span>
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=s2>&#34;Internal program error (non-fatal):&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>           <span class=s2>&#34; unknown logging method &#39;</span><span class=nv>$logging</span><span class=s2>&#39;&#34;</span> &gt;<span class=p>&amp;</span><span class=m>2</span>
+</span></span><span class=line><span class=cl>    <span class=p>;;</span>
+</span></span><span class=line><span class=cl>  <span class=k>esac</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>#!!!可以如下命令查看真正执行的命令!!!</span>
+</span></span><span class=line><span class=cl>  <span class=c1>#echo &#34;Running mysqld: [$cmd]&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=nb>eval</span> <span class=s2>&#34;</span><span class=nv>$cmd</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#----- 转义函数，用于在非&#34;a-z&#34;、&#34;A-Z&#34;、&#34;0-9&#34;、&#39;/&#39;、&#39;_&#39;、&#39;.&#39;、&#39;=&#39;、&#39;-&#39;的特殊字符前加上转义字符&#34;\&#34;</span>
+</span></span><span class=line><span class=cl>shell_quote_string<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$1</span><span class=s2>&#34;</span> <span class=p>|</span> sed -e <span class=s1>&#39;s,\([^a-zA-Z0-9/_.=-]\),\\\1,g&#39;</span> <span class=c1># sed中的\1代表引用前面\(\)中匹配的值</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#----- 该函数用于解析配置文件中的选项，并赋值给相应的变量，无法识别则转递给服务器</span>
+</span></span><span class=line><span class=cl>parse_arguments<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=nv>pick_args</span><span class=o>=</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>test</span> <span class=s2>&#34;</span><span class=nv>$1</span><span class=s2>&#34;</span> <span class=o>=</span> PICK-ARGS-FROM-ARGV
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nv>pick_args</span><span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>    <span class=nb>shift</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>for</span> arg <span class=k>do</span>        <span class=c1># 取出参数值</span>
+</span></span><span class=line><span class=cl>    <span class=nv>val</span><span class=o>=</span><span class=sb>`</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$arg</span><span class=s2>&#34;</span> <span class=p>|</span> sed -e <span class=s2>&#34;s;--[^=]*=;;&#34;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>    <span class=nv>optname</span><span class=o>=</span><span class=sb>`</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$arg</span><span class=s2>&#34;</span> <span class=p>|</span> sed -e <span class=s1>&#39;s/^\(--[^=]*\)=.*$/\1/&#39;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>    <span class=nv>optname_subst</span><span class=o>=</span><span class=sb>`</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$optname</span><span class=s2>&#34;</span> <span class=p>|</span> sed <span class=s1>&#39;s/_/-/g&#39;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>    <span class=nv>arg</span><span class=o>=</span><span class=sb>`</span><span class=nb>echo</span> <span class=nv>$arg</span> <span class=p>|</span> sed <span class=s2>&#34;s/^</span><span class=nv>$optname</span><span class=s2>/</span><span class=nv>$optname_subst</span><span class=s2>/&#34;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=s2>&#34;</span><span class=nv>$arg</span><span class=s2>&#34;</span> in  <span class=c1># 将参数值传递给对应的变量</span>
+</span></span><span class=line><span class=cl>      --basedir<span class=o>=</span>*<span class=o>)</span> <span class=nv>MY_BASEDIR_VERSION</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --datadir<span class=o>=</span>*<span class=o>)</span> <span class=nv>DATADIR</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --pid-file<span class=o>=</span>*<span class=o>)</span> <span class=nv>pid_file</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --plugin-dir<span class=o>=</span>*<span class=o>)</span> <span class=nv>PLUGIN_DIR</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --user<span class=o>=</span>*<span class=o>)</span> <span class=nv>user</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span><span class=p>;</span> <span class=nv>SET_USER</span><span class=o>=</span><span class=m>1</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=c1># 有些值已经在my.cnf配置文件的[mysqld_safe]组下设置，可被命令行覆盖</span>
+</span></span><span class=line><span class=cl>      --log-error<span class=o>=</span>*<span class=o>)</span> <span class=nv>err_log</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --port<span class=o>=</span>*<span class=o>)</span> <span class=nv>mysql_tcp_port</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --socket<span class=o>=</span>*<span class=o>)</span> <span class=nv>mysql_unix_port</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=c1># 如下的配置项必须在配置文件的[mysqld_safe]组中设置</span>
+</span></span><span class=line><span class=cl>      --core-file-size<span class=o>=</span>*<span class=o>)</span> <span class=nv>core_file_size</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --ledir<span class=o>=</span>*<span class=o>)</span> <span class=nv>ledir</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --malloc-lib<span class=o>=</span>*<span class=o>)</span> set_malloc_lib <span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --mysqld<span class=o>=</span>*<span class=o>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=o>[</span> -z <span class=s2>&#34;</span><span class=nv>$pick_args</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>          log_error <span class=s2>&#34;--mysqld option can only be used as command line option, found in config file&#34;</span>
+</span></span><span class=line><span class=cl>          <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>        <span class=k>fi</span>
+</span></span><span class=line><span class=cl>        <span class=nv>MYSQLD</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --mysqld-version<span class=o>=</span>*<span class=o>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=o>[</span> -z <span class=s2>&#34;</span><span class=nv>$pick_args</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>          log_error <span class=s2>&#34;--mysqld-version option can only be used as command line option, found in config file&#34;</span>
+</span></span><span class=line><span class=cl>          <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>        <span class=k>fi</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nb>test</span> -n <span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>then</span>
+</span></span><span class=line><span class=cl>          <span class=nv>MYSQLD</span><span class=o>=</span><span class=s2>&#34;mysqld-</span><span class=nv>$val</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>          <span class=nv>PLUGIN_VARIANT</span><span class=o>=</span><span class=s2>&#34;/</span><span class=nv>$val</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>else</span>
+</span></span><span class=line><span class=cl>          <span class=nv>MYSQLD</span><span class=o>=</span><span class=s2>&#34;mysqld&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>fi</span>
+</span></span><span class=line><span class=cl>        <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --nice<span class=o>=</span>*<span class=o>)</span> <span class=nv>niceness</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --open-files-limit<span class=o>=</span>*<span class=o>)</span> <span class=nv>open_files</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --open-files-limit<span class=o>=</span>*<span class=o>)</span> <span class=nv>open_files</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --skip-kill-mysqld*<span class=o>)</span> <span class=nv>KILL_MYSQLD</span><span class=o>=</span><span class=m>0</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --mysqld-safe-log-timestamps<span class=o>=</span>*<span class=o>)</span> <span class=nv>timestamp_format</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --syslog<span class=o>)</span> <span class=nv>want_syslog</span><span class=o>=</span><span class=m>1</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --skip-syslog<span class=o>)</span> <span class=nv>want_syslog</span><span class=o>=</span><span class=m>0</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --syslog-tag<span class=o>=</span>*<span class=o>)</span> <span class=nv>syslog_tag</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      --timezone<span class=o>=</span>*<span class=o>)</span> <span class=nv>TZ</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span><span class=p>;</span> <span class=nb>export</span> TZ<span class=p>;</span> <span class=p>;;</span>   <span class=c1># 生效了一下时区设置</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      --help<span class=o>)</span> usage <span class=p>;;</span>                         <span class=c1># 调用了usage函数，输出帮助信息</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      *<span class=o>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nb>test</span> -n <span class=s2>&#34;</span><span class=nv>$pick_args</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>then</span>
+</span></span><span class=line><span class=cl>          append_arg_to_args <span class=s2>&#34;</span><span class=nv>$arg</span><span class=s2>&#34;</span>            <span class=c1># 将其他命令行参数值附加到$arg的后面</span>
+</span></span><span class=line><span class=cl>        <span class=k>fi</span>
+</span></span><span class=line><span class=cl>        <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    <span class=k>esac</span>
+</span></span><span class=line><span class=cl>  <span class=k>done</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 添加到LD_PRELOAD，使用空格分割</span>
+</span></span><span class=line><span class=cl>add_mysqld_ld_preload<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=nv>lib_to_add</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$1</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  log_notice <span class=s2>&#34;Adding &#39;</span><span class=nv>$lib_to_add</span><span class=s2>&#39; to LD_PRELOAD for mysqld&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=s2>&#34;</span><span class=nv>$lib_to_add</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>    *<span class=s1>&#39; &#39;</span>*<span class=o>)</span>
+</span></span><span class=line><span class=cl>      <span class=c1># Must strip path from lib, and add it to LD_LIBRARY_PATH</span>
+</span></span><span class=line><span class=cl>      <span class=nv>lib_file</span><span class=o>=</span><span class=sb>`</span>basename <span class=s2>&#34;</span><span class=nv>$lib_to_add</span><span class=s2>&#34;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>      <span class=k>case</span> <span class=s2>&#34;</span><span class=nv>$lib_file</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>        *<span class=s1>&#39; &#39;</span>*<span class=o>)</span>
+</span></span><span class=line><span class=cl>          <span class=c1># The lib file itself has a space in its name, and can&#39;t</span>
+</span></span><span class=line><span class=cl>          <span class=c1># be used in LD_PRELOAD</span>
+</span></span><span class=line><span class=cl>          log_error <span class=s2>&#34;library name &#39;</span><span class=nv>$lib_to_add</span><span class=s2>&#39; contains spaces and can not be used with LD_PRELOAD&#34;</span>
+</span></span><span class=line><span class=cl>          <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>          <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      <span class=k>esac</span>
+</span></span><span class=line><span class=cl>      <span class=nv>lib_path</span><span class=o>=</span><span class=sb>`</span>dirname <span class=s2>&#34;</span><span class=nv>$lib_to_add</span><span class=s2>&#34;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>      <span class=nv>lib_to_add</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$lib_file</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=o>[</span> -n <span class=s2>&#34;</span><span class=nv>$mysqld_ld_library_path</span><span class=s2>&#34;</span> <span class=o>]</span> <span class=o>&amp;&amp;</span> <span class=nv>mysqld_ld_library_path</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$mysqld_ld_library_path</span><span class=s2>:&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=nv>mysqld_ld_library_path</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$mysqld_ld_library_path$lib_path</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=p>;;</span>
+</span></span><span class=line><span class=cl>  <span class=k>esac</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># LD_PRELOAD is a space-separated</span>
+</span></span><span class=line><span class=cl>  <span class=o>[</span> -n <span class=s2>&#34;</span><span class=nv>$mysqld_ld_preload</span><span class=s2>&#34;</span> <span class=o>]</span> <span class=o>&amp;&amp;</span> <span class=nv>mysqld_ld_preload</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$mysqld_ld_preload</span><span class=s2> &#34;</span>
+</span></span><span class=line><span class=cl>  <span class=nv>mysqld_ld_preload</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>mysqld_ld_preload</span><span class=si>}</span><span class=nv>$lib_to_add</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Returns LD_PRELOAD (and LD_LIBRARY_PATH, if needed) text, quoted to be</span>
+</span></span><span class=line><span class=cl><span class=c1># suitable for use in the eval that calls mysqld.</span>
+</span></span><span class=line><span class=cl><span class=c1>#</span>
+</span></span><span class=line><span class=cl><span class=c1># All values in mysqld_ld_preload are prepended to LD_PRELOAD.</span>
+</span></span><span class=line><span class=cl>mysqld_ld_preload_text<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=nv>text</span><span class=o>=</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> -n <span class=s2>&#34;</span><span class=nv>$mysqld_ld_preload</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nv>new_text</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$mysqld_ld_preload</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=o>[</span> -n <span class=s2>&#34;</span><span class=nv>$LD_PRELOAD</span><span class=s2>&#34;</span> <span class=o>]</span> <span class=o>&amp;&amp;</span> <span class=nv>new_text</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$new_text</span><span class=s2> </span><span class=nv>$LD_PRELOAD</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nv>text</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>text</span><span class=si>}</span><span class=s2>LD_PRELOAD=&#34;</span><span class=sb>`</span>shell_quote_string <span class=s2>&#34;</span><span class=nv>$new_text</span><span class=s2>&#34;</span><span class=sb>`</span><span class=s1>&#39; &#39;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> -n <span class=s2>&#34;</span><span class=nv>$mysqld_ld_library_path</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nv>new_text</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$mysqld_ld_library_path</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=o>[</span> -n <span class=s2>&#34;</span><span class=nv>$LD_LIBRARY_PATH</span><span class=s2>&#34;</span> <span class=o>]</span> <span class=o>&amp;&amp;</span> <span class=nv>new_text</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$new_text</span><span class=s2>:</span><span class=nv>$LD_LIBRARY_PATH</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nv>text</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>text</span><span class=si>}</span><span class=s2>LD_LIBRARY_PATH=&#34;</span><span class=sb>`</span>shell_quote_string <span class=s2>&#34;</span><span class=nv>$new_text</span><span class=s2>&#34;</span><span class=sb>`</span><span class=s1>&#39; &#39;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$text</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># set_malloc_lib LIB</span>
+</span></span><span class=line><span class=cl><span class=c1># - If LIB is empty, do nothing and return</span>
+</span></span><span class=line><span class=cl><span class=c1># - If LIB is &#39;tcmalloc&#39;, look for tcmalloc shared library in $malloc_dirs.</span>
+</span></span><span class=line><span class=cl><span class=c1>#   tcmalloc is part of the Google perftools project.</span>
+</span></span><span class=line><span class=cl><span class=c1># - If LIB is an absolute path, assume it is a malloc shared library</span>
+</span></span><span class=line><span class=cl><span class=c1>#</span>
+</span></span><span class=line><span class=cl><span class=c1># Put LIB in mysqld_ld_preload, which will be added to LD_PRELOAD when</span>
+</span></span><span class=line><span class=cl><span class=c1># running mysqld.  See ld.so for details.</span>
+</span></span><span class=line><span class=cl>set_malloc_lib<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=c1># This list is kept intentionally simple.</span>
+</span></span><span class=line><span class=cl>  <span class=nv>malloc_dirs</span><span class=o>=</span><span class=s2>&#34;/usr/lib /usr/lib64 /usr/lib/i386-linux-gnu /usr/lib/x86_64-linux-gnu&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=nv>malloc_lib</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$1</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> <span class=s2>&#34;</span><span class=nv>$malloc_lib</span><span class=s2>&#34;</span> <span class=o>=</span> tcmalloc <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nv>malloc_lib</span><span class=o>=</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> libdir in <span class=k>$(</span><span class=nb>echo</span> <span class=nv>$malloc_dirs</span><span class=k>)</span><span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>      <span class=k>for</span> flavor in _minimal <span class=s1>&#39;&#39;</span> _and_profiler _debug<span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>        <span class=nv>tmp</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$libdir</span><span class=s2>/libtcmalloc</span><span class=nv>$flavor</span><span class=s2>.so&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=c1>#log_notice &#34;DEBUG: Checking for malloc lib &#39;$tmp&#39;&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=o>[</span> -r <span class=s2>&#34;</span><span class=nv>$tmp</span><span class=s2>&#34;</span> <span class=o>]</span> <span class=o>||</span> <span class=k>continue</span>
+</span></span><span class=line><span class=cl>        <span class=nv>malloc_lib</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$tmp</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=nb>break</span> <span class=m>2</span>
+</span></span><span class=line><span class=cl>      <span class=k>done</span>
+</span></span><span class=line><span class=cl>    <span class=k>done</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=o>[</span> -z <span class=s2>&#34;</span><span class=nv>$malloc_lib</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>      log_error <span class=s2>&#34;no shared library for --malloc-lib=tcmalloc found in </span><span class=nv>$malloc_dirs</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># Allow --malloc-lib=&#39;&#39; to override other settings</span>
+</span></span><span class=line><span class=cl>  <span class=o>[</span> -z  <span class=s2>&#34;</span><span class=nv>$malloc_lib</span><span class=s2>&#34;</span> <span class=o>]</span> <span class=o>&amp;&amp;</span> <span class=k>return</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=s2>&#34;</span><span class=nv>$malloc_lib</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>    /*<span class=o>)</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=o>[</span> ! -r <span class=s2>&#34;</span><span class=nv>$malloc_lib</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>        log_error <span class=s2>&#34;--malloc-lib can not be read and will not be used&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>      <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=c1># Restrict to a the list in $malloc_dirs above</span>
+</span></span><span class=line><span class=cl>      <span class=k>case</span> <span class=s2>&#34;</span><span class=k>$(</span>dirname <span class=s2>&#34;</span><span class=nv>$malloc_lib</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>        /usr/lib<span class=o>)</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>        /usr/lib64<span class=o>)</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>        /usr/lib/i386-linux-gnu<span class=o>)</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>        /usr/lib/x86_64-linux-gnu<span class=o>)</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>        *<span class=o>)</span>
+</span></span><span class=line><span class=cl>          log_error <span class=s2>&#34;--malloc-lib must be located in one of the directories: </span><span class=nv>$malloc_dirs</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>          <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>          <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      <span class=k>esac</span>
+</span></span><span class=line><span class=cl>      <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    *<span class=o>)</span>
+</span></span><span class=line><span class=cl>      log_error <span class=s2>&#34;--malloc-lib must be an absolute path or &#39;tcmalloc&#39;; &#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        <span class=s2>&#34;ignoring value &#39;</span><span class=nv>$malloc_lib</span><span class=s2>&#39;&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>      <span class=p>;;</span>
+</span></span><span class=line><span class=cl>  <span class=k>esac</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  add_mysqld_ld_preload <span class=s2>&#34;</span><span class=nv>$malloc_lib</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl><span class=c1># 正式工作开始了！！！</span>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl><span class=c1># 1. 查找base目录和mysqld所在目录</span>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>echo</span> <span class=s1>&#39;/opt/mysql-5.7/share&#39;</span> <span class=p>|</span> grep <span class=s1>&#39;^/opt/mysql-5.7&#39;</span> &gt; /dev/null
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 一口气用了三个替换，分别为：</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 第一步：将/opt/mysql-5.7/share去除开始的basedir，转换为/share</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 第二步：将/share开头的/转换为空，也就是share</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 第三步：在share开头加上./，结果即：./share</span>
+</span></span><span class=line><span class=cl>  <span class=nv>relpkgdata</span><span class=o>=</span><span class=sb>`</span><span class=nb>echo</span> <span class=s1>&#39;/opt/mysql-5.7/share&#39;</span> <span class=p>|</span> sed -e <span class=s1>&#39;s,^/opt/mysql-5.7,,&#39;</span> -e <span class=s1>&#39;s,^/,,&#39;</span> -e <span class=s1>&#39;s,^,./,&#39;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl>  <span class=c1># pkgdatadir is not relative to prefix</span>
+</span></span><span class=line><span class=cl>  <span class=nv>relpkgdata</span><span class=o>=</span><span class=s1>&#39;/opt/mysql-5.7/share&#39;</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=s2>&#34;</span><span class=nv>$0</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>  /*<span class=o>)</span>
+</span></span><span class=line><span class=cl>  <span class=nv>MY_PWD</span><span class=o>=</span><span class=s1>&#39;/opt/mysql-5.7&#39;</span>
+</span></span><span class=line><span class=cl>  <span class=p>;;</span>
+</span></span><span class=line><span class=cl>  *<span class=o>)</span>
+</span></span><span class=line><span class=cl>  <span class=nv>MY_PWD</span><span class=o>=</span><span class=sb>`</span>dirname <span class=nv>$0</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>  <span class=nv>MY_PWD</span><span class=o>=</span><span class=sb>`</span>dirname <span class=nv>$MY_PWD</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>  <span class=p>;;</span>
+</span></span><span class=line><span class=cl><span class=k>esac</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 查找mysqld可执行文件，分别判断了libexec和sbin目录，找不到就使用bin目录</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -n <span class=s2>&#34;</span><span class=nv>$MY_BASEDIR_VERSION</span><span class=s2>&#34;</span> -a -d <span class=s2>&#34;</span><span class=nv>$MY_BASEDIR_VERSION</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=c1># BASEDIR is already overridden on command line.  Do not re-set.</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># Use BASEDIR to discover le.</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>test</span> -x <span class=s2>&#34;</span><span class=nv>$MY_BASEDIR_VERSION</span><span class=s2>/libexec/mysqld&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nv>ledir</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$MY_BASEDIR_VERSION</span><span class=s2>/libexec&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>elif</span> <span class=nb>test</span> -x <span class=s2>&#34;</span><span class=nv>$MY_BASEDIR_VERSION</span><span class=s2>/sbin/mysqld&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nv>ledir</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$MY_BASEDIR_VERSION</span><span class=s2>/sbin&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>else</span>
+</span></span><span class=line><span class=cl>    <span class=nv>ledir</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$MY_BASEDIR_VERSION</span><span class=s2>/bin&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>elif</span> <span class=nb>test</span> -f <span class=s2>&#34;</span><span class=nv>$relpkgdata</span><span class=s2>&#34;</span>/english/errmsg.sys -a -x <span class=s2>&#34;</span><span class=nv>$MY_PWD</span><span class=s2>/bin/mysqld&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>MY_BASEDIR_VERSION</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$MY_PWD</span><span class=s2>&#34;</span>		<span class=c1># Where bin, share and data are</span>
+</span></span><span class=line><span class=cl>  <span class=nv>ledir</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$MY_PWD</span><span class=s2>/bin&#34;</span>			<span class=c1># Where mysqld is</span>
+</span></span><span class=line><span class=cl><span class=c1># Check for the directories we would expect from a source install</span>
+</span></span><span class=line><span class=cl><span class=k>elif</span> <span class=nb>test</span> -f <span class=s2>&#34;</span><span class=nv>$relpkgdata</span><span class=s2>&#34;</span>/english/errmsg.sys -a -x <span class=s2>&#34;</span><span class=nv>$MY_PWD</span><span class=s2>/libexec/mysqld&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>MY_BASEDIR_VERSION</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$MY_PWD</span><span class=s2>&#34;</span>		<span class=c1># Where libexec, share and var are</span>
+</span></span><span class=line><span class=cl>  <span class=nv>ledir</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$MY_PWD</span><span class=s2>/libexec&#34;</span>		<span class=c1># Where mysqld is</span>
+</span></span><span class=line><span class=cl><span class=k>elif</span> <span class=nb>test</span> -f <span class=s2>&#34;</span><span class=nv>$relpkgdata</span><span class=s2>&#34;</span>/english/errmsg.sys -a -x <span class=s2>&#34;</span><span class=nv>$MY_PWD</span><span class=s2>/sbin/mysqld&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>MY_BASEDIR_VERSION</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$MY_PWD</span><span class=s2>&#34;</span>		<span class=c1># Where sbin, share and var are</span>
+</span></span><span class=line><span class=cl>  <span class=nv>ledir</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$MY_PWD</span><span class=s2>/sbin&#34;</span>			<span class=c1># Where mysqld is</span>
+</span></span><span class=line><span class=cl><span class=c1># Since we didn&#39;t find anything, used the compiled-in defaults</span>
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl>  <span class=nv>MY_BASEDIR_VERSION</span><span class=o>=</span><span class=s1>&#39;/opt/mysql-5.7&#39;</span>
+</span></span><span class=line><span class=cl>  <span class=nv>ledir</span><span class=o>=</span><span class=s1>&#39;/opt/mysql-5.7/bin&#39;</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl><span class=c1># 2. 查找base目录和mysqld所在目录</span>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl><span class=c1># 可以从my_print_defaults脚本中获得默认的读取my.cnf顺序，如下</span>
+</span></span><span class=line><span class=cl><span class=c1>#   Default options are read from the following files in the given order:</span>
+</span></span><span class=line><span class=cl><span class=c1>#   /etc/mysql/my.cnf /etc/my.cnf ~/.my.cnf</span>
+</span></span><span class=line><span class=cl><span class=c1># 2.1 查找下BASEDIR目录</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -d <span class=nv>$MY_BASEDIR_VERSION</span>/data/mysql
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>DATADIR</span><span class=o>=</span><span class=nv>$MY_BASEDIR_VERSION</span>/data
+</span></span><span class=line><span class=cl><span class=c1># Next try where the source installs put it</span>
+</span></span><span class=line><span class=cl><span class=k>elif</span> <span class=nb>test</span> -d <span class=nv>$MY_BASEDIR_VERSION</span>/var/mysql
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>DATADIR</span><span class=o>=</span><span class=nv>$MY_BASEDIR_VERSION</span>/var
+</span></span><span class=line><span class=cl><span class=c1># Or just give up and use our compiled-in default</span>
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl>  <span class=nv>DATADIR</span><span class=o>=</span>/opt/data
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -z <span class=s2>&#34;</span><span class=nv>$MYSQL_HOME</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>MYSQL_HOME</span><span class=o>=</span><span class=nv>$MY_BASEDIR_VERSION</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=nb>export</span> MYSQL_HOME
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 2.2 找到my_print_defaults所在目录，并打印[mysqld]和[mysqld_safe]中的配置项，然后与从命令行</span>
+</span></span><span class=line><span class=cl><span class=c1>#     传入的参数合并，优先级为</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -x <span class=s2>&#34;</span><span class=nv>$MY_BASEDIR_VERSION</span><span class=s2>/bin/my_print_defaults&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>print_defaults</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$MY_BASEDIR_VERSION</span><span class=s2>/bin/my_print_defaults&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>elif</span> <span class=nb>test</span> -x <span class=sb>`</span>dirname <span class=nv>$0</span><span class=sb>`</span>/my_print_defaults
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>print_defaults</span><span class=o>=</span><span class=s2>&#34;`dirname </span><span class=nv>$0</span><span class=s2>`/my_print_defaults&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>elif</span> <span class=nb>test</span> -x ./bin/my_print_defaults
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>print_defaults</span><span class=o>=</span><span class=s2>&#34;./bin/my_print_defaults&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>elif</span> <span class=nb>test</span> -x /opt/mysql-5.7/bin/my_print_defaults
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>print_defaults</span><span class=o>=</span><span class=s2>&#34;/opt/mysql-5.7/bin/my_print_defaults&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>elif</span> <span class=nb>test</span> -x /opt/mysql-5.7/bin/mysql_print_defaults
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>print_defaults</span><span class=o>=</span><span class=s2>&#34;/opt/mysql-5.7/bin/mysql_print_defaults&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl>  <span class=nv>print_defaults</span><span class=o>=</span><span class=s2>&#34;my_print_defaults&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 这个函数可以将一个指定的参数附加到$arg中(在此同时执行了转义操作)</span>
+</span></span><span class=line><span class=cl>append_arg_to_args <span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=nv>args</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$args</span><span class=s2> &#34;</span><span class=sb>`</span>shell_quote_string <span class=s2>&#34;</span><span class=nv>$1</span><span class=s2>&#34;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl><span class=nv>args</span><span class=o>=</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 通过SET_USER变量判断来源，2：初始值；1：配置文件或者命令行中配置；0：没有配置</span>
+</span></span><span class=line><span class=cl><span class=nv>SET_USER</span><span class=o>=</span><span class=m>2</span>
+</span></span><span class=line><span class=cl><span class=c1># 解析配置文件中的参数，只显示[mysqld]和[server]分组中的内容</span>
+</span></span><span class=line><span class=cl>parse_arguments <span class=sb>`</span><span class=nv>$print_defaults</span> <span class=nv>$defaults</span> --loose-verbose mysqld server<span class=sb>`</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> <span class=nv>$SET_USER</span> -eq <span class=m>2</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl> <span class=nv>SET_USER</span><span class=o>=</span><span class=m>0</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=c1># 如上，又读取[safe_mysqld]和[mysqld_safe]分组中配置项</span>
+</span></span><span class=line><span class=cl>parse_arguments <span class=sb>`</span><span class=nv>$print_defaults</span> <span class=nv>$defaults</span> --loose-verbose mysqld_safe safe_mysqld<span class=sb>`</span>
+</span></span><span class=line><span class=cl><span class=c1># 用命令行输入选项，也就是$@，从而可以覆盖配置文件中的选项</span>
+</span></span><span class=line><span class=cl>parse_arguments PICK-ARGS-FROM-ARGV <span class=s2>&#34;</span><span class=nv>$@</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Sort out date command from $timestamp_format early so we&#39;ll start off</span>
+</span></span><span class=line><span class=cl><span class=c1># with correct log messages.</span>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=s2>&#34;</span><span class=nv>$timestamp_format</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>    UTC<span class=p>|</span>utc<span class=o>)</span>       <span class=nv>DATE</span><span class=o>=</span><span class=s2>&#34;date -u +%Y-%m-%dT%H:%M:%S.%06NZ&#34;</span><span class=p>;;</span>
+</span></span><span class=line><span class=cl>    SYSTEM<span class=p>|</span>system<span class=o>)</span> <span class=nv>DATE</span><span class=o>=</span><span class=s2>&#34;date +%Y-%m-%dT%H:%M:%S.%06N%:z&#34;</span><span class=p>;;</span>
+</span></span><span class=line><span class=cl>    HYPHEN<span class=p>|</span>hyphen<span class=o>)</span> <span class=nv>DATE</span><span class=o>=</span><span class=s2>&#34;date +&#39;%Y-%m-%d %H:%M:%S&#39;&#34;</span><span class=p>;;</span>
+</span></span><span class=line><span class=cl>    LEGACY<span class=p>|</span>legacy<span class=o>)</span> <span class=nv>DATE</span><span class=o>=</span><span class=s2>&#34;date +&#39;%y%m%d %H:%M:%S&#39;&#34;</span><span class=p>;;</span>
+</span></span><span class=line><span class=cl>    *<span class=o>)</span>             <span class=nv>DATE</span><span class=o>=</span><span class=s2>&#34;date -u +%Y-%m-%dT%H:%M:%S.%06NZ&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>                   log_error <span class=s2>&#34;unknown data format </span><span class=nv>$timestamp_format</span><span class=s2>, using UTC&#34;</span><span class=p>;;</span>
+</span></span><span class=line><span class=cl><span class=k>esac</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 2.3 查找plugin目录</span>
+</span></span><span class=line><span class=cl><span class=c1># Use user-supplied argument</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[</span> -n <span class=s2>&#34;</span><span class=si>${</span><span class=nv>PLUGIN_DIR</span><span class=si>}</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>plugin_dir</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>PLUGIN_DIR</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl>  <span class=c1># Try to find plugin dir relative to basedir</span>
+</span></span><span class=line><span class=cl>  <span class=k>for</span> dir in lib64/mysql/plugin lib64/plugin lib/mysql/plugin lib/plugin
+</span></span><span class=line><span class=cl>  <span class=k>do</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=o>[</span> -d <span class=s2>&#34;</span><span class=si>${</span><span class=nv>MY_BASEDIR_VERSION</span><span class=si>}</span><span class=s2>/</span><span class=si>${</span><span class=nv>dir</span><span class=si>}</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>      <span class=nv>plugin_dir</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>MY_BASEDIR_VERSION</span><span class=si>}</span><span class=s2>/</span><span class=si>${</span><span class=nv>dir</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=nb>break</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>done</span>
+</span></span><span class=line><span class=cl>  <span class=c1># Give up and use compiled-in default</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> -z <span class=s2>&#34;</span><span class=si>${</span><span class=nv>plugin_dir</span><span class=si>}</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nv>plugin_dir</span><span class=o>=</span><span class=s1>&#39;/opt/mysql-5.7/lib/plugin&#39;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=nv>plugin_dir</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>plugin_dir</span><span class=si>}${</span><span class=nv>PLUGIN_VARIANT</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># A pid file is created for the mysqld_safe process. This file protects the</span>
+</span></span><span class=line><span class=cl><span class=c1># server instance resources during race conditions.</span>
+</span></span><span class=line><span class=cl><span class=nv>safe_pid</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$DATADIR</span><span class=s2>/mysqld_safe.pid&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -f <span class=nv>$safe_pid</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>PID</span><span class=o>=</span><span class=sb>`</span>cat <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>kill</span> -0 <span class=nv>$PID</span> &gt; /dev/null 2&gt; /dev/null
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> ps wwwp <span class=nv>$PID</span> <span class=p>|</span> grep -v mysqld_safe <span class=p>|</span> grep -- <span class=nv>$MYSQLD</span> &gt; /dev/null
+</span></span><span class=line><span class=cl>    <span class=k>then</span>
+</span></span><span class=line><span class=cl>      log_error <span class=s2>&#34;A mysqld_safe process already exists&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    rm -f <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>test</span> -f <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    log_error <span class=s2>&#34;Fatal error: Can&#39;t remove the mysqld_safe pid file&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Insert pid proerply into the pid file.</span>
+</span></span><span class=line><span class=cl>ps -e <span class=p>|</span> grep  <span class=o>[</span>m<span class=o>]</span>ysqld_safe <span class=p>|</span> awk <span class=s1>&#39;{print $1}&#39;</span> <span class=p>|</span> sed -n 1p &gt; <span class=nv>$safe_pid</span>
+</span></span><span class=line><span class=cl><span class=c1># End of mysqld_safe pid(safe_pid) check.</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl><span class=c1># log日志方式设置，共stdin,file,syslog三种</span>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 如果是写入到syslog，则判断logger工具是否可用</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[</span> <span class=nv>$want_syslog</span> -eq <span class=m>1</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  my_which logger &gt; /dev/null 2&gt;<span class=p>&amp;</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> <span class=nv>$?</span> -ne <span class=m>0</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    log_error <span class=s2>&#34;--syslog requested, but no &#39;logger&#39; program found.  Please ensure
+</span></span></span><span class=line><span class=cl><span class=s2>     that &#39;logger&#39; is in your PATH, or do not specify the --syslog option to mysqld_safe.&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>      rm -f <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span>                 <span class=c1># Clean Up of mysqld_safe.pid file.</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl>    <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[</span> <span class=nv>$want_syslog</span> -eq <span class=m>1</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> -n <span class=s2>&#34;</span><span class=nv>$syslog_tag</span><span class=s2>&#34;</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=c1># Sanitize the syslog tag</span>
+</span></span><span class=line><span class=cl>    <span class=nv>syslog_tag</span><span class=o>=</span><span class=sb>`</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$syslog_tag</span><span class=s2>&#34;</span> <span class=p>|</span> sed -e <span class=s1>&#39;s/[^a-zA-Z0-9_-]/_/g&#39;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>    <span class=nv>syslog_tag_mysqld_safe</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>syslog_tag_mysqld_safe</span><span class=si>}</span><span class=s2>-</span><span class=nv>$syslog_tag</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nv>syslog_tag_mysqld</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>syslog_tag_mysqld</span><span class=si>}</span><span class=s2>-</span><span class=nv>$syslog_tag</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  log_notice <span class=s2>&#34;Logging to syslog.&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=nv>logging</span><span class=o>=</span>syslog
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=c1># 如果是将日志记录到文件中</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[</span> -n <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span> -o <span class=nv>$want_syslog</span> -eq <span class=m>0</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> -n <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=c1># 如果没有.err后缀，则为err_log添加一个；此时，mysqld和mysqld_safe会写入到</span>
+</span></span><span class=line><span class=cl>    <span class=c1># 同一个日志文件中。如果是&#34;--log-error=foo.&#34;则认为文件名是有效的</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1># 这里是识别文件名的字符总数量(包括.)，如果没有设置后缀或者以&#39;/&#39;结尾则返回0</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> expr <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span> : <span class=s1>&#39;.*\.[^/]*$&#39;</span> &gt; /dev/null
+</span></span><span class=line><span class=cl>    <span class=k>then</span>
+</span></span><span class=line><span class=cl>        :
+</span></span><span class=line><span class=cl>    <span class=k>else</span>
+</span></span><span class=line><span class=cl>      <span class=nv>err_log</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span>.err
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>      /* <span class=o>)</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      * <span class=o>)</span> <span class=nv>err_log</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$DATADIR</span><span class=s2>/</span><span class=nv>$err_log</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    <span class=k>esac</span>
+</span></span><span class=line><span class=cl>  <span class=k>else</span>
+</span></span><span class=line><span class=cl>    <span class=c1># 默认设置的错误日志名称</span>
+</span></span><span class=line><span class=cl>    <span class=nv>err_log</span><span class=o>=</span><span class=nv>$DATADIR</span>/<span class=sb>`</span>hostname<span class=sb>`</span>.err
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># 同时会将该参数添加到mysqld启动的参数中</span>
+</span></span><span class=line><span class=cl>  append_arg_to_args <span class=s2>&#34;--log-error=</span><span class=nv>$err_log</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># 提示日志写入到的文件名称</span>
+</span></span><span class=line><span class=cl>  log_notice <span class=s2>&#34;Logging to &#39;</span><span class=nv>$err_log</span><span class=s2>&#39;.&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> <span class=nv>$want_syslog</span> -eq <span class=m>1</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nv>logging</span><span class=o>=</span>both
+</span></span><span class=line><span class=cl>  <span class=k>else</span>
+</span></span><span class=line><span class=cl>    <span class=nv>logging</span><span class=o>=</span>file <span class=c1># 正式把logging改成file使用错误日志来记录日志</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> ! -f <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>                  <span class=c1># if error log already exists,</span>
+</span></span><span class=line><span class=cl>    touch <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span>                            <span class=c1># we just append. otherwise,</span>
+</span></span><span class=line><span class=cl>    chmod <span class=s2>&#34;</span><span class=nv>$fmode</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span>                   <span class=c1># fix the permissions here!</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 设置--user选项</span>
+</span></span><span class=line><span class=cl><span class=nv>USER_OPTION</span><span class=o>=</span><span class=s2>&#34;&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -w / -o <span class=s2>&#34;</span><span class=nv>$USER</span><span class=s2>&#34;</span> <span class=o>=</span> <span class=s2>&#34;root&#34;</span> <span class=c1># 根目录是否可写，或者当前用户为root</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>test</span> <span class=s2>&#34;</span><span class=nv>$user</span><span class=s2>&#34;</span> !<span class=o>=</span> <span class=s2>&#34;root&#34;</span> -o <span class=nv>$SET_USER</span> <span class=o>=</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nv>USER_OPTION</span><span class=o>=</span><span class=s2>&#34;--user=</span><span class=nv>$user</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 创建错误日志，并将日志授权给指定的用户</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> <span class=nv>$want_syslog</span> -eq <span class=m>0</span> -a ! -h <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    touch <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    chown <span class=nv>$user</span> <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 这里它还对当前用户做了ulimit设置，包括可以打开的文件数量--open_files-limit选项</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>test</span> -n <span class=s2>&#34;</span><span class=nv>$open_files</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nb>ulimit</span> -n <span class=nv>$open_files</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -n <span class=s2>&#34;</span><span class=nv>$open_files</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  append_arg_to_args <span class=s2>&#34;--open-files-limit=</span><span class=nv>$open_files</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>safe_mysql_unix_port</span><span class=o>=</span><span class=si>${</span><span class=nv>mysql_unix_port</span><span class=k>:-</span><span class=si>${</span><span class=nv>MYSQL_UNIX_PORT</span><span class=k>:-</span><span class=p>/tmp/mysql.sock</span><span class=si>}}</span>
+</span></span><span class=line><span class=cl><span class=c1># 确保 $safe_mysql_unix_port 目录是存在的</span>
+</span></span><span class=line><span class=cl><span class=c1># Make sure that directory for $safe_mysql_unix_port exists</span>
+</span></span><span class=line><span class=cl><span class=nv>mysql_unix_port_dir</span><span class=o>=</span><span class=sb>`</span>dirname <span class=nv>$safe_mysql_unix_port</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[</span> ! -d <span class=nv>$mysql_unix_port_dir</span> <span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> ! -h <span class=nv>$mysql_unix_port_dir</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    mkdir <span class=nv>$mysql_unix_port_dir</span>
+</span></span><span class=line><span class=cl>    chown <span class=nv>$user</span> <span class=nv>$mysql_unix_port_dir</span>
+</span></span><span class=line><span class=cl>    chmod <span class=m>755</span> <span class=nv>$mysql_unix_port_dir</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 如果用户没有制定mysqld程序的名称，这里就默认赋值为mysqld</span>
+</span></span><span class=line><span class=cl><span class=c1># If the user doesn&#39;t specify a binary, we assume name &#34;mysqld&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -z <span class=s2>&#34;</span><span class=nv>$MYSQLD</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>MYSQLD</span><span class=o>=</span>mysqld
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 下面几段分别是对 mysqld ， pid ， port文件选项的检查和设置，省略100个字</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> ! -x <span class=s2>&#34;</span><span class=nv>$ledir</span><span class=s2>/</span><span class=nv>$MYSQLD</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  log_error <span class=s2>&#34;The file </span><span class=nv>$ledir</span><span class=s2>/</span><span class=nv>$MYSQLD</span><span class=s2>
+</span></span></span><span class=line><span class=cl><span class=s2>does not exist or is not executable. Please cd to the mysql installation
+</span></span></span><span class=line><span class=cl><span class=s2>directory and restart this script from there as follows:
+</span></span></span><span class=line><span class=cl><span class=s2>./bin/mysqld_safe&amp;
+</span></span></span><span class=line><span class=cl><span class=s2>See http://dev.mysql.com/doc/mysql/en/mysqld-safe.html for more information&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    rm -f <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span>                 <span class=c1># Clean Up of mysqld_safe.pid file.</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -z <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>pid_file</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$DATADIR</span><span class=s2>/`hostname`.pid&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>    /* <span class=o>)</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    * <span class=o>)</span>  <span class=nv>pid_file</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$DATADIR</span><span class=s2>/</span><span class=nv>$pid_file</span><span class=s2>&#34;</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>  <span class=k>esac</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>append_arg_to_args <span class=s2>&#34;--pid-file=</span><span class=nv>$pid_file</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -n <span class=s2>&#34;</span><span class=nv>$mysql_unix_port</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  append_arg_to_args <span class=s2>&#34;--socket=</span><span class=nv>$mysql_unix_port</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -n <span class=s2>&#34;</span><span class=nv>$mysql_tcp_port</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  append_arg_to_args <span class=s2>&#34;--port=</span><span class=nv>$mysql_tcp_port</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 接下来是关于优先级的设置</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> <span class=nv>$niceness</span> -eq <span class=m>0</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>NOHUP_NICENESS</span><span class=o>=</span><span class=s2>&#34;nohup&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl>  <span class=nv>NOHUP_NICENESS</span><span class=o>=</span><span class=s2>&#34;nohup nice -</span><span class=nv>$niceness</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Using nice with no args to get the niceness level is GNU-specific.</span>
+</span></span><span class=line><span class=cl><span class=c1># This check could be extended for other operating systems (e.g.,</span>
+</span></span><span class=line><span class=cl><span class=c1># BSD could use &#34;nohup sh -c &#39;ps -o nice -p $$&#39; | tail -1&#34;).</span>
+</span></span><span class=line><span class=cl><span class=c1># But, it also seems that GNU nohup is the only one which messes</span>
+</span></span><span class=line><span class=cl><span class=c1># with the priority, so this is okay.</span>
+</span></span><span class=line><span class=cl><span class=c1># 将当前的默认优先级设置为0</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> nohup nice &gt; /dev/null 2&gt;<span class=p>&amp;</span><span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=c1># normal_niceness记载默认的调度优先级</span>
+</span></span><span class=line><span class=cl>    <span class=nv>normal_niceness</span><span class=o>=</span><span class=sb>`</span>nice<span class=sb>`</span>
+</span></span><span class=line><span class=cl>  <span class=c1># nohup_niceness记载使用nohup执行方式的调度优先级</span>
+</span></span><span class=line><span class=cl>    <span class=nv>nohup_niceness</span><span class=o>=</span><span class=sb>`</span>nohup nice 2&gt;/dev/null<span class=sb>`</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nv>numeric_nice_values</span><span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 这个for是为了检查$normal_niceness $nohup_niceness两个变量值的合法性</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> val in <span class=nv>$normal_niceness</span> <span class=nv>$nohup_niceness</span>
+</span></span><span class=line><span class=cl>    <span class=k>do</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=s2>&#34;</span><span class=nv>$val</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>            -<span class=o>[</span>0-9<span class=o>]</span> <span class=p>|</span> -<span class=o>[</span>0-9<span class=o>][</span>0-9<span class=o>]</span> <span class=p>|</span> -<span class=o>[</span>0-9<span class=o>][</span>0-9<span class=o>][</span>0-9<span class=o>]</span> <span class=p>|</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>             <span class=o>[</span>0-9<span class=o>]</span> <span class=p>|</span>  <span class=o>[</span>0-9<span class=o>][</span>0-9<span class=o>]</span> <span class=p>|</span>  <span class=o>[</span>0-9<span class=o>][</span>0-9<span class=o>][</span>0-9<span class=o>]</span> <span class=o>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>;;</span>
+</span></span><span class=line><span class=cl>            * <span class=o>)</span>
+</span></span><span class=line><span class=cl>                <span class=nv>numeric_nice_values</span><span class=o>=</span><span class=m>0</span> <span class=p>;;</span>
+</span></span><span class=line><span class=cl>        <span class=k>esac</span>
+</span></span><span class=line><span class=cl>    <span class=k>done</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># 这个判断结构很重要</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 它保证了使用nohup执行的mysqld程序在调度优先级上不会低于直接执行mysqld程序的方式</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nb>test</span> <span class=nv>$numeric_nice_values</span> -eq <span class=m>1</span>
+</span></span><span class=line><span class=cl>    <span class=k>then</span>
+</span></span><span class=line><span class=cl>        <span class=nv>nice_value_diff</span><span class=o>=</span><span class=sb>`</span>expr <span class=nv>$nohup_niceness</span> - <span class=nv>$normal_niceness</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nb>test</span> <span class=nv>$?</span> -eq <span class=m>0</span> <span class=o>&amp;&amp;</span> <span class=nb>test</span> <span class=nv>$nice_value_diff</span> -gt <span class=m>0</span> <span class=o>&amp;&amp;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>            nice --<span class=nv>$nice_value_diff</span> <span class=nb>echo</span> testing &gt; /dev/null 2&gt;<span class=p>&amp;</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>        <span class=k>then</span>
+</span></span><span class=line><span class=cl>            <span class=c1># nohup increases the priority (bad), and we are permitted</span>
+</span></span><span class=line><span class=cl>            <span class=c1># to lower the priority with respect to the value the user</span>
+</span></span><span class=line><span class=cl>            <span class=c1># might have been given</span>
+</span></span><span class=line><span class=cl>      <span class=c1># 进入分支说明$nohup_niceness的值比$normal_niceness大，即nohup执行方式调度优先级比正常执行方式低</span>
+</span></span><span class=line><span class=cl>      <span class=c1># 这是不希望看到的，所以下面就人为的提升了nohup的优先级（降低niceness的值）</span>
+</span></span><span class=line><span class=cl>            <span class=nv>niceness</span><span class=o>=</span><span class=sb>`</span>expr <span class=nv>$niceness</span> - <span class=nv>$nice_value_diff</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>            <span class=nv>NOHUP_NICENESS</span><span class=o>=</span><span class=s2>&#34;nice -</span><span class=nv>$niceness</span><span class=s2> nohup&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>fi</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 下面是测试nohup在当前系统中是否可用，不可用的话就置空NOHUP_NICENESS</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> nohup <span class=nb>echo</span> testing &gt; /dev/null 2&gt;<span class=p>&amp;</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>    <span class=k>then</span>
+</span></span><span class=line><span class=cl>        :
+</span></span><span class=line><span class=cl>    <span class=k>else</span>
+</span></span><span class=line><span class=cl>        <span class=c1># nohup doesn&#39;t work on this system</span>
+</span></span><span class=line><span class=cl>        <span class=nv>NOHUP_NICENESS</span><span class=o>=</span><span class=s2>&#34;&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Try to set the core file size (even if we aren&#39;t root) because many systems</span>
+</span></span><span class=line><span class=cl><span class=c1># don&#39;t specify a hard limit on core file size.</span>
+</span></span><span class=line><span class=cl><span class=c1># 指定core file大小，即使非root用户也尝试设置</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -n <span class=s2>&#34;</span><span class=nv>$core_file_size</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nb>ulimit</span> -c <span class=nv>$core_file_size</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 如果已经存在一个pid文件，则检查是否有已经启动的mysqld进程，如果已经启动则退出</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nb>test</span> -f <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nv>PID</span><span class=o>=</span><span class=sb>`</span>cat <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>&#34;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 检查进程是否存在</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>kill</span> -0 <span class=nv>$PID</span> &gt; /dev/null 2&gt; /dev/null
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> ps wwwp <span class=nv>$PID</span> <span class=p>|</span> grep -v mysqld_safe <span class=p>|</span> grep -- <span class=nv>$MYSQLD</span> &gt; /dev/null
+</span></span><span class=line><span class=cl>    <span class=k>then</span>    <span class=c1># The pid contains a mysqld process</span>
+</span></span><span class=line><span class=cl>      log_error <span class=s2>&#34;A mysqld process already exists&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>        rm -f <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span>                 <span class=c1># Clean Up of mysqld_safe.pid file.</span>
+</span></span><span class=line><span class=cl>      <span class=k>fi</span>
+</span></span><span class=line><span class=cl>      <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>      rm -f <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>test</span> -f <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    log_error <span class=s2>&#34;Fatal error: Can&#39;t remove the pid file:
+</span></span></span><span class=line><span class=cl><span class=s2></span><span class=nv>$pid_file</span><span class=s2>
+</span></span></span><span class=line><span class=cl><span class=s2>Please remove it manually and start </span><span class=nv>$0</span><span class=s2> again;
+</span></span></span><span class=line><span class=cl><span class=s2>mysqld daemon not started&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>      rm -f <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span>                 <span class=c1># Clean Up of mysqld_safe.pid file.</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl>    <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#</span>
+</span></span><span class=line><span class=cl><span class=c1># Uncomment the following lines if you want all tables to be automatically</span>
+</span></span><span class=line><span class=cl><span class=c1># checked and repaired during startup. You should add sensible key_buffer</span>
+</span></span><span class=line><span class=cl><span class=c1># and sort_buffer values to my.cnf to improve check performance or require</span>
+</span></span><span class=line><span class=cl><span class=c1># less disk space.</span>
+</span></span><span class=line><span class=cl><span class=c1># Alternatively, you can start mysqld with the &#34;myisam-recover&#34; option. See</span>
+</span></span><span class=line><span class=cl><span class=c1># the manual for details.</span>
+</span></span><span class=line><span class=cl><span class=c1>#</span>
+</span></span><span class=line><span class=cl><span class=c1># echo &#34;Checking tables in $DATADIR&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1># $MY_BASEDIR_VERSION/bin/myisamchk --silent --force --fast --medium-check $DATADIR/*/*.MYI</span>
+</span></span><span class=line><span class=cl><span class=c1># $MY_BASEDIR_VERSION/bin/isamchk --silent --force $DATADIR/*/*.ISM</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Does this work on all systems?</span>
+</span></span><span class=line><span class=cl><span class=c1>#if type ulimit | grep &#34;shell builtin&#34; &gt; /dev/null</span>
+</span></span><span class=line><span class=cl><span class=c1>#then</span>
+</span></span><span class=line><span class=cl><span class=c1>#  ulimit -n 256 &gt; /dev/null 2&gt;&amp;1		# Fix for BSD and FreeBSD systems</span>
+</span></span><span class=line><span class=cl><span class=c1>#fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl><span class=c1># 开始拼接执行语句</span>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl><span class=nv>cmd</span><span class=o>=</span><span class=s2>&#34;`mysqld_ld_preload_text`</span><span class=nv>$NOHUP_NICENESS</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 检查一下命令以及参数，如果需要则进行转义操作</span>
+</span></span><span class=line><span class=cl><span class=k>for</span> i in  <span class=s2>&#34;</span><span class=nv>$ledir</span><span class=s2>/</span><span class=nv>$MYSQLD</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=nv>$defaults</span><span class=s2>&#34;</span> <span class=s2>&#34;--basedir=</span><span class=nv>$MY_BASEDIR_VERSION</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  <span class=s2>&#34;--datadir=</span><span class=nv>$DATADIR</span><span class=s2>&#34;</span> <span class=s2>&#34;--plugin-dir=</span><span class=nv>$plugin_dir</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=nv>$USER_OPTION</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>do</span>
+</span></span><span class=line><span class=cl>  <span class=nv>cmd</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$cmd</span><span class=s2> &#34;</span><span class=sb>`</span>shell_quote_string <span class=s2>&#34;</span><span class=nv>$i</span><span class=s2>&#34;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl><span class=k>done</span>
+</span></span><span class=line><span class=cl><span class=nv>cmd</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$cmd</span><span class=s2> </span><span class=nv>$args</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1># Avoid &#39;nohup: ignoring input&#39; warning</span>
+</span></span><span class=line><span class=cl><span class=nb>test</span> -n <span class=s2>&#34;</span><span class=nv>$NOHUP_NICENESS</span><span class=s2>&#34;</span> <span class=o>&amp;&amp;</span> <span class=nv>cmd</span><span class=o>=</span><span class=s2>&#34;</span><span class=nv>$cmd</span><span class=s2> &lt; /dev/null&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>log_notice <span class=s2>&#34;Starting </span><span class=nv>$MYSQLD</span><span class=s2> daemon with databases from </span><span class=nv>$DATADIR</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># variable to track the current number of &#34;fast&#34; (a.k.a. subsecond) restarts</span>
+</span></span><span class=line><span class=cl><span class=nv>fast_restart</span><span class=o>=</span><span class=m>0</span>
+</span></span><span class=line><span class=cl><span class=c1># maximum number of restarts before trottling kicks in</span>
+</span></span><span class=line><span class=cl><span class=nv>max_fast_restarts</span><span class=o>=</span><span class=m>5</span>
+</span></span><span class=line><span class=cl><span class=c1># flag whether a usable sleep command exists</span>
+</span></span><span class=line><span class=cl><span class=nv>have_sleep</span><span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl><span class=c1># 后台循环，如果mysqld宕，会尝试自动拉起服务进程</span>
+</span></span><span class=line><span class=cl><span class=c1>#########################################################</span>
+</span></span><span class=line><span class=cl><span class=k>while</span> <span class=nb>true</span>
+</span></span><span class=line><span class=cl><span class=k>do</span>
+</span></span><span class=line><span class=cl>  <span class=c1># 一些安全性检查，如果如下文件存在则删除</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$safe_mysql_unix_port</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    rm -f <span class=s2>&#34;</span><span class=nv>$safe_mysql_unix_port</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    rm -f <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>.shutdown&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>     rm -f  <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>.shutdown&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=nv>start_time</span><span class=o>=</span><span class=sb>`</span>date +%M%S<span class=sb>`</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># 传入$cmd参数的值，会使用eval命令启动mysqld</span>
+</span></span><span class=line><span class=cl>  eval_log_error <span class=s2>&#34;</span><span class=nv>$cmd</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=o>[</span> <span class=nv>$want_syslog</span> -eq <span class=m>0</span> -a ! -f <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span> -a ! -h <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>    touch <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span>                    <span class=c1># hypothetical: log was renamed but not</span>
+</span></span><span class=line><span class=cl>    chown <span class=nv>$user</span> <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span>              <span class=c1># flushed yet. we&#39;d recreate it with</span>
+</span></span><span class=line><span class=cl>    chmod <span class=s2>&#34;</span><span class=nv>$fmode</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=nv>$err_log</span><span class=s2>&#34;</span>           <span class=c1># wrong owner next time we log, so set</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>                                    <span class=c1># it up correctly while we can!</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=nv>end_time</span><span class=o>=</span><span class=sb>`</span>date +%M%S<span class=sb>`</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># 如果正常关闭，也就是检查PID文件被正常删除，则退出分支，不尝试重启进程</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>test</span> ! -f <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>&#34;</span>		<span class=c1># This is removed if normal shutdown</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=nb>break</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># 在进程宕之后，如果不希望重启则直接退出mysqld_safe</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>test</span> -f <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>.shutdown&#34;</span>	<span class=c1># created to signal that it must stop</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    log_notice <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>.shutdown present. The server will not restart.&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nb>break</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># sanity check if time reading is sane and there&#39;s sleep</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>test</span> <span class=nv>$end_time</span> -gt <span class=m>0</span> -a <span class=nv>$have_sleep</span> -gt <span class=m>0</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=c1># 如果在一秒以内完成重启，则尝试睡眠1秒</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nb>test</span> <span class=nv>$end_time</span> -eq <span class=nv>$start_time</span>
+</span></span><span class=line><span class=cl>    <span class=k>then</span>
+</span></span><span class=line><span class=cl>      <span class=nv>fast_restart</span><span class=o>=</span><span class=sb>`</span>expr <span class=nv>$fast_restart</span> + 1<span class=sb>`</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=nb>test</span> <span class=nv>$fast_restart</span> -ge <span class=nv>$max_fast_restarts</span>
+</span></span><span class=line><span class=cl>      <span class=k>then</span>
+</span></span><span class=line><span class=cl>        log_notice <span class=s2>&#34;The server is respawning too fast. Sleeping for 1 second.&#34;</span>
+</span></span><span class=line><span class=cl>        sleep <span class=m>1</span>
+</span></span><span class=line><span class=cl>        <span class=nv>sleep_state</span><span class=o>=</span><span class=nv>$?</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nb>test</span> <span class=nv>$sleep_state</span> -gt <span class=m>0</span>
+</span></span><span class=line><span class=cl>        <span class=k>then</span>
+</span></span><span class=line><span class=cl>          log_notice <span class=s2>&#34;The server is respawning too fast and no working sleep command. Turning off trottling.&#34;</span>
+</span></span><span class=line><span class=cl>          <span class=nv>have_sleep</span><span class=o>=</span><span class=m>0</span>
+</span></span><span class=line><span class=cl>        <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nv>fast_restart</span><span class=o>=</span><span class=m>0</span>
+</span></span><span class=line><span class=cl>      <span class=k>fi</span>
+</span></span><span class=line><span class=cl>    <span class=k>else</span>
+</span></span><span class=line><span class=cl>      <span class=nv>fast_restart</span><span class=o>=</span><span class=m>0</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># mysqld_safe已经启动的处理方法，保证只有一个mysqld_safe程序启动</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=nb>true</span> <span class=o>&amp;&amp;</span> <span class=nb>test</span> <span class=nv>$KILL_MYSQLD</span> -eq <span class=m>1</span>
+</span></span><span class=line><span class=cl>  <span class=k>then</span>
+</span></span><span class=line><span class=cl>    <span class=c1># 统计启动的mysqld进程的数目:A)正常为0；B)进程hang，为1；C)有历史进程hang，为多个</span>
+</span></span><span class=line><span class=cl>    <span class=nv>numofproces</span><span class=o>=</span><span class=sb>`</span>ps xaww <span class=p>|</span> grep -v <span class=s2>&#34;grep&#34;</span> <span class=p>|</span> grep <span class=s2>&#34;</span><span class=nv>$ledir</span><span class=s2>/</span><span class=nv>$MYSQLD</span><span class=s2>\&gt;&#34;</span> <span class=p>|</span> grep -c <span class=s2>&#34;pid-file=</span><span class=nv>$pid_file</span><span class=s2>&#34;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    log_notice <span class=s2>&#34;Number of processes running now: </span><span class=nv>$numofproces</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nv>I</span><span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>    <span class=k>while</span> <span class=nb>test</span> <span class=s2>&#34;</span><span class=nv>$I</span><span class=s2>&#34;</span> -le <span class=s2>&#34;</span><span class=nv>$numofproces</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>do</span>
+</span></span><span class=line><span class=cl>      <span class=c1># 过滤启动的MySQL服务进程，通过sed -n &#39;$p&#39;每次只获取最后一行记录</span>
+</span></span><span class=line><span class=cl>      <span class=nv>PROC</span><span class=o>=</span><span class=sb>`</span>ps xaww <span class=p>|</span> grep <span class=s2>&#34;</span><span class=nv>$ledir</span><span class=s2>/</span><span class=nv>$MYSQLD</span><span class=s2>\&gt;&#34;</span> <span class=p>|</span> grep -v <span class=s2>&#34;grep&#34;</span> <span class=p>|</span> grep <span class=s2>&#34;pid-file=</span><span class=nv>$pid_file</span><span class=s2>&#34;</span> <span class=p>|</span> sed -n <span class=s1>&#39;$p&#39;</span><span class=sb>`</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=c1># 上述过滤的第一列为进程ID，使用T变量来获取进程ID</span>
+</span></span><span class=line><span class=cl>      <span class=k>for</span> T in <span class=nv>$PROC</span>
+</span></span><span class=line><span class=cl>      <span class=k>do</span>
+</span></span><span class=line><span class=cl>        <span class=nb>break</span>
+</span></span><span class=line><span class=cl>      <span class=k>done</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=c1># 因为已经hang了，直接kill -9强制删除</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=nb>kill</span> -9 <span class=nv>$T</span>
+</span></span><span class=line><span class=cl>      <span class=k>then</span>
+</span></span><span class=line><span class=cl>        log_error <span class=s2>&#34;</span><span class=nv>$MYSQLD</span><span class=s2> process hanging, pid </span><span class=nv>$T</span><span class=s2> - killed&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=k>else</span>
+</span></span><span class=line><span class=cl>        <span class=nb>break</span>
+</span></span><span class=line><span class=cl>      <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=c1># 每干掉一个mysqld就把I加一，如果有N个mysqld进程，则执行N次kill -9命令</span>
+</span></span><span class=line><span class=cl>      <span class=nv>I</span><span class=o>=</span><span class=sb>`</span>expr <span class=nv>$I</span> + 1<span class=sb>`</span>
+</span></span><span class=line><span class=cl>    <span class=k>done</span>
+</span></span><span class=line><span class=cl>  <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  log_notice <span class=s2>&#34;mysqld restarted&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>done</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>.shutdown&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>  rm -f <span class=s2>&#34;</span><span class=nv>$pid_file</span><span class=s2>.shutdown&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>log_notice <span class=s2>&#34;mysqld from pid file </span><span class=nv>$pid_file</span><span class=s2> ended&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[</span> ! -h <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span> <span class=o>]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>  rm -f <span class=s2>&#34;</span><span class=nv>$safe_pid</span><span class=s2>&#34;</span>                       <span class=c1># Some Extra Safety. File is deleted</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>                                        <span class=c1># once the mysqld process ends.</span>
+</span></span></code></pre></div><p>简单来说，mysqld_safe 会执行如下命令，其中参数会转换为绝对路径。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ nohup mysqld ... &lt; /dev/null &gt;&gt; localhost.err 2&gt;&amp;1
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#执行流程简介>执行流程简介</a></li></ul></li><li><a href=#源码解析>源码解析</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

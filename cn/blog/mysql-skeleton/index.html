@@ -1,0 +1,380 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 代码导读 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="在 MySQL 的官网上，MySQL 号称是 The World&amp;rsquo;s Most Popular Open Source Database ，既然是开源的，据说又这么牛掰，那不看看源码真有点对不起 MySQL 了。
+不禁想起了 PostgreSQL 号称是 The World&amp;rsquo;s Most Advanced Open Source Database ^_^''
+废话少说，本文简单介绍一下 MySQL 的执行流程。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL 代码导读</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2015-05-02</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a></div></div><hr><div class=content><p>在 MySQL 的官网上，MySQL 号称是 The World&rsquo;s Most Popular Open Source Database ，既然是开源的，据说又这么牛掰，那不看看源码真有点对不起 MySQL 了。</p><p>不禁想起了 PostgreSQL 号称是 The World&rsquo;s Most Advanced Open Source Database ^_^''</p><p>废话少说，本文简单介绍一下 MySQL 的执行流程。</p><p><img alt="mysql skeleton" src=images/skeleton-logo.jpg class="mx-auto d-block"></p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>MySQL 是基于线程的，在进程启动之后可以通过如下方式查看 MySQL 启动的进程信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat /proc/`pidof mysqld`/status | grep ^Threads           ← 查看线程数
+</span></span><span class=line><span class=cl>$ cat /proc/`pidof mysqld`/sched                            ← 第一行即为线程数
+</span></span><span class=line><span class=cl>$ ls /proc/`pidof mysqld`/task                              ← 查看对应线程信息
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ pstree                                                    ← 查看启动后进程之间的关系
+</span></span><span class=line><span class=cl>$ pstree -p `pidof mysqld`                                  ← 查看进程对应的线程
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ ps -Lf `pidof mysqld`                                     ← 同样查看线程
+</span></span><span class=line><span class=cl>$ ps -eo ruser,pid,ppid,lwp,psr,args -L | grep mysql        ← psr为线程运行的cpu-id
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ pstack `pidof mysqld` | less                              ← 打印对应进程的调用堆栈
+</span></span></code></pre></div><a class=anchor id=源码导读></a><h1>源码导读 <a href=#%e6%ba%90%e7%a0%81%e5%af%bc%e8%af%bb aria-hidden=true>#</a></h1><p>在 MySQL 源码中，有很多类似 <code>HAVE_XXX</code> 的宏定义，如果是 RPM 安装包，也可以查看 <code>mysql-xxx.devel</code> 包中包含的 <code>my_config.h</code> 文件定义，也就是编译相关二进制时的宏定义。</p><p>实际上，在通过 CMake 编译源码时，会以 <code>config.h.cmake</code> 为模板扫描系统的一些配置，并生成 <code>config.h</code> 文件，然后 CMake 脚本会把 <code>config.h</code> 拷贝一份保存为 <code>my_config.h</code> 文件。</p><p>下面以 <code>HAVE_SYS_EPOLL_H</code> 宏定义为例，看下是如何实现的；在 <code>configure.cmake</code> 文件中，有如下的定义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>CHECK_INCLUDE_FILES(sys/epoll.h HAVE_SYS_EPOLL_H)
+</span></span></code></pre></div><p>上述文件中包含了 <code>INCLUDE(CheckSymbolExists)</code>，而 CheckSymbolExists 是 CMake 的公共模块，一般在 cmake 的安装目录下，通常位于 /usr/share/cmake-X.X/Modules 目录下。</p><p>继续研究上述的文件，在源代码中有 <code>MACRO(CHECK_SYMBOL_EXISTS SYMBOL FILES VARIABLE)</code> 定义；这个宏的作用就是，查找相关文件 (FILES) 里面是否包含相关符号 (SYMBOL)；如果存在则设置变量为 1，MESSAGE 宏会在屏幕上做相关打印。</p><p>部分宏也可以在编译时，通过类似 <code>-DEMBEDDED_LIBRARY</code> 定义。</p><a class=anchor id=ut_ad-宏定义></a><h2>ut_ad() 宏定义 <a href=#ut_ad-%e5%ae%8f%e5%ae%9a%e4%b9%89 aria-hidden=true>#</a></h2><p>在代码中，会有 <code>ut_ad(dict_index_is_clust(index));</code> 类似的代码，下面看看这段代码的作用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;os0thread.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#define ut_a(EXPR) do {                       \
+</span></span></span><span class=line><span class=cl><span class=cp>    if (UNIV_UNLIKELY(!(ulint) (EXPR))) {     \
+</span></span></span><span class=line><span class=cl><span class=cp>        ut_dbg_assertion_failed(#EXPR,        \
+</span></span></span><span class=line><span class=cl><span class=cp>                __FILE__, (ulint) __LINE__);  \
+</span></span></span><span class=line><span class=cl><span class=cp>    }                                         \
+</span></span></span><span class=line><span class=cl><span class=cp>} while (0)
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define ut_error                        \
+</span></span></span><span class=line><span class=cl><span class=cp>    ut_dbg_assertion_failed(0, __FILE__, (ulint) __LINE__)
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#ifdef UNIV_DEBUG
+</span></span></span><span class=line><span class=cl><span class=cp>#define ut_ad(EXPR) ut_a(EXPR)
+</span></span></span><span class=line><span class=cl><span class=cp>#define ut_d(EXPR)  EXPR
+</span></span></span><span class=line><span class=cl><span class=cp>#else
+</span></span></span><span class=line><span class=cl><span class=cp>#define ut_ad(EXPR)
+</span></span></span><span class=line><span class=cl><span class=cp>#define ut_d(EXPR)
+</span></span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span></code></pre></div><p>也就是只有在 debug 模式下，会执行上述的代码。</p><p>我们从 MySQL 启动开始，看一下 MySQL 业务流程，详细的执行流程如下。</p><a class=anchor id=系统启动></a><h2>系统启动 <a href=#%e7%b3%bb%e7%bb%9f%e5%90%af%e5%8a%a8 aria-hidden=true>#</a></h2><p>首先是入口函数，也就是 C/C++ 的通用入口 main()，该函数在 sql/main.cc 文件中，而实际上其最终调用的是 <code>mysqld_main()@sql/mysqld.cc</code>，也就是 MySQL 的真正入口函数。其详细内容如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysqld_main()
+</span></span><span class=line><span class=cl> |-my_init()                            ← 做一些基本的初始化工作
+</span></span><span class=line><span class=cl> | |-getenv()                           ← 设置umask，获取HOME等
+</span></span><span class=line><span class=cl> | |-my_thread_global_ init()           ← 初始化全局线程环境，包括私有数据、互斥量的初始化等
+</span></span><span class=line><span class=cl> | |-my_thread_init()                   ← 分配线程内存，主要用于mysys以及dbug
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-load_defaults()                      ← 加载默认的配置项
+</span></span><span class=line><span class=cl> |-handle_early_options()               ← 做些初始参数解析，例如PS的初始化
+</span></span><span class=line><span class=cl> | |-handle_options()                   ← 通用的解析命令行函数
+</span></span><span class=line><span class=cl> |-init_sql_statement_names()           ← 通过com_status_vars[]初始化，例如analyze等
+</span></span><span class=line><span class=cl> |-sys_var_init()                       ← 系统变量初始化
+</span></span><span class=line><span class=cl> | |-my_hash_init()                     ← 通过hash保存系统变量
+</span></span><span class=line><span class=cl> |-adjust_related_options()             ← 调整参数，如open_file_limit等
+</span></span><span class=line><span class=cl> |-initialize_performance_schema()      ← 如果需要则初始化PS
+</span></span><span class=line><span class=cl> |-init_server_psi_keys()               ← 如果需要则初始化PSI
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-init_error_log()
+</span></span><span class=line><span class=cl> |-mysql_audit_initialize()             ← 初始化audit全局接口，具体初始化稍后完成
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-init_common_variables()              ← 变量的初始化
+</span></span><span class=line><span class=cl> |-my_init_signals()
+</span></span><span class=line><span class=cl> |-init_server_components()             ← MySQL Server常用模块的初始化
+</span></span><span class=line><span class=cl> | |-mdl_init()
+</span></span><span class=line><span class=cl> | |-partitioning_init()
+</span></span><span class=line><span class=cl> | |-my_timer_initialize()
+</span></span><span class=line><span class=cl> | |-init_server_query_cache()
+</span></span><span class=line><span class=cl> | |-randominit()
+</span></span><span class=line><span class=cl> | |-setup_fpu()
+</span></span><span class=line><span class=cl> | |-init_slave_list()
+</span></span><span class=line><span class=cl> | |-open_error_log()
+</span></span><span class=line><span class=cl> | |-transaction_cache_init()
+</span></span><span class=line><span class=cl> | |-delegates_init()
+</span></span><span class=line><span class=cl> | |-process_key_caches()
+</span></span><span class=line><span class=cl> | |-ha_init_errors()
+</span></span><span class=line><span class=cl> | |-gtid_server_init()
+</span></span><span class=line><span class=cl> | |-plugin_init()
+</span></span><span class=line><span class=cl> | | |-plugin_load_list()
+</span></span><span class=line><span class=cl> | |   |-plugin_dl_add()                ← 包含了线程池类似插件的处理
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-ha_init()
+</span></span><span class=line><span class=cl> | |-initialize_storage_engine()
+</span></span><span class=line><span class=cl> | |-init_optimizer_cost_module()
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-init_ssl()
+</span></span><span class=line><span class=cl> |-network_init()                       ← 初始化网络模块，包括初始化调度器，创建socket监听端口
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-init_status_vars()
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-connection_event_loop()              ← 管理、创建新连接，会是一个死循环
+</span></span><span class=line><span class=cl> | |-listen_for_connection_event()
+</span></span><span class=line><span class=cl> | | |-poll()
+</span></span><span class=line><span class=cl> | |-process_new_connection()
+</span></span><span class=line><span class=cl> |   |-add_connection()
+</span></span><span class=line><span class=cl> |     |-mysql_thread_create()          ← 根据thread_handling参数选择具体方法
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-my_thread_join()
+</span></span><span class=line><span class=cl> |-clean_up()
+</span></span><span class=line><span class=cl> |-mysqld_exit()                        ← 程序退出
+</span></span></code></pre></div><a class=anchor id=初始化网络配置></a><h2>初始化网络配置 <a href=#%e5%88%9d%e5%a7%8b%e5%8c%96%e7%bd%91%e7%bb%9c%e9%85%8d%e7%bd%ae aria-hidden=true>#</a></h2><p>网络配置其实比较简单，就是设置端口，创建套接字，绑定端口，监听端口，实现全部集中在 <code>network_init()</code> 函数中，下面直接给出相应的伪代码：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>network_init()
+</span></span><span class=line><span class=cl> |-set_ports()                          ← 设置端口号，#define MYSQL_PORT 3306
+</span></span><span class=line><span class=cl> |-Mysqld_socket_listener()             ← 根据参数等，启动实例
+</span></span><span class=line><span class=cl> |-init_connection_acceptor()
+</span></span><span class=line><span class=cl>   |-setup_listener()                   ← 不同类型listerner调用接口不同，如socket、pipe、share_memory
+</span></span><span class=line><span class=cl>     |-tcp_socket()                     ← 创建tcp_socket实例
+</span></span><span class=line><span class=cl>     |-get_listener_socket()            ← 创建监听socket，并准备接收连接
+</span></span><span class=line><span class=cl>       |-create_lockfile()
+</span></span><span class=line><span class=cl>       |-mysql_socket_socket()
+</span></span><span class=line><span class=cl>       | |-inline_mysql_socket_socket()
+</span></span><span class=line><span class=cl>       |   |-socket()                   ← 创建套接字
+</span></span><span class=line><span class=cl>       |
+</span></span><span class=line><span class=cl>       |-mysql_socket_bind()
+</span></span><span class=line><span class=cl>       | |-inline_mysql_socket_bind()
+</span></span><span class=line><span class=cl>       |   |-bind()                     ← 绑定端口号
+</span></span><span class=line><span class=cl>       |
+</span></span><span class=line><span class=cl>       |-mysql_socket_listen()
+</span></span><span class=line><span class=cl>         |-inline_mysql_socket_listen()
+</span></span><span class=line><span class=cl>           |-listen()                   ← 监听端口号
+</span></span></code></pre></div><p>客户端与服务端通信的方式不止是 SOCKET 一种，MySQL 还支持三种连接方式：namepipe、unix socket 和 shared memory，即命名管道、unix 套接字和共享内存的方式，这三种方式是可以共存的，只是有些只支持本地，socket 是最通用的方式。</p><a class=anchor id=管理创建新连接></a><h2>管理/创建新连接 <a href=#%e7%ae%a1%e7%90%86%e5%88%9b%e5%bb%ba%e6%96%b0%e8%bf%9e%e6%8e%a5 aria-hidden=true>#</a></h2><p>通过 <code>connection_event_loop()</code> 实现，而且 socket 管理其实比较简单，下面是其简单的处理代码：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>connection_event_loop()                 ← 对应死循环，不断判断abort_loop参数
+</span></span><span class=line><span class=cl> |-get_instance()                       ← 获取连接处理的实例
+</span></span><span class=line><span class=cl> |-listen_for_connection_event()
+</span></span><span class=line><span class=cl> | |-poll()/select()                    ← 监视socket文件描述符
+</span></span><span class=line><span class=cl> | |-mysql_socket_accept()              ← 处理到来的客户端连接
+</span></span><span class=line><span class=cl> | |-Channel_info_tcpip_socket()        ← 创建一个实例
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-process_new_connection()
+</span></span><span class=line><span class=cl>   |-add_connection()                   ← 创建一个新的线程，不同方式会有不同处理方式
+</span></span><span class=line><span class=cl>     |-mysql_thread_create()
+</span></span><span class=line><span class=cl>       |-pthread_create()               ← 对应的处理函数是handle_connection()
+</span></span></code></pre></div><p>主要处理函数，一系列异常保护之后会停止在 <code>select()/poll()</code> 函数处，等待接受到新的连接，如果监控到有连接，则通过 <code>accept()</code> 函数接受客户端的连接。</p><p>然后新建一个 THD 类，将连接参数全部设置到 THD 类的参数上，最后调用 <code>create_new_thread()</code> 函数，这个函数便是重点。</p><p>MySQL 为每个连接设置一个线程，而 oracle 同时也可以将请求放入一个队列当中。</p><p>接着是创建线程来处理客户端发送来的请求，通过 <code>create_new_thread()@sql/mysqld.cc</code> 实现，该函数执行的主要流程如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>static</span> <span class=kt>void</span> <span class=nf>create_new_thread</span><span class=p>(</span><span class=n>THD</span> <span class=o>*</span><span class=n>thd</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=o>++*</span><span class=n>thd</span><span class=o>-&gt;</span><span class=n>scheduler</span><span class=o>-&gt;</span><span class=n>connection_count</span><span class=p>;</span>       <span class=c1>// 全局连接数自增
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>thread_count</span><span class=o>++</span><span class=p>;</span>                            <span class=c1>// 全局线程数自增
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 真正创建线程，实际调用的是 thd-&gt;scheduler.add_connection(thd);
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nf>MYSQL_CALLBACK</span><span class=p>(</span><span class=n>thd</span><span class=o>-&gt;</span><span class=n>scheduler</span><span class=p>,</span> <span class=n>add_connection</span><span class=p>,</span> <span class=p>(</span><span class=n>thd</span><span class=p>));</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在创建链接时，会对当前连接数检测 connection_count，先对互斥量 <code>LOCK_connection_count</code> 加锁，如果大于 <code>max_connections+1</code>，则报错，没有问题，才新建线程，一个典型的互斥线程。此时，全局连接数+1，全局线程数+1，然后调用 <code>add_connection()</code> 函数，现在线程创建成功了。</p><p>在 <code>create_new_thread(thd)</code> 的末尾，有一行代码，也就是如下的宏定义：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=nf>MYSQL_CALLBACK</span><span class=p>(</span><span class=n>thd</span><span class=o>-&gt;</span><span class=n>scheduler</span><span class=p>,</span> <span class=n>add_connection</span><span class=p>,</span> <span class=p>(</span><span class=n>thd</span><span class=p>));</span>   <span class=n>sql</span><span class=o>/</span><span class=n>sql_callback</span><span class=p>.</span><span class=n>h</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cp>#define MYSQL_CALLBACK(OBJ, FUNC, PARAMS)   \
+</span></span></span><span class=line><span class=cl><span class=cp>    do {                                    \
+</span></span></span><span class=line><span class=cl><span class=cp>        if ((OBJ) &amp;&amp; ((OBJ)-&gt;FUNC))         \
+</span></span></span><span class=line><span class=cl><span class=cp>            (OBJ)-&gt;FUNC PARAMS;             \
+</span></span></span><span class=line><span class=cl><span class=cp>    } while (0)
+</span></span></span></code></pre></div><p>这样，这个代码就是调用 <code>thd->scheduler</code> 的 <code>add_connection</code> 函数，参数是 (thd) 。这个函数就是我们在上面第一步设置连接的线程数中，<code>one_thread_scheduler</code> 和 <code>one_thread_per_connection_scheduler</code> 中设置的一个参数。这两者的区别便是是否创建了一个新的线程来处理到来的连接。</p><p><code>thd->scheduler</code> 在 <code>THD::THD()</code> 构建函数中初始化，该值将继承全局的 thread_scheduler 。</p><a class=anchor id=链接处理></a><h1>链接处理 <a href=#%e9%93%be%e6%8e%a5%e5%a4%84%e7%90%86 aria-hidden=true>#</a></h1><p>在此，根据不同的链接方式会调用不同的接口，现在 MariaDB 支持三种处理方式。<code>one_thread_scheduler</code> 是单线程方式，也就是不会去新建线程，而线程池实现方式有些复杂，以后再详细了解。</p><p>所以，在此，重点研究 <code>one_thread_per_connection_scheduler</code> 链接方式，也就是说设置的 add_connection 函数实际最终调用的是 <code>create_thread_to_handle_connection()</code>。</p><p><code>void create_thread_to_handle_connection(THD *thd)@sql/mysqld.cc</code> 在该函数中，如果设置了线程缓存，且缓存中有空闲的线程，则直接从栈中取出一个线程即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=nf>create_thread_to_handle_connection</span><span class=p>(</span><span class=n>THD</span> <span class=o>*</span><span class=n>thd</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>cached_thread_count</span> <span class=o>&gt;</span> <span class=n>wake_thread</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=n>thread_cache</span><span class=p>.</span><span class=nf>push_back</span><span class=p>(</span><span class=n>thd</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>else</span>
+</span></span><span class=line><span class=cl>        <span class=n>thread_created</span><span class=o>++</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>threads</span><span class=p>.</span><span class=nf>append</span><span class=p>(</span><span class=n>thd</span><span class=p>);</span>               <span class=c1>// 创建线程数自增，并加入到threads链表上
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nf>mysql_thread_create</span><span class=p>(</span><span class=n>key_thread_one_connection</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=o>&amp;</span><span class=n>thd</span><span class=o>-&gt;</span><span class=n>real_id</span><span class=p>,</span><span class=o>&amp;</span><span class=n>connection_attrib</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=n>handle_one_connection</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=p>(</span><span class=kt>void</span><span class=o>*</span><span class=p>)</span><span class=n>thd</span><span class=p>)</span> <span class=p>;</span>              <span class=c1>// 这就是真正创建线程的地方了
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>可见，最后调用了 <code>mysql_thread_create()</code> 函数，这是一个封装之后的函数，用于跨平台调用，对于 Linux，最后实际是通过 <code>pthread_create()</code> 创建了一个新的线程，而新线程的 处理函数为 <code>handle_one_connection()</code>。</p><a class=anchor id=新线程处理流程></a><h2>新线程处理流程 <a href=#%e6%96%b0%e7%ba%bf%e7%a8%8b%e5%a4%84%e7%90%86%e6%b5%81%e7%a8%8b aria-hidden=true>#</a></h2><p>新线程处理函数为 <code>void *handle_connection(void *arg)</code>，到此为止，一个新的 connection 被一个新创建的线程所单独处理，我们看下其中是如何进行处理的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>// 连接处理函数，入参是连接对象Channel_info
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kt>void</span> <span class=o>*</span><span class=nf>handle_connection</span><span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=n>arg</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>my_thread_init</span><span class=p>()</span>                               <span class=c1>// 初始化线程
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>for</span> <span class=p>(;;)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>THD</span> <span class=o>*</span><span class=n>thd</span><span class=o>=</span> <span class=nf>init_new_thd</span><span class=p>(</span><span class=n>channel_info</span><span class=p>);</span>      <span class=c1>// 新建一个线程对象
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=n>thd_manager</span><span class=o>-&gt;</span><span class=nf>add_thd</span><span class=p>(</span><span class=n>thd</span><span class=p>);</span>                 <span class=c1>// 添加到线程管理
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=nf>thd_prepare_connection</span><span class=p>(</span><span class=n>thd</span><span class=p>))</span>           <span class=c1>// 包括用户认证
+</span></span></span><span class=line><span class=cl><span class=c1></span>          <span class=n>handler_manager</span><span class=o>-&gt;</span><span class=nf>inc_aborted_connects</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=k>else</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>          <span class=k>while</span> <span class=p>(</span><span class=nf>thd_connection_alive</span><span class=p>(</span><span class=n>thd</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>          <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>if</span> <span class=p>(</span><span class=nf>do_command</span><span class=p>(</span><span class=n>thd</span><span class=p>))</span>                   <span class=c1>// 处理命令
+</span></span></span><span class=line><span class=cl><span class=c1></span>              <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>          <span class=p>}</span>
+</span></span><span class=line><span class=cl>          <span class=nf>end_connection</span><span class=p>(</span><span class=n>thd</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nf>close_connection</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=nb>false</span><span class=p>,</span> <span class=nb>false</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>thd</span><span class=o>-&gt;</span><span class=nf>get_stmt_da</span><span class=p>()</span><span class=o>-&gt;</span><span class=nf>reset_diagnostics_area</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=n>thd</span><span class=o>-&gt;</span><span class=nf>release_resources</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在新建完线程之后，会先调用 <code>my_thread_init()</code> 做线程的初始化，到目前为止，才算创建了一个新的线程，接着会有一些初始化的工作。<strong>注意，在此新建完线程后，后续的很多操作都会携带上该线程对象指针。</strong></p><p>接着会通过 <code>thd_prepare_connection()</code> 函数进行一些登陆认证等操作，通过 <code>login_connection()</code> 函数实现，还有一些其它的初始化工作。</p><p>接下来主要执行工作是在 <code>do_command()</code> 函数，也就是主要的命令处理函数。</p><a class=anchor id=命令分发></a><h2>命令分发 <a href=#%e5%91%bd%e4%bb%a4%e5%88%86%e5%8f%91 aria-hidden=true>#</a></h2><p>接下来是主要的命令处理函数 <code>bool do_command(THD *thd)@sql/sql_parse.cc</code>，该函数主要用来接收、解析、执行命令报文；在线程中，该函数会不断循环执行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>bool</span> <span class=nf>do_command</span><span class=p>(</span><span class=n>THD</span> <span class=o>*</span><span class=n>thd</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=n>thd</span><span class=o>-&gt;</span><span class=n>m_server_idle</span><span class=o>=</span> <span class=nb>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=c1>// 如下的命令会阻塞在网络读取，直到读取了最新的报文
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>rc</span><span class=o>=</span> <span class=n>thd</span><span class=o>-&gt;</span><span class=nf>get_protocol</span><span class=p>()</span><span class=o>-&gt;</span><span class=nf>get_command</span><span class=p>(</span><span class=o>&amp;</span><span class=n>com_data</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>command</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=n>thd</span><span class=o>-&gt;</span><span class=n>m_server_idle</span><span class=o>=</span> <span class=nb>false</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>// 接下来准备分发命令
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>return_value</span><span class=o>=</span> <span class=nf>dispatch_command</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>com_data</span><span class=p>,</span> <span class=n>command</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>当客户端通过 TCP 连接上 MySQL 的服务器后，在发送请求之前，服务端的线程实际上是阻塞在 <code>do_command()</code> 函数中，也就是 socket 里的 read()。当接收到报文后，该函数同时还会作一些处理，如去除头部等。</p><p><strong>需要注意的是</strong>，有的命令只需要在 <code>dispatch_command()</code> 执行，例如 <code>COM_REGISTER_SLAVE</code>；而部分则会在 <code>mysql_execute_command()</code> 中执行，例如 <code>SQLCOM_CHANGE_MASTER</code> 。</p><p>在 <code>dispatch_command()</code> 函数中，其主要的处理流程如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>bool</span> <span class=nf>dispatch_command</span><span class=p>(</span><span class=k>enum</span> <span class=n>enum_server_command</span> <span class=n>command</span><span class=p>,</span> <span class=n>THD</span> <span class=o>*</span><span class=n>thd</span><span class=p>,</span> <span class=kt>char</span><span class=o>*</span> <span class=n>packet</span><span class=p>,</span> <span class=n>uint</span> <span class=n>packet_length</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>switch</span> <span class=p>(</span><span class=n>command</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=nl>COM_INIT_DB</span><span class=p>:</span> <span class=p>...</span> <span class=p>...;</span>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=nl>COM_QUERY</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=p>(</span><span class=nf>alloc_query</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=n>com_data</span><span class=o>-&gt;</span><span class=n>com_query</span><span class=p>.</span><span class=n>query</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                      <span class=n>com_data</span><span class=o>-&gt;</span><span class=n>com_query</span><span class=p>.</span><span class=n>length</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>        <span class=k>break</span><span class=p>;</span>                    <span class=c1>// fatal error is set
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>      <span class=n>Parser_state</span> <span class=n>parser_state</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=p>(</span><span class=n>parser_state</span><span class=p>.</span><span class=nf>init</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=n>thd</span><span class=o>-&gt;</span><span class=nf>query</span><span class=p>().</span><span class=n>str</span><span class=p>,</span> <span class=n>thd</span><span class=o>-&gt;</span><span class=nf>query</span><span class=p>().</span><span class=n>length</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>        <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=c1>// 开始进行SQL解析
+</span></span></span><span class=line><span class=cl><span class=c1></span>      <span class=nf>mysql_parse</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>parser_state</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=c1>// 如果SQL中有通过分号分割的多条语句，同时会在下面处理，在此不赘述
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在该函数中，其主要作用的是一个巨大的 switch 语句，涵盖了 MySQL 支持的所有语句，包括了查询、PING、QUIT等指令，这些命令会在 <code>include/my_command.h</code> 中定义：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>enum enum_server_command
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    COM_SLEEP, COM_QUIT, COM_INIT_DB, COM_QUERY, COM_FIELD_LIST,
+</span></span><span class=line><span class=cl>    ... ...
+</span></span><span class=line><span class=cl>    COM_END
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></div><p>接下来命令的处理，就是根据不同的请求通过 switch 进入不同的函数入口，对于查询命令最后进入的是 COM_QUERY，先做一些初始化、写日志等后进入 <code>mysql_parse()@sql/sql_parse.cc</code>，该函数是 SQL 语句解析的总入口。</p><a class=anchor id=命令解析></a><h2>命令解析 <a href=#%e5%91%bd%e4%bb%a4%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h2><p>SQL 的解析包括了：词法分析，语法分析，语义分析，构造执行树，生成执行计划，计划的执行。SQL92 是最新的标准，里面的定义都是一些巴科斯范式(BNF)，就是一种语法定义的标准。</p><p>MySQL 通过 YACC(Yet Another Compiler Compiler) 进行语法解析，不过没有采用 LEX 进行词法分析，YACC 接收来自词法分析阶段分解出来的 token 然后去匹配那些 BNF 。</p><p>另外，比较不错的嵌入式数据库 SQLite，词法分析器是手工写的，语法分析器由 Lemon 生成，如果感兴趣可以看下代码，在此就不详述了。</p><p>在 <code>sql/sql_yacc.cc</code> 源码中，有如下的定义；其中词法解析相关的主要处理函数在 <code>sql/sql_lex.cc</code> 文件中，其入口即 <code>MYSQLlex()</code>，而主要的分词处理函数为 <code>lex_one_token()</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#define yyparse         MYSQLparse
+</span></span><span class=line><span class=cl>#define yylex           MYSQLlex
+</span></span></code></pre></div><a class=anchor id=词法解析></a><h3>词法解析 <a href=#%e8%af%8d%e6%b3%95%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h3><p>可以直接通过 <code>state_map[]</code> 获得对应的状态，该数组在 <code>init_state_maps()</code> 中初始化，首先会将字符设置为 <code>MY_LEX_IDENT</code>、数字为 <code>MY_LEX_NUMBER_IDENT</code>、空白字符为 <code>MY_LEX_SKIP</code>、其它为 <code>MY_LEX_CHAR</code>，然后会将一些特殊字符初始化。</p><p>而关于字符的判断如下，其中 <code>s</code> 为对应的字符集，<code>c</code> 对应的序号，也就是通过 <code>_MY_X</code> 进行判断。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define my_isalpha(s, c)  (((s)-&gt;ctype+1)[(uchar) (c)] &amp; (_MY_U | _MY_L))
+</span></span></span></code></pre></div><p>每个字符集都会对应一个 ctype ，会通过该数组判断其类型。在 <code>sql/lex.h</code> 中定义了关键字，用两个数组存储 <code>static SYMBOL symbols[]</code> 和 <code>static SYMBOL sql_functions[]</code>。</p><a class=anchor id=sql解析></a><h3>SQL解析 <a href=#sql%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h3><p>仍回到如上的函数入口。</p><p>SQL 命令解析的入口是 <code>mysql_parse(); sql/sql_parse.cc</code>，如上所述 SQL 的语法/语义解析是通过 yacc 实现，规则文件是 <code>sql/sql_yacc.yy</code>。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>void</span> <span class=nf>mysql_parse</span><span class=p>(</span><span class=n>THD</span> <span class=o>*</span><span class=n>thd</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=n>rawbuf</span><span class=p>,</span> <span class=n>uint</span> <span class=n>length</span><span class=p>,</span> <span class=n>Parser_state</span> <span class=o>*</span><span class=n>parser_state</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mysql_reset_thd_for_next_command</span><span class=p>(</span><span class=n>thd</span><span class=p>);</span>              <span class=c1>// 重置结构体
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nf>lex_start</span><span class=p>(</span><span class=n>thd</span><span class=p>);</span>                                     <span class=c1>// 初始化词法分析结构体
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=nf>query_cache_send_result_to_client</span><span class=p>(...)</span> <span class=o>&lt;=</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>  <span class=c1>// 在cache中查询
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=n>err</span><span class=o>=</span> <span class=nf>parse_sql</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=n>parser_state</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>        <span class=c1>// 不在cache中，直接查询
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=n>error</span><span class=o>=</span> <span class=nf>mysql_execute_command</span><span class=p>(</span><span class=n>thd</span><span class=p>);</span>              <span class=c1>// 解析完后开始执行SQL
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>                                            <span class=c1>// 命中cache，直接返回
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=n>hd</span><span class=o>-&gt;</span><span class=n>lex</span><span class=o>-&gt;</span><span class=n>sql_command</span><span class=o>=</span> <span class=n>SQLCOM_SELECT</span><span class=p>;</span>            <span class=c1>// 设置结果，更新统计
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在 <code>mysql_parse()</code> 中有段注释，大概的意思是：本来应该先调用 <code>query_cache_send_result_to_client()</code>，也即在 query_cache 中查询该语句，加快查询速度。失败才调用 <code>lex_start()</code> 和 <code>mysql_reset_thd_for_next_command()</code> 来初始化 thd 解析 sql。但是查询 cache 也需要干净的 thd，只能先调用 <code>lex_start()</code> 和 <code>mysql_reset_thd_for_next_command()</code> 来初始化 thd 了，这样导致代码和逻辑有悖。</p><p>首先是初始化以及重置操作，接着会在 cache 中查询，如果有相同的语句，则立即从 cache 返回结果，于是整个 sql 就结束了。</p><p>如果 cache 里不存在该 sql，则继续前进来到 <code>parse_sql()@sql/sql_parse.cc</code>，这个函数主要就是调用了 <code>MYSQLparse()</code>，而 <code>MYSQLparse()</code> 其实就是 bison/yacc 里的 yyparse。</p><p>下面就开始解析 sql 了，主要是关于词法分析和语法匹配，对于一条像 <code>select * from test</code> 的语句首先进入词法分析，此时会找到 2 个 <code>token(select, from)</code>，然后根据 token 进行语法匹配，规则在 <code>sql/sql_yacc.yy</code> 里。</p><p>最后的解析结果中，<code>lex->sql_command</code> 保存了相应的命令。</p><p>SQL 解析完了，然后是一些优化操作等，接着进入 <code>mysql_execute_command()@sql/sql_ parse.cc</code> 函数，这个函数是所有 sql 命令执行的总入口。</p><a class=anchor id=命令执行></a><h2>命令执行 <a href=#%e5%91%bd%e4%bb%a4%e6%89%a7%e8%a1%8c aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=nf>mysql_execute_command</span><span class=p>(</span><span class=n>THD</span> <span class=o>*</span><span class=n>thd</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>switch</span> <span class=p>(</span><span class=n>lex</span><span class=o>-&gt;</span><span class=n>sql_command</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=nl>SQLCOM_SHOW_EVENTS</span><span class=p>:</span> <span class=p>...;</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=nl>SQLCOM_SELECT</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nf>check_table_access</span><span class=p>(...);</span>
+</span></span><span class=line><span class=cl>            <span class=n>res</span><span class=o>=</span> <span class=nf>execute_sqlcom_select</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=n>all_tables</span><span class=p>);</span>    <span class=c1>// 执行查询
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在 <code>mysql_execute_command()</code> 中，先确定 command 要对哪张表操作 <code>lex->first_lists_tables_same();</code> 根据该表的状态，会做一些预处理，尽量减少之后的操作对表的影响（因为目前还不知道这条指令执行之后，会对数据库产生什么样的影响）做好保护是必须的。</p><p>然后有个 switch 语句，他决定了 command 属于哪种类型，这些类型定义在 <code>sql/sql_lex.h</code> 中：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>enum</span> <span class=n>enum_sql_command</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>SQLCOM_SELECT</span><span class=p>,</span> <span class=n>SQLCOM_CREATE_TABLE</span><span class=p>,</span> <span class=p>......</span> <span class=n>SQLCOM_END</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></div><p>仍然以查询命令为例，最后会进入 <code>SQLCOM_SELECT</code> 这个 case 分支。之后就是命令的解析，处理，以及然后查询，规整结果集。</p><p>最后 select 的执行，通过 <code>execute_sqlcom_select()@sql/sql_parse.cc</code> 实现，在 <code>execute_sqlcom_select()</code> 函数中，调用 <code>handle_select()</code> (优化入口)，然后调用 <code>mysql_select()</code>。</p><p><code>mysql_select()</code> 就是执行模块，这个模块代码比较复杂，可以清楚看到创建优化器 (JOIN::prepare)、优化 (JOIN::optimize)、执行 (JOIN::exec) 的3个步骤，在 MySQL 中，会将任何 select 都转换为 JOIN 来处理的。</p><p>MySQL 在设计时，采用了这样的思路：针对主要应用场景选择一个或几个性能优异的核心算法作为引擎，然后努力将一些非主要应用场景作为该算法的特例或变种植入到引擎当中。具体而言，MySQL 的 select 查询中，核心功能就是 JOIN 查询，因此在设计时，核心实现 JOIN 功能，对于其它功能，都通过转换为 JOIN 来实现。</p><p>即使对于最简单的 <code>select name from student</code> 也会转换为 JOIN 来操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=p>(</span><span class=n>join</span><span class=o>=</span> <span class=n>new</span> <span class=nf>JOIN</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=n>fields</span><span class=p>,</span> <span class=n>select_options</span><span class=p>,</span> <span class=n>result</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl>    <span class=p>...</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=p>((</span><span class=n>err</span><span class=o>=</span> <span class=n>join</span><span class=o>-&gt;</span><span class=nf>optimize</span><span class=p>()))</span>
+</span></span><span class=line><span class=cl>    <span class=p>...</span>
+</span></span><span class=line><span class=cl><span class=n>join</span><span class=o>-&gt;</span><span class=nf>exec</span><span class=p>();</span>
+</span></span></code></pre></div><p>结束了优化，我们要具体执行 <code>join->exec()</code>，该函数实际进入的是 <code>JOIN::exec()@sql_select.cc</code>。</p><p><code>exec()</code> 首先向客户端发送字段 title 的函数 <code>send_result_set_metadata()</code>，没数据但字段也是要的。然后再进入 <code>do_select()</code>，根据表的存储引擎跳入到引擎具体的实现。如果是 myisam，则通过 myisam 引擎扫描文件，其中 <code>info->filename</code> 实际保存的是文件的地址。</p><p>最后通过 <code>join->result->send_data()</code> 将数据发送给用户。并从 <code>dispatch_command()</code> 返回，最后在 net_end_statement 结束整个 sql 。</p><a class=anchor id=总结></a><h1>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h1><p>处理 MySQL 客户端命令，在此以 <code>one_thread_per_connection_scheduler</code> 方式为例，也就是创建 <code>handle_one_connection()</code> 独立线程处理请求。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>handle_connections_sockets()
+</span></span><span class=line><span class=cl>  |-poll()                           通过gdb查看，可以看到在此等待连接
+</span></span><span class=line><span class=cl>  |-thd = new THD; my_net_init()
+</span></span><span class=line><span class=cl>  |-create_new_thread()              根据不同的thread handler调用不同的函数
+</span></span><span class=line><span class=cl>     |-create_thread_to_handle_connection()       one_thread_per_connection_scheduler方式
+</span></span><span class=line><span class=cl>          |-handle_one_connection()                创建的新线程来处理
+</span></span><span class=line><span class=cl>              |-do_handle_one_connection()
+</span></span><span class=line><span class=cl>                  |-do_command()                   在死循环中处理
+</span></span><span class=line><span class=cl>                      |-my_net_read_packet()
+</span></span><span class=line><span class=cl>                      |-dispatch_command()         一堆的switch，根据客户端报文类型解析，include/mysql_com.h
+</span></span><span class=line><span class=cl>++=== SQL Interface ==|+++|
+</span></span><span class=line><span class=cl>                      |   |-mysql_change_db()      执行use db命令，COM_INIT_DB
+</span></span><span class=line><span class=cl>                      |   |-sql_kill()             执行kill命令，COM_PROCESS_KILL
+</span></span><span class=line><span class=cl>                      |   |- ... ...
+</span></span><span class=line><span class=cl>                      |   |-mysql_parse()          执行SQL语句，COM_QUERY
+</span></span><span class=line><span class=cl>                      |     |-lex_start()
+</span></span><span class=line><span class=cl>                      |     |-mysql_reset_thd_for_next_command()
+</span></span><span class=line><span class=cl>                      |     |-query_cache_send_result_to_client()
+</span></span><span class=line><span class=cl>                      |     |-parse_sql()
+</span></span><span class=line><span class=cl>                      |     |   |-MYSQLparse()   通过yacc解析SQL，规则文件保存在sql/sql_yacc.yy
+</span></span><span class=line><span class=cl>                      |     |
+</span></span><span class=line><span class=cl>                      |     | &lt;font color=&#34;red&#34;&gt;各种类型的SQL，一个大switch语句&lt;/font&gt;
+</span></span><span class=line><span class=cl>                      |     |-mysql_execute_command()         根据不同的SQL语句执行，sql/sql_cmd.h，对item调试
+</span></span><span class=line><span class=cl>                      |         |-execute_show_status()       执行show status，SQLCOM_SHOW_STATUS
+</span></span><span class=line><span class=cl>                      |         |- ... ...
+</span></span><span class=line><span class=cl>                      |         |-check_table_access()        执行select，&lt;font color=&#39;red&#39;&gt;SQLCOM_SELECT&lt;/font&gt;
+</span></span><span class=line><span class=cl>                      |         |-execute_sqlcom_select()
+</span></span><span class=line><span class=cl>                      |         |   |-open_and_lock_tables()
+</span></span><span class=line><span class=cl>                      |         |   |   |-open_tables()
+</span></span><span class=line><span class=cl>                      |         |   |   |   |-open_and_process_table()
+</span></span><span class=line><span class=cl>                      |         |   |   |       |-open_table()
+</span></span><span class=line><span class=cl>                      |         |   |   |           |-Table_cache::get_table()
+</span></span><span class=line><span class=cl>                      |         |   |   |           |-get_table_share_with_discover()
+</span></span><span class=line><span class=cl>                      |         |   |   |           |   |-get_table_share()
+</span></span><span class=line><span class=cl>                      |         |   |   |           |       |-open_table_def()
+</span></span><span class=line><span class=cl>                      |         |   |   |           |           |-my_open()
+</span></span><span class=line><span class=cl>                      |         |   |   |           |           |-open_binary_frm()
+</span></span><span class=line><span class=cl>                      |         |   |   |           |               |-get_new_handler()  获取表的handler
+</span></span><span class=line><span class=cl>                      |         |   |   |           |-my_malloc // 申请表数据结构
+</span></span><span class=line><span class=cl>                      |         |   |   |           |-open_table_from_share
+</span></span><span class=line><span class=cl>                      |         |   |   |               |-handler::ha_open
+</span></span><span class=line><span class=cl>                      |         |   |   |                   |-ha_innobase::open
+</span></span><span class=line><span class=cl>                      |         |   |   |                       |-dict_table_open_on_name
+</span></span><span class=line><span class=cl>                      |         |   |   |                           |-dict_load_table
+</span></span><span class=line><span class=cl>                      |         |   |   |                               |-btr_pcur_is_on_user_rec
+</span></span><span class=line><span class=cl>                      |         |   |   |                               |-dict_load_table_low
+</span></span><span class=line><span class=cl>                      |         |   |   |                               |   |-dict_mem_table_create
+</span></span><span class=line><span class=cl>                      |         |   |   |                               |-fil_space_for_table_exists_in_mem
+</span></span><span class=line><span class=cl>                      |         |   |   |                               |-fil_open_single_table_tablespace // 打开表空间文件
+</span></span><span class=line><span class=cl>                      |         |   |   |-lock_tables()
+</span></span><span class=line><span class=cl>                      |         |   |   |-mysql_handle_derived()
+</span></span><span class=line><span class=cl>                      |         |   |-query_cache_store_query()       先查看缓存
+</span></span><span class=line><span class=cl>                      |         |   |
+</span></span><span class=line><span class=cl>                      |         |   |-handle_select()                 SQL处理的真正入口，会判断是否为union
+</span></span><span class=line><span class=cl>                      |         |       |-mysql_union()               如果含有union，则调用该函数
+</span></span><span class=line><span class=cl>                      |         |       |-mysql_select()              否则调用该函数
+</span></span><span class=line><span class=cl>++=== Query Parser ===|++       |           |&lt;/font&gt;
+</span></span><span class=line><span class=cl>                      |         |           |-mysql_prepare_select()
+</span></span><span class=line><span class=cl>                      |         |           | |-JOIN::prepare()@sql/sql_select.cc
+</span></span><span class=line><span class=cl>                      |         |           | | |-setup_tables_and_check_access()
+</span></span><span class=line><span class=cl>                      |         |           | | |-setup_wild()
+</span></span><span class=line><span class=cl>                      |         |           | | |-setup_fields()
+</span></span><span class=line><span class=cl>                      |         |           | | |-setup_without_group()
+</span></span><span class=line><span class=cl>                      |         |           | | |-setup_order()                      order by语句相关
+</span></span><span class=line><span class=cl>                      |         |           |     |-find_order_in_list()
+</span></span><span class=line><span class=cl>                      |         |           |       |-find_item_in_list()
+</span></span><span class=line><span class=cl>                      |         |           |
+</span></span><span class=line><span class=cl>                      |         |           |-lock_tables()
+</span></span><span class=line><span class=cl>                      |         |           |-query_cache_store_query()
+</span></span><span class=line><span class=cl>                      |         |           |-mysql_execute_select()
+</span></span><span class=line><span class=cl>                      |         |               |
+</span></span><span class=line><span class=cl>++=== Query Prepare ==|+++      |               |&lt;font color=&#34;blue&#34;&gt;
+</span></span><span class=line><span class=cl>                      |         |               |-JOIN::optimize()                     @sql/sql_optimizer.cc
+</span></span><span class=line><span class=cl>                      |         |               |
+</span></span><span class=line><span class=cl>                      |         |               |
+</span></span><span class=line><span class=cl>                      |         |               |-JOIN::explain()                      @sql/sql_explain.cc
+</span></span><span class=line><span class=cl>                      |         |               |   |                                  如果使用的是explain语句，返回而不执行
+</span></span><span class=line><span class=cl>                      |         |               |   |-prepare_result()
+</span></span><span class=line><span class=cl>                      |         |               |   |-explain_query_specification()
+</span></span><span class=line><span class=cl>                      |         |               |
+</span></span><span class=line><span class=cl>                      |                            Explain_query::send_explain()
+</span></span><span class=line><span class=cl>++=== Query Optimizer |==+++    |               |&lt;/font&gt;
+</span></span><span class=line><span class=cl>                      |         |               |-JOIN::exec()            根据执行计划进行相应处理
+</span></span><span class=line><span class=cl>                      |         |                   |-exec_inner()
+</span></span><span class=line><span class=cl>                      |         |                       |-select_result::prepare()
+</span></span><span class=line><span class=cl>                      |         |                       |-select_result::prepare2()
+</span></span><span class=line><span class=cl>                      |         |                       |-select_send::send_result_set_metadata()
+</span></span><span class=line><span class=cl>                      |         |                       |   |-Protocol::send_result_set_metadata()
+</span></span><span class=line><span class=cl>                      |         |                       |
+</span></span><span class=line><span class=cl>                      |         |                       |-do_select()                           查询入口函数
+</span></span><span class=line><span class=cl>                      |         |                         |-join-&gt;first_select()            1. 实际调用sub_select()，也即循环调用
+</span></span><span class=line><span class=cl>                                                          | |                                  rnd_next()+evaluate_join_record()
+</span></span><span class=line><span class=cl>                      |         |                         | |
+</span></span><span class=line><span class=cl>                      |         |                         | |                               while循环读取数据
+</span></span><span class=line><span class=cl>                      |         |                         | |-join_tab-&gt;read_first_record() 首次调用，实际为init_read_record()
+</span></span><span class=line><span class=cl>                      |         |                         | |   |-ha_rnd_init()
+</span></span><span class=line><span class=cl>                      |         |                         | |   |   |-change_active_index()
+</span></span><span class=line><span class=cl>                      |         |                         | |   |       |-innobase_get_index()
+</span></span><span class=line><span class=cl>                      |         |                         | |   |-innobase_trx_init()
+</span></span><span class=line><span class=cl>                      |         |                         | |-info-&gt;read_record()           再次调用，该函数在init中初始化
+</span></span><span class=line><span class=cl>                      |         |                         | |
+</span></span><span class=line><span class=cl>                      |         |                         | |-evaluate_join_record()        处理一条查询记录
+</span></span><span class=line><span class=cl>                      |         |                         |     |-end_send()
+</span></span><span class=line><span class=cl>                      |         |                         |         |-select_send::send_data()
+</span></span><span class=line><span class=cl>                      |         |                         |             |-Protocol::write()
+</span></span><span class=line><span class=cl>                      |         |                         |
+</span></span><span class=line><span class=cl>                      |         |                         |-join-&gt;result-&gt;send_eof()
+</span></span><span class=line><span class=cl>++=== Query Execution |==+++    |                         |
+</span></span><span class=line><span class=cl>   st_select_lex::cleanup       |
+</span></span><span class=line><span class=cl>                      |         |
+</span></span><span class=line><span class=cl>                      |         |
+</span></span><span class=line><span class=cl>                      |         |-update_precheck()
+</span></span><span class=line><span class=cl>                      |         |-mysql_update()
+</span></span><span class=line><span class=cl>                      |         |   |-open_normal_and_derived_tables()
+</span></span><span class=line><span class=cl>                      |         |   |-mysql_prepare_update()
+</span></span><span class=line><span class=cl>                      |         |   |-innobase_register_trx()
+</span></span><span class=line><span class=cl>                      |         |   |-innobase_register_trx()
+</span></span><span class=line><span class=cl>                      |         |
+</span></span><span class=line><span class=cl>                      |         |
+</span></span><span class=line><span class=cl>                      |         |
+</span></span><span class=line><span class=cl>                      |         |
+</span></span><span class=line><span class=cl>                      |         |
+</span></span><span class=line><span class=cl>                      |         |
+</span></span><span class=line><span class=cl>                      |         |
+</span></span><span class=line><span class=cl>                      |         |
+</span></span><span class=line><span class=cl>                      |
+</span></span><span class=line><span class=cl>                      |-thd-&gt;protocol-&gt;end_statement()        将获得的查询结果发送到客户端
+</span></span></code></pre></div><p>在查询记录时，会循环调用 <code>ha_innobase::rnd_next()</code> 和 <code>evaluate_join_record()</code> 获取并处理该部分的每条记录。</p><a class=anchor id=结论></a><h2>结论 <a href=#%e7%bb%93%e8%ae%ba aria-hidden=true>#</a></h2><p>整个 connection manager 的流程十分清晰，单线程的连接一般很少使用，大多使用多线程方式。多线程连接中其实还涉及到线程缓冲池的概念，即如果一个连接断开后，其所创建的线程不会被销毁掉，而是放到缓冲池中，等待下一个新的 connection 到来时，首先去线程缓冲池查找是否有空闲的线程，有的话直接使用，木有的话才去创建新的线程来管理这个 connection。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#源码导读>源码导读</a><ul><li><a href=#ut_ad-宏定义>ut_ad() 宏定义</a></li><li><a href=#系统启动>系统启动</a></li><li><a href=#初始化网络配置>初始化网络配置</a></li><li><a href=#管理创建新连接>管理/创建新连接</a></li></ul></li><li><a href=#链接处理>链接处理</a><ul><li><a href=#新线程处理流程>新线程处理流程</a></li><li><a href=#命令分发>命令分发</a></li><li><a href=#命令解析>命令解析</a></li><li><a href=#命令执行>命令执行</a></li></ul></li><li><a href=#总结>总结</a><ul><li><a href=#结论>结论</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

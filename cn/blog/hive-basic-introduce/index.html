@@ -1,0 +1,280 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Hive 基本介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Hive 是由 Facebook 开发建立在 Hadoop 之上的数据仓库，初衷是为了减少复杂 MR 程序的编写工作，其本身不存储和处理数据，依赖 HDFS 存储数据和 MR 处理数据，有类 SQL 语言的 HiveQL，其不完全支持 SQL 标准，例如不支持更新、索引、事务，子查询和连接操作也有很多限制。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Hive 基本介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2022-06-21</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/warehouse/ role=button>warehouse</a></div></div><hr><div class=content><p>Hive 是由 Facebook 开发建立在 Hadoop 之上的数据仓库，初衷是为了减少复杂 MR 程序的编写工作，其本身不存储和处理数据，依赖 HDFS 存储数据和 MR 处理数据，有类 SQL 语言的 HiveQL，其不完全支持 SQL 标准，例如不支持更新、索引、事务，子查询和连接操作也有很多限制。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>数仓存储的是静态数据，Hive 会把 HQL 语句转换为 MR 进行批处理，同时还提供了一系列 ETL 相关的工具，可以便于处理 HDFS 上保存的数据。Hive 可以在某些列上构建索引，加速一些查询操作，创建的索引会保存在另外的表中。</p><p>简单来说，Hive 将元数据保存在关系型数据库中，数据保存在 HDFS 上，然后可以通过 Hive 的命令行 beeline 链接 Hive 集群，并将 HQL 通过 MapReduce 运行。</p><a class=anchor id=开源安装></a><h2>开源安装 <a href=#%e5%bc%80%e6%ba%90%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>可以直接从 <a href=https://hive.apache.org/general/downloads/>Hive Download</a> 下载对应的二进制文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 解压软件包并移动到 /opt/module/hive 目录下
+</span></span><span class=line><span class=cl># tar -zxvf apache-hive-3.1.2-bin.tar.gz
+</span></span><span class=line><span class=cl>----- 下载MySQL的驱动，保存到 /opt/module/hive/lib 目录下
+</span></span><span class=line><span class=cl># wget https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建Hive的的相关配置文件
+</span></span><span class=line><span class=cl># vim /opt/module/hive/conf/hive-site.xml
+</span></span><span class=line><span class=cl>&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;
+</span></span><span class=line><span class=cl>&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;
+</span></span><span class=line><span class=cl>&lt;configuration&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;javax.jdo.option.ConnectionURL&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;jdbc:mysql://127.0.0.1:3306/hivedb?createDatabaseIfNotExist=true&amp;amp;characterEncoding=UTF-8&amp;amp;useSSL=false&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;javax.jdo.option.ConnectionDriverName&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;com.mysql.cj.jdbc.Driver&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;javax.jdo.option.ConnectionUserName&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;root&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;javax.jdo.option.ConnectionPassword&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;5Kk,boZpAUp6&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;hive.metastore.schema.verification&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;false&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;hive.metastore.warehouse.dir&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;/hive&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;hive.server2.thrift.port&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;10000&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;hive.server2.webui.port&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;10002&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;/configuration&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 然后初始化元数据库，执行完成后可以登录数据库查看
+</span></span><span class=line><span class=cl># schematool -initSchema -dbType mysql
+</span></span></code></pre></div><p>实际初始化数据库会执行 <code>scripts/metastore/upgrade</code> 目录下的 SQL 文件，例如 <code>mysql/hive-schema-3.1.0.mysql.sql</code> 文件。</p><a class=anchor id=启动服务></a><h2>启动服务 <a href=#%e5%90%af%e5%8a%a8%e6%9c%8d%e5%8a%a1 aria-hidden=true>#</a></h2><p>支持的服务可以通过 <code>hive --help</code> 命令查看，或者 <code>hive --service metastore --help</code> 方式启动，这里主要是介绍 MetaStore 和 HiveServer2 的启动，通过如下命令启动，不过是前台运行，这里通过 systemd 进行维护。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>hive --service metastore
+</span></span><span class=line><span class=cl>hive --service hiveserver2
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 可以通过systemd维护
+</span></span><span class=line><span class=cl># vim /etc/systemd/system/hive-metastore.service
+</span></span><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=Hive MetaStore
+</span></span><span class=line><span class=cl>Requires=network-online.target
+</span></span><span class=line><span class=cl>After=network-online.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>EnvironmentFile=/etc/sysconfig/warehouse
+</span></span><span class=line><span class=cl>User=root
+</span></span><span class=line><span class=cl>ExecStart=/opt/module/hive/bin/hive --service metastore
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># vim /etc/systemd/system/hive-server.service
+</span></span><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=Hive Server
+</span></span><span class=line><span class=cl>Requires=network-online.target
+</span></span><span class=line><span class=cl>After=network-online.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>EnvironmentFile=/etc/sysconfig/warehouse
+</span></span><span class=line><span class=cl>User=root
+</span></span><span class=line><span class=cl>ExecStart=/opt/module/hive/bin/hive --service hiveserver2
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 然后重新加载并启动服务
+</span></span><span class=line><span class=cl># systemctl daemon-reload
+</span></span><span class=line><span class=cl># systemctl stop hive-metastore
+</span></span><span class=line><span class=cl># systemctl start hive-metastore
+</span></span><span class=line><span class=cl># systemctl stop hive-server
+</span></span><span class=line><span class=cl># systemctl start hive-server
+</span></span></code></pre></div><p>注意，HiveServer 无法支持并发的客户端处理，而 HiveServer2 除了支持并发外，还支持身份认证、Web页面等。然后可以链接 10002 端口。</p><a class=anchor id=客户端></a><h2>客户端 <a href=#%e5%ae%a2%e6%88%b7%e7%ab%af aria-hidden=true>#</a></h2><p>通过客户端可以启动服务，执行 SQL 等，一种是老的 Hive 方式，还可以使用 Beeline 方式，推荐后者。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 执行Hive客户端命令，链接的是Hive Server地址，如果使用了 tmux 可能需要 export TERM=xterm
+</span></span><span class=line><span class=cl>beeline -u jdbc:hive2://127.0.0.1:10000 -n root
+</span></span><span class=line><span class=cl>beeline&gt; ! connect jdbc:hive2://127.0.0.1:10000
+</span></span><span class=line><span class=cl>这里是 HiveServer2 的服务端口。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>su - omm
+</span></span><span class=line><span class=cl>----- 确认主管理节点，然后登录
+</span></span><span class=line><span class=cl>sh ${BIGDATA_HOME}/om-server/om/sbin/status-oms.sh
+</span></span><span class=line><span class=cl>----- 加载客户端相关的环境变量
+</span></span><span class=line><span class=cl>source /opt/Bigdata/client/bigdata_env
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建、切换、查看数据库，默认使用default数据库
+</span></span><span class=line><span class=cl>beeline&gt; CREATE DATABASE test;
+</span></span><span class=line><span class=cl>beeline&gt; USE test;
+</span></span><span class=line><span class=cl>beeline&gt; SELECT current_database();
+</span></span><span class=line><span class=cl>----- 创建并写入表
+</span></span><span class=line><span class=cl>beeline&gt; CREATE TABLE user_info(id STRING, name STRING, gender STRING, age INT, addr STRING);
+</span></span><span class=line><span class=cl>beeline&gt; INSERT INTO user_info(id, name, gender, age, addr) VALUES(&#34;12005000201&#34;, &#34;A&#34;, &#34;男&#34;, 19, &#34;A城市&#34;);
+</span></span><span class=line><span class=cl>----- 查看表结构，可以通过 extended 查看详细信息，以及表参数更加美观输出
+</span></span><span class=line><span class=cl>beeline&gt; DESC user_info;
+</span></span><span class=line><span class=cl>beeline&gt; DESC extended user_info;
+</span></span><span class=line><span class=cl>beeline&gt; DESC formatted user_info;
+</span></span><span class=line><span class=cl>----- 或者本地加载数据
+</span></span><span class=line><span class=cl>beeline&gt; LOAD DATA LOCAL INPATH &#34;/tmp/user.txt&#34; INTO TABLE user_info;
+</span></span></code></pre></div><p>可以通过如下方式创建外表。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># cat /tmp/user.csv
+</span></span><span class=line><span class=cl>10000,2017-10-01,北京,20,0,0.123456e-60
+</span></span><span class=line><span class=cl>----- 这里保存在HDFS上面
+</span></span><span class=line><span class=cl># hdfs dfs -mkdir -p /hive/user_info
+</span></span><span class=line><span class=cl>beeline&gt; CREATE EXTERNAL TABLE user_info(
+</span></span><span class=line><span class=cl>    id STRING,
+</span></span><span class=line><span class=cl>    name STRING,
+</span></span><span class=line><span class=cl>    gender STRING,
+</span></span><span class=line><span class=cl>    age INT,
+</span></span><span class=line><span class=cl>    addr STRING
+</span></span><span class=line><span class=cl>)
+</span></span><span class=line><span class=cl>PARTITIONED BY(year STRING)
+</span></span><span class=line><span class=cl>ROW FORMAT DELIMITED
+</span></span><span class=line><span class=cl>FIELDS TERMINATED BY &#39;,&#39;
+</span></span><span class=line><span class=cl>LINES TERMINATED BY &#39;\n&#39;
+</span></span><span class=line><span class=cl>STORED AS TEXTFILE LOCATION &#39;/hive/user_info&#39;;
+</span></span><span class=line><span class=cl>beeline&gt; INSERT INTO user_info PARTITION(year=&#34;2018&#34;) VALUES(&#34;12005000201&#34;, &#34;A&#34;, &#34;男&#34;, 19, &#34;A城市&#34;);
+</span></span><span class=line><span class=cl>beeline&gt; LOAD DATA LOCAL INPATH &#34;/tmp/user.csv&#34; INTO TABLE user_info PARTITION(year=&#34;2018&#34;);
+</span></span><span class=line><span class=cl># hdfs dfs -ls /hive/user_info
+</span></span><span class=line><span class=cl># hdfs dfs -cat /hive/user_info/year=2018/000000_0
+</span></span></code></pre></div><p>如下是常见操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 修改列属性
+</span></span><span class=line><span class=cl>ALTER TABLE user_info CHANGE name named STRING AFTER id;
+</span></span><span class=line><span class=cl>----- 增加列
+</span></span><span class=line><span class=cl>ALTER TABLE user_info ADD COLUMNS (city STRING);
+</span></span></code></pre></div><a class=anchor id=metastore></a><h1>Metastore <a href=#metastore aria-hidden=true>#</a></h1><p>数据库、表、函数等 Hive 对象的定义存储在 Metastore 中，根据系统的配置方式，统计数据和授权记录也可能存储在那里，然后 Hive 和其它执行引擎在运行时会使用该数据来确定如何解析、授权和有效执行用户查询。</p><p>监听端口默认使用 <code>9083</code> 端口，详见 <code>hive.metastore.port</code> 配置端口，默认配置详见 <code>conf/hive-default.xml.template</code> 模板配置文件。</p><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><a class=anchor id=安全集群></a><h2>安全集群 <a href=#%e5%ae%89%e5%85%a8%e9%9b%86%e7%be%a4 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 创建一个Principal
+</span></span><span class=line><span class=cl># kadmin -proot/admin -w&#39;Mrs@2022&#39; -q&#34;addprinc -randkey hive/package&#34;
+</span></span><span class=line><span class=cl>----- 生成所需的Keytab文件
+</span></span><span class=line><span class=cl># kadmin -proot/admin -w&#39;Mrs@2022&#39; -q&#34;ktadd -k /opt/module/keys/hive.keytab hive/package&#34;
+</span></span><span class=line><span class=cl># kinit -kt /opt/module/keys/hive.keytab hive/package@EXAMPLE.COM
+</span></span><span class=line><span class=cl>----- 使用Beeline远程访问Hive
+</span></span><span class=line><span class=cl># beeline -u &#34;jdbc:hive2://127.0.0.1:10000/default;principal=hive/package@EXAMPLE.COM&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改 Hive 的配置文件，增加如下 Kerberos 相关的配置项，重启 HiveServer2 和 MetaStore 服务，可以使用 _HOST 表示当前主机
+</span></span><span class=line><span class=cl># vim /opt/module/hive/conf/hive-site.xml
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>   &lt;name&gt;hive.server2.authentication&lt;/name&gt;
+</span></span><span class=line><span class=cl>   &lt;value&gt;kerberos&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>   &lt;name&gt;hive.server2.authentication.kerberos.principal&lt;/name&gt;
+</span></span><span class=line><span class=cl>   &lt;value&gt;hive/Package@EXAMPLE.COM&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>   &lt;name&gt;hive.server2.authentication.kerberos.keytab&lt;/name&gt;
+</span></span><span class=line><span class=cl>   &lt;value&gt;/opt/module/keys/hive.keytab&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>   &lt;name&gt;hive.metastore.sasl.enabled&lt;/name&gt;
+</span></span><span class=line><span class=cl>   &lt;value&gt;true&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>   &lt;name&gt;hive.metastore.kerberos.principal&lt;/name&gt;
+</span></span><span class=line><span class=cl>   &lt;value&gt;hive/Package@EXAMPLE.COM&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>   &lt;name&gt;hive.metastore.kerberos.keytab.file&lt;/name&gt;
+</span></span><span class=line><span class=cl>   &lt;value&gt;/opt/module/keys/hive.keytab&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>----- 修改 Hadoop 的配置文件，增加如下配置项，然后重启 dfs 和 yarn 服务
+</span></span><span class=line><span class=cl># vim /opt/module/hadoop/etc/hadoop/core-site.xml
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;hadoop.proxyuser.hive.hosts&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;*&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;hadoop.proxyuser.hive.groups&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;*&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;hadoop.proxyuser.hive.users&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;*&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span></code></pre></div><a class=anchor id=常用示例></a><h2>常用示例 <a href=#%e5%b8%b8%e7%94%a8%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&gt;&gt;&gt;&gt;&gt; CSV
+</span></span><span class=line><span class=cl>CREATE TABLE user_info_csv(
+</span></span><span class=line><span class=cl>    id STRING,
+</span></span><span class=line><span class=cl>    name STRING,
+</span></span><span class=line><span class=cl>    gender STRING,
+</span></span><span class=line><span class=cl>    age INT,
+</span></span><span class=line><span class=cl>    addr STRING
+</span></span><span class=line><span class=cl>)
+</span></span><span class=line><span class=cl>ROW FORMAT DELIMITED FIELDS TERMINATED BY &#39;,&#39;
+</span></span><span class=line><span class=cl>LINES TERMINATED BY &#39;\n&#39;
+</span></span><span class=line><span class=cl>STORED AS TEXTFILE
+</span></span><span class=line><span class=cl>LOCATION &#34;obs://mrs-doris-obs/user_info_csv&#34;;
+</span></span><span class=line><span class=cl>INSERT INTO user_info_csv VALUES(&#34;12005000201&#34;, &#34;A&#34;, &#34;男&#34;, 19, &#34;A城市&#34;);
+</span></span><span class=line><span class=cl>INSERT INTO user_info_csv VALUES(&#34;12005000501&#34;, &#34;B&#34;, &#34;男&#34;, 18, &#34;B城市&#34;);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&gt;&gt;&gt;&gt;&gt; Parquet
+</span></span><span class=line><span class=cl>CREATE TABLE user_info_parquet(
+</span></span><span class=line><span class=cl>    id STRING,
+</span></span><span class=line><span class=cl>    name STRING,
+</span></span><span class=line><span class=cl>    gender STRING,
+</span></span><span class=line><span class=cl>    age INT,
+</span></span><span class=line><span class=cl>    addr STRING
+</span></span><span class=line><span class=cl>)
+</span></span><span class=line><span class=cl>STORED AS PARQUET
+</span></span><span class=line><span class=cl>LOCATION &#34;obs://mrs-doris-obs/user_info_parquet&#34;
+</span></span><span class=line><span class=cl>TBLPROPERTIES(&#39;parquet.compression&#39;=&#39;SNAPPY&#39;);
+</span></span><span class=line><span class=cl>INSERT INTO user_info_parquet VALUES(&#34;12005000201&#34;, &#34;A&#34;, &#34;男&#34;, 19, &#34;A城市&#34;);
+</span></span><span class=line><span class=cl>INSERT INTO user_info_parquet VALUES(&#34;12005000501&#34;, &#34;B&#34;, &#34;男&#34;, 18, &#34;B城市&#34;);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&gt;&gt;&gt;&gt;&gt; ORC
+</span></span><span class=line><span class=cl>CREATE TABLE user_info_orc(
+</span></span><span class=line><span class=cl>    id STRING,
+</span></span><span class=line><span class=cl>    name STRING,
+</span></span><span class=line><span class=cl>    gender STRING,
+</span></span><span class=line><span class=cl>    age INT,
+</span></span><span class=line><span class=cl>    addr STRING
+</span></span><span class=line><span class=cl>)
+</span></span><span class=line><span class=cl>STORED AS ORC
+</span></span><span class=line><span class=cl>LOCATION &#34;obs://mrs-doris-obs/user_info_orc&#34;
+</span></span><span class=line><span class=cl>TBLPROPERTIES(&#39;orc.compression&#39;=&#39;SNAPPY&#39;);
+</span></span><span class=line><span class=cl>INSERT INTO user_info_orc VALUES(&#34;12005000201&#34;, &#34;A&#34;, &#34;男&#34;, 19, &#34;A城市&#34;);
+</span></span><span class=line><span class=cl>INSERT INTO user_info_orc VALUES(&#34;12005000501&#34;, &#34;B&#34;, &#34;男&#34;, 18, &#34;B城市&#34;);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&gt;&gt;&gt;&gt;&gt; CSV分区表
+</span></span><span class=line><span class=cl>CREATE TABLE user_info_part(
+</span></span><span class=line><span class=cl>    id STRING,
+</span></span><span class=line><span class=cl>    name STRING,
+</span></span><span class=line><span class=cl>    gender STRING,
+</span></span><span class=line><span class=cl>    age INT,
+</span></span><span class=line><span class=cl>    addr STRING
+</span></span><span class=line><span class=cl>)
+</span></span><span class=line><span class=cl>PARTITIONED BY(year STRING)
+</span></span><span class=line><span class=cl>ROW FORMAT DELIMITED FIELDS TERMINATED BY &#39;,&#39;
+</span></span><span class=line><span class=cl>LINES TERMINATED BY &#39;\n&#39;
+</span></span><span class=line><span class=cl>STORED AS TEXTFILE
+</span></span><span class=line><span class=cl>LOCATION &#34;obs://mrs-doris-obs/user_info_part&#34;;
+</span></span><span class=line><span class=cl>INSERT INTO user_info_part PARTITION(year=&#34;2018&#34;) VALUES(&#34;12005000201&#34;, &#34;A&#34;, &#34;男&#34;, 19, &#34;A城市&#34;);
+</span></span><span class=line><span class=cl>SHOW PARTITIONS user_info_part;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&gt;&gt;&gt;&gt;&gt; CSV二级分区表
+</span></span><span class=line><span class=cl>CREATE TABLE user_info_part_two(
+</span></span><span class=line><span class=cl>    id STRING,
+</span></span><span class=line><span class=cl>    name STRING,
+</span></span><span class=line><span class=cl>    gender STRING,
+</span></span><span class=line><span class=cl>    age INT,
+</span></span><span class=line><span class=cl>    addr STRING
+</span></span><span class=line><span class=cl>)
+</span></span><span class=line><span class=cl>PARTITIONED BY(year STRING, day STRING)
+</span></span><span class=line><span class=cl>ROW FORMAT DELIMITED FIELDS TERMINATED BY &#39;,&#39;
+</span></span><span class=line><span class=cl>LINES TERMINATED BY &#39;\n&#39;
+</span></span><span class=line><span class=cl>STORED AS TEXTFILE
+</span></span><span class=line><span class=cl>LOCATION &#34;obs://mrs-doris-obs/user_info_part_two&#34;;
+</span></span><span class=line><span class=cl>INSERT INTO user_info_part_two PARTITION(year=&#34;2018&#34;,day=&#34;12&#34;) VALUES(&#34;12005000201&#34;, &#34;A&#34;, &#34;男&#34;, 19, &#34;A城市&#34;);
+</span></span><span class=line><span class=cl>SHOW PARTITIONS user_info_part_two;
+</span></span></code></pre></div><a class=anchor id=常见问题></a><h1>常见问题 <a href=#%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98 aria-hidden=true>#</a></h1><a class=anchor id=开启日志></a><h2>开启日志 <a href=#%e5%bc%80%e5%90%af%e6%97%a5%e5%bf%97 aria-hidden=true>#</a></h2><p>日志默认保存在 <code>/tmp/hive/hive.log</code> 文件中，其中第二层的目录为启动用户名，可以通过如下方式修改。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># vim ${HIVE_HOME}/conf/hive-log4j2.properties
+</span></span><span class=line><span class=cl>property.hive.log.dir = /root/app/hive/log
+</span></span></code></pre></div><a class=anchor id=不允许使用root></a><h2>不允许使用root <a href=#%e4%b8%8d%e5%85%81%e8%ae%b8%e4%bd%bf%e7%94%a8root aria-hidden=true>#</a></h2><p>默认是不允许 root 登录的，会报 <code>root is not allowed to impersonate anonymous</code> 的错误，需要修改 Hadoop 的配置文件 <code>core-site.xml</code> 增加如下配置项，然后重启服务。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;hadoop.proxyuser.root.hosts&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;*&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;hadoop.proxyuser.root.groups&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;*&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span></code></pre></div><a class=anchor id=不允许创建文件></a><h2>不允许创建文件 <a href=#%e4%b8%8d%e5%85%81%e8%ae%b8%e5%88%9b%e5%bb%ba%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h2><p>一般会报 <code>org.apache.hadoop.security.AccessControlException Permission denied: user=anonymous, access=WRITE, inode="/":root:supergroup:drwxr-xr-x</code> 错误，此时可以通过如下方式关闭安全模式，如果权限不足则授予权限。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>hadoop dfsadmin -safemode leave
+</span></span><span class=line><span class=cl>hdfs dfsadmin -safemode leave
+</span></span><span class=line><span class=cl>hadoop fs -chmod 777 /
+</span></span></code></pre></div><a class=anchor id=其它-1></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83-1 aria-hidden=true>#</a></h2><p>使用 <code>beeline</code> 时可能会报 <code>Failed to construct terminal; falling back to unsupported</code> 错误，主要是终端的配置问题，只需要添加 <code>export TERM=xterm-color</code> 环境变量即可。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#开源安装>开源安装</a></li><li><a href=#启动服务>启动服务</a></li><li><a href=#客户端>客户端</a></li></ul></li><li><a href=#metastore>Metastore</a></li><li><a href=#其它>其它</a><ul><li><a href=#安全集群>安全集群</a></li><li><a href=#常用示例>常用示例</a></li></ul></li><li><a href=#常见问题>常见问题</a><ul><li><a href=#开启日志>开启日志</a></li><li><a href=#不允许使用root>不允许使用root</a></li><li><a href=#不允许创建文件>不允许创建文件</a></li><li><a href=#其它-1>其它</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,116 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>C 程序加载过程 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="利用动态库，可以节省磁盘、内存空间，而且可以提高程序运行效率；不过同时也导致调试比较困难，而且可能存在潜在的安全威胁。
+这里主要讨论符号的动态链接过程，即程序在执行过程中，对其中包含的一些未确定地址的符号进行重定位的过程。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>C 程序加载过程</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-10-20</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/c/cpp/ role=button>c/cpp</a></div></div><hr><div class=content><p>利用动态库，可以节省磁盘、内存空间，而且可以提高程序运行效率；不过同时也导致调试比较困难，而且可能存在潜在的安全威胁。</p><p>这里主要讨论符号的动态链接过程，即程序在执行过程中，对其中包含的一些未确定地址的符号进行重定位的过程。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>假设有如下的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>puts</span><span class=p>(</span><span class=s>&#34;Hello World.&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>可以通过 <code>gcc -o main main.c</code> 编译生成二进制文件，然后通过 <code>readelf -S main</code> 查看当前的段信息，其中比较关键的有。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ readelf -S main | grep -E &#39;(plt|got)&#39;
+</span></span><span class=line><span class=cl>  [10] .rela.plt         RELA             0000000000400448  00000448
+</span></span><span class=line><span class=cl>  [12] .plt              PROGBITS         0000000000400480  00000480
+</span></span><span class=line><span class=cl>  [21] .got              PROGBITS         0000000000600fe0  00000fe0
+</span></span><span class=line><span class=cl>  [22] .got.plt          PROGBITS         0000000000601000  00001000
+</span></span></code></pre></div><p>各个段的用途如下。</p><ul><li><code>.got</code> Global Offset Table 会通过链接器将实际函数的地址填充。</li><li><code>.plt</code> Procedure Linkage Table 编辑器生成的代码，如果已经填充了 <code>.got.plt</code> 那么会直接跳转，否则会调用链接器查找对应的函数。</li><li><code>.got.plt</code> 如果链接器已经完成了查找，那么就包含了实际函数地址，或值跳转到 <code>.plt</code> 地址执行查找。</li></ul><a class=anchor id=符号表></a><h2>符号表 <a href=#%e7%ac%a6%e5%8f%b7%e8%a1%a8 aria-hidden=true>#</a></h2><p>函数和变量作为符号被存在可执行文件中，同时会将不同类型的符号又放到一块，称为符号表，包括了两类：A) 常规 <code>.symtab</code> <code>.strtab</code>；B) 动态 <code>.dynsym</code> <code>.dynstr</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ readelf -S main | grep -E &#39;\.(dyns|symtab|strtab)&#39;
+</span></span><span class=line><span class=cl>  [ 5] .dynsym           DYNSYM           00000000004002b8  000002b8
+</span></span><span class=line><span class=cl>  [ 6] .dynstr           STRTAB           0000000000400348  00000348
+</span></span><span class=line><span class=cl>  [27] .symtab           SYMTAB           0000000000000000  000016d0
+</span></span><span class=line><span class=cl>  [28] .strtab           STRTAB           0000000000000000  00001eb0
+</span></span></code></pre></div><p>常规的符号表通常只在调试时使用，正常发布的二进制文件会 <code>strip</code> 调，而动态符号表则是程序执行时候真正会查找的目标。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ readelf -S /bin/bash | grep -E &#39;\.(dyns|symtab|strtab)&#39;
+</span></span><span class=line><span class=cl>  [ 6] .dynsym           DYNSYM           0000000000004ca8  00004ca8
+</span></span><span class=line><span class=cl>  [ 7] .dynstr           STRTAB           0000000000012af0  00012af0
+</span></span></code></pre></div><p>另外，生成的目标文件是没有 <code>.dyn*</code> 类型的符号表的。</p><p>除此之外，还有一个 <code>.shstrtab</code> 保存的是段表字符串表 (Section Header String Table)，也就是通过 <code>readelf -S</code> 读出的段名称。</p><p>每个段的地址可以通过 <code>ld --verbose</code> 查看。</p><a class=anchor id=符号地址></a><h3>符号地址 <a href=#%e7%ac%a6%e5%8f%b7%e5%9c%b0%e5%9d%80 aria-hidden=true>#</a></h3><p>在目标文件中符号是没有地址的，只有在生成可执行文件后会指定。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gcc -c main.c
+</span></span><span class=line><span class=cl>$ nm main.o
+</span></span><span class=line><span class=cl>0000000000000000 T main
+</span></span><span class=line><span class=cl>                 U puts
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ gcc -o main main.c
+</span></span><span class=line><span class=cl>$ nm main | grep -E &#34;(\&lt;main|puts)&#34;
+</span></span><span class=line><span class=cl>0000000000400586 T main
+</span></span><span class=line><span class=cl>                 U puts@@GLIBC_2.2.5
+</span></span></code></pre></div><p>在链接后，函数 <code>main()</code> 的地址已经确定，但是，动态库中的 <code>puts()</code> 函数是没有指定的，而该函数在标准 C 库中实现，可以通过如下方法查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ nm -D /usr/lib64/libc-2.28.so  | grep -E &#39;\&lt;puts\&gt;&#39;
+</span></span><span class=line><span class=cl>0000000000073010 W puts
+</span></span></code></pre></div><p>也可以通过 <code>readelf -s</code> 查看，上述表明，这是一个若引用，其它的库可以将其覆盖。</p><a class=anchor id=重定位></a><h2>重定位 <a href=#%e9%87%8d%e5%ae%9a%e4%bd%8d aria-hidden=true>#</a></h2><p>在编译时，只知道外部符号的类型，而不知道具体函数或变量的地址，地址是通过重定位的方式获取，有两种重定位方式：A) 链接时重定位；B) 运行时重定位。</p><p>在链接阶段会将中间文件通过链接器链接成一个可执行文件，主要做的事情有：A) 对各个中间文件的同名段进行合并；B) 对代码段、数据段等进行地址分配；C) 链接时重定位。</p><p>在重定位时，如果在其它中间文件中已经定义，链接阶段可以直接重定位到函数地址；如果是在动态库中定义了的函数，链接阶段无法直接重定位到函数地址，就需要使用如下介绍的方式。</p><a class=anchor id=基本概念></a><h2>基本概念 <a href=#%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5 aria-hidden=true>#</a></h2><p>在动态库中的函数以及变量会在运行时动态确定，编译链接后的二进制文件中包含了几个与之相关的段，运行时加载到内存中，然后以此确定真实的地址。</p><ul><li><code>.got</code> Global Offset Table 全局偏移表，这是链接器为外部符号填充的实际偏移表。</li><li><code>.plt</code> Procedure Linkage Table 程序链接表，链接器生成的代码片段，实现懒加载功能。</li></ul><p>注意，GOT PLT 只是 Linux 中实现的一种动态链接的方式。</p><a class=anchor id=位置无关代码></a><h2>位置无关代码 <a href=#%e4%bd%8d%e7%bd%ae%e6%97%a0%e5%85%b3%e4%bb%a3%e7%a0%81 aria-hidden=true>#</a></h2><p>在执行程序时，需要先将磁盘上的文件读取到内存中, 然后再执行，而每个进程都有自己的虚拟内存空间，32 位程序的寻址空间为 <code>2^32</code> 大小，而 64 位当前为 <code>2^48</code> ，虚拟内存最终会通过页表映射到物理内存中。</p><p>按照 <code>System V ABI</code> 的规定，32 位程序会加载到 <code>0x08048000</code> 这个地址中，而 64 位则会加载到 <code>0x00400000</code> 中，那么所写的程序，实际就是以这个地址为基础，对变量进行绝对地址寻址。</p><p>例如，如下程序。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ readelf -S main | grep -A 1 -E &#34;\.data&#34;
+</span></span><span class=line><span class=cl>  [Nr] Name              Type             Address           Offset
+</span></span><span class=line><span class=cl>	Size              EntSize          Flags  Link  Info  Align
+</span></span><span class=line><span class=cl>  [23] .data             PROGBITS         0000000000601020  00001020
+</span></span><span class=line><span class=cl>       0000000000000004  0000000000000000  WA       0     0     1
+</span></span></code></pre></div><a class=anchor id=动态解析></a><h1>动态解析 <a href=#%e5%8a%a8%e6%80%81%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h1><p>控制权先是提交到解释器，由解释器加载动态库，然后控制权才会到用户程序。动态库加载的大致过程就是将每一个依赖的动态库都加载到内存，并形成一个链表，后面的符号解析过程主要就是在这个链表中搜索符号的定义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat test.c
+</span></span><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	puts(&#34;Hello World&#34;);
+</span></span><span class=line><span class=cl>	return 0;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 编译连接
+</span></span><span class=line><span class=cl>$ gcc test.c -o test -g
+</span></span><span class=line><span class=cl>----- 打印程序的反汇编
+</span></span><span class=line><span class=cl>$ objdump -S test
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 使用gdb调式
+</span></span><span class=line><span class=cl>$ gdb test -q
+</span></span><span class=line><span class=cl>(gdb) break main
+</span></span><span class=line><span class=cl>(gdb) run
+</span></span><span class=line><span class=cl>(gdb) disassemble
+</span></span><span class=line><span class=cl>Dump of assembler code for function main:
+</span></span><span class=line><span class=cl>   0x0000000000400586 &lt;+0&gt;:     push   %rbp
+</span></span><span class=line><span class=cl>   0x0000000000400587 &lt;+1&gt;:     mov    %rsp,%rbp
+</span></span><span class=line><span class=cl>=&gt; 0x000000000040058a &lt;+4&gt;:     mov    $0x400638,%edi
+</span></span><span class=line><span class=cl>   0x000000000040058f &lt;+9&gt;:     callq  0x400490 &lt;puts@plt&gt; 此处调用的地址是固定的
+</span></span><span class=line><span class=cl>   0x0000000000400594 &lt;+14&gt;:    mov    $0x0,%eax
+</span></span><span class=line><span class=cl>   0x0000000000400599 &lt;+19&gt;:    pop    %rbp
+</span></span><span class=line><span class=cl>   0x000000000040059a &lt;+20&gt;:    retq
+</span></span><span class=line><span class=cl>End of assembler dump.
+</span></span></code></pre></div><p>从上面反汇编代码可以看出，调用 <code>puts()</code> 函数时，实际上调用的是 <code>puts@plt</code> 这个符号，也就是位于 <code>0x400490</code> 地址处，实际上这是一个 PLT 条目，可以通过反汇编查看相应的代码，不过它代表什么意思呢？</p><a class=anchor id=plt></a><h2>PLT <a href=#plt aria-hidden=true>#</a></h2><p>上述会跳转到 <code>puts@plt</code> 中，可以直接通过 <code>objdump -S test</code> 命令查看反汇编，其中的 <code>.plt</code> 内容如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Disassembly of section .plt:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>0000000000400480 &lt;.plt&gt;:
+</span></span><span class=line><span class=cl>  400480:       ff 35 82 0b 20 00       pushq  0x200b82(%rip)        # 601008 &lt;_GLOBAL_OFFSET_TABLE_+0x8&gt;
+</span></span><span class=line><span class=cl>  400486:       ff 25 84 0b 20 00       jmpq   *0x200b84(%rip)        # 601010 &lt;_GLOBAL_OFFSET_TABLE_+0x10&gt;
+</span></span><span class=line><span class=cl>  40048c:       0f 1f 40 00             nopl   0x0(%rax)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>0000000000400490 &lt;puts@plt&gt;:
+</span></span><span class=line><span class=cl>  400490:       ff 25 82 0b 20 00       jmpq   *0x200b82(%rip)        # 601018 &lt;puts@GLIBC_2.2.5&gt;
+</span></span><span class=line><span class=cl>  400496:       68 00 00 00 00          pushq  $0x0
+</span></span><span class=line><span class=cl>  40049b:       e9 e0 ff ff ff          jmpq   400480 &lt;.plt&gt;
+</span></span></code></pre></div><p>当然，也可以通过 <code>gdb</code> 命令进行反汇编。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(gdb) disassemble 0x400490
+</span></span><span class=line><span class=cl>Dump of assembler code for function puts@plt:
+</span></span><span class=line><span class=cl>=&gt; 0x0000000000400490 &lt;+0&gt;:     jmpq   *0x200b82(%rip)        # 0x601018 &lt;puts@got.plt&gt;
+</span></span><span class=line><span class=cl>   0x0000000000400496 &lt;+6&gt;:     pushq  $0x0
+</span></span><span class=line><span class=cl>   0x000000000040049b &lt;+11&gt;:    jmpq   0x400480
+</span></span><span class=line><span class=cl>End of assembler dump.
+</span></span></code></pre></div><p>可以看到 <code>puts@plt</code> 中包含三条指令，而且可以看出，除 <code>PLT0(__gmon_start__@plt-0x10)</code> 所标记的内容，其它的所有 <code>PLT</code> 项的形式都是一样的，而且最后的 <code>jmp</code> 指令都是 <code>0x400480</code>，即 <code>PLT0</code> 为目标的；所不同的只是第一条 <code>jmp</code> 指令的目标和 <code>push</code> 指令中的数据。</p><p><code>PLT0</code> 则与之不同，但是包括 <code>PLT0</code> 在内的每个表项都占 16 个字节，所以整个 PLT 就像个数组。</p><p>另外，需要注意，每个 PLT 表项中的第一条 <code>jmp</code> 指令是间接寻址的，比如的 <code>puts()</code> 函数是以地址 <code>0x601018</code> 处的内容为目标地址进行中跳转的。</p><a class=anchor id=got></a><h2>GOT <a href=#got aria-hidden=true>#</a></h2><p>也就是说，上述执行的是 <code>jmpq *0x601018</code>，而 <code>*0x601018</code> 就是 <code>0x00400496</code>，就是会调转到 <code>0x400496</code> 所在的地址执行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 实际是顺序执行，最终会调转到0x400400
+</span></span><span class=line><span class=cl>(gdb) x/w 0x601018
+</span></span><span class=line><span class=cl>0x601018 &lt;puts@got.plt&gt;:        0x00400496
+</span></span></code></pre></div><p>也就是在 <code>puts@plt</code> 的代码中，没有直接执行下一条指令，而是通过一次跳转后再继续执行下一条指令，那么，为什么要多此一举？这个问题后面解释，这里接着向下看。</p><p>最终会跳转到 <code>0x400480</code> 地址处，也就是 <code>.plt</code> 的第一个。</p><a class=anchor id=resolve></a><h2>Resolve <a href=#resolve aria-hidden=true>#</a></h2><p>看看第一个 <code>.plt</code> 中的内容是什么。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(gdb) b *0x400406               设置断点
+</span></span><span class=line><span class=cl>(gdb) c
+</span></span><span class=line><span class=cl>Breakpoint 2, 0x0000000000400406 in ?? ()
+</span></span><span class=line><span class=cl>(gdb) ni
+</span></span><span class=line><span class=cl>_dl_runtime_resolve () at ../sysdeps/x86_64/dl-trampoline.S:58
+</span></span><span class=line><span class=cl>58              subq $REGISTER_SAVE_AREA,%rsp
+</span></span><span class=line><span class=cl>(gdb) i r rip
+</span></span><span class=line><span class=cl>rip            0x7ffff7df0290   0x7ffff7df0290 &lt;_dl_runtime_resolve&gt;
+</span></span></code></pre></div><p>如上，在 <code>jmpq</code> 中设置一个断点，观察到，实际调转到了 <code>_dl_runtime_resolve()</code> 这个函数，这里，实际上就是真正链接器查找函数所在的地址，也就是 <code>_dl_runtime_resolve</code> 函数。</p><a class=anchor id=验证></a><h2>验证 <a href=#%e9%aa%8c%e8%af%81 aria-hidden=true>#</a></h2><p>实际上，上面所谓的多此一举是实现动态加载的关键操作，第一次的时候，是跳转到下一条，如果引用的地址已经被替换成了需要的地址，那么就可以直接跳转了。</p><p>在执行完 <code>callq 0x400490 &lt;puts@plt></code> 指令之后，那么 <code>0x601018</code> 地址中保存的应该是最新的 <code>puts</code> 函数地址了。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(gdb) break *0x400594
+</span></span><span class=line><span class=cl>Breakpoint 3 at 0x400594: file main.c, line 6.
+</span></span><span class=line><span class=cl>(gdb) continue
+</span></span><span class=line><span class=cl>Continuing.
+</span></span><span class=line><span class=cl>Hello World.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Breakpoint 3, main () at main.c:6
+</span></span><span class=line><span class=cl>6               return 0;
+</span></span><span class=line><span class=cl>(gdb) x/w 0x601018
+</span></span><span class=line><span class=cl>0x601018 &lt;puts@got.plt&gt;:        0xf7a84010
+</span></span></code></pre></div><p>也就是 <code>0xf7a84010</code> 地址就是真实的 <code>puts</code> 函数地址。</p><a class=anchor id=地址解析></a><h1>地址解析 <a href=#%e5%9c%b0%e5%9d%80%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h1><p>在 gdb 中，可以通过 <code>disassemble _dl_runtime_resolve</code> 查看该函数的反汇编，感兴趣的话可以看看其调用流程，这里简单介绍其功能。</p><p>从调用 <code>puts@plt</code> 到 <code>_dl_runtime_resolve</code> ，总共有两次压栈操作，一次是 <code>pushq $0x0</code>，另外一次是 <code>pushq 0x200c02(%rip) # 601008</code>，分别表示了 <code>puts</code> 函数在 <code>GOT</code> 中的偏移以及 <code>GOT</code> 的起始地址。</p><p>在 <code>_dl_runtime_resolve()</code> 函数中，会解析到 <code>puts()</code> 函数的绝对地址，并保存到 <code>GOT</code> 相应的地址处，这样后续调用时则会直接调用 <code>puts()</code> 函数，而不用再次解析。</p><a class=anchor id=安全风险></a><h1>安全风险 <a href=#%e5%ae%89%e5%85%a8%e9%a3%8e%e9%99%a9 aria-hidden=true>#</a></h1><p>如上，在 <code>.got.plt</code> 中保存的是实际已经查找到函数的地址，那么只需要修改这个段，就可以完成程序执行的跳转，也就是常见的攻击手段。</p><blockquote><p>注意，一般主持 NX 的系统中，不会同时设置 Write 和 eXecute 两个权限，也就是说，我们无法覆盖执行的节。</p></blockquote><a class=anchor id=防范措施></a><h2>防范措施 <a href=#%e9%98%b2%e8%8c%83%e6%8e%aa%e6%96%bd aria-hidden=true>#</a></h2><p>也就是所谓的 <code>Relocations Read-only</code> ，一般简称为 <code>RELRO</code> ，包括了两种。</p><ul><li><code>Partial RELRO</code> 编译时使用 <code>-Wl,-z,relro</code> 参数，</li></ul><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>关于动态库的加载过程，可以参考 <a href=https://github.com/tinyclub/open-c-book/blob/master/zh/chapters/02-chapter4.markdown>动态符号链接的细节</a>。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#符号表>符号表</a></li><li><a href=#重定位>重定位</a></li><li><a href=#基本概念>基本概念</a></li><li><a href=#位置无关代码>位置无关代码</a></li></ul></li><li><a href=#动态解析>动态解析</a><ul><li><a href=#plt>PLT</a></li><li><a href=#got>GOT</a></li><li><a href=#resolve>Resolve</a></li><li><a href=#验证>验证</a></li></ul></li><li><a href=#地址解析>地址解析</a></li><li><a href=#安全风险>安全风险</a><ul><li><a href=#防范措施>防范措施</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

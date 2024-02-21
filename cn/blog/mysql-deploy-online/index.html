@@ -1,0 +1,89 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 线上部署 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="主要介绍下 MySQL 如何在线上进行部署。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL 线上部署</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-08-21</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/c/cpp/ role=button>c/cpp</a></div></div><hr><div class=content><p>主要介绍下 MySQL 如何在线上进行部署。</p><img src=images/deploy-online-logo.png alt="mysql deploy online logo" width=25%><p>可以通过如下步骤部署 MySQL 服务。</p><a class=anchor id=创建用户></a><h1>创建用户 <a href=#%e5%88%9b%e5%bb%ba%e7%94%a8%e6%88%b7 aria-hidden=true>#</a></h1><p>首先创建 MySQL 用户和组。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># groupadd -r mysql
+</span></span><span class=line><span class=cl># useradd -r -g mysql -M -s /sbin/nologin mysql
+</span></span><span class=line><span class=cl>参数:
+</span></span><span class=line><span class=cl>    -r 添加系统用户组、系统用户
+</span></span><span class=line><span class=cl>    -g 指定用户需要添加到的group
+</span></span><span class=line><span class=cl>    -M 不创建home目录
+</span></span><span class=line><span class=cl>    -s 指定使用的shell
+</span></span></code></pre></div><p>当出现权限问题时，可以通过如下方式进行调试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># usermod -s /bin/bash mysql
+</span></span><span class=line><span class=cl># su mysql -c &#39;echo &#34;test&#34; &gt; /opt/data/test&#39;
+</span></span><span class=line><span class=cl># su mysql -c &#39;cat /opt/data/test&#39;
+</span></span><span class=line><span class=cl># usermod -s /sbin/nologin mysql
+</span></span></code></pre></div><a class=anchor id=创建数据目录></a><h1>创建数据目录 <a href=#%e5%88%9b%e5%bb%ba%e6%95%b0%e6%8d%ae%e7%9b%ae%e5%bd%95 aria-hidden=true>#</a></h1><p>创建数据目录，另外需要保证 mysql 用户对安装目录有读权限，否则加载插件时可能失败。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># mkdir -pv /opt/data
+</span></span><span class=line><span class=cl># chown -R mysql:mysql /opt/data
+</span></span><span class=line><span class=cl># chown -R --verbose mysql:mysql /opt/mysql-5.7
+</span></span></code></pre></div><a class=anchor id=数据库初始化></a><h1>数据库初始化 <a href=#%e6%95%b0%e6%8d%ae%e5%ba%93%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h1><p>创建系统自带的数据库和表，如果后续误删除，可以直接再次执行如下命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># /opt/mysql-5.7/bin/mysqld --initialize-insecure --basedir=/opt/mysql-5.7 \
+</span></span><span class=line><span class=cl>    --datadir=/opt/data --user=mysql
+</span></span></code></pre></div><a class=anchor id=添加配置文件></a><h1>添加配置文件 <a href=#%e6%b7%bb%e5%8a%a0%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h1><p>如下只是一个简单的配置，详细配置文件可以查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># vi /etc/my.cnf
+</span></span><span class=line><span class=cl>[client]
+</span></span><span class=line><span class=cl>password       = your_password
+</span></span><span class=line><span class=cl>port           = 3306
+</span></span><span class=line><span class=cl>socket         = /tmp/mysql.sock
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>user            = mysql
+</span></span><span class=line><span class=cl>port            = 3306
+</span></span><span class=line><span class=cl>socket          = /tmp/mysql.sock
+</span></span><span class=line><span class=cl>basedir         = /opt/mysql-5.7
+</span></span><span class=line><span class=cl>datadir         = /opt/data
+</span></span><span class=line><span class=cl>pid-file        = /opt/data/mysqld.pid
+</span></span><span class=line><span class=cl>ft_min_word_len = 4
+</span></span><span class=line><span class=cl>max_allowed_packet = 32M
+</span></span><span class=line><span class=cl>character-set-server = utf8
+</span></span><span class=line><span class=cl>skip-name-resolve
+</span></span></code></pre></div><a class=anchor id=启动脚本></a><h1>启动脚本 <a href=#%e5%90%af%e5%8a%a8%e8%84%9a%e6%9c%ac aria-hidden=true>#</a></h1><p>注意，在编译后源码的 support-files 目录下，包括了一些常见的脚本。</p><p>如果使用的是 SysV 系统，可以拷贝服务启动脚本到 <code>/etc/init.d/mysqld</code> 目录下，不过现在一般采用 systemd 管理服务；当然，可以后直接通过该脚本启动服务。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># cp support-files/mysql.server /etc/init.d/mysqld
+</span></span><span class=line><span class=cl># service mysqld start
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># /opt/mysql-5.7/support-files/mysql.server start 
+</span></span></code></pre></div><p>如果使用 systemd ，可以添加如下文件，如下是 MariaDB 在 CentOS 中的配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat /lib/systemd/system/mariadb.service
+</span></span><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=MariaDB database server
+</span></span><span class=line><span class=cl>After=syslog.target
+</span></span><span class=line><span class=cl>After=network.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>Type=simple
+</span></span><span class=line><span class=cl>User=mysql
+</span></span><span class=line><span class=cl>Group=mysql
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>ExecStartPre=/usr/libexec/mariadb-prepare-db-dir %n
+</span></span><span class=line><span class=cl># Note: we set --basedir to prevent probes that might trigger SELinux alarms,
+</span></span><span class=line><span class=cl># per bug #547485
+</span></span><span class=line><span class=cl>ExecStart=/usr/bin/mysqld_safe --basedir=/usr
+</span></span><span class=line><span class=cl>ExecStartPost=/usr/libexec/mariadb-wait-ready $MAINPID
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># Give a reasonable amount of time for the server to start up/shut down
+</span></span><span class=line><span class=cl>TimeoutSec=300
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># Place temp files in a secure directory, not /tmp
+</span></span><span class=line><span class=cl>PrivateTmp=true
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span></code></pre></div><a class=anchor id=安全加固></a><h1>安全加固 <a href=#%e5%ae%89%e5%85%a8%e5%8a%a0%e5%9b%ba aria-hidden=true>#</a></h1><p>5.7 对系统安全进行了加固，例如：</p><ul><li>在数据库初始化时，如果使用的是 initialize 参数初始化数据库，则会为 root 用户设置一个默认的密码，保存在 <code>/root/.mysql_secret</code> 文件中。</li><li>密码强度管理，该功能是通过 <code>validate_password</code> 插件进行判断。</li><li>原 <code>SET PASSWORD=PASSWORD('paasword');</code> 方式，修改为 <code>SET password='password';</code>，而且官方建议使用 <code>ALTER</code> 方式。</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 推荐密码修改方式
+</span></span><span class=line><span class=cl>mysql&gt; ALTER USER &#39;root&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;new_password&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- validate_password插件加载方式
+</span></span><span class=line><span class=cl>$ cat /etc/my.cnf
+</span></span><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>plugin-load=validate_password.so
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; INSTALL PLUGIN validate_password SONAME &#39;validate_password.so&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#39;validate%&#39;;
+</span></span></code></pre></div><p>另外，可以通过如下脚本加固，简单来说就是设置 root 密码，删除 test 数据库。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># /opt/mysql-5.7/bin/mysql_secure_installation
+</span></span></code></pre></div><a class=anchor id=防火墙设置></a><h1>防火墙设置 <a href=#%e9%98%b2%e7%81%ab%e5%a2%99%e8%ae%be%e7%bd%ae aria-hidden=true>#</a></h1><p>设置为允许 3306 端口可以远程访问，如下，将 192.168.1.0/24 网段的客户机设置为白名单。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># vim /etc/sysconfig/iptables
+</span></span><span class=line><span class=cl>-A INPUT -s 192.168.1.0/24 -p tcp -m tcp -m state --state NEW -dport 3306 -j ACCEPT
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#创建用户>创建用户</a></li><li><a href=#创建数据目录>创建数据目录</a></li><li><a href=#数据库初始化>数据库初始化</a></li><li><a href=#添加配置文件>添加配置文件</a></li><li><a href=#启动脚本>启动脚本</a></li><li><a href=#安全加固>安全加固</a></li><li><a href=#防火墙设置>防火墙设置</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

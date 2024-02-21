@@ -1,0 +1,124 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 常用技巧 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 常用技巧</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2013-03-09</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><a class=anchor id=文本替换></a><h1>文本替换 <a href=#%e6%96%87%e6%9c%ac%e6%9b%bf%e6%8d%a2 aria-hidden=true>#</a></h1><p>命令行批量替换多文件中的字符串，常用有三种方法：Mahuinan 法、Sumly 法和 30T 法。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看所匹配的字符串
+</span></span><span class=line><span class=cl>$ sed -n &#39;/orig/&#39;p *.txt 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- Mahuinan法，用sed命令批量替换多个文件中的字符串
+</span></span><span class=line><span class=cl>$ sed -i &#34;s/orig/sub/g&#34; &#34;`grep orig -rl directory`&#34;
+</span></span><span class=line><span class=cl>解读：
+</span></span><span class=line><span class=cl>    sed -i 选项表示原地替换，若只显示结果则用-e替换；
+</span></span><span class=line><span class=cl>    g 表示全局，否则只替换第一个匹配字符串；
+</span></span><span class=line><span class=cl>    grep -r 表示对目录递归调用；-l(L小写)列出匹配的文件。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- Sumly法
+</span></span><span class=line><span class=cl>$ perl -pi -e &#34;s/China/Sumly/g&#34; /www/*.htm /www/*.txt
+</span></span><span class=line><span class=cl>解读：
+</span></span><span class=line><span class=cl>    将www文件夹下所有的htm和txt文件中的&#34;China&#34;都替换为&#34;Sumly&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 30T法
+</span></span><span class=line><span class=cl>$ perl -pi -e &#39;s/baidu/30T/g&#39; `find /www -type f`
+</span></span><span class=line><span class=cl>解读：
+</span></span><span class=line><span class=cl>　　将www文件夹下所有文件，不分扩展名，所有的&#34;baidu&#34;都替换为&#34;30T&#34;
+</span></span></code></pre></div><p>注意，在 Mahuinan 中，为了防止文件名中存在空格，所以使用引号包裹。</p><a class=anchor id=install-和-cp-命令></a><h1>install 和 cp 命令 <a href=#install-%e5%92%8c-cp-%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h1><p>两者都可以将文件/目录拷贝到指定的目录，不过 install 允许你控制目标文件的属性，常用于程序的 Makefile 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>install [OPTION]... SOURCE DIRECTORY
+</span></span><span class=line><span class=cl>常用参数：
+</span></span><span class=line><span class=cl>    -m, --mode=0700
+</span></span><span class=line><span class=cl>        设定权限；
+</span></span><span class=line><span class=cl>    -v, --verbose
+</span></span><span class=line><span class=cl>        打印处理的每个文件/目录名称；
+</span></span><span class=line><span class=cl>    -d, --directory
+</span></span><span class=line><span class=cl>        所有参数都作为目录处理，而且会创建指定目录；
+</span></span><span class=line><span class=cl>    -g, --group=mysql
+</span></span><span class=line><span class=cl>        设定所属组，而不是进程目前的所属组；
+</span></span><span class=line><span class=cl>    -o, --owner=mysql
+</span></span><span class=line><span class=cl>        设定所有者，只适用于超级用户；
+</span></span><span class=line><span class=cl>    -s, --strip
+</span></span><span class=line><span class=cl>        使用strip命令删除文件中的符号表 (symbol table)；
+</span></span><span class=line><span class=cl>    -S, --suffix=exe
+</span></span><span class=line><span class=cl>        指定安装文件的后缀；
+</span></span><span class=line><span class=cl>    -p, --preserve-timestamps
+</span></span><span class=line><span class=cl>        以源文件的访问/修改时间作为相应的目的地文件的时间属性；
+</span></span><span class=line><span class=cl>    -t, --target-directory
+</span></span><span class=line><span class=cl>        如果最后一个文件是一个目录并且没有使用-T,--no-target-directory选项，
+</span></span><span class=line><span class=cl>        则将每个源文件拷贝到指定的目录，源和目标文件名相同；
+</span></span></code></pre></div><p>使用 <code>-d</code> 选项时，如果指定安装位置为 <code>/usr/local/foo/bar</code>，一般 <code>/usr/local</code> 已存在，install 会直接创建 <code>foo/bar</code> 目录，并把程序安装到指定位置。</p><p>如果指定了两个文件名，则将第一个文件拷贝到第二个,</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装目录，等价于mkdir /tmp/bin
+</span></span><span class=line><span class=cl>$ install --verbose -d -m 0755 /tmp/bin
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 安装文件，等价于cp a/e c
+</span></span><span class=line><span class=cl>$ install -v -m 0755 a/e c
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 安装文件，等价于mkdir -p a/b &amp;&amp; cp x a/b/c
+</span></span><span class=line><span class=cl>$ install -v -m 0755 -D x a/b/c
+</span></span></code></pre></div><a class=anchor id=避免误删目录></a><h1>避免误删目录 <a href=#%e9%81%bf%e5%85%8d%e8%af%af%e5%88%a0%e7%9b%ae%e5%bd%95 aria-hidden=true>#</a></h1><p>今天就来聊聊 linux 下一个常见的问题：如何避免误删目录。下文会详细的讲述不同的场景下误删目录，以及相应的解决方案。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#--- 1. 变量为空导致误删文件，如果file为空或命令返回空
+</span></span><span class=line><span class=cl>rm -rf /usr/sbin/$file
+</span></span><span class=line><span class=cl>#--- 使用变量扩展功能，变量为空使用默认值或抛出异常退出
+</span></span><span class=line><span class=cl>rm -rf /usr/sbin/${file:?var is empty}
+</span></span><span class=line><span class=cl>#--- 人肉判断变量是否为空
+</span></span><span class=line><span class=cl>[[ ${file} == &#34;&#34; ]] &amp;&amp; echo 1
+</span></span><span class=line><span class=cl>[[ -z ${file} ]] &amp;&amp; echo 1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 2. 路径含有空格导致误删文件
+</span></span><span class=line><span class=cl>path=&#34;/usr/local /sbin&#34;
+</span></span><span class=line><span class=cl>rm -rf $path
+</span></span><span class=line><span class=cl>#--- 变量加引号防止扩展
+</span></span><span class=line><span class=cl>rm -rf &#34;$path&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 3. 目录或文件含有特殊字符导致误删文件，例如 &#34;~&#34;
+</span></span><span class=line><span class=cl>#--- 变量加引号防止扩展
+</span></span><span class=line><span class=cl>rm -rf &#34;~&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--- 4. cd切换目录失败，导致文件被误删
+</span></span><span class=line><span class=cl>#--- 使用逻辑短路操作
+</span></span><span class=line><span class=cl>cd path &amp;&amp; rm -rf *.exe
+</span></span><span class=line><span class=cl>#--- 检测path是否存在
+</span></span><span class=line><span class=cl>[[ -d path ]] &amp;&amp; echo 1
+</span></span></code></pre></div><a class=anchor id=man></a><h1>man <a href=#man aria-hidden=true>#</a></h1><p>Linux 上的 manpage 是用 groff 语法编写的，实际上可以通过如下的命令查看：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>zcat man.1.gz | groff -man -Tascii | more
+</span></span></code></pre></div><p>其查找路径可以通过 <code>man -w</code> 命令查看，或者查看配置文件 <code>/etc/man.config</code>；很多帮助文档保存在 <code>/usr/share/man</code> 目录下，又按照不同类型保存不同的子目录下，例如 <code>/usr/share/man/man1/mysqlshow.1.gz</code> 。</p><p>如下是常见的查看命令：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看搜索路径
+</span></span><span class=line><span class=cl>$ man -w
+</span></span><span class=line><span class=cl>----- 显示man命令搜索到的第一个文件路径
+</span></span><span class=line><span class=cl>$ man -w passwd
+</span></span><span class=line><span class=cl>----- 显示所有匹配的man文档
+</span></span><span class=line><span class=cl>$ man -aw passwd
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 指定领域限制
+</span></span><span class=line><span class=cl>$ man 5 passwd
+</span></span><span class=line><span class=cl>$ man -S 1:2 passwd
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 同命令whatis ，将在whatis数据库查找以关键字开同的帮助索引信息
+</span></span><span class=line><span class=cl>$ man -f httpd
+</span></span><span class=line><span class=cl>----- 同命令apropos 将搜索whatis数据库，模糊查找关键字
+</span></span><span class=line><span class=cl>$ man -k httpd
+</span></span></code></pre></div><a class=anchor id=换行处理></a><h1>换行处理 <a href=#%e6%8d%a2%e8%a1%8c%e5%a4%84%e7%90%86 aria-hidden=true>#</a></h1><p>*nix 系统里，每行结尾只有 <code>"&lt;换行>"</code>，即 <code>"\n"</code> ；Windows 系统里面，每行结尾是 <code>"&lt;换行>&lt;回车>"</code> ，即 <code>"\n\r"</code> 。</p><p>如果不进行转换，那么 *nix 系统下的文件在 Windows 里打开所有文字会变成一行；而 Windows 里的文件在 *nix 下打开的话，在每行的结尾可能会多出一个 <code>^M</code> 符号。</p><p>要把文件转换一下，有两种方法：</p><ol><li>命令 <code>dos2unix test.file</code>；</li><li>去掉 <code>"\r"</code> ，用命令 <code>sed -i 's/\r//' test.file</code> 。</li></ol><a class=anchor id=历史命令></a><h1>历史命令 <a href=#%e5%8e%86%e5%8f%b2%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h1><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 去除重复命令，包括不连续的命令，通过ignoredups去除连续重复的命令
+</span></span><span class=line><span class=cl>export HISTCONTROL=erasedups
+</span></span></code></pre></div><a class=anchor id=异常处理></a><h1>异常处理 <a href=#%e5%bc%82%e5%b8%b8%e5%a4%84%e7%90%86 aria-hidden=true>#</a></h1><a class=anchor id=text-file-busy></a><h2>Text file busy <a href=#text-file-busy aria-hidden=true>#</a></h2><p>执行复制时可能会报如上的错误，处理方式如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看文件被那个进程占用
+</span></span><span class=line><span class=cl># fuser youfile
+</span></span></code></pre></div><p>如果有进程占用，确保进程无用直接 <code>kill</code> 掉。</p><a class=anchor id=杂项></a><h1>杂项 <a href=#%e6%9d%82%e9%a1%b9 aria-hidden=true>#</a></h1><a class=anchor id=shell-操作></a><h2>shell 操作 <a href=#shell-%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看当前所有shell
+</span></span><span class=line><span class=cl>$ chsh -l
+</span></span><span class=line><span class=cl>$ cat /etc/shells
+</span></span></code></pre></div><p>查看当前的 Shell ，可以查看 <code>SHELL</code> 变量，不过如果是通过 bash dash sh 等直接运行的话，那么 SHELL 不变，可以通过如下方式查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ ps | grep $$ | awk &#39;{print $4}&#39;
+</span></span><span class=line><span class=cl>$ echo $0
+</span></span><span class=line><span class=cl>$ tom                                # 输入没有的命令
+</span></span></code></pre></div><p><code>chsh -s /bin/dash</code> 实际修改的是 <code>/etc/passwd</code> 文件里和你的用户名相对应的那一行，重启 Shell 后即可。</p><a class=anchor id=符号链接></a><h2>符号链接 <a href=#%e7%ac%a6%e5%8f%b7%e9%93%be%e6%8e%a5 aria-hidden=true>#</a></h2><p>当读取符号链接文件时，默认会重定向到指定的文件，可以通过 C 中的 <code>readlink()</code> 或者 <code>readlink</code> 命令查看符号链接文件中的内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 建立测试用符号链接
+</span></span><span class=line><span class=cl>$ echo &#34;just for test&#34; &gt; original.txt
+</span></span><span class=line><span class=cl>$ ln -s original.txt symbol.txt
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 读取并解析出源文件的绝对路径
+</span></span><span class=line><span class=cl>$ readlink -f symbol.txt
+</span></span><span class=line><span class=cl>----- 直接查看符号链接的内容
+</span></span><span class=line><span class=cl>$ readlink symbol.txt
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 复制时保持符号链接内容
+</span></span><span class=line><span class=cl>$ cp -d symbol.txt copy.txt
+</span></span></code></pre></div><a class=anchor id=硬链接></a><h2>硬链接 <a href=#%e7%a1%ac%e9%93%be%e6%8e%a5 aria-hidden=true>#</a></h2><p>通过 <code>ls -l</code> 可以查看符号链接所引用的原文件，而对于硬链接则不能通过上述命令查看，可以通过如下方式查看所有的硬链接文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查找文件对应的inode信息，包括其引用计数
+</span></span><span class=line><span class=cl>$ ls -il
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 根据inode信息找到所有的文件
+</span></span><span class=line><span class=cl>$ find / -inum 33582147
+</span></span></code></pre></div><p>注意：软链接能够跨越文件系统 (分区)，硬链接不可以。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#文本替换>文本替换</a></li><li><a href=#install-和-cp-命令>install 和 cp 命令</a></li><li><a href=#避免误删目录>避免误删目录</a></li><li><a href=#man>man</a></li><li><a href=#换行处理>换行处理</a></li><li><a href=#历史命令>历史命令</a></li><li><a href=#异常处理>异常处理</a><ul><li><a href=#text-file-busy>Text file busy</a></li></ul></li><li><a href=#杂项>杂项</a><ul><li><a href=#shell-操作>shell 操作</a></li><li><a href=#符号链接>符号链接</a></li><li><a href=#硬链接>硬链接</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

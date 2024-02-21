@@ -1,0 +1,171 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 内核 系统调用详解 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Intel 的 x86 架构的 CPU 提供了 0 到 3 四个特权级，而在 Linux 操作系统中主要采用了 0 和 3 两个特权级，也就是我们通常所说的内核态和用户态。
+从用户态向内核态切换通常有 3 种情况： A) 系统调用(主动)，用户态的进程申请操作系统的服务，通常用软中断实现；B) 产生异常，如缺页异常、除0异常；C) 外设产生中断，如键盘、磁盘等。
+下面以系统调用来讲解。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 内核 系统调用详解</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2014-03-23</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kernel/ role=button>kernel</a></div></div><hr><div class=content><p>Intel 的 x86 架构的 CPU 提供了 0 到 3 四个特权级，而在 Linux 操作系统中主要采用了 0 和 3 两个特权级，也就是我们通常所说的内核态和用户态。</p><p>从用户态向内核态切换通常有 3 种情况： A) 系统调用(主动)，用户态的进程申请操作系统的服务，通常用软中断实现；B) 产生异常，如缺页异常、除0异常；C) 外设产生中断，如键盘、磁盘等。</p><p>下面以系统调用来讲解。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>在 x86 中，通过中断来调用系统调用的效率被证明是非常低的，如果用户程序频繁使用系统调用接口，那么会显著降低执行效率。Intel 很早就注意到了这个问题，并且引进了一个更有效的 sysenter 和 sysexit 形式的系统调用接口。</p><p>快速系统调用最初在 Pentium Pro 处理器中出现，但是由于硬件上的 bug ，实际上并没有被大量 CPU 采用。这就是为什么可以看到 PentiumⅡ 甚至 Pentium Ⅲ 最后实际引入了 sysenter 。</p><p>由于硬件的问题，操作系统经历了很长时间才支持快速系统调用，Linux 最早在 2002.11 才开始支持，此时已经过去了 10 年。通过反汇编可以发现，<code>__kernel_vsyscall</code> 实际会调用 <code>sysenter</code> 。</p><a class=anchor id=使用系统调用></a><h1>使用系统调用 <a href=#%e4%bd%bf%e7%94%a8%e7%b3%bb%e7%bb%9f%e8%b0%83%e7%94%a8 aria-hidden=true>#</a></h1><p>系统调用号可以从 <code>/usr/include/syscall.h</code> 中查看，在 C 中调用系统调用可以使用 <code>syscall()</code> 或者 glibc 封装的系统调用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;syscall.h&gt;       /* for SYS_write etc. */</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/types.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=n>s</span><span class=p>[]</span> <span class=o>=</span> <span class=s>&#34;Hello World</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>ret</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* direct system call */</span>
+</span></span><span class=line><span class=cl>    <span class=n>ret</span> <span class=o>=</span> <span class=nf>syscall</span><span class=p>(</span><span class=n>SYS_write</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=n>s</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>s</span><span class=p>));</span> <span class=cm>/* man 2 syscall */</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;syscall(SYS_write) return %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>ret</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* or &#34;libc&#34; wrapped system call */</span>
+</span></span><span class=line><span class=cl>    <span class=n>ret</span> <span class=o>=</span> <span class=nf>write</span><span class=p>(</span><span class=mi>2</span><span class=p>,</span> <span class=n>s</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>s</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;libc write() return %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>ret</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>或者使用汇编。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># Writes &#34;Hello, World&#34; to the console using only system calls. Runs on 64-bit Linux only.
+</span></span><span class=line><span class=cl># gcc -c hello.s &amp;&amp; ld hello.o &amp;&amp; ./a.out or gcc -nostdlib hello.s &amp;&amp; ./a.out
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    .global _start
+</span></span><span class=line><span class=cl>    .text
+</span></span><span class=line><span class=cl>_start:
+</span></span><span class=line><span class=cl>    # write(1, message, 13)
+</span></span><span class=line><span class=cl>    mov     $1, %rax                # system call 1 is write
+</span></span><span class=line><span class=cl>    mov     $1, %rdi                # file handle 1 is stdout
+</span></span><span class=line><span class=cl>    mov     $message, %rsi          # address of string to output
+</span></span><span class=line><span class=cl>    mov     $13, %rdx               # number of bytes
+</span></span><span class=line><span class=cl>    syscall                         # invoke operating system to do the write
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    # exit(0)
+</span></span><span class=line><span class=cl>    mov     $60, %rax               # system call 60 is exit
+</span></span><span class=line><span class=cl>    xor     %rdi, %rdi              # we want return code 0
+</span></span><span class=line><span class=cl>    syscall                         # invoke operating system to exit
+</span></span><span class=line><span class=cl>message:
+</span></span><span class=line><span class=cl>    .ascii  &#34;Hello, world\n&#34;
+</span></span></code></pre></div><p>对于相应的系统调用可以通过 <code>strace -e trace=write ./a.out</code> 查看，注意，如果通过如下的 vdso 则不会捕捉到相应的系统调用。</p><a class=anchor id=系统实现></a><h1>系统实现 <a href=#%e7%b3%bb%e7%bb%9f%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h1><p>在比较老的系统中，是通过软中断实现。在 32-bits 系统中，系统调用号通过 <code>eax</code> 传入，各个参数依次通过 <code>ebx</code>, <code>ecx</code>, <code>edx</code>, <code>esi</code>, <code>edi</code>, <code>ebp</code> 传入，然后调用 <code>int 0x80</code> ；返回值通过 <code>eax</code> 传递。所有寄存器的值都会保存。</p><p>在 64-bits 系统中，系统调用号通过 <code>rax</code> 传入，各个参数依次通过 <code>rdi</code>, <code>rsi</code>, <code>rdx</code>, <code>r10</code>, <code>r8</code>, <code>r9</code> 传入, 然后调用 <code>syscall</code>；返回值通过 <code>rax</code> 传递。系统调用时 <code>rcx</code> 和 <code>r11</code> 不会保存。</p><p>对于系统调用的执行过程，可通过解析反汇编代码查看，真正的程序入口是 <code>_start</code>，下面解析查看过程。</p><a class=anchor id=示例程序></a><h2>示例程序 <a href=#%e7%a4%ba%e4%be%8b%e7%a8%8b%e5%ba%8f aria-hidden=true>#</a></h2><p>以 <code>write()</code> 系统调用为例，通过 <code>gcc -o write write.c -static</code> 编译，注意最好静态编译，否则不方便查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=kt>char</span> <span class=o>**</span><span class=n>argv</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>write</span><span class=p>(</span><span class=mi>2</span><span class=p>,</span> <span class=s>&#34;Hello World!</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=mi>13</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>通过如下方式查看函数调用过程，write() 是 glibc 封装的函数，具体实现可以查看源码，callq 等同于 call 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(gdb) disassemble main                                      # 反汇编main函数
+</span></span><span class=line><span class=cl>Dump of assembler code for function main:
+</span></span><span class=line><span class=cl>   0x0000000000400dc0 &lt;+0&gt;:     push   %rbp
+</span></span><span class=line><span class=cl>   0x0000000000400dc1 &lt;+1&gt;:     mov    %rsp,%rbp            # 保存栈桢
+</span></span><span class=line><span class=cl>   0x0000000000400dc4 &lt;+4&gt;:     mov    $0xd,%edx            # 字符串长度
+</span></span><span class=line><span class=cl>   0x0000000000400dc9 &lt;+9&gt;:     mov    $0x48f230,%esi       # 字符串地址，打印数据 x/s 0x48f230
+</span></span><span class=line><span class=cl>   0x0000000000400dce &lt;+14&gt;:    mov    $0x2,%edi            # 传入的第一个参数
+</span></span><span class=line><span class=cl>   0x0000000000400dd3 &lt;+19&gt;:    callq  0x40ed30 &lt;write&gt;
+</span></span><span class=line><span class=cl>   0x0000000000400dd8 &lt;+24&gt;:    mov    $0x0,%eax
+</span></span><span class=line><span class=cl>   0x0000000000400ddd &lt;+29&gt;:    pop    %rbp
+</span></span><span class=line><span class=cl>   0x0000000000400dde &lt;+30&gt;:    retq
+</span></span><span class=line><span class=cl>End of assembler dump.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>(gdb) disassemble 0x40ed30                                   # 反汇编write函数
+</span></span><span class=line><span class=cl>Dump of assembler code for function write:
+</span></span><span class=line><span class=cl>   0x000000000040ed30 &lt;+0&gt;:     cmpl   $0x0,0x2ae155(%rip)
+</span></span><span class=line><span class=cl>   0x000000000040ed37 &lt;+7&gt;:     jne    0x40ed4d &lt;write+29&gt;
+</span></span><span class=line><span class=cl>   0x000000000040ed39 &lt;+0&gt;:     mov    $0x1,%eax             # wirte的系统调用号
+</span></span><span class=line><span class=cl>   0x000000000040ed3e &lt;+5&gt;:     syscall                      # 执行系统调用
+</span></span><span class=line><span class=cl>   ... ...
+</span></span></code></pre></div><p>系统会采用 syscall 和 sysenter，x32 大多采用 sysenter，而 x64 采用的是 syscall 。</p><a class=anchor id=内核实现></a><h2>内核实现 <a href=#%e5%86%85%e6%a0%b8%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h2><p>Linux 内核中维护了一张系统调用表 <code>sys_call_table[ ]@arch/x86/kernel/syscall_64.c</code> ，这是一个一维数组，索引为系统调用号，表中的元素是系统调用函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>const sys_call_ptr_t sys_call_table[__NR_syscall_max+1] = {
+</span></span><span class=line><span class=cl>    [0 ... __NR_syscall_max] = &amp;sys_ni_syscall,
+</span></span><span class=line><span class=cl>#include &amp;lt;asm/syscalls_64.h&amp;gt;
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></div><p>如上所示，默认所有调用都初始化为 <code>sys_ni_syscall()</code> ，而 <code>asm/syscalls_64.h</code> 实际是在编译时动态产生的。</p><p>编译内核时，会执行 <code>arch/x86/syscalls/Makefile</code> ，该文件会调用 shell 脚本 <code>syscalltdr.sh</code> ，该脚本以 <code>syscall_64.tbl</code> 文件作为输入，然后生成 <code>arch/x86/include/generated/asm/syscalls_64.h</code> ，最后生成的内容如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>//### arch/x86/include/generated/asm/syscalls_64.h
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nf>__SYSCALL_COMMON</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span> <span class=n>sys_read</span><span class=p>,</span> <span class=n>sys_read</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=nf>__SYSCALL_64</span><span class=p>(</span><span class=mi>19</span><span class=p>,</span> <span class=n>sys_readv</span><span class=p>,</span> <span class=n>sys_readv</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=nf>__SYSCALL_X32</span><span class=p>(</span><span class=mi>515</span><span class=p>,</span> <span class=n>compat_sys_readv</span><span class=p>,</span> <span class=n>compat_sys_readv</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>//### arch/x86/kernel/syscall_64.c
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>extern</span> <span class=n>asmlinkage</span> <span class=kt>void</span> <span class=nf>sys_read</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>extern</span> <span class=n>asmlinkage</span> <span class=kt>void</span> <span class=nf>sys_readv</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>const</span> <span class=kt>sys_call_ptr_t</span> <span class=n>sys_call_table</span><span class=p>[</span><span class=n>__NR_syscall_max</span><span class=o>+</span><span class=mi>1</span><span class=p>]</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=p>[</span><span class=mi>0</span> <span class=p>...</span> <span class=n>__NR_syscall_max</span><span class=p>]</span> <span class=o>=</span> <span class=o>&amp;</span><span class=n>sys_ni_syscall</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>=</span> <span class=n>sys_read</span><span class=p>,</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>    <span class=p>[</span><span class=mi>19</span><span class=p>]</span> <span class=o>=</span> <span class=n>sys_readv</span><span class=p>,</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></div><p>最早的时候，在 x86 中，需要通过门进入内核态，系统调用通过 <code>int $0x80</code> 指令产生一个编号为 128 的软中断，对应于是中断描述符表 IDT 中的第 128 项，在此预设了一个内核空间的地址，它指向了系统调用处理程序 <code>system_call()</code> (该函数在 <code>arch/x86/kernel/entry_64.S</code> 中定义)。</p><p>由于传统的 <code>int 0x80</code> 系统调用浪费了很多时间，2.6 以后会采用 sysenter/sysexit/syscall 。</p><a class=anchor id=添加系统调用></a><h2>添加系统调用 <a href=#%e6%b7%bb%e5%8a%a0%e7%b3%bb%e7%bb%9f%e8%b0%83%e7%94%a8 aria-hidden=true>#</a></h2><p>添加系统调用方法如下。</p><a class=anchor id=1-定义系统调用号></a><h3>1. 定义系统调用号 <a href=#1-%e5%ae%9a%e4%b9%89%e7%b3%bb%e7%bb%9f%e8%b0%83%e7%94%a8%e5%8f%b7 aria-hidden=true>#</a></h3><p>在系统调用向量表里添加自定义的系统调用号。</p><p>向 <code>arch/x86/syscalls/syscall_64.tbl</code> 中加入自定义的系统调用号和函数名，添加时可以参考文件的注释，在 x86-64 中可以定义 common/64/x32 三种类型。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>555 common foobar    sys_foobar
+</span></span></code></pre></div><a class=anchor id=2-添加函数声明></a><h3>2. 添加函数声明 <a href=#2-%e6%b7%bb%e5%8a%a0%e5%87%bd%e6%95%b0%e5%a3%b0%e6%98%8e aria-hidden=true>#</a></h3><p>在 <code>arch/x86/include/asm/syscalls.h</code> 中添加函数声明。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>asmlinkage void sys_foobar(void) ;
+</span></span></code></pre></div><a class=anchor id=3-添加函数的定义></a><h3>3. 添加函数的定义 <a href=#3-%e6%b7%bb%e5%8a%a0%e5%87%bd%e6%95%b0%e7%9a%84%e5%ae%9a%e4%b9%89 aria-hidden=true>#</a></h3><p>在文件 <code>kernel/sys.c</code> 文件中加入对 <code>sys_foobar()</code> 的定义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>SYSCALL_DEFINE0(foobar)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    printk(KERN_WARN &#34;hello world foobar!&#34;);
+</span></span><span class=line><span class=cl>    return 0;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>EXPORT_SYMBOL(sys_foobar);
+</span></span></code></pre></div><a class=anchor id=4-编译安装></a><h3>4. 编译安装 <a href=#4-%e7%bc%96%e8%af%91%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h3><p>通过 <code>make bzImage && make install</code> 编译安装。</p><a class=anchor id=优化></a><h1>优化 <a href=#%e4%bc%98%e5%8c%96 aria-hidden=true>#</a></h1><p><code>vsyscall</code> 和 <code>vDSO</code> 是两种用来加速系统调用的机制。两者在执行系统调用时，都不需要改变优先级进入内核模式，不过相比来说后者更安全。如果获得了 <code>system()</code> 的入口，那么可以执行几乎任意的程序，<code>vDSO</code> 采用随机地址 (<code>cat /proc/self/maps</code>)，而且去除了一些可能有风险的代码。</p><p>静态连接都会调用"调用系统"，如果通过 strace 跟踪，则都会观察到系统调用。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>简单介绍 <code>gettimeofday()</code> 的使用方法，一般不需要获取时区，所以第二个参数通常设置为 <code>NULL</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>#include &lt;unistd.h&gt;
+</span></span><span class=line><span class=cl>#include &lt;sys/time.h&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int main(int argc, char **argv)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    struct  timeval    tv;
+</span></span><span class=line><span class=cl>    struct  timezone   tz;
+</span></span><span class=line><span class=cl>    gettimeofday(&amp;tv, &amp;tz);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    printf(&#34;tv_sec:%d\n&#34;, (int)tv.tv_sec);
+</span></span><span class=line><span class=cl>    printf(&#34;tv_usec:%d\n&#34;, (int)tv.tv_usec);
+</span></span><span class=line><span class=cl>    printf(&#34;tz_minuteswest:%d\n&#34;, tz.tz_minuteswest);
+</span></span><span class=line><span class=cl>    printf(&#34;tz_dsttime:%d\n&#34;, tz.tz_dsttime);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    return 0;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>在 x32 上，<code>gettimeofday()</code> 会调用 <code>__kernel_vsyscall()</code>，然后到 <code>sysenter</code> 指令。而在 x64 上，同时使用 <code>vsyscall</code> 和 <code>vdso</code>（这个可以通过<code>/proc/PID/maps</code>查看），应该优先使用 <code>vdso</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gcc gettimeofday.c -o gettimeofday -Wall -g
+</span></span><span class=line><span class=cl>$ gdb gettimeofday -q
+</span></span><span class=line><span class=cl>Reading symbols from /tmp/gettimeofday...done.
+</span></span><span class=line><span class=cl>(gdb) b gettimeofday
+</span></span><span class=line><span class=cl>Breakpoint 1 at 0x400460
+</span></span><span class=line><span class=cl>(gdb) run
+</span></span><span class=line><span class=cl>(gdb) disassemble
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>0x00007ffff7acb082 &lt;+50&gt;:    callq  0x7ffff7b4e8c0 &lt;_dl_vdso_vsym&gt;
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>(gdb) b _dl_vdso_vsym
+</span></span><span class=line><span class=cl>(gdb) b __gettimeofday
+</span></span></code></pre></div><a class=anchor id=vdso></a><h1>VDSO <a href=#vdso aria-hidden=true>#</a></h1><p>Virtual Dynamic Shared Object, VDSO 是内核提供的功能，也就是为什么需要 <code>asm/vsyscall.h</code> 头文件，它提供了一种快速廉价的系统调用方式。</p><p>有些系统调用如 <code>gettimeofday()</code> ，会经常调用，传统的系统调用方式是通过软中断指令 <code>int 0x80</code> 实现的，最新的采用 <code>syscall()</code> 。不论何种操作，都需要进行压栈、跳转、权限级别提升，恢复用户栈，并跳转回低级别代码。</p><p>vdso 是将内核态的调用映射到用户态的地址空间中，会将当前时间放置到其它应用都可以访问的固定地方，这样应用不需要系统调用即可以。linux 中通过 <code>vsyscall</code> 实现，现在只支持三种系统调用，详见 <code>asm/vsyscall.h</code> 。</p><p>vdso.so 就是内核提供的虚拟的 .so ，这个 .so 文件不在磁盘上，而是在内核里头。内核把包含某 .so 的内存页在程序启动的时候映射入其内存空间，对应的程序就可以当普通的 .so 来使用里头的函数，比如 <code>syscall()</code> 。</p><a class=anchor id=aslr></a><h2>ASLR <a href=#aslr aria-hidden=true>#</a></h2><p>Address-Space Layout Randomization, ASLR 将用户的一些地址随机化，如 stack, mmap region, heap, text ，可以通过 <code>randomize_va_space</code> 配置，对应的值有三种：</p><ul><li>0 - 表示关闭进程地址空间随机化。</li><li>1 - 表示将mmap的基址，stack和vdso页面随机化。</li><li>2 - 表示在1的基础上增加栈（heap）的随机化。</li></ul><p>可通过 <code>echo '0' > /proc/sys/kernel/randomize_va_space</code> 或 <code>sysctl -w kernel.randomize_va_space=0</code> 设置。然后，可以通过如下方式获取 <code>vdso.so</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat /proc/sys/kernel/randomize_va_space
+</span></span><span class=line><span class=cl># sysctl -w kernel.randomize_va_space=0                           # 关闭随机映射
+</span></span><span class=line><span class=cl>$ cat /proc/self/maps                                             # 查看vdso在内存中的映射位置
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>7ffff7ffa000-7ffff7ffc000 r-xp 00000000 00:00 0  [vdso]           # 占用了2pages
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl># dd if=/proc/self/mem of=linux-gate.so bs=4096 skip=$[7ffff7ffa] count=2  # 从内存中复制
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ readelf -h linux-gate.so                                        # 查看头信息
+</span></span><span class=line><span class=cl>$ file linux-gate.so                                              # 查看文件类型，为shared-library ELF
+</span></span><span class=line><span class=cl>$ objdump -T linux-gate.so                                        # 打印符号表，或者用-d反汇编
+</span></span><span class=line><span class=cl>$ objdump -d linux-gate.so | grep -A5 \&lt;__vdso.*:                 # 查看包含vdso的函数
+</span></span></code></pre></div><p>可以从内存中读取该文件，或者使用 <code>extract_vdso.c</code> 直接读取该文件。</p><a class=anchor id=内核实现-1></a><h2>内核实现 <a href=#%e5%86%85%e6%a0%b8%e5%ae%9e%e7%8e%b0-1 aria-hidden=true>#</a></h2><p>内核实现在 <code>arch/x86/vdso</code> 中，编译生成 <code>vdso.so</code> 文件，通常来说该文件小于一个 page(4096) ，那么在内存中会映射为一个 page ，如果大于 4k ，会映射为 2pages 。</p><p>细节可以直接查看内核代码。</p><a class=anchor id=添加函数></a><h2>添加函数 <a href=#%e6%b7%bb%e5%8a%a0%e5%87%bd%e6%95%b0 aria-hidden=true>#</a></h2><p>在此通过 vdso 添加一个函数，返回一个值。</p><a class=anchor id=1-定义函数></a><h3>1. 定义函数 <a href=#1-%e5%ae%9a%e4%b9%89%e5%87%bd%e6%95%b0 aria-hidden=true>#</a></h3><p>在 <code>arch/x86/vdso</code> 目录下创建 <code>vfoobar.c</code>，其中 notrace 在 <code>arch/x86/include/asm/linkage.h</code> 中定义，也就是 <code>#define notrace __attribute__((no_instrument_function))</code> 。</p><p>同时需要告诉编译器一个用户态的函数 foobar() ，该函数属性为 weak 。weak 表示该函数在运行时才会解析，而且可以被覆盖。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;asm/linkage.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=n>notrace</span> <span class=kt>int</span> <span class=nf>__vdso_foobar</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>666</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>foobar</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=n>weak</span><span class=p>,</span> <span class=nf>alias</span><span class=p>(</span><span class=s>&#34;__vdso_foobar&#34;</span><span class=p>)));</span>
+</span></span></code></pre></div><a class=anchor id=2-添加到连接描述符></a><h3>2. 添加到连接描述符 <a href=#2-%e6%b7%bb%e5%8a%a0%e5%88%b0%e8%bf%9e%e6%8e%a5%e6%8f%8f%e8%bf%b0%e7%ac%a6 aria-hidden=true>#</a></h3><p>修改 <code>arch/x86/vdso/vdso.lds.S</code> ，这样编译的时或才会添加到 <code>vdso.so</code> 文件中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>VERSION {
+</span></span><span class=line><span class=cl>    LINUX_2.6 {
+</span></span><span class=line><span class=cl>        global:
+</span></span><span class=line><span class=cl>            ... ...
+</span></span><span class=line><span class=cl>            getcpu;
+</span></span><span class=line><span class=cl>            __vdso_getcpu;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            foobar;
+</span></span><span class=line><span class=cl>            __vdso_foobar;
+</span></span><span class=line><span class=cl>        local: *;
+</span></span><span class=line><span class=cl>    };
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=3-添加makefile></a><h3>3. 添加Makefile <a href=#3-%e6%b7%bb%e5%8a%a0makefile aria-hidden=true>#</a></h3><p>修改 <code>arch/x86/vdso/Makefile</code> 文件，从而可以在编译内核时同时编译该文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># files to link into the vdso
+</span></span><span class=line><span class=cl>vobjs-y := vdso-note.o vclock_gettime.o vgetcpu.o vfoobar.o
+</span></span></code></pre></div><a class=anchor id=4-编辑用户程序></a><h3>4. 编辑用户程序 <a href=#4-%e7%bc%96%e8%be%91%e7%94%a8%e6%88%b7%e7%a8%8b%e5%ba%8f aria-hidden=true>#</a></h3><p>通过 <code>gcc foobar_u.c vdso.so</code> 编译如下文件，其中 vdso.so 提供了编译时的符号解析。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>int main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    printf(&#34;His number is %d\n&#34;, foobar());
+</span></span><span class=line><span class=cl>    return 0;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>不过这样有一个缺陷，就是即使已经修改了内核，那么该函数还是返回之前设置的值。实际上可以返回一个内核中的值，如 <code>gettimeofday()</code> ，实际通过 <code>update_vsyscall()@arch/x86/kernel/vsyscall_64.c</code> 进行更新，相应的设置可以参考相关函数调用。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>简单介绍系统调用，包含了简单 hello world <a href=http://cs.lmu.edu/~ray/notes/linuxsyscalls/>Linux System Calls</a>。</li><li><a href=http://www.trilithium.com/johan/2005/08/linux-gate/>What is linux-gate.so.1?</a> by Johan Petersson 主要介绍 linux-gate.so.1 的作用。</li><li><a href="http://www.newsmth.net/bbsanc.php?path=%2Fgroups%2Fcomp.faq%2FKernelTech%2Finnovate%2Fsolofox%2FM.1222336489.G0">linux-gate.so 技术细节</a> 水木社区，介绍 linux-gate.so ，含有仿真的示例。</li><li><a href=https://lkml.org/lkml/2002/12/18/218>Intel P6 vs P7 system call performance</a> 中有 Linus Torvalds 对于 <code>__kernel_vsyscall</code> 的介绍；关于 <code>syscall</code> 和 <code>sysret</code> 两个指令非常详细的介绍 <a href=http://www.mouseos.com/arch/syscall_sysret.html>使用 syscall/sysret 指令</a>。</li><li><a href=http://www.linuxjournal.com/content/creating-vdso-colonels-other-chicken>Creating a vDSO: the Colonel&rsquo;s Other Chicken</a> ，介绍如何添加一个 vdso 函数。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#使用系统调用>使用系统调用</a></li><li><a href=#系统实现>系统实现</a><ul><li><a href=#示例程序>示例程序</a></li><li><a href=#内核实现>内核实现</a></li><li><a href=#添加系统调用>添加系统调用</a></li></ul></li><li><a href=#优化>优化</a><ul><li><a href=#示例>示例</a></li></ul></li><li><a href=#vdso>VDSO</a><ul><li><a href=#aslr>ASLR</a></li><li><a href=#内核实现-1>内核实现</a></li><li><a href=#添加函数>添加函数</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

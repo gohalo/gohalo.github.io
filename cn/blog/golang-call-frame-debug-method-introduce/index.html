@@ -1,0 +1,65 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Golang 调试方法 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Golang 调试方法</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-06-08</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><a class=anchor id=调用栈></a><h1>调用栈 <a href=#%e8%b0%83%e7%94%a8%e6%a0%88 aria-hidden=true>#</a></h1><p>通常来说为了看一个偶现的问题可以多打印些日志，然后等待复现。不过实际上可以通过 GoLang 异常时打印的堆栈查看问题出现的部分现场。</p><p>在如下的代码中，会在 <code>Example()</code> 函数中打印具体的错误栈信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>slice</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>string</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>4</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Example</span><span class=p>(</span><span class=nx>slice</span><span class=p>,</span> <span class=s>&#34;hello&#34;</span><span class=p>,</span> <span class=mi>10</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>Example</span><span class=p>(</span><span class=nx>slice</span> <span class=p>[]</span><span class=kt>string</span><span class=p>,</span> <span class=nx>str</span> <span class=kt>string</span><span class=p>,</span> <span class=nx>i</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nb>panic</span><span class=p>(</span><span class=s>&#34;Want stack trace&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>其中打印的栈信息如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>panic: Want stack trace
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>goroutine 1 [running]:          协程1出的问题
+</span></span><span class=line><span class=cl>main.Example(0xc420047f38, 0x2, 0x4, 0x46b0e2, 0x5, 0xa)  那个函数出的问题
+</span></span><span class=line><span class=cl>        /tmp/foobar.go:9 +0x39  具体代码位置
+</span></span><span class=line><span class=cl>main.main()
+</span></span><span class=line><span class=cl>        /tmp/foobar.go:5 +0x72
+</span></span><span class=line><span class=cl>exit status 2
+</span></span></code></pre></div><p>接下来看下起打印的入参，对应的声明以及调用栈如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>// Declaration
+</span></span><span class=line><span class=cl>main.Example(slice []string, str string, i int)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>// Call to Example by main.
+</span></span><span class=line><span class=cl>slice := make([]string, 2, 4)
+</span></span><span class=line><span class=cl>Example(slice, &#34;hello&#34;, 10)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>// Stack trace
+</span></span><span class=line><span class=cl>main.Example(0x2080c3f50, 0x2, 0x4, 0x425c0, 0x5, 0xa)
+</span></span></code></pre></div><p>可以看到打印的入参是 6 个，而实际函数中是 3 个。这跟 GoLang 中对象的表示方法相关，其中 Slice 包括了地址、长度、容量；String 包括了地址、长度；Int 单个数字。</p><a class=anchor id=方法></a><h1>方法 <a href=#%e6%96%b9%e6%b3%95 aria-hidden=true>#</a></h1><p>也就是将方法进行封装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>trace</span> <span class=kd>struct</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>slice</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>string</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>4</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>t</span> <span class=nx>trace</span>
+</span></span><span class=line><span class=cl>        <span class=nx>t</span><span class=p>.</span><span class=nf>Example</span><span class=p>(</span><span class=nx>slice</span><span class=p>,</span> <span class=s>&#34;hello&#34;</span><span class=p>,</span> <span class=mi>10</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>t</span> <span class=o>*</span><span class=nx>trace</span><span class=p>)</span> <span class=nf>Example</span><span class=p>(</span><span class=nx>slice</span> <span class=p>[]</span><span class=kt>string</span><span class=p>,</span> <span class=nx>str</span> <span class=kt>string</span><span class=p>,</span> <span class=nx>i</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Receiver Address: %p\n&#34;</span><span class=p>,</span> <span class=nx>t</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nb>panic</span><span class=p>(</span><span class=s>&#34;Want stack trace&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>因为方法声明的是一个指针，在调用方法时，会传入该方法的对象指针，那么最终打印的栈为。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Receiver Address: 0x546fa8
+</span></span><span class=line><span class=cl>panic: Want stack trace
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>goroutine 1 [running]:
+</span></span><span class=line><span class=cl>main.(*trace).Example(0x546fa8, 0xc420047f38, 0x2, 0x4, 0x4b463a, 0x5, 0xa)
+</span></span><span class=line><span class=cl>        /tmp/foobar.go:16 +0x8c
+</span></span><span class=line><span class=cl>main.main()
+</span></span><span class=line><span class=cl>        /tmp/foobar.go:11 +0x93
+</span></span><span class=line><span class=cl>exit status 2
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#调用栈>调用栈</a></li><li><a href=#方法>方法</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

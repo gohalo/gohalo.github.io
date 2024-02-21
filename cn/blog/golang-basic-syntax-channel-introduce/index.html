@@ -1,0 +1,259 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>GoLang 管道详解 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="在 Go 语言中，通过协程和管道实现了 Communicating Sequential Processes, CSP 模型，两者承担了通信和同步中的重要角色。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>GoLang 管道详解</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-03-01</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><p>在 Go 语言中，通过协程和管道实现了 Communicating Sequential Processes, CSP 模型，两者承担了通信和同步中的重要角色。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>通过 Channel 提供了如下的语义：</p><ul><li>协程安全，需要遵从 Go 的内存模型；</li><li>在不同的协程之间发送消息，提供 FIFO 语义；</li><li>可以让协程阻塞、非阻塞。</li></ul><p>Concurrency VS. Parallelism，很多的一些基本概念源自于 2012.1.11 年 Rob Pike 的相关演讲，演讲的 PPT 详细可以参考 <a href=https://talks.golang.org/2012/waza.slide#1>Concurrency is not Parallelism</a> 。</p><p>一般中文会将上述翻译为 并发 (Concurrency) 和 并行 (Parallelism)，如下是对其的总结。</p><a class=anchor id=tips-1></a><h5>Tips #1 <a href=#tips-1 aria-hidden=true>#</a></h5><ul><li>Concurrency is about dealing with lots of things at once.</li><li>Parallelism is about doing lots of things at once.</li></ul><p>也即是说，并发是在同时处理多个任务，但是有可能真正在执行的只有一个；并行则是同时在执行多个任务。</p><p>有点类似于，单核上我们可以同时跑多个任务，但是各个任务之间是循环调度的，某个时间点实际在运行的只有一个；而在多核上，却可以明确的同时运行多个任务。</p><a class=anchor id=tips-2></a><h5>Tips #2 <a href=#tips-2 aria-hidden=true>#</a></h5><ul><li>Concurrency is about structure.</li><li>Parallelism is about execution.</li></ul><p>并发实际很早就有，对于 Golang 来说，最终是通过协程完成的，而类似 Linux 则是通过线程完成。</p><p>而对于并行而言，实际上需要硬件 (一般也就是 CPU) 的支持。</p><a class=anchor id=总结></a><h5>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h5><p>They are Not the same, but related.</p><p>简单来说，并发实际上是简化了编程的难度，包括操作系统以及 Golang 实际上都是对基本的运行单元进行了封装，对于用户来说是并发执行的。</p><a class=anchor id=基本示例></a><h2>基本示例 <a href=#%e5%9f%ba%e6%9c%ac%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>根据管道的数据流方向，管道的类型大致可以分成三种：A) 从管道接收 <code>&lt;-chan int</code> ；B) 发送到管道 <code>chan&lt;- int</code> ；C) 双向，也就是不指定任意方向。</p><p>一个简单的示例，由三个协程完成，依次完成类似流处理的步骤，包括了：A) 顺序生成数据；B) 计算其平方值；C) 输出到终端打印。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>counter</span><span class=p>(</span><span class=nx>out</span> <span class=kd>chan</span><span class=o>&lt;-</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>x</span> <span class=o>:=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>x</span> <span class=p>&lt;</span> <span class=mi>10</span><span class=p>;</span> <span class=nx>x</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>out</span> <span class=o>&lt;-</span> <span class=nx>x</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nb>close</span><span class=p>(</span><span class=nx>out</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>squarer</span><span class=p>(</span><span class=nx>out</span> <span class=kd>chan</span><span class=o>&lt;-</span> <span class=kt>int</span><span class=p>,</span> <span class=nx>in</span> <span class=o>&lt;-</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>v</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>in</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>out</span> <span class=o>&lt;-</span> <span class=nx>v</span> <span class=o>*</span> <span class=nx>v</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nb>close</span><span class=p>(</span><span class=nx>out</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>printer</span><span class=p>(</span><span class=nx>in</span> <span class=o>&lt;-</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>v</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>in</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>v</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>cntChan</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>sqrChan</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>counter</span><span class=p>(</span><span class=nx>cntChan</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=nf>squarer</span><span class=p>(</span><span class=nx>sqrChan</span><span class=p>,</span> <span class=nx>cntChan</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nf>printer</span><span class=p>(</span><span class=nx>sqrChan</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述管道，在声明时是一个双向管道，也就是为了可以通过生产者写入，然后再由消费者进行消费。为了防止乱用，可以在向函数传参的时候将管道修改为 <strong>单向</strong>，这样对于接收管道来说是不允许关闭，可以防止误操作。</p><a class=anchor id=tips-1-1></a><h2>Tips #1 <a href=#tips-1-1 aria-hidden=true>#</a></h2><p>判断管道是否关闭。</p><p>如果将 <code>squarer()</code> 函数替换为如下，实际上是有问题的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>squarer</span><span class=p>(</span><span class=nx>out</span> <span class=kd>chan</span><span class=o>&lt;-</span> <span class=kt>int</span><span class=p>,</span> <span class=nx>in</span> <span class=o>&lt;-</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>v</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>in</span>
+</span></span><span class=line><span class=cl>                <span class=nx>out</span> <span class=o>&lt;-</span> <span class=nx>v</span> <span class=o>*</span> <span class=nx>v</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nb>close</span><span class=p>(</span><span class=nx>out</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>当 <code>in</code> 管道关闭之后，通过 <code>v := &lt;-in</code> 读取到的数据会始终为 <code>0</code> ，那么就会一直在计算输出 <code>0</code> ，而实际上已经关闭。可以通过 <code>v, ok := &lt;-in</code> 在获取数据的同时判断管道是否已经关闭。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>squarer</span><span class=p>(</span><span class=nx>out</span> <span class=kd>chan</span><span class=o>&lt;-</span> <span class=kt>int</span><span class=p>,</span> <span class=nx>in</span> <span class=o>&lt;-</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>v</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>in</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=p>!</span><span class=nx>ok</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=k>break</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=nx>out</span> <span class=o>&lt;-</span> <span class=nx>v</span> <span class=o>*</span> <span class=nx>v</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nb>close</span><span class=p>(</span><span class=nx>out</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>而 <code>range</code> 可以自动判断管道是否关闭。</p><a class=anchor id=tips-2-1></a><h2>Tips #2 <a href=#tips-2-1 aria-hidden=true>#</a></h2><p>如果一个管道已经关闭，继续发送数据会导致系统 <code>panic</code> ，例如，假设 <code>squarer()</code> 只会消费三个数据，并关闭写入端，也就是函数修改如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>squarer</span><span class=p>(</span><span class=nx>out</span> <span class=kd>chan</span><span class=o>&lt;-</span> <span class=kt>int</span><span class=p>,</span> <span class=nx>in</span> <span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>cnt</span> <span class=o>:=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>v</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>in</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>out</span> <span class=o>&lt;-</span> <span class=nx>v</span> <span class=o>*</span> <span class=nx>v</span>
+</span></span><span class=line><span class=cl>                <span class=nx>cnt</span><span class=o>++</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>cnt</span> <span class=o>==</span> <span class=mi>3</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nb>close</span><span class=p>(</span><span class=nx>in</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                        <span class=k>break</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>此时当 <code>counter()</code> 写入时就说 <code>panic</code> 异常。</p><p>到目前为止，还有找到在写入时如何判断管道是否关闭，估计除了通过 <code>defer</code> 捕获异常之外没有太好的办法，最好还是从设计模式上就直接规避掉。</p><a class=anchor id=使用></a><h1>使用 <a href=#%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h1><p>核心类型，可以看做是一个 FIFO 的阻塞消息队列，用于发核心单元之间发送和接收数据，默认是双向的，也可以指定方向，使用前必须要创建并初始化，</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>sum</span><span class=p>(</span><span class=nx>s</span> <span class=p>[]</span><span class=kt>int</span><span class=p>,</span> <span class=nx>c</span> <span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>sum</span> <span class=o>:=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=nx>_</span><span class=p>,</span> <span class=nx>v</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>s</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>sum</span> <span class=o>+=</span> <span class=nx>v</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>c</span> <span class=o>&lt;-</span> <span class=nx>sum</span> <span class=c1>// send sum to c
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>s</span> <span class=o>:=</span> <span class=p>[]</span><span class=kt>int</span><span class=p>{</span><span class=mi>7</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>8</span><span class=p>,</span> <span class=o>-</span><span class=mi>9</span><span class=p>,</span> <span class=mi>4</span><span class=p>,</span> <span class=mi>0</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>c</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=nf>sum</span><span class=p>(</span><span class=nx>s</span><span class=p>[:</span><span class=nb>len</span><span class=p>(</span><span class=nx>s</span><span class=p>)</span><span class=o>/</span><span class=mi>2</span><span class=p>],</span> <span class=nx>c</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=nf>sum</span><span class=p>(</span><span class=nx>s</span><span class=p>[</span><span class=nb>len</span><span class=p>(</span><span class=nx>s</span><span class=p>)</span><span class=o>/</span><span class=mi>2</span><span class=p>:],</span> <span class=nx>c</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>x</span><span class=p>,</span> <span class=nx>y</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>c</span><span class=p>,</span> <span class=o>&lt;-</span><span class=nx>c</span> <span class=c1>// receive from c
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>x</span><span class=p>,</span> <span class=nx>y</span><span class=p>,</span> <span class=nx>x</span><span class=o>+</span><span class=nx>y</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如上中的 <code>make(chan int, 100)</code> ，上述的第二个参数可选，表示容量，也就是管道可以容纳的最多元素数量，代表管道的缓存大小。</p><p>大小默认是 0 ，也就是如果接收、发送没有准备好，另外一端就会阻塞，如果设置了缓存，只有 buffer 满了后 send 才会阻塞，当缓存空了后 receive 才会阻塞。</p><p>简单示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>// For our example we&#39;ll select across two channels.
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>c1</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>string</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>c2</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>string</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// Each channel will receive a value after some amount
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>// of time, to simulate e.g. blocking RPC operations
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>// executing in concurrent goroutines.
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>time</span><span class=p>.</span><span class=nf>Sleep</span><span class=p>(</span><span class=mi>1</span> <span class=o>*</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nx>c1</span> <span class=o>&lt;-</span> <span class=s>&#34;one&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>time</span><span class=p>.</span><span class=nf>Sleep</span><span class=p>(</span><span class=mi>2</span> <span class=o>*</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nx>c2</span> <span class=o>&lt;-</span> <span class=s>&#34;two&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// We&#39;ll use `select` to await both of these values
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>// simultaneously, printing each one as it arrives.
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>i</span> <span class=p>&lt;</span> <span class=mi>2</span><span class=p>;</span> <span class=nx>i</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>case</span> <span class=nx>msg1</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>c1</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;received&#34;</span><span class=p>,</span> <span class=nx>msg1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>case</span> <span class=nx>msg2</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>c2</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;received&#34;</span><span class=p>,</span> <span class=nx>msg2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=select-行为></a><h2>Select 行为 <a href=#select-%e8%a1%8c%e4%b8%ba aria-hidden=true>#</a></h2><p>可以将每个 <code>select</code> 语句理解为一个事件，后面的语句表示对事件的处理。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// https://talks.golang.org/2012/concurrency.slide#32
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=nx>v1</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>c1</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;received %v from c1\n&#34;</span><span class=p>,</span> <span class=nx>v1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=nx>v2</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>c2</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;received %v from c2\n&#34;</span><span class=p>,</span> <span class=nx>v1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=nx>c3</span> <span class=o>&lt;-</span> <span class=mi>23</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;sent %v to c3\n&#34;</span><span class=p>,</span> <span class=mi>23</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=k>default</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;no one was ready to communicate\n&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述代码中包含了三个 case 子句以及一个 default 子句，前两个是 receive 操作，第三个是 send 操作，最后一个是默认操作。</p><p>当代码执行到 select 时，case 语句会按照源代码的顺序被评估，且只评估一次，评估的结果会出现下面这几种情况：</p><ul><li>除 default 外，如果只有一个 case 语句评估通过，那么就执行这个 case 里的语句；</li><li>除 default 外，如果有多个 case 语句评估通过，那么通过伪随机的方式随机选一个；</li><li>如果 default 外的 case 语句都没有通过评估，那么执行 default 里的语句；</li><li>如果没有 default，那么 代码块会被阻塞，直到有一个 case 通过评估，否则会一直阻塞；</li></ul><p>注意，如果是 <code>v1 := &lt;- nil</code> 语句，那么会直接因为从 <code>nil</code> 中读取而阻塞，而非 <code>panic</code> 崩溃。</p><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><p>另外，需要注意，如果向管道中发送的数据，而有其它的协程阻塞等待，那么条件满足后会先调度执行被阻塞的协程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>readyc</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>string</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>case</span> <span class=nx>str</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>readyc</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;%s, Go !!!\n&#34;</span><span class=p>,</span> <span class=nx>str</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=nx>readyc</span> <span class=o>&lt;-</span> <span class=s>&#34;Reaaaaady&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Done&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>也就是上述的输出为：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Reaaaaady, Go !!!
+</span></span><span class=line><span class=cl>Done
+</span></span></code></pre></div><a class=anchor id=示例></a><h1>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h1><a class=anchor id=timeout></a><h2>Timeout <a href=#timeout aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>timeout</span> <span class=o>:=</span> <span class=nf>make</span> <span class=p>(</span><span class=kd>chan</span> <span class=kt>bool</span><span class=p>,</span> <span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>ch</span> <span class=o>:=</span> <span class=nf>make</span> <span class=p>(</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>time</span><span class=p>.</span><span class=nf>Sleep</span><span class=p>(</span><span class=mi>2</span> <span class=o>*</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=nx>timeout</span> <span class=o>&lt;-</span> <span class=kc>true</span>
+</span></span><span class=line><span class=cl>        <span class=p>}()</span>
+</span></span><span class=line><span class=cl>        <span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=o>&lt;-</span> <span class=nx>ch</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=o>&lt;-</span> <span class=nx>timeout</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>            <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;timeout!&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>因为没有向管道 ch 发送数据，默认应该是一直等待。也可以使用如下示例：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>donec</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>string</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>time</span><span class=p>.</span><span class=nf>Sleep</span><span class=p>(</span><span class=mi>1</span> <span class=o>*</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=nx>donec</span> <span class=o>&lt;-</span> <span class=s>&#34;done&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=nx>s</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>donec</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Got string &#39;%s&#39;.\n&#34;</span><span class=p>,</span> <span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=o>&lt;-</span><span class=nx>time</span><span class=p>.</span><span class=nf>After</span><span class=p>(</span><span class=mi>2</span> <span class=o>*</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Timeout&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=检查队列是否满></a><h2>检查队列是否满 <a href=#%e6%a3%80%e6%9f%a5%e9%98%9f%e5%88%97%e6%98%af%e5%90%a6%e6%bb%a1 aria-hidden=true>#</a></h2><p>这里使用的是 default 这个特性。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>ch</span> <span class=o>:=</span> <span class=nf>make</span> <span class=p>(</span><span class=kd>chan</span> <span class=kt>int</span><span class=p>,</span> <span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>ch</span> <span class=o>&lt;-</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>        <span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>case</span> <span class=nx>ch</span> <span class=o>&lt;-</span> <span class=mi>2</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=k>default</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;channel is full !&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>因为 ch 插入 1 的时候已经满了， 当 ch 要插入 2 的时候，发现 ch 已经满了此时默认应该是阻塞，不过因为有 default 子句，实际会执行 default 子语， 这样就可以实现对 channel 是否已满的检测， 而不是一直等待。</p><p>例如在并发处理多个 job 时，如果队列满了，则返回错误让用户重试。</p><a class=anchor id=quit-channel></a><h2>Quit Channel <a href=#quit-channel aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>boring</span><span class=p>(</span><span class=nx>msg</span> <span class=kt>string</span><span class=p>,</span> <span class=nx>quit</span> <span class=kd>chan</span> <span class=kt>string</span><span class=p>)</span> <span class=kd>chan</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>c</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>string</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>i</span> <span class=o>:=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>i</span><span class=o>++</span>
+</span></span><span class=line><span class=cl>                        <span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=k>case</span> <span class=nx>c</span> <span class=o>&lt;-</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;%s: %d&#34;</span><span class=p>,</span> <span class=nx>msg</span><span class=p>,</span> <span class=nx>i</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>                                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Send data&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                        <span class=k>case</span> <span class=nx>q</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>quit</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                                <span class=c1>// cleanup
+</span></span></span><span class=line><span class=cl><span class=c1></span>                                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Got %q\n&#34;</span><span class=p>,</span> <span class=nx>q</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                                <span class=nx>quit</span> <span class=o>&lt;-</span> <span class=s>&#34;See you!&#34;</span>
+</span></span><span class=line><span class=cl>                                <span class=k>return</span>
+</span></span><span class=line><span class=cl>                        <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>c</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>quit</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>string</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>c</span> <span class=o>:=</span> <span class=nf>boring</span><span class=p>(</span><span class=s>&#34;Foobar&#34;</span><span class=p>,</span> <span class=nx>quit</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>5</span><span class=p>;</span> <span class=nx>i</span> <span class=o>&gt;=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>i</span><span class=o>--</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=o>&lt;-</span><span class=nx>c</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>quit</span> <span class=o>&lt;-</span> <span class=s>&#34;Bye!&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Foobar says: %q\n&#34;</span><span class=p>,</span> <span class=o>&lt;-</span><span class=nx>quit</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>GoLang 的并发控制、编程参考模型 <a href=https://blog.golang.org/pipelines>Pipelines</a> 。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li></li><li><a href=#基本示例>基本示例</a></li><li><a href=#tips-1-1>Tips #1</a></li><li><a href=#tips-2-1>Tips #2</a></li></ul></li><li><a href=#使用>使用</a><ul><li><a href=#select-行为>Select 行为</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#示例>示例</a><ul><li><a href=#timeout>Timeout</a></li><li><a href=#检查队列是否满>检查队列是否满</a></li><li><a href=#quit-channel>Quit Channel</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

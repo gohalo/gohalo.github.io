@@ -1,123 +1,134 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>K8S 常用命令 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="整理下 K8S 的常用命令，以供参考。
-"><link rel=canonical href=https://gohalo.github.io/cn/blog/kubernets-commands-usage/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/kubernets-commands-usage/","url":"https://gohalo.github.io/cn/blog/kubernets-commands-usage/","name":"K8S 常用命令","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2021-10-22T19:43:02CET","dateModified":"2021-10-22T19:43:02CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/kubernets-commands-usage/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/kubernets-commands-usage/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/kubernets-commands-usage/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/kubernets-commands-usage/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/kubernets-commands-usage/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"K8S 常用命令","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/kubernets-commands-usage/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/kubernets-commands-usage/"},"datePublished":"2021-10-22T19:43:02CET","dateModified":"2021-10-22T19:43:02CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/kubernets-commands-usage/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/kubernets-commands-usage/#/schema/image/2","url":null,"contentUrl":null,"caption":"K8S 常用命令"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
-<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
-<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
-<span>页面目录</span>
-<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#基础配置>基础配置</a></li><li><a href=#podman>Podman</a></li><li><a href=#常用命令>常用命令</a><ul><li><a href=#api>API</a></li><li><a href=#异常排查>异常排查</a></li></ul></li><li><a href=#nodes>Nodes</a></li><li><a href=#pods>Pods</a></li><li><a href=#deployment>Deployment</a></li><li><a href=#常见问题>常见问题</a><ul><li><a href=#无法清屏>无法清屏</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#基础配置>基础配置</a></li><li><a href=#podman>Podman</a></li><li><a href=#常用命令>常用命令</a><ul><li><a href=#api>API</a></li><li><a href=#异常排查>异常排查</a></li></ul></li><li><a href=#nodes>Nodes</a></li><li><a href=#pods>Pods</a></li><li><a href=#deployment>Deployment</a></li><li><a href=#常见问题>常见问题</a><ul><li><a href=#无法清屏>无法清屏</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>K8S 常用命令</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2021-10-22</span>
-<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/container/ role=button>container</a>
-<a class="btn btn-light" href=https://gohalo.github.io/tags/k8s/ role=button>k8s</a>
-<a class="btn btn-light" href=https://gohalo.github.io/tags/cheatsheet/ role=button>cheatsheet</a></div></div><hr><div class=content-body><p>整理下 K8S 的常用命令，以供参考。</p><h1 id=基础配置>基础配置 <a href=#%e5%9f%ba%e7%a1%80%e9%85%8d%e7%bd%ae class=anchor aria-hidden=true>#</a></h1><p>为了便于使用，可以增加命令补全，有如下两种方式：</p><pre tabindex=0><code>----- 在 ~/.bashrc 增加如下配置
-source &lt;(/opt/k8s/bin/kubectl completion bash)
------ 或者将补全脚本添加到指定目录下
-kubectl completion bash &gt;/etc/bash_completion.d/kubectl
-</code></pre><p>默认从 <code>$HOME/.kube/config</code> 读取配置，也可通过 <code>KUBECONFIG</code> 环境变量或者 <code>--kubeconfig</code> 参数指定配置。</p><p>如果有多个不同的环境，那么可以通过 <code>kubectl config use-context</code> 使用上下文，利用 <code>kubectl config view</code> 查看配置。默认会链接 <code>localhost:8080</code> 端口，如果只有一个环境，那么可以通过 <code>alias</code> 修改命令，例如 <code>alias kubectl='/opt/bin/kubectl --server=192.168.56.107:8080 '</code>。</p><h1 id=podman>Podman <a href=#podman class=anchor aria-hidden=true>#</a></h1><pre tabindex=0><code>----- 清理所有已经停止的容器
-podman container prune -f
------ 清理不使用的镜像
-podman image prune --force --all
------ 停止所有的容器
-podman stop $(podman ps -aq)
------ 删除所有的容器
-podman rm $(podman ps -aq)
------ 删除所有的镜像
-podman rmi $(podman images -q)
------ 删除指定镜像
-podman rmi 90a31eddcec6
------ 执行某个容器
-podman exec -it centos bash
------ 根据输出设置如下的--cgroup-driver参数
-docker info | grep &#39;Cgroup Driver&#39;
-</code></pre><h1 id=常用命令>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 class=anchor aria-hidden=true>#</a></h1><p>因为有 namespace 的逻辑隔离，可通过 <code>--namespace=YourNS</code> 指定具体 namespace，或者通过 <code>--all-namespaces</code> 查看所有。</p><h2 id=api>API <a href=#api class=anchor aria-hidden=true>#</a></h2><pre tabindex=0><code>----- 查看K8S中APIServer的请求地址
-kubectl get endpoints kubernetes
------ 支持的API版本信息
-kubectl api-versions
------ 支持的资源类型GVK，大部分的资源都位于命名空间中
-kubectl api-resources --namespaced=true
-kubectl api-resources --namespaced=false
------ 显示集群信息，以及各个组件的状态信息
-kubectl cluster-info
-kubectl get componentstatuses
-</code></pre><h2 id=异常排查>异常排查 <a href=#%e5%bc%82%e5%b8%b8%e6%8e%92%e6%9f%a5 class=anchor aria-hidden=true>#</a></h2><pre tabindex=0><code>----- 查看Pod中的日志，例如定位容器启动失败等
-kubectl logs -f -n kube-system coredns-bffccccd6-6ndnj
------ 集群信息(版本、Master、DNS等)，包括详情，甚至报错信息
-kubectl version
-kubectl cluster-info
-kubectl cluster-info dump
-</code></pre><h1 id=nodes>Nodes <a href=#nodes class=anchor aria-hidden=true>#</a></h1><pre tabindex=0><code>----- 所有Nodes的概览信息
-kubectl get nodes -o wide
------ 某个Node的详细信息，例如hostname标签等信息
-kubectl describe nodes NodeName
------ 删除某个节点
-kubectl delete node NodeName
-
------ 标签操作，删除时只需要在Key后加一个减号即可
------ 从1.4开始会有些内置的标签，例如beta.kubernetes.io/os=linux beta.kubernetes.io/arch=amd64
-kubectl label nodes NodeName Key=Value
-kubectl label nodes NodeName Key-
-kubectl get nodes --show-labels=true
-kubectl get nodes -l &#39;cpu=high,role!=master&#39;
-
------ 节点的隔离和恢复
-kubectl patch node NodeName -p &#39;{&#34;spec&#34;:&#34;{&#34;unschedulable&#34;:&#34;true&#34;}&#34;}&#39;
-kubectl patch node NodeName -p &#39;{&#34;spec&#34;:&#34;{&#34;unschedulable&#34;:&#34;false&#34;}&#34;}&#39;
-
------ 将节点设置为不可调度，将容器驱离，重新加入调度
-kubectl cordon NodeName
-kubectl drain NodeName
-kubectl uncordon NodeName
-</code></pre><h1 id=pods>Pods <a href=#pods class=anchor aria-hidden=true>#</a></h1><pre tabindex=0><code>----- 查看Pod信息、详情、标签
-kubectl get pod --all-namespaces -o wide
-kubectl get pods POD-NAME -o wide
-kubectl get pods --show-labels
------ 查看某个Pod的详细信息和参数，也可以通过 -o json 选择其它格式
-kubectl get pods POD-NAME -o yaml
------ 获取资源详细信息，一般Pod异常时最好都要看下状态
-kubectl describe pods POD-NAME --namespace kube-system
------ 删除所有或者指定Pod
-kubectl delete pods --all
-kubectl delete pods POD-NAME
-
------ 在命令行中创建一个Pod，可以指定很多参数，详见如下的文档
-kubectl run alpine --image=alpine --image-pull-policy=Never -i --tty /bin/sh
-/ # wget 10.0.0.50:8080
-kubectl attach alpine -c alpine -it
-kubectl exec alpine -- printenv | grep SERVICE
-kubectl exec alpine -i --tty -- /bin/sh
-</code></pre><h1 id=deployment>Deployment <a href=#deployment class=anchor aria-hidden=true>#</a></h1><pre tabindex=0><code>----- 查看所有Deployment，或者指定某个
-kubectl get deployments -o wide
-kubectl get deployments -o wide nginx
-kubectl describe deployments nginx
-kubectl get service -o wide
------ 创建Deployment以及Service
-kubectl apply -f deployment.yaml
-kubectl apply -f deployment-svc.yaml
------ 删除
-kubectl delete services nginx-svc
-kubectl delete deployment nginx
------ 上线状态查看
-kubectl rollout status deployment/nginx
------ 部署Deployment时所创建的
-kubectl get replicasets
-kubectl describe replicasets
------ 在生成Pods时自动生成Labels的列表
-kubectl get pods --show-labels
------ 也可以通过Labels进行过滤
-kubectl get pods -l run=nginx -o wide
-
------ 查看服务信息，关键是获取ClusterIP以及ExternalIP
-kubectl get services nginx-svc
-kubectl describe services nginx-svc
-
------ 获取Endpoints信息
-kubectl get endpoints nginx-svc
-
------ 也可以通过命令行创建服务
-kubectl expose deployment nginx --type=LoadBalancer --name=nginx-svc
-
------ 通过alpine容器访问，使用ClusterIP，其中-c指定Pod中的容器名称
-kubectl run alpine --image=alpine --image-pull-policy=Never --rm -i --tty /bin/sh
-/ # wget 10.0.0.50:8080
-kubectl exec alpine -it -- /bin/sh
-kubectl attach alpine -c alpine -it
-</code></pre><h1 id=常见问题>常见问题 <a href=#%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98 class=anchor aria-hidden=true>#</a></h1><h2 id=无法清屏>无法清屏 <a href=#%e6%97%a0%e6%b3%95%e6%b8%85%e5%b1%8f class=anchor aria-hidden=true>#</a></h2><p>在容器中打开时可能无法清除屏幕，可以通过如下方式配置。</p><pre tabindex=0><code>export TERM=xterm
-alias ls=&#39;ls --color=auto&#39;
-</code></pre><h1 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h1><ul><li><a href=https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands>Kubernetes Commands</a> 详细的命令参考，以及 <a href=https://kubernetes.io/zh/docs/reference/kubectl/cheatsheet/>Kubernetes Cheatsheet</a> 常用命令备忘录，包含了绝大部分常用命令。</li></ul></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/kubernets-source-code-go-client/>通过 go-client 访问 K8S 集群</a></li><li><a class=text-body href=/cn/blog/kubernets-simple-install/>K8S 简单安装部署服务</a></li><li><a class=text-body href=/cn/blog/kubernets-create-offline-images/>K8S 制作离线镜像</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>K8S 常用命令 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="整理下 K8S 的常用命令，以供参考。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>K8S 常用命令</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2021-01-08</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/container/ role=button>container</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/k8s/ role=button>k8s</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/cheatsheet/ role=button>cheatsheet</a></div></div><hr><div class=content><p>整理下 K8S 的常用命令，以供参考。</p><a class=anchor id=基础配置></a><h1>基础配置 <a href=#%e5%9f%ba%e7%a1%80%e9%85%8d%e7%bd%ae aria-hidden=true>#</a></h1><p>为了便于使用，可以增加命令补全，有如下两种方式：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 在 ~/.bashrc 增加如下配置
+</span></span><span class=line><span class=cl>source &lt;(/opt/k8s/bin/kubectl completion bash)
+</span></span><span class=line><span class=cl>----- 或者将补全脚本添加到指定目录下
+</span></span><span class=line><span class=cl>kubectl completion bash &gt;/etc/bash_completion.d/kubectl
+</span></span></code></pre></div><p>默认从 <code>$HOME/.kube/config</code> 读取配置，也可通过 <code>KUBECONFIG</code> 环境变量或者 <code>--kubeconfig</code> 参数指定配置。</p><p>如果有多个不同的环境，那么可以通过 <code>kubectl config use-context</code> 使用上下文，利用 <code>kubectl config view</code> 查看配置。默认会链接 <code>localhost:8080</code> 端口，如果只有一个环境，那么可以通过 <code>alias</code> 修改命令，例如 <code>alias kubectl='/opt/bin/kubectl --server=192.168.56.107:8080 '</code>。</p><a class=anchor id=podman></a><h1>Podman <a href=#podman aria-hidden=true>#</a></h1><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 清理所有已经停止的容器
+</span></span><span class=line><span class=cl>podman container prune -f
+</span></span><span class=line><span class=cl>----- 清理不使用的镜像
+</span></span><span class=line><span class=cl>podman image prune --force --all
+</span></span><span class=line><span class=cl>----- 停止所有的容器
+</span></span><span class=line><span class=cl>podman stop $(podman ps -aq)
+</span></span><span class=line><span class=cl>----- 删除所有的容器
+</span></span><span class=line><span class=cl>podman rm $(podman ps -aq)
+</span></span><span class=line><span class=cl>----- 删除所有的镜像
+</span></span><span class=line><span class=cl>podman rmi $(podman images -q)
+</span></span><span class=line><span class=cl>----- 删除指定镜像
+</span></span><span class=line><span class=cl>podman rmi 90a31eddcec6
+</span></span><span class=line><span class=cl>----- 执行某个容器
+</span></span><span class=line><span class=cl>podman exec -it centos bash
+</span></span><span class=line><span class=cl>----- 根据输出设置如下的--cgroup-driver参数
+</span></span><span class=line><span class=cl>docker info | grep &#39;Cgroup Driver&#39;
+</span></span></code></pre></div><a class=anchor id=常用命令></a><h1>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h1><p>因为有 namespace 的逻辑隔离，可通过 <code>--namespace=YourNS</code> 指定具体 namespace，或者通过 <code>--all-namespaces</code> 查看所有。</p><a class=anchor id=api></a><h2>API <a href=#api aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看K8S中APIServer的请求地址
+</span></span><span class=line><span class=cl>kubectl get endpoints kubernetes
+</span></span><span class=line><span class=cl>----- 支持的API版本信息
+</span></span><span class=line><span class=cl>kubectl api-versions
+</span></span><span class=line><span class=cl>----- 支持的资源类型GVK，大部分的资源都位于命名空间中
+</span></span><span class=line><span class=cl>kubectl api-resources --namespaced=true
+</span></span><span class=line><span class=cl>kubectl api-resources --namespaced=false
+</span></span><span class=line><span class=cl>----- 显示集群信息，以及各个组件的状态信息
+</span></span><span class=line><span class=cl>kubectl cluster-info
+</span></span><span class=line><span class=cl>kubectl get componentstatuses
+</span></span></code></pre></div><a class=anchor id=异常排查></a><h2>异常排查 <a href=#%e5%bc%82%e5%b8%b8%e6%8e%92%e6%9f%a5 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看Pod中的日志，例如定位容器启动失败等
+</span></span><span class=line><span class=cl>kubectl logs -f -n kube-system coredns-bffccccd6-6ndnj
+</span></span><span class=line><span class=cl>----- 集群信息(版本、Master、DNS等)，包括详情，甚至报错信息
+</span></span><span class=line><span class=cl>kubectl version
+</span></span><span class=line><span class=cl>kubectl cluster-info
+</span></span><span class=line><span class=cl>kubectl cluster-info dump
+</span></span></code></pre></div><a class=anchor id=nodes></a><h1>Nodes <a href=#nodes aria-hidden=true>#</a></h1><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 所有Nodes的概览信息
+</span></span><span class=line><span class=cl>kubectl get nodes -o wide
+</span></span><span class=line><span class=cl>----- 某个Node的详细信息，例如hostname标签等信息
+</span></span><span class=line><span class=cl>kubectl describe nodes NodeName
+</span></span><span class=line><span class=cl>----- 删除某个节点
+</span></span><span class=line><span class=cl>kubectl delete node NodeName
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 标签操作，删除时只需要在Key后加一个减号即可
+</span></span><span class=line><span class=cl>----- 从1.4开始会有些内置的标签，例如beta.kubernetes.io/os=linux beta.kubernetes.io/arch=amd64
+</span></span><span class=line><span class=cl>kubectl label nodes NodeName Key=Value
+</span></span><span class=line><span class=cl>kubectl label nodes NodeName Key-
+</span></span><span class=line><span class=cl>kubectl get nodes --show-labels=true
+</span></span><span class=line><span class=cl>kubectl get nodes -l &#39;cpu=high,role!=master&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 节点的隔离和恢复
+</span></span><span class=line><span class=cl>kubectl patch node NodeName -p &#39;{&#34;spec&#34;:&#34;{&#34;unschedulable&#34;:&#34;true&#34;}&#34;}&#39;
+</span></span><span class=line><span class=cl>kubectl patch node NodeName -p &#39;{&#34;spec&#34;:&#34;{&#34;unschedulable&#34;:&#34;false&#34;}&#34;}&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将节点设置为不可调度，将容器驱离，重新加入调度
+</span></span><span class=line><span class=cl>kubectl cordon NodeName
+</span></span><span class=line><span class=cl>kubectl drain NodeName
+</span></span><span class=line><span class=cl>kubectl uncordon NodeName
+</span></span></code></pre></div><a class=anchor id=pods></a><h1>Pods <a href=#pods aria-hidden=true>#</a></h1><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看Pod信息、详情、标签
+</span></span><span class=line><span class=cl>kubectl get pod --all-namespaces -o wide
+</span></span><span class=line><span class=cl>kubectl get pods POD-NAME -o wide
+</span></span><span class=line><span class=cl>kubectl get pods --show-labels
+</span></span><span class=line><span class=cl>----- 查看某个Pod的详细信息和参数，也可以通过 -o json 选择其它格式
+</span></span><span class=line><span class=cl>kubectl get pods POD-NAME -o yaml
+</span></span><span class=line><span class=cl>----- 获取资源详细信息，一般Pod异常时最好都要看下状态
+</span></span><span class=line><span class=cl>kubectl describe pods POD-NAME --namespace kube-system
+</span></span><span class=line><span class=cl>----- 删除所有或者指定Pod
+</span></span><span class=line><span class=cl>kubectl delete pods --all
+</span></span><span class=line><span class=cl>kubectl delete pods POD-NAME
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 在命令行中创建一个Pod，可以指定很多参数，详见如下的文档
+</span></span><span class=line><span class=cl>kubectl run alpine --image=alpine --image-pull-policy=Never -i --tty /bin/sh
+</span></span><span class=line><span class=cl>/ # wget 10.0.0.50:8080
+</span></span><span class=line><span class=cl>kubectl attach alpine -c alpine -it
+</span></span><span class=line><span class=cl>kubectl exec alpine -- printenv | grep SERVICE
+</span></span><span class=line><span class=cl>kubectl exec alpine -i --tty -- /bin/sh
+</span></span></code></pre></div><a class=anchor id=查看容器></a><h2>查看容器 <a href=#%e6%9f%a5%e7%9c%8b%e5%ae%b9%e5%99%a8 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 此命令不包括 init 容器
+</span></span><span class=line><span class=cl>kubectl get pods POD_NAME_HERE -o jsonpath={.spec.containers[*].name} -n namespace
+</span></span><span class=line><span class=cl>----- 查看 init 容器
+</span></span><span class=line><span class=cl>kubectl get pods POD_NAME_HERE -o jsonpath={.spec.initContainers[*].name} -n namespace
+</span></span><span class=line><span class=cl>----- 查看所有容器
+</span></span><span class=line><span class=cl>kubectl get pod POD_NAME_HERE -o jsonpath=&#34;{.spec[&#39;containers&#39;,&#39;initContainers&#39;][*].name}&#34; -n namespace
+</span></span></code></pre></div><a class=anchor id=deployment></a><h1>Deployment <a href=#deployment aria-hidden=true>#</a></h1><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看所有Deployment，或者指定某个
+</span></span><span class=line><span class=cl>kubectl get deployments -o wide
+</span></span><span class=line><span class=cl>kubectl get deployments -o wide nginx
+</span></span><span class=line><span class=cl>kubectl describe deployments nginx
+</span></span><span class=line><span class=cl>kubectl get service -o wide
+</span></span><span class=line><span class=cl>----- 创建Deployment以及Service
+</span></span><span class=line><span class=cl>kubectl apply -f deployment.yaml
+</span></span><span class=line><span class=cl>kubectl apply -f deployment-svc.yaml
+</span></span><span class=line><span class=cl>----- 删除
+</span></span><span class=line><span class=cl>kubectl delete services nginx-svc
+</span></span><span class=line><span class=cl>kubectl delete deployment nginx
+</span></span><span class=line><span class=cl>----- 上线状态查看
+</span></span><span class=line><span class=cl>kubectl rollout status deployment/nginx
+</span></span><span class=line><span class=cl>----- 部署Deployment时所创建的
+</span></span><span class=line><span class=cl>kubectl get replicasets
+</span></span><span class=line><span class=cl>kubectl describe replicasets
+</span></span><span class=line><span class=cl>----- 在生成Pods时自动生成Labels的列表
+</span></span><span class=line><span class=cl>kubectl get pods --show-labels
+</span></span><span class=line><span class=cl>----- 也可以通过Labels进行过滤
+</span></span><span class=line><span class=cl>kubectl get pods -l run=nginx -o wide
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看服务信息，关键是获取ClusterIP以及ExternalIP
+</span></span><span class=line><span class=cl>kubectl get services nginx-svc
+</span></span><span class=line><span class=cl>kubectl describe services nginx-svc
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 获取Endpoints信息
+</span></span><span class=line><span class=cl>kubectl get endpoints nginx-svc
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 也可以通过命令行创建服务
+</span></span><span class=line><span class=cl>kubectl expose deployment nginx --type=LoadBalancer --name=nginx-svc
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 通过alpine容器访问，使用ClusterIP，其中-c指定Pod中的容器名称
+</span></span><span class=line><span class=cl>kubectl run alpine --image=alpine --image-pull-policy=Never --rm -i --tty /bin/sh
+</span></span><span class=line><span class=cl>/ # wget 10.0.0.50:8080
+</span></span><span class=line><span class=cl>kubectl exec alpine -it -- /bin/sh
+</span></span><span class=line><span class=cl>kubectl attach alpine -c alpine -it
+</span></span></code></pre></div><a class=anchor id=常见问题></a><h1>常见问题 <a href=#%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98 aria-hidden=true>#</a></h1><a class=anchor id=无法清屏></a><h2>无法清屏 <a href=#%e6%97%a0%e6%b3%95%e6%b8%85%e5%b1%8f aria-hidden=true>#</a></h2><p>在容器中打开时可能无法清除屏幕，可以通过如下方式配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>export TERM=xterm
+</span></span><span class=line><span class=cl>alias ls=&#39;ls --color=auto&#39;
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li><a href=https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands>Kubernetes Commands</a> 详细的命令参考，以及 <a href=https://kubernetes.io/zh/docs/reference/kubectl/cheatsheet/>Kubernetes Cheatsheet</a> 常用命令备忘录，包含了绝大部分常用命令。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#基础配置>基础配置</a></li><li><a href=#podman>Podman</a></li><li><a href=#常用命令>常用命令</a><ul><li><a href=#api>API</a></li><li><a href=#异常排查>异常排查</a></li></ul></li><li><a href=#nodes>Nodes</a></li><li><a href=#pods>Pods</a><ul><li><a href=#查看容器>查看容器</a></li></ul></li><li><a href=#deployment>Deployment</a></li><li><a href=#常见问题>常见问题</a><ul><li><a href=#无法清屏>无法清屏</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

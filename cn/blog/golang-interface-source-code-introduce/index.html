@@ -1,0 +1,272 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>GoLang 接口源码解析 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>GoLang 接口源码解析</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-03-28</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><a class=anchor id=空接口></a><h1>空接口 <a href=#%e7%a9%ba%e6%8e%a5%e5%8f%a3 aria-hidden=true>#</a></h1><p>空接口类型实现没有要求，可以将任意一个值赋给空接口类型的变量，然后通过类型断言判断实际的接口类型。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>var</span> <span class=nx>any</span> <span class=kd>interface</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl><span class=nx>any</span> <span class=p>=</span> <span class=kc>true</span>
+</span></span><span class=line><span class=cl><span class=nx>any</span> <span class=p>=</span> <span class=mf>3.1415926</span>
+</span></span><span class=line><span class=cl><span class=nx>any</span> <span class=p>=</span> <span class=s>&#34;Hello World&#34;</span>
+</span></span><span class=line><span class=cl><span class=nx>any</span> <span class=p>=</span> <span class=kd>map</span><span class=p>[</span><span class=kt>string</span><span class=p>]</span><span class=kt>int</span><span class=p>{</span><span class=s>&#34;one&#34;</span><span class=p>:</span><span class=mi>1</span><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=nx>any</span> <span class=p>=</span> <span class=nb>new</span><span class=p>(</span><span class=nx>bytes</span><span class=p>.</span><span class=nx>Buffer</span><span class=p>)</span>
+</span></span></code></pre></div><p>空接口实际是在非空接口的实现上进行了优化，对应了 <code>eface</code> (也就是空接口) 的实现。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>eface</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>_type</span> <span class=o>*</span><span class=nx>_type</span>          <span class=c1>// 类型信息
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>data</span>  <span class=nx>unsafe</span><span class=p>.</span><span class=nx>Pointer</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>其中的 <code>_type</code> 类型定义如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>_type</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>size</span>       <span class=kt>uintptr</span>
+</span></span><span class=line><span class=cl>    <span class=nx>ptrdata</span>    <span class=kt>uintptr</span> <span class=c1>// size of memory prefix holding all pointers
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>hash</span>       <span class=kt>uint32</span>
+</span></span><span class=line><span class=cl>    <span class=nx>tflag</span>      <span class=nx>tflag</span>
+</span></span><span class=line><span class=cl>    <span class=nx>align</span>      <span class=kt>uint8</span>
+</span></span><span class=line><span class=cl>    <span class=nx>fieldalign</span> <span class=kt>uint8</span>
+</span></span><span class=line><span class=cl>    <span class=nx>kind</span>       <span class=kt>uint8</span>
+</span></span><span class=line><span class=cl>    <span class=nx>alg</span>        <span class=o>*</span><span class=nx>typeAlg</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// gcdata stores the GC type data for the garbage collector.
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// If the KindGCProg bit is set in kind, gcdata is a GC program.
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// Otherwise it is a ptrmask bitmap. See mbitmap.go for details.
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>gcdata</span>    <span class=o>*</span><span class=kt>byte</span>
+</span></span><span class=line><span class=cl>    <span class=nx>str</span>       <span class=nx>nameOff</span>
+</span></span><span class=line><span class=cl>    <span class=nx>ptrToThis</span> <span class=nx>typeOff</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>标识类型信息，包括了什么类型、类型大小、对齐信息等。</p><a class=anchor id=非空接口实现></a><h1>非空接口实现 <a href=#%e9%9d%9e%e7%a9%ba%e6%8e%a5%e5%8f%a3%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h1><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// runtime/runtime2.go
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>type</span> <span class=nx>iface</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>tab</span>  <span class=o>*</span><span class=nx>itab</span>
+</span></span><span class=line><span class=cl>	<span class=nx>data</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nx>Pointer</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>其中 <code>tab</code> 成员指向的结构体，包括了类型的元数据以及一些函数的列表。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// runtime/runtime2.go
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>type</span> <span class=nx>itab</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>inter</span> <span class=o>*</span><span class=nx>interfacetype</span> <span class=c1>// 接口信息，包含了接口信息
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>_type</span> <span class=o>*</span><span class=nx>_type</span>         <span class=c1>// 类型信息
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>hash</span>  <span class=kt>uint32</span>         <span class=c1>// copy of _type.hash. Used for type switches.
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>_</span>     <span class=p>[</span><span class=mi>4</span><span class=p>]</span><span class=kt>byte</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fun</span>   <span class=p>[</span><span class=mi>1</span><span class=p>]</span><span class=kt>uintptr</span>     <span class=c1>// 该类型的方法(函数)列表，含接口
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>其中 <code>interfacetype</code> 包含了接口的定义信息，例如接口类型、包名称、包含方法名。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// runtime/type.go
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>type</span> <span class=nx>interfacetype</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>   <span class=nx>typ</span>     <span class=nx>_type</span>       <span class=c1>// 接口类型
+</span></span></span><span class=line><span class=cl><span class=c1></span>   <span class=nx>pkgpath</span> <span class=nx>name</span>        <span class=c1>// 包路径
+</span></span></span><span class=line><span class=cl><span class=c1></span>   <span class=nx>mhdr</span>    <span class=p>[]</span><span class=nx>imethod</span>   <span class=c1>// 接口方法(函数)列表，按字典序排序
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>imethod</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>   <span class=nx>name</span> <span class=nx>nameOff</span>        <span class=c1>// 方法名
+</span></span></span><span class=line><span class=cl><span class=c1></span>   <span class=nx>ityp</span> <span class=nx>typeOff</span>        <span class=c1>// 描述方法参数返回值等细节  ???? 函数的签名如何实现
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>也就是说，非接口除了需要保存对象之外，还会保存接口类型 (通过 <code>interfacetype</code> 定义) 。</p><p>当调用接口方法时，实际上调用的就是 <code>s.itab->fun[0]</code> 函数，这里只保存了接口中定义的方法 (即使结构体可能定义了多个方法)，如果接口中没有定义，那么会直接报错。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Shape</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Area</span><span class=p>()</span> <span class=kt>float64</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Rectangle</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Width</span><span class=p>,</span> <span class=nx>Height</span> <span class=kt>float64</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>r</span> <span class=o>*</span><span class=nx>Rectangle</span><span class=p>)</span> <span class=nf>Area</span><span class=p>()</span> <span class=kt>float64</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Height</span> <span class=o>*</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Width</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>r</span> <span class=o>*</span><span class=nx>Rectangle</span><span class=p>)</span> <span class=nf>String</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;width %g height %g&#34;</span><span class=p>,</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Width</span><span class=p>,</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Height</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>s</span> <span class=nx>Shape</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>s</span> <span class=p>=</span> <span class=o>&amp;</span><span class=nx>Rectangle</span><span class=p>{</span><span class=nx>Width</span><span class=p>:</span> <span class=mi>10</span><span class=p>,</span> <span class=nx>Height</span><span class=p>:</span> <span class=mi>20</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>s</span><span class=p>.</span><span class=nf>Area</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=c1>//fmt.Println(s.String())
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>在上述注释掉的代码中，因为 <code>Shape</code> 接口没有定义 <code>String()</code> 方法，所以在编译阶段就会报错 <code>s.String undefined (type Shape has no field or method String)</code> 。</p><a class=anchor id=源码研究></a><h1>源码研究 <a href=#%e6%ba%90%e7%a0%81%e7%a0%94%e7%a9%b6 aria-hidden=true>#</a></h1><p>赋值划分为两种：A) struct 类型，可能含有函数实现；B) 常规类型，例如 int string 等。</p><a class=anchor id=eface></a><h2>eface <a href=#eface aria-hidden=true>#</a></h2><p>也就是会调用 <code>convT2E64()</code> 函数创建一个 eface 对象。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>x</span> <span class=kt>int</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>y</span> <span class=kd>interface</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>x</span> <span class=p>=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>        <span class=nx>y</span> <span class=p>=</span> <span class=nx>x</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>y</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>其中关键的汇编代码如下，也就是通过 <code>convT2E64()</code> 函数</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0x001d 00029 (simple.go:10)     LEAQ    type.int(SB), AX   # 取int类型的地址
+</span></span><span class=line><span class=cl>0x0024 00036 (simple.go:10)     PCDATA  $2, $0
+</span></span><span class=line><span class=cl>0x0024 00036 (simple.go:10)     MOVQ    AX, (SP)           # 准备调用函数前的栈帧
+</span></span><span class=line><span class=cl>0x0028 00040 (simple.go:10)     MOVQ    $1, 8(SP)
+</span></span><span class=line><span class=cl>0x0031 00049 (simple.go:10)     CALL    runtime.convT2E64(SB) # 创建空接口
+</span></span></code></pre></div><p>其中 <code>convT2E64()</code> 函数对应的代码如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>convT2E64</span><span class=p>(</span><span class=nx>t</span> <span class=o>*</span><span class=nx>_type</span><span class=p>,</span> <span class=nx>val</span> <span class=kt>uint64</span><span class=p>)</span> <span class=p>(</span><span class=nx>e</span> <span class=nx>eface</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>x</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nx>Pointer</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>val</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>x</span> <span class=p>=</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nf>Pointer</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>zeroVal</span><span class=p>[</span><span class=mi>0</span><span class=p>])</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>x</span> <span class=p>=</span> <span class=nf>mallocgc</span><span class=p>(</span><span class=mi>8</span><span class=p>,</span> <span class=nx>t</span><span class=p>,</span> <span class=kc>false</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=o>*</span><span class=p>(</span><span class=o>*</span><span class=kt>uint64</span><span class=p>)(</span><span class=nx>x</span><span class=p>)</span> <span class=p>=</span> <span class=nx>val</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>e</span><span class=p>.</span><span class=nx>_type</span> <span class=p>=</span> <span class=nx>t</span>
+</span></span><span class=line><span class=cl>        <span class=nx>e</span><span class=p>.</span><span class=nx>data</span> <span class=p>=</span> <span class=nx>x</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>该函数中，对 0 值做了优化，可以缓存 <code>maxZero</code> 大小的零值，其中 <code>mallocgc()</code> 用来分配内存。</p><p>有些文章指出，如果值可以被一个指针的地址所保存，那么会直接使用，无需指针，不过测试使用的还是指针。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;unsafe&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>eface</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>_type</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nx>Pointer</span>
+</span></span><span class=line><span class=cl>        <span class=nx>data</span>  <span class=nx>unsafe</span><span class=p>.</span><span class=nx>Pointer</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>v</span> <span class=o>:=</span> <span class=mi>10</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>a</span> <span class=kd>interface</span><span class=p>{}</span> <span class=p>=</span> <span class=nx>v</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>f</span> <span class=nx>eface</span> <span class=p>=</span> <span class=o>*</span><span class=p>(</span><span class=o>*</span><span class=nx>eface</span><span class=p>)(</span><span class=nx>unsafe</span><span class=p>.</span><span class=nf>Pointer</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>a</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>f</span><span class=p>.</span><span class=nx>data</span><span class=p>,</span> <span class=s>&#34;:&#34;</span><span class=p>,</span> <span class=o>*</span><span class=p>(</span><span class=o>*</span><span class=kt>int</span><span class=p>)(</span><span class=nx>f</span><span class=p>.</span><span class=nx>data</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>输出的是 <code>0xc000014098 : 10</code> 。</p><a class=anchor id=iface></a><h2>iface <a href=#iface aria-hidden=true>#</a></h2><p>也就是会调用 <code>convT2Inoptr()</code> 函数创建一个 eface 对象。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Shape</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Area</span><span class=p>()</span> <span class=kt>float64</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Rectangle</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Width</span><span class=p>,</span> <span class=nx>Height</span> <span class=kt>float64</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>r</span> <span class=nx>Rectangle</span><span class=p>)</span> <span class=nf>Area</span><span class=p>()</span> <span class=kt>float64</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Height</span> <span class=o>*</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Width</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>s</span> <span class=nx>Shape</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>r</span> <span class=o>:=</span> <span class=nx>Rectangle</span><span class=p>{</span><span class=nx>Width</span><span class=p>:</span> <span class=mi>10</span><span class=p>,</span> <span class=nx>Height</span><span class=p>:</span> <span class=mi>20</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>s</span> <span class=p>=</span> <span class=nx>r</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>同样汇编后的关键代码如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0x003d 00061 (simple.go:21)     LEAQ    go.itab.&#34;&#34;.Rectangle,&#34;&#34;.Shape(SB), AX
+</span></span><span class=line><span class=cl>0x0044 00068 (simple.go:21)     PCDATA  $2, $0
+</span></span><span class=line><span class=cl>0x0044 00068 (simple.go:21)     MOVQ    AX, (SP)
+</span></span><span class=line><span class=cl>0x0048 00072 (simple.go:21)     PCDATA  $2, $1
+</span></span><span class=line><span class=cl>0x0048 00072 (simple.go:21)     LEAQ    &#34;&#34;..autotmp_2+48(SP), AX  // 将r变量的地址保存到AX
+</span></span><span class=line><span class=cl>0x004d 00077 (simple.go:21)     PCDATA  $2, $0
+</span></span><span class=line><span class=cl>0x004d 00077 (simple.go:21)     MOVQ    AX, 8(SP)
+</span></span><span class=line><span class=cl>0x0052 00082 (simple.go:21)     CALL    runtime.convT2Inoptr(SB)
+</span></span></code></pre></div><p>其中 <code>convT2Inoptr()</code> 函数的实现如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>convT2Inoptr</span><span class=p>(</span><span class=nx>tab</span> <span class=o>*</span><span class=nx>itab</span><span class=p>,</span> <span class=nx>elem</span> <span class=nx>unsafe</span><span class=p>.</span><span class=nx>Pointer</span><span class=p>)</span> <span class=p>(</span><span class=nx>i</span> <span class=nx>iface</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>t</span> <span class=o>:=</span> <span class=nx>tab</span><span class=p>.</span><span class=nx>_type</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>raceenabled</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nf>raceReadObjectPC</span><span class=p>(</span><span class=nx>t</span><span class=p>,</span> <span class=nx>elem</span><span class=p>,</span> <span class=nf>getcallerpc</span><span class=p>(),</span> <span class=nf>funcPC</span><span class=p>(</span><span class=nx>convT2Inoptr</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>msanenabled</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nf>msanread</span><span class=p>(</span><span class=nx>elem</span><span class=p>,</span> <span class=nx>t</span><span class=p>.</span><span class=nx>size</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>x</span> <span class=o>:=</span> <span class=nf>mallocgc</span><span class=p>(</span><span class=nx>t</span><span class=p>.</span><span class=nx>size</span><span class=p>,</span> <span class=nx>t</span><span class=p>,</span> <span class=kc>false</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nf>memmove</span><span class=p>(</span><span class=nx>x</span><span class=p>,</span> <span class=nx>elem</span><span class=p>,</span> <span class=nx>t</span><span class=p>.</span><span class=nx>size</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>i</span><span class=p>.</span><span class=nx>tab</span> <span class=p>=</span> <span class=nx>tab</span>
+</span></span><span class=line><span class=cl>        <span class=nx>i</span><span class=p>.</span><span class=nx>data</span> <span class=p>=</span> <span class=nx>x</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>也就是说，返回变量的接口类型是没有变，始终为 <code>Shape</code> 接口类型，只是其对应的值修改了。</p><a class=anchor id=接口转换原理></a><h1>接口转换原理 <a href=#%e6%8e%a5%e5%8f%a3%e8%bd%ac%e6%8d%a2%e5%8e%9f%e7%90%86 aria-hidden=true>#</a></h1><p>在上述的 <code>iface</code> 源码解析中，实际封装了接口的类型 <code>interfacetype</code> 和实体类型的类型 <code>_type</code>，当判断某个类型是否满足接口时，会将类型与接口的方法集进行匹配，如果包含则认为实现了该接口。</p><p>假设类型有 <code>m</code> 个方法，接口有 <code>n</code> 个方法，那么如果遍历则其时间复杂度为 <code>O(mn)</code>，在实现时，实际会对方法集的函数按照函数名的字典序排序，所以优化后的实际时间复杂度为 <code>O(m+n)</code> 。</p><a class=anchor id=源码解析></a><h2>源码解析 <a href=#%e6%ba%90%e7%a0%81%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Stringer</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>String</span><span class=p>()</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Shape</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Area</span><span class=p>()</span> <span class=kt>float64</span>
+</span></span><span class=line><span class=cl>        <span class=nf>String</span><span class=p>()</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Rectangle</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Width</span><span class=p>,</span> <span class=nx>Height</span> <span class=kt>float64</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>r</span> <span class=o>*</span><span class=nx>Rectangle</span><span class=p>)</span> <span class=nf>Area</span><span class=p>()</span> <span class=kt>float64</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Height</span> <span class=o>*</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Width</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>r</span> <span class=o>*</span><span class=nx>Rectangle</span><span class=p>)</span> <span class=nf>String</span><span class=p>()</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;width %g height %g&#34;</span><span class=p>,</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Width</span><span class=p>,</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Height</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>r</span> <span class=nx>Shape</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>s</span> <span class=nx>Stringer</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>r</span> <span class=p>=</span> <span class=o>&amp;</span><span class=nx>Rectangle</span><span class=p>{</span><span class=nx>Width</span><span class=p>:</span> <span class=mi>10</span><span class=p>,</span> <span class=nx>Height</span><span class=p>:</span> <span class=mi>20</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>r</span><span class=p>.</span><span class=nf>Area</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>s</span> <span class=p>=</span> <span class=nx>r</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>s</span><span class=p>.</span><span class=nf>String</span><span class=p>())</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>首先，将 <code>Rectangle</code> 结构体隐式转换为 <code>type Shape interface</code> 接口变量，然后又通过 <code>s = r</code> 进行了一次接口之间的变量转换，这里调用的是 <code>runtime.convI2I()</code> 函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>convI2I</span><span class=p>(</span><span class=nx>inter</span> <span class=o>*</span><span class=nx>interfacetype</span><span class=p>,</span> <span class=nx>i</span> <span class=nx>iface</span><span class=p>)</span> <span class=p>(</span><span class=nx>r</span> <span class=nx>iface</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>tab</span> <span class=o>:=</span> <span class=nx>i</span><span class=p>.</span><span class=nx>tab</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>tab</span> <span class=o>==</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>tab</span><span class=p>.</span><span class=nx>inter</span> <span class=o>==</span> <span class=nx>inter</span> <span class=p>{</span> <span class=c1>// 接口相同，直接赋值给新的返回变量即可
+</span></span></span><span class=line><span class=cl><span class=c1></span>                <span class=nx>r</span><span class=p>.</span><span class=nx>tab</span> <span class=p>=</span> <span class=nx>tab</span>
+</span></span><span class=line><span class=cl>                <span class=nx>r</span><span class=p>.</span><span class=nx>data</span> <span class=p>=</span> <span class=nx>i</span><span class=p>.</span><span class=nx>data</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>r</span><span class=p>.</span><span class=nx>tab</span> <span class=p>=</span> <span class=nf>getitab</span><span class=p>(</span><span class=nx>inter</span><span class=p>,</span> <span class=nx>tab</span><span class=p>.</span><span class=nx>_type</span><span class=p>,</span> <span class=kc>false</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>r</span><span class=p>.</span><span class=nx>data</span> <span class=p>=</span> <span class=nx>i</span><span class=p>.</span><span class=nx>data</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>其中 <code>iface</code> 是由 <code>tab</code> 和 <code>data</code> 两个字段组成，而 <code>data</code> 在入参 <code>i</code> 中，那么只需要找到新的 <code>tab</code> 就可以了。当接口类型相同时，直接简单的做个赋值即可，下面介绍不同的时候。</p><p>为了减少上述 <code>O(m+n)</code> 的匹配过程，会缓存到一个 Hash 表中，其中的 Key 就是通过接口类型 <code>interfacetype</code> 和实体类型 <code>_type</code> 的值组成，可以通过 <code>getitab()</code> 函数查找。</p><p>当没有查找到时，会通过 <code>additab()</code> 函数添加到 Hash 表中，这里比较关键的是如何拼装出来 <code>itab</code> 变量，会检查合法性，并将结构体中定义的函数指针添加到变量中，注意，是只包含了接口中定义的函数。</p><a class=anchor id=断言></a><h1>断言 <a href=#%e6%96%ad%e8%a8%80 aria-hidden=true>#</a></h1><p>接口的断言就是通过 <code>type-switch</code> 或者 <code>v.(T)</code> 来判断一个接口变量是否满足某个接口的要求。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Shape</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>Area</span><span class=p>()</span> <span class=kt>float64</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Rectangle</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Width</span><span class=p>,</span> <span class=nx>Height</span> <span class=kt>float64</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>r</span> <span class=nx>Rectangle</span><span class=p>)</span> <span class=nf>Area</span><span class=p>()</span> <span class=kt>float64</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Height</span> <span class=o>*</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Width</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>r</span> <span class=kd>interface</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>r</span> <span class=p>=</span> <span class=nx>Rectangle</span><span class=p>{</span><span class=nx>Width</span><span class=p>:</span> <span class=mi>10</span><span class=p>,</span> <span class=nx>Height</span><span class=p>:</span> <span class=mi>20</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>v</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>r</span><span class=p>.(</span><span class=nx>Shape</span><span class=p>);</span> <span class=nx>ok</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>v</span><span class=p>.</span><span class=nf>Area</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>switch</span> <span class=nx>r</span><span class=p>.(</span><span class=kd>type</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=nx>Shape</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;it&#39;s a shape interface.&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>上述代码其实隐含了一个默认的类型转换，从 <code>struct</code> 转换到接口变量。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0x0066 00102 (simple.go:20)     MOVQ    24(SP), AX
+</span></span><span class=line><span class=cl>0x006b 00107 (simple.go:20)     MOVQ    16(SP), CX
+</span></span><span class=line><span class=cl>0x0070 00112 (simple.go:21)     PCDATA  $2, $2
+</span></span><span class=line><span class=cl>0x0070 00112 (simple.go:21)     LEAQ    type.&#34;&#34;.Shape(SB), DX
+</span></span><span class=line><span class=cl>0x0077 00119 (simple.go:21)     PCDATA  $2, $1
+</span></span><span class=line><span class=cl>0x0077 00119 (simple.go:21)     MOVQ    DX, (SP)
+</span></span><span class=line><span class=cl>0x007b 00123 (simple.go:21)     MOVQ    CX, 8(SP)
+</span></span><span class=line><span class=cl>0x0080 00128 (simple.go:21)     PCDATA  $2, $0
+</span></span><span class=line><span class=cl>0x0080 00128 (simple.go:21)     MOVQ    AX, 16(SP)
+</span></span><span class=line><span class=cl>0x0085 00133 (simple.go:21)     CALL    runtime.assertE2I2(SB)
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#空接口>空接口</a></li><li><a href=#非空接口实现>非空接口实现</a></li><li><a href=#源码研究>源码研究</a><ul><li><a href=#eface>eface</a></li><li><a href=#iface>iface</a></li></ul></li><li><a href=#接口转换原理>接口转换原理</a><ul><li><a href=#源码解析>源码解析</a></li></ul></li><li><a href=#断言>断言</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

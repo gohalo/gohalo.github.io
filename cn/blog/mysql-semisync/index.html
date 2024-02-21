@@ -1,0 +1,449 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 半同步复制 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="MySQL 提供了原生的异步复制，也就是主库的数据落地之后，并不关心备库的日志是否落库，从而可能导致较多的数据丢失。
+从 MySQL5.5 开始引入了一种半同步复制功能，该功能可以确保主服务器和访问链中至少一台从服务器之间的数据一致性和冗余，从而可以减少数据的丢失。
+接下来，我们就简单介绍下 MySQL 中的半同步复制。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL 半同步复制</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-10-20</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a></div></div><hr><div class=content><p>MySQL 提供了原生的异步复制，也就是主库的数据落地之后，并不关心备库的日志是否落库，从而可能导致较多的数据丢失。</p><p>从 MySQL5.5 开始引入了一种半同步复制功能，该功能可以确保主服务器和访问链中至少一台从服务器之间的数据一致性和冗余，从而可以减少数据的丢失。</p><p>接下来，我们就简单介绍下 MySQL 中的半同步复制。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>半同步复制时，通常是一台主库并配置多个备库，在这样的复制拓扑中，只有在至少一台从服务器确认更新已经收到并写入了其中继日志 (Relay Log) 之后，主库才完成提交。</p><p>当然，如果网络出现故障，导致复制超时，主库会暂时切换到原生的异步复制模式；那么，此时备库也可能会丢失事务。</p><a class=anchor id=半同步复制配置></a><h2>半同步复制配置 <a href=#%e5%8d%8a%e5%90%8c%e6%ad%a5%e5%a4%8d%e5%88%b6%e9%85%8d%e7%bd%ae aria-hidden=true>#</a></h2><p>semisync 采用 MySQL Plugin 方式实现，可以在主库和备库上分别安装不同的插件，但是一般线上会将主备插件都安装上，谁知道哪天会做个主备切换呢！！！</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; INSTALL PLUGIN rpl_semi_sync_slave  SONAME &#39;semisync_slave.so&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; INSTALL PLUGIN rpl_semi_sync_master SONAME &#39;semisync_master.so&#39;;
+</span></span></code></pre></div><p>安装完插件后，可以通过如下命令查看半同步复制的参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW GLOBAL VARIABLES LIKE &#39;%semi%&#39;;
+</span></span><span class=line><span class=cl>+-------------------------------------------+------------+
+</span></span><span class=line><span class=cl>| Variable_name                             | Value      |
+</span></span><span class=line><span class=cl>+-------------------------------------------+------------+
+</span></span><span class=line><span class=cl>| rpl_semi_sync_master_enabled              | ON         |
+</span></span><span class=line><span class=cl>| rpl_semi_sync_master_timeout              | 2000       |
+</span></span><span class=line><span class=cl>| rpl_semi_sync_master_trace_level          | 32         |
+</span></span><span class=line><span class=cl>| rpl_semi_sync_master_wait_for_slave_count | 1          |
+</span></span><span class=line><span class=cl>| rpl_semi_sync_master_wait_no_slave        | ON         |
+</span></span><span class=line><span class=cl>| rpl_semi_sync_master_wait_point           | AFTER_SYNC |
+</span></span><span class=line><span class=cl>| rpl_semi_sync_slave_enabled               | ON         |
+</span></span><span class=line><span class=cl>| rpl_semi_sync_slave_trace_level           | 32         |
+</span></span><span class=line><span class=cl>+-------------------------------------------+------------+
+</span></span><span class=line><span class=cl>8 rows in set (0.02 sec)
+</span></span></code></pre></div><p>使用时，可以根据拓扑结构来定义主库和备库的配置，各个配置项的详细解释如下：</p><ul><li><code>rpl_semi_sync_master_enabled</code> 是否开启主库的 semisync，立刻生效；</li><li><code>rpl_semi_sync_slave_enabled</code> 是否开启备库 semisync，立即生效；</li><li><code>rpl_semi_sync_master_timeout</code> 主库上客户端的等待时间(毫秒)，当超时后，客户端返回，同步复制退化成原生的异步复制；</li><li><code>rpl_semi_sync_master_wait_no_slave</code> 开启，备库跟上主库时自动切换到同步模式；关闭，即使备库跟上主，也不启用半同步；</li><li><code>rpl_semi_sync_master_trace_level/rpl_semi_sync_slave_trace_level</code> 输出监控信息的级别，常用于调试；</li></ul><p>当主库打开半同步复制时，必须至少有一个链接的备库是打开半同步复制的，否则主库每次都会等待到超时；因此，如果想关闭半同步复制必须要先关闭主库配置，再关闭备库配置。</p><p>当前的半同步复制状态，可以通过如下命令查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW STATUS LIKE &#39;%semi%&#39;;
+</span></span><span class=line><span class=cl>+--------------------------------------------+-------+
+</span></span><span class=line><span class=cl>| Variable_name                              | Value |
+</span></span><span class=line><span class=cl>+--------------------------------------------+-------+
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_clients               | 1     | 半同步复制客户端的个数
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_net_avg_wait_time     | 0     | 平均等待时间，毫秒
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_net_wait_time         | 0     | 总共等待时间
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_net_waits             | 0     | 等待次数
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_no_times              | 1     | 关闭半同步复制的次数
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_no_tx                 | 1     | 没有成功接收slave提交的次数
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_status                | ON    | 异步模式还是半同步模式，ON为半同步
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_timefunc_failures     | 0     | 调用时间函数失败的次数
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_tx_avg_wait_time      | 0     | 事务的平均传输时间
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_tx_wait_time          | 0     | 事务的总共传输时间
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_tx_waits              | 0     | 事物等待次数
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_wait_pos_backtraverse | 0     | 后来的先到了，而先来的还没有到的次数
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_wait_sessions         | 0     | 有多少个session因为slave的回复而造成等待
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_master_yes_tx                | 0     | 成功接受到slave事务回复的次数
+</span></span><span class=line><span class=cl>| Rpl_semi_sync_slave_status                 | ON    |
+</span></span><span class=line><span class=cl>+--------------------------------------------+-------+
+</span></span><span class=line><span class=cl>15 rows in set (0.00 sec)
+</span></span></code></pre></div><a class=anchor id=57-增强></a><h2>5.7 增强 <a href=#57-%e5%a2%9e%e5%bc%ba aria-hidden=true>#</a></h2><p>MySQL 5.7 版本修复了 semi sync 的一些 bug 并且增强了功能，主要包括了入下两个。</p><ul><li>支持发送 binlog 和接受 ACK 的异步化;</li><li>支持在事务 commit 前等待 ACK;</li></ul><p>新的异步模式可以提高半同步模式下的系统事务处理能力。</p><a class=anchor id=binlog发送和接收ack异步></a><h3>binlog发送和接收ack异步 <a href=#binlog%e5%8f%91%e9%80%81%e5%92%8c%e6%8e%a5%e6%94%b6ack%e5%bc%82%e6%ad%a5 aria-hidden=true>#</a></h3><p>旧版本的 semi sync 受限于主库的 dump thread ，原因是该线程承担了两份不同且又十分频繁的任务：A) 发送 binlog 给备库；B) 等待备库反馈信息；而且这两个任务是串行的，dump thread 必须等待备库返回之后才会传送下一个 events 事务。</p><p>大体的实现思路是主库分为了两个线程，也就是原来的 dump 线程，以及 ack reciver 线程。</p><a class=anchor id=事务commit前等待ack></a><h3>事务commit前等待ACK <a href=#%e4%ba%8b%e5%8a%a1commit%e5%89%8d%e7%ad%89%e5%be%85ack aria-hidden=true>#</a></h3><p>新版本的 semi sync 增加了 <code>rpl_semi_sync_master_wait_point</code> 参数控制半同步模式下，主库在返回给客户端事务成功的时间点。该参数有两个值：AFTER_SYNC(默认值)、AFTER_COMMIT 。</p><a class=anchor id=after-commit></a><h4>after commit <a href=#after-commit aria-hidden=true>#</a></h4><p>这也是最初版本的同步方式，主库将每事务写入 binlog，发送给备库并刷新到磁盘 (relaylog)，然后在主库提交事务，并等待备库的响应；一旦接到备库的反馈，主库将结果反馈给客户端。</p><p>由于主库是在三段提交的最后 commit 阶段完成后才等待，所以主库的其它会话是可以看到这个事务的，所以这时候可能会导致主备库数据不一致。</p><a class=anchor id=after-sync></a><h4>after sync <a href=#after-sync aria-hidden=true>#</a></h4><p>主库将事务写入 binlog，发送给备库并刷新到磁盘，主库等待备库的响应；一旦接到备库的反馈，主库会提交事务并且返回结果给客户端。</p><p>在该模式下，所有的客户端在同一时刻查看已经提交的数据。假如发生主库 crash，所有在主库上已经提交的事务已经同步到备库并记录到 relay log，切到从库可以减小数据损失。</p><a class=anchor id=源码实现></a><h1>源码实现 <a href=#%e6%ba%90%e7%a0%81%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h1><p>半同步复制采用 plugin+HOOK 的方式实现，也就是通过 HOOK 回调 plugin 中定义的函数，可以参考如下的示例：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=c1>// sql/binlog.cc
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>RUN_HOOK</span><span class=p>(</span><span class=n>transaction</span><span class=p>,</span> <span class=n>after_commit</span><span class=p>,</span> <span class=p>(</span><span class=n>head</span><span class=p>,</span> <span class=n>all</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// sql/rpl_handler.h
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#define RUN_HOOK(group, hook, args)             \
+</span></span></span><span class=line><span class=cl><span class=cp>  (group ##_delegate-&gt;is_empty() ?              \
+</span></span></span><span class=line><span class=cl><span class=cp>   0 : group ##_delegate-&gt;hook args)
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=c1>// 因此上例被转化成
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>transaction_delegate</span><span class=o>-&gt;</span><span class=n>is_empty</span><span class=p>()</span> <span class=o>?</span> <span class=mi>0</span> <span class=o>:</span> <span class=n>transaction_delegate</span><span class=o>-&gt;</span><span class=n>after_commit</span><span class=p>(</span><span class=n>head</span><span class=p>,</span> <span class=n>all</span><span class=p>);</span>
+</span></span></code></pre></div><p>具体的回调接口实例以及函数在 <code>sql/rpl_hander.cc</code> 文件中定义，主要有如下的五种类型，而其中的 <code>server_state_delegate</code> 变量，只与服务器状态有关，可以忽略。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=n>Trans_delegate</span> <span class=o>*</span><span class=n>transaction_delegate</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=n>Binlog_storage_delegate</span> <span class=o>*</span><span class=n>binlog_storage_delegate</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=n>Server_state_delegate</span> <span class=o>*</span><span class=n>server_state_delegate</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cp>#ifdef HAVE_REPLICATION
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=n>Binlog_transmit_delegate</span> <span class=o>*</span><span class=n>binlog_transmit_delegate</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=n>Binlog_relay_IO_delegate</span> <span class=o>*</span><span class=n>binlog_relay_io_delegate</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=cp>#endif </span><span class=cm>/* HAVE_REPLICATION */</span><span class=cp>
+</span></span></span></code></pre></div><p>也就是说，主要有四类 <code>XXX_delegate</code> 对象；首先看下主库的初始化过程。</p><a class=anchor id=主库初始化></a><h2>主库初始化 <a href=#%e4%b8%bb%e5%ba%93%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h2><p>在主库半同步复制初始化时，会调用 <code>semi_sync_master_plugin_init()</code> 函数，这三个 obeserver 定义了各自的函数接口，详细如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=n>Trans_observer</span> <span class=n>trans_observer</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>sizeof</span><span class=p>(</span><span class=n>Trans_observer</span><span class=p>),</span>           <span class=c1>// len
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_report_before_dml</span><span class=p>,</span>      <span class=c1>// before_dml
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_report_before_commit</span><span class=p>,</span>   <span class=c1>// before_commit
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_report_before_rollback</span><span class=p>,</span> <span class=c1>// before_rollback
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_report_commit</span><span class=p>,</span>          <span class=c1>// after_commit
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_report_rollback</span><span class=p>,</span>        <span class=c1>// after_rollback
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>};</span>
+</span></span><span class=line><span class=cl><span class=n>Binlog_storage_observer</span> <span class=n>storage_observer</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>sizeof</span><span class=p>(</span><span class=n>Binlog_storage_observer</span><span class=p>),</span>  <span class=c1>// len
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_report_binlog_update</span><span class=p>,</span>   <span class=c1>// after_flush
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_report_binlog_sync</span><span class=p>,</span>     <span class=c1>// after_sync
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>};</span>
+</span></span><span class=line><span class=cl><span class=n>Binlog_transmit_observer</span> <span class=n>transmit_observer</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>sizeof</span><span class=p>(</span><span class=n>Binlog_transmit_observer</span><span class=p>),</span> <span class=c1>// len
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_binlog_dump_start</span><span class=p>,</span>      <span class=c1>// transmit_start
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_binlog_dump_end</span><span class=p>,</span>        <span class=c1>// transmit_stop
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_reserve_header</span><span class=p>,</span>         <span class=c1>// reserve_header
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_before_send_event</span><span class=p>,</span>      <span class=c1>// before_send_event
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_after_send_event</span><span class=p>,</span>       <span class=c1>// after_send_event
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_reset_master</span><span class=p>,</span>           <span class=c1>// after_reset_master
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>int</span> <span class=nf>semi_sync_master_plugin_init</span><span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=n>p</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=n>my_create_thread_local_key</span><span class=p>(</span><span class=o>&amp;</span><span class=n>THR_RPL_SEMI_SYNC_DUMP</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>repl_semisync</span><span class=p>.</span><span class=n>initObject</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>ack_receiver</span><span class=p>.</span><span class=n>init</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>// 为transaction_delegate增加transmit_observer
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=n>register_trans_observer</span><span class=p>(</span><span class=o>&amp;</span><span class=n>trans_observer</span><span class=p>,</span> <span class=n>p</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=c1>// 为binlog_transmit_delegate增加storage_observer
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=n>register_binlog_storage_observer</span><span class=p>(</span><span class=o>&amp;</span><span class=n>storage_observer</span><span class=p>,</span> <span class=n>p</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=c1>// 为binlog_transmit_delegate增加transmit_observer
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=n>register_binlog_transmit_observer</span><span class=p>(</span><span class=o>&amp;</span><span class=n>transmit_observer</span><span class=p>,</span> <span class=n>p</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>mysql_declare_plugin</span><span class=p>(</span><span class=n>semi_sync_master</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=n>MYSQL_REPLICATION_PLUGIN</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=o>&amp;</span><span class=n>semi_sync_master_plugin</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=s>&#34;rpl_semi_sync_master&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=s>&#34;He Zhenxing&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=s>&#34;Semi-synchronous replication master&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=n>PLUGIN_LICENSE_GPL</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=n>semi_sync_master_plugin_init</span><span class=p>,</span>    <span class=cm>/* Plugin Init */</span>
+</span></span><span class=line><span class=cl>  <span class=n>semi_sync_master_plugin_deinit</span><span class=p>,</span>  <span class=cm>/* Plugin Deinit */</span>
+</span></span><span class=line><span class=cl>  <span class=mh>0x0100</span> <span class=cm>/* 1.0 */</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=n>semi_sync_master_status_vars</span><span class=p>,</span>    <span class=cm>/* status variables */</span>
+</span></span><span class=line><span class=cl>  <span class=n>semi_sync_master_system_vars</span><span class=p>,</span>    <span class=cm>/* system variables */</span>
+</span></span><span class=line><span class=cl>  <span class=nb>NULL</span><span class=p>,</span>                            <span class=cm>/* config options */</span>
+</span></span><span class=line><span class=cl>  <span class=mi>0</span><span class=p>,</span>                               <span class=cm>/* flags */</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=n>mysql_declare_plugin_end</span><span class=p>;</span>
+</span></span></code></pre></div><p>在插件初始化时，会注册各种类型的 observer，然后在 <code>RUN_HOOK()</code> 宏时，就会直接调用上述的函数，可以直接通过类似 <code>transmit_start</code> 成员变量查看。</p><p>所有从 server 层向 plugin 的函数调用，都是通过函数指针来完成的，因此我们只需要搞清楚上述几个函数的调用逻辑，基本就可以清楚 semisync plugin 在 MySQL 里的处理逻辑。</p><a class=anchor id=初始化过程></a><h3>初始化过程 <a href=#%e5%88%9d%e5%a7%8b%e5%8c%96%e8%bf%87%e7%a8%8b aria-hidden=true>#</a></h3><p>如下是半同步插件主库的执行步骤。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>semi_sync_master_plugin_init()            ← 主库插件初始化
+</span></span><span class=line><span class=cl> |-ReplSemiSyncMaster::initObject()       ← 一系列系统初始化，如超时时间等
+</span></span><span class=line><span class=cl> | |-setWaitTimeout()
+</span></span><span class=line><span class=cl> | |-setTraceLevel()
+</span></span><span class=line><span class=cl> | |-setWaitSlaveCount()
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-Ack_receiver::init()                   ← 通过线程处理备库返回的响应
+</span></span><span class=line><span class=cl> | |-start()
+</span></span><span class=line><span class=cl> |   |-ack_receive_handler()              ← 新建单独线程接收响应，run()函数的包装
+</span></span><span class=line><span class=cl> |     |-run()
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-register_trans_observer()
+</span></span><span class=line><span class=cl> |-register_binlog_storage_observer()
+</span></span><span class=line><span class=cl> |-register_binlog_transmit_observer()
+</span></span></code></pre></div><a class=anchor id=备库初始化></a><h2>备库初始化 <a href=#%e5%a4%87%e5%ba%93%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h2><p>备库会注册 <code>binlog_relay_io_delegate</code> 对象，其它操作与主库类似，在此就不做过多介绍了。</p><a class=anchor id=详细操作></a><h1>详细操作 <a href=#%e8%af%a6%e7%bb%86%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h1><p>接下来，一步步看看半同步复制是如何执行的。</p><a class=anchor id=主库dump></a><h2>主库DUMP <a href=#%e4%b8%bb%e5%ba%93dump aria-hidden=true>#</a></h2><p>在备库中，通过 <code>START SLAVE</code> 命令启动后，会向主库发送 DUMP 命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>dispatch_command()
+</span></span><span class=line><span class=cl> |-com_binlog_dump_gtid()           ← COM_BINLOG_DUMP_GTID
+</span></span><span class=line><span class=cl> |-com_binlog_dump()                ← COM_BINLOG_DUMP
+</span></span><span class=line><span class=cl>   |-mysql_binlog_send()            ← 上述的两个命令都会到此函数
+</span></span><span class=line><span class=cl>     |-Binlog_sender::run()         ← 新建Binlog_sender对象并执行run()函数
+</span></span><span class=line><span class=cl>       |-init()
+</span></span><span class=line><span class=cl>       | |-transmit_start()         ← RUN_HOOK()，binlog_transmit_delegate
+</span></span><span class=line><span class=cl>       | |                          ← 实际调用repl_semi_binlog_dump_start()
+</span></span><span class=line><span class=cl>       |
+</span></span><span class=line><span class=cl>       |-###BEGIN while()循环，只要没有错误，线程未被杀死，则一直执行
+</span></span><span class=line><span class=cl>       |-open_binlog_file()
+</span></span><span class=line><span class=cl>       |-send_binlog()              ← 发送二进制日志
+</span></span><span class=line><span class=cl>       | |-send_events()
+</span></span><span class=line><span class=cl>       |   |-after_send_hook()
+</span></span><span class=line><span class=cl>       |     |-RUN_HOOK()           ← 调用binlog_transmit-&gt;after_send_event()钩子函数
+</span></span><span class=line><span class=cl>       |-###END
+</span></span></code></pre></div><p>MySQL 会通过 <code>mysql_binlog_send()</code> 处理每个备库发送的 dump 请求，在开始 dump 之前，会调用如上的 HOOK 函数，而对于半同步复制，实际会调用 <code>repl_semi_binlog_dump_start()</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=kt>void</span> <span class=n>Binlog_sender</span><span class=o>::</span><span class=n>init</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=c1>//... ...
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=n>check_start_file</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=n>DBUG_VOID_RETURN</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=n>sql_print_information</span><span class=p>(</span><span class=s>&#34;Start binlog_dump to master_thread_id(%u) &#34;</span>
+</span></span><span class=line><span class=cl>                        <span class=s>&#34;slave_server(%u), pos(%s, %llu)&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                        <span class=n>thd</span><span class=o>-&gt;</span><span class=n>thread_id</span><span class=p>(),</span> <span class=n>thd</span><span class=o>-&gt;</span><span class=n>server_id</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                        <span class=n>m_start_file</span><span class=p>,</span> <span class=n>m_start_pos</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>RUN_HOOK</span><span class=p>(</span><span class=n>binlog_transmit</span><span class=p>,</span> <span class=n>transmit_start</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=n>m_flag</span><span class=p>,</span> <span class=n>m_start_file</span><span class=p>,</span> <span class=n>m_start_pos</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=o>&amp;</span><span class=n>m_observe_transmission</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>set_unknow_error</span><span class=p>(</span><span class=s>&#34;Failed to run hook &#39;transmit_start&#39;&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>DBUG_VOID_RETURN</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=n>m_transmit_started</span><span class=o>=</span><span class=nb>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=c1>//... ...
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>看看半同步复制中的 <code>repl_semi_binlog_dump_start()</code> 函数，是如何处理的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>repl_semi_binlog_dump_start()
+</span></span><span class=line><span class=cl> |-get_user_var_int()               ← 获取备库参数rpl_semi_sync_slave
+</span></span><span class=line><span class=cl> |-ack_receiver.add_slave()         ← 增加备库计数，通过
+</span></span><span class=line><span class=cl> |-repl_semisync.handleAck()
+</span></span><span class=line><span class=cl>   |-reportReplyBinlog()
+</span></span></code></pre></div><p>对于 <code>repl_semi_binlog_dump_start()</code> 函数，主要做以下几件事情：</p><ol><li>判断连接的备库是否开启半同步复制，也即查看备库是否设置 <code>rpl_semi_sync_slave</code> 变量；</li><li>如果备库开启了半同步，则增加连接的备库计数，可查看 <code>rpl_semi_sync_master_clients</code>；</li><li>最后会调用 <code>reportReplyBinlog()</code> 函数，该函数在后面详述。</li></ol><a class=anchor id=执行dml></a><h2>执行DML <a href=#%e6%89%a7%e8%a1%8cdml aria-hidden=true>#</a></h2><p>以执行一条简单的 DML 操作为例，例如 <code>INSERT INTO t VALUES (1)</code> 。</p><p>在事务提交时，也就是在 <code>ordered_commit()</code> 函数中，当主库将 binlog 写入到文件中后，且在尚未调用 fsync 之前，会调用如下内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=kt>int</span> <span class=n>MYSQL_BIN_LOG</span><span class=o>::</span><span class=n>ordered_commit</span><span class=p>(</span><span class=n>THD</span> <span class=o>*</span><span class=n>thd</span><span class=p>,</span> <span class=kt>bool</span> <span class=n>all</span><span class=p>,</span> <span class=kt>bool</span> <span class=n>skip_commit</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>  <span class=cm>/*
+</span></span></span><span class=line><span class=cl><span class=cm>    If the flush finished successfully, we can call the after_flush
+</span></span></span><span class=line><span class=cl><span class=cm>    hook. Being invoked here, we have the guarantee that the hook is
+</span></span></span><span class=line><span class=cl><span class=cm>    executed before the before/after_send_hooks on the dump thread
+</span></span></span><span class=line><span class=cl><span class=cm>    preventing race conditions among these plug-ins.
+</span></span></span><span class=line><span class=cl><span class=cm>  */</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>flush_error</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>file_name_ptr</span><span class=o>=</span> <span class=n>log_file_name</span> <span class=o>+</span> <span class=n>dirname_length</span><span class=p>(</span><span class=n>log_file_name</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>DBUG_ASSERT</span><span class=p>(</span><span class=n>flush_end_pos</span> <span class=o>!=</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>RUN_HOOK</span><span class=p>(</span><span class=n>binlog_storage</span><span class=p>,</span> <span class=n>after_flush</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                 <span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=n>file_name_ptr</span><span class=p>,</span> <span class=n>flush_end_pos</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=n>sql_print_error</span><span class=p>(</span><span class=s>&#34;Failed to run &#39;after_flush&#39; hooks&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>      <span class=n>flush_error</span><span class=o>=</span> <span class=n>ER_ERROR_ON_WRITE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>update_binlog_end_pos_after_sync</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=n>update_binlog_end_pos</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=n>DBUG_EXECUTE_IF</span><span class=p>(</span><span class=s>&#34;crash_commit_after_log&#34;</span><span class=p>,</span> <span class=n>DBUG_SUICIDE</span><span class=p>(););</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在上述源码中的 <code>RUN_HOOK()</code> 宏中，对于半同步复制，实际调用的也就是 <code>repl_semi_report_binlog_update()</code> 函数；另外，在源码会创建 <code>ReplSemiSyncMaster repl_semisync;</code> 全局对象。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>repl_semi_report_binlog_update()
+</span></span><span class=line><span class=cl> |-repl_semisync.getMasterEnabled()         ← 判断是否启动了主库
+</span></span><span class=line><span class=cl> |-repl_semisync.writeTranxInBinlog()       ← 保存最大事务的binlog位置
+</span></span></code></pre></div><p><code>writeTranxInBinlog()</code> 会存储当前的 binlog 文件名和偏移量，更新当前最大的事务 binlog 位置；</p><a class=anchor id=事务提交后></a><h2>事务提交后 <a href=#%e4%ba%8b%e5%8a%a1%e6%8f%90%e4%ba%a4%e5%90%8e aria-hidden=true>#</a></h2><p>在事务 commit 之后，也就是在 <code>sql/binlog.cc</code> 文件中，会调用如下的函数，可以从代码中看到，实际会调用 after_commit 钩子函数，也就是 <code>repl_semi_report_commit()</code> 函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=kt>void</span> <span class=n>MYSQL_BIN_LOG</span><span class=o>::</span><span class=n>process_after_commit_stage_queue</span><span class=p>(</span><span class=n>THD</span> <span class=o>*</span><span class=n>thd</span><span class=p>,</span> <span class=n>THD</span> <span class=o>*</span><span class=n>first</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=n>Thread_excursion</span> <span class=nf>excursion</span><span class=p>(</span><span class=n>thd</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>for</span> <span class=p>(</span><span class=n>THD</span> <span class=o>*</span><span class=n>head</span><span class=o>=</span> <span class=n>first</span><span class=p>;</span> <span class=n>head</span><span class=p>;</span> <span class=n>head</span><span class=o>=</span> <span class=n>head</span><span class=o>-&gt;</span><span class=n>next_to_commit</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>head</span><span class=o>-&gt;</span><span class=n>get_transaction</span><span class=p>()</span><span class=o>-&gt;</span><span class=n>m_flags</span><span class=p>.</span><span class=n>run_hooks</span> <span class=o>&amp;&amp;</span>
+</span></span><span class=line><span class=cl>        <span class=n>head</span><span class=o>-&gt;</span><span class=n>commit_error</span> <span class=o>!=</span> <span class=n>THD</span><span class=o>::</span><span class=n>CE_COMMIT_ERROR</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=cm>/*
+</span></span></span><span class=line><span class=cl><span class=cm>        TODO: This hook here should probably move outside/below this
+</span></span></span><span class=line><span class=cl><span class=cm>              if and be the only after_commit invocation left in the
+</span></span></span><span class=line><span class=cl><span class=cm>              code.
+</span></span></span><span class=line><span class=cl><span class=cm>      */</span>
+</span></span><span class=line><span class=cl>      <span class=n>excursion</span><span class=p>.</span><span class=n>try_to_attach_to</span><span class=p>(</span><span class=n>head</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>      <span class=kt>bool</span> <span class=n>all</span><span class=o>=</span> <span class=n>head</span><span class=o>-&gt;</span><span class=n>get_transaction</span><span class=p>()</span><span class=o>-&gt;</span><span class=n>m_flags</span><span class=p>.</span><span class=n>real_commit</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=n>RUN_HOOK</span><span class=p>(</span><span class=n>transaction</span><span class=p>,</span> <span class=n>after_commit</span><span class=p>,</span> <span class=p>(</span><span class=n>head</span><span class=p>,</span> <span class=n>all</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>      <span class=cm>/*
+</span></span></span><span class=line><span class=cl><span class=cm>        When after_commit finished for the transaction, clear the run_hooks flag.
+</span></span></span><span class=line><span class=cl><span class=cm>        This allow other parts of the system to check if after_commit was called.
+</span></span></span><span class=line><span class=cl><span class=cm>      */</span>
+</span></span><span class=line><span class=cl>      <span class=n>head</span><span class=o>-&gt;</span><span class=n>get_transaction</span><span class=p>()</span><span class=o>-&gt;</span><span class=n>m_flags</span><span class=p>.</span><span class=n>run_hooks</span><span class=o>=</span> <span class=nb>false</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>其中，上述的函数会在 Group Commit 的第三个阶段 (也即 commit 阶段) 执行，也就是通过 leader 线程依次为其他线程调用 <code>repl_semi_report_commit()</code> 函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>repl_semi_report_commit()
+</span></span><span class=line><span class=cl> |-repl_semisync.commitTrx()      ← 入参为binlog文件名+位置
+</span></span><span class=line><span class=cl>   |-lock()                       ← 获取mutex锁
+</span></span><span class=line><span class=cl>   |-THD_ENTER_COND()             ← 线程进入新状态
+</span></span></code></pre></div><p><code>commitTrx()</code> 是实现客户端同步等待的主要部分，主要做以下事情。</p><a class=anchor id=1-线程进入新状态></a><h4>1. 线程进入新状态 <a href=#1-%e7%ba%bf%e7%a8%8b%e8%bf%9b%e5%85%a5%e6%96%b0%e7%8a%b6%e6%80%81 aria-hidden=true>#</a></h4><p>用户线程进入新的状态，通过 <code>SHOW PROCESSLIST</code> 可看到线程状态为 <code>"Waiting for semi-sync ACK from slave"</code> 。</p><a class=anchor id=2-检查当前线程状态></a><h4>2. 检查当前线程状态 <a href=#2-%e6%a3%80%e6%9f%a5%e5%bd%93%e5%89%8d%e7%ba%bf%e7%a8%8b%e7%8a%b6%e6%80%81 aria-hidden=true>#</a></h4><p>线程中会执行如下的判断，也就是判断是否已经启用了 semisync 主，而且还在等待 binlog 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cm>/* This is the real check inside the mutex. */</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=p>(</span><span class=n>getMasterEnabled</span><span class=p>()</span> <span class=o>&amp;&amp;</span> <span class=n>trx_wait_binlog_name</span><span class=p>)</span>
+</span></span></code></pre></div><p>注意，上述操作是在持有锁的状态下进行的检查。</p><a class=anchor id=3-设置超时时间></a><h4>3. 设置超时时间 <a href=#3-%e8%ae%be%e7%bd%ae%e8%b6%85%e6%97%b6%e6%97%b6%e9%97%b4 aria-hidden=true>#</a></h4><p>会根据 <code>wait_timeout_</code> 设置超时时间变量，随后进入如下的 while 循环。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>while (is_on())
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    ... ...
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>只要 semisync 没有退化到异步状态，就会一直在 while 循环中等待，直到超时或者获得备库反馈；</p><a class=anchor id=dump线程的处理></a><h2>dump线程的处理 <a href=#dump%e7%ba%bf%e7%a8%8b%e7%9a%84%e5%a4%84%e7%90%86 aria-hidden=true>#</a></h2><p>接着，看看在执行一条事务后，dump 线程会有哪些调用逻辑呢？</p><a class=anchor id=发送事件后></a><h2>发送事件后 <a href=#%e5%8f%91%e9%80%81%e4%ba%8b%e4%bb%b6%e5%90%8e aria-hidden=true>#</a></h2><p>该 HOOK 在 <code>mysql_binlog_send()</code> 函数中调用，也就是 <code>binlog_transmit->after_send_event()</code> 函数，对于半同步复制，实际调用函数 <code>repl_semi_after_send_event()</code> 来读取备库的反馈。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>int repl_semi_after_send_event(Binlog_transmit_param *param,
+</span></span><span class=line><span class=cl>                               const char *event_buf, unsigned long len,
+</span></span><span class=line><span class=cl>                               const char * skipped_log_file,
+</span></span><span class=line><span class=cl>                               my_off_t skipped_log_pos)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  if (is_semi_sync_dump())
+</span></span><span class=line><span class=cl>  {
+</span></span><span class=line><span class=cl>    if(skipped_log_pos&gt;0)
+</span></span><span class=line><span class=cl>      repl_semisync.skipSlaveReply(event_buf, param-&gt;server_id,
+</span></span><span class=line><span class=cl>                                   skipped_log_file, skipped_log_pos);
+</span></span><span class=line><span class=cl>    else
+</span></span><span class=line><span class=cl>    {
+</span></span><span class=line><span class=cl>      THD *thd= current_thd;
+</span></span><span class=line><span class=cl>      /*
+</span></span><span class=line><span class=cl>        Possible errors in reading slave reply are ignored deliberately
+</span></span><span class=line><span class=cl>        because we do not want dump thread to quit on this. Error
+</span></span><span class=line><span class=cl>        messages are already reported.
+</span></span><span class=line><span class=cl>      */
+</span></span><span class=line><span class=cl>      (void) repl_semisync.readSlaveReply(
+</span></span><span class=line><span class=cl>        thd-&gt;get_protocol_classic()-&gt;get_net(),
+</span></span><span class=line><span class=cl>        param-&gt;server_id, event_buf);
+</span></span><span class=line><span class=cl>      thd-&gt;clear_error();
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>  }
+</span></span><span class=line><span class=cl>  return 0;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>如果该事件需要 skip 则调用 <code>skipSlaveReply()</code>，否则调用 <code>readSlaveReply()</code>；前者只判断事件的头部是否设置了需要 sync，如果是的，则调用 <code>handleAck->reportReplyBinlog()</code>；后者则先读取备库传递的数据包，从中读出备库传递的 binlog 坐标信息，函数 <code>readSlaveReply()</code> 主要有如下流程：</p><ol><li>如果无需等待，直接返回；</li><li>通过 <code>net_flush()</code> 将数据发送到备库，防止数据保存在主的缓存中，然后调用 <code>net_clear()</code>。</li></ol><p>到此为止，就已经算将数据发送到了备库，而响应的处理则是在一个单独的线程里处理的。</p><p>在 semisync 的主库启动之后，会创建一个 <code>ack_receive_handler()</code> 线程，处理备库的响应报文；实际上会阻塞在 <code>my_net_read()</code> 函数中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>ack_receive_handler()           新建单独线程接收响应，run()函数的包装
+</span></span><span class=line><span class=cl> |-run()
+</span></span><span class=line><span class=cl>   |                            ###BEGIN while循环
+</span></span><span class=line><span class=cl>   |-select()                   等待备库响应报文
+</span></span><span class=line><span class=cl>   |-net_clear()
+</span></span><span class=line><span class=cl>   |-my_net_read()              读取数据
+</span></span><span class=line><span class=cl>   |-reportReplyPacket()        获取备库返回的文件名以及position
+</span></span><span class=line><span class=cl>     |-handleAck()
+</span></span><span class=line><span class=cl>       |-reportReplyBinlog()
+</span></span><span class=line><span class=cl>         |-getMasterEnabled()   检查是否为主
+</span></span><span class=line><span class=cl>         |-try_switch_on()      如果是异步，则尝试转换为同步模式
+</span></span></code></pre></div><p>从 <code>my_net_read()</code> 接收到备库返回的数据后，从数据包中读取备库传递过来的 binlog 位点信息，然后调用 <code>reportReplyBinlog()</code>；该函数的主要调用流程如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=kt>void</span> <span class=n>ReplSemiSyncMaster</span><span class=o>::</span><span class=n>reportReplyBinlog</span><span class=p>(</span><span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>log_file_name</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                                           <span class=n>my_off_t</span> <span class=n>log_file_pos</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>kWho</span> <span class=o>=</span> <span class=s>&#34;ReplSemiSyncMaster::reportReplyBinlog&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kt>int</span>   <span class=n>cmp</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kt>bool</span>  <span class=n>can_release_threads</span> <span class=o>=</span> <span class=nb>false</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kt>bool</span>  <span class=n>need_copy_send_pos</span> <span class=o>=</span> <span class=nb>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=n>function_enter</span><span class=p>(</span><span class=n>kWho</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=n>mysql_mutex_assert_owner</span><span class=p>(</span><span class=o>&amp;</span><span class=n>LOCK_binlog_</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>// 1. 检查主库 semisync 是否打开，如果没有则直接结束；
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>getMasterEnabled</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=k>goto</span> <span class=n>l_end</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>// 2. 如果当前 semisync 为异步状态，尝试将其切换为同步状态；
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>is_on</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=n>try_switch_on</span><span class=p>(</span><span class=n>log_file_name</span><span class=p>,</span> <span class=n>log_file_pos</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>// 3. 将dump线程从备库反馈的位点信息与(reply_file_name_, reply_file_pos_)做对比
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=c1>//    如果小于后者，说明已经有别的备库读到更新的事务了，此时无需更新
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=c1>//    如上所述，semisync只保证全局至少有一个备库读到更新的事务
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=n>reply_file_name_inited_</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>cmp</span> <span class=o>=</span> <span class=n>ActiveTranx</span><span class=o>::</span><span class=n>compare</span><span class=p>(</span><span class=n>log_file_name</span><span class=p>,</span> <span class=n>log_file_pos</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                               <span class=n>reply_file_name_</span><span class=p>,</span> <span class=n>reply_file_pos_</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>cmp</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=n>need_copy_send_pos</span> <span class=o>=</span> <span class=nb>false</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>// 4. 如果需要，更新位点，清理当前位点之前的事务节点信息
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=n>need_copy_send_pos</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>strncpy</span><span class=p>(</span><span class=n>reply_file_name_</span><span class=p>,</span> <span class=n>log_file_name</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>reply_file_name_</span><span class=p>)</span> <span class=o>-</span> <span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>reply_file_name_</span><span class=p>[</span><span class=k>sizeof</span><span class=p>(</span><span class=n>reply_file_name_</span><span class=p>)</span> <span class=o>-</span> <span class=mi>1</span><span class=p>]</span><span class=o>=</span> <span class=sc>&#39;\0&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>reply_file_pos_</span> <span class=o>=</span> <span class=n>log_file_pos</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>reply_file_name_inited_</span> <span class=o>=</span> <span class=nb>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>trace_level_</span> <span class=o>&amp;</span> <span class=n>kTraceDetail</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=n>sql_print_information</span><span class=p>(</span><span class=s>&#34;%s: Got reply at (%s, %lu)&#34;</span><span class=p>,</span> <span class=n>kWho</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                            <span class=n>log_file_name</span><span class=p>,</span> <span class=p>(</span><span class=kt>unsigned</span> <span class=kt>long</span><span class=p>)</span><span class=n>log_file_pos</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>// 5. 接收到的备库反馈位点信息大于等于当前等待的事务的最小位点，则设置更新
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=n>rpl_semi_sync_master_wait_sessions</span> <span class=o>&gt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>cmp</span> <span class=o>=</span> <span class=n>ActiveTranx</span><span class=o>::</span><span class=n>compare</span><span class=p>(</span><span class=n>reply_file_name_</span><span class=p>,</span> <span class=n>reply_file_pos_</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                               <span class=n>wait_file_name_</span><span class=p>,</span> <span class=n>wait_file_pos_</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>cmp</span> <span class=o>&gt;=</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=n>can_release_threads</span> <span class=o>=</span> <span class=nb>true</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=n>wait_file_name_inited_</span> <span class=o>=</span> <span class=nb>false</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl> <span class=nl>l_end</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>// 6. 释放锁，进行一次 broadcast，唤醒等待的用户线程
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=n>can_release_threads</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>trace_level_</span> <span class=o>&amp;</span> <span class=n>kTraceDetail</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=n>sql_print_information</span><span class=p>(</span><span class=s>&#34;%s: signal all waiting threads.&#34;</span><span class=p>,</span> <span class=n>kWho</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>active_tranxs_</span><span class=o>-&gt;</span><span class=n>signal_waiting_sessions_up_to</span><span class=p>(</span><span class=n>reply_file_name_</span><span class=p>,</span> <span class=n>reply_file_pos_</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=n>function_exit</span><span class=p>(</span><span class=n>kWho</span><span class=p>,</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=备库></a><h1>备库 <a href=#%e5%a4%87%e5%ba%93 aria-hidden=true>#</a></h1><p>当接受到主库发送的 binlog 后，由于开启了 semisync 的备库需要为主库发送响应；与主库类似，备库同样也是为 <code>Binlog_relay_IO_delegate</code> 增加一个 observer 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=n>Binlog_relay_IO_observer</span> <span class=n>relay_io_observer</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>sizeof</span><span class=p>(</span><span class=n>Binlog_relay_IO_observer</span><span class=p>),</span> <span class=c1>// len
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>  <span class=n>repl_semi_slave_io_start</span><span class=p>,</span>         <span class=c1>// thread_start
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_slave_io_end</span><span class=p>,</span>           <span class=c1>// thread_stop
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_slave_sql_stop</span><span class=p>,</span>         <span class=c1>// applier_stop (stop sql thread)
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_slave_request_dump</span><span class=p>,</span>     <span class=c1>// before_request_transmit
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_slave_read_event</span><span class=p>,</span>       <span class=c1>// after_read_event
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_slave_queue_event</span><span class=p>,</span>      <span class=c1>// after_queue_event
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=n>repl_semi_reset_slave</span><span class=p>,</span>            <span class=c1>// after_reset_slave
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>int</span> <span class=nf>semi_sync_slave_plugin_init</span><span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=n>p</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>repl_semisync</span><span class=p>.</span><span class=n>initObject</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>register_binlog_relay_io_observer</span><span class=p>(</span><span class=o>&amp;</span><span class=n>relay_io_observer</span><span class=p>,</span> <span class=n>p</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如上，也就是 <code>relay_io_observer</code>，同样通过 HOOK 方式回调 PLUGIN 函数，主要包括了上述的接口函数。</p><a class=anchor id=开启io线程></a><h2>开启IO线程 <a href=#%e5%bc%80%e5%90%afio%e7%ba%bf%e7%a8%8b aria-hidden=true>#</a></h2><p>在执行 <code>start slave</code> 命令时，也就是在 <code>handle_slave_io()</code> 函数中，会调用如下的钩子函数，也就是 <code>relay_io</code> 中的 <code>thread_start()</code> 函数，而实际调用的是 <code>repl_semi_slave_io_start()</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>extern &#34;C&#34; void *handle_slave_io(void *arg)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl> ... ...
+</span></span><span class=line><span class=cl>  /* This must be called before run any binlog_relay_io hooks */
+</span></span><span class=line><span class=cl>  my_set_thread_local(RPL_MASTER_INFO, mi);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  if (RUN_HOOK(binlog_relay_io, thread_start, (thd, mi)))
+</span></span><span class=line><span class=cl>  {
+</span></span><span class=line><span class=cl>    mi-&gt;report(ERROR_LEVEL, ER_SLAVE_FATAL_ERROR,
+</span></span><span class=line><span class=cl>               ER(ER_SLAVE_FATAL_ERROR), &#34;Failed to run &#39;thread_start&#39; hook&#34;);
+</span></span><span class=line><span class=cl>    goto err;
+</span></span><span class=line><span class=cl>  }
+</span></span><span class=line><span class=cl>  ... ...
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>在 <code>repl_semi_slave_io_start()</code> 函数中，最终会调用 <code>slaveStart()</code> 函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=kt>int</span> <span class=n>ReplSemiSyncSlave</span><span class=o>::</span><span class=n>slaveStart</span><span class=p>(</span><span class=n>Binlog_relay_IO_param</span> <span class=o>*</span><span class=n>param</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kt>bool</span> <span class=n>semi_sync</span><span class=o>=</span> <span class=n>getSlaveEnabled</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>semi_sync</span> <span class=o>&amp;&amp;</span> <span class=o>!</span><span class=n>rpl_semi_sync_slave_status</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>rpl_semi_sync_slave_status</span><span class=o>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如上，函数功能很简单，主要是设置全局变量 <code>rpl_semi_sync_slave_status</code> 。</p><a class=anchor id=发起dump请求></a><h2>发起dump请求 <a href=#%e5%8f%91%e8%b5%b7dump%e8%af%b7%e6%b1%82 aria-hidden=true>#</a></h2><p>当与主库成功建立连接之后，接下来从库会向主库发起 dump 请求，同样是在 <code>handle_slave_io()</code> 中，在调用 <code>request_dump()</code> 时，会调用钩子函数 <code>relay_io->thread_start()</code>，而实际调用的是 <code>repl_semi_slave_request_dump()</code> 。</p><p>调用的 HOOK 位置为 <code>handle_slave_io->request_dump()</code>，如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=k>static</span> <span class=kt>int</span> <span class=nf>request_dump</span><span class=p>(</span><span class=n>THD</span> <span class=o>*</span><span class=n>thd</span><span class=p>,</span> <span class=n>MYSQL</span><span class=o>*</span> <span class=n>mysql</span><span class=p>,</span> <span class=n>Master_info</span><span class=o>*</span> <span class=n>mi</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                        <span class=kt>bool</span> <span class=o>*</span><span class=n>suppress_warnings</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>RUN_HOOK</span><span class=p>(</span><span class=n>binlog_relay_io</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=n>before_request_transmit</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>               <span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=n>mi</span><span class=p>,</span> <span class=n>binlog_flags</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl>    <span class=k>goto</span> <span class=n>err</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在 <code>repl_semi_slave_request_dump()</code> 函数中会检查主库是否支持 <code>semisync</code>，主要检查是否存在 <code>rpl_semi_sync_master_enabled</code> 变量，如果支持则在备库设置用户变量 <code>rpl_semi_sync_slave</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>int repl_semi_slave_request_dump(Binlog_relay_IO_param *param,
+</span></span><span class=line><span class=cl>                 uint32 flags)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  ... ...
+</span></span><span class=line><span class=cl>  if (!repl_semisync.getSlaveEnabled())
+</span></span><span class=line><span class=cl>    return 0;
+</span></span><span class=line><span class=cl>  ... ...
+</span></span><span class=line><span class=cl>  query= &#34;SET @rpl_semi_sync_slave= 1&#34;;
+</span></span><span class=line><span class=cl>  if (mysql_real_query(mysql, query, static_cast&lt;ulong&gt;(strlen(query))))
+</span></span><span class=line><span class=cl>  {
+</span></span><span class=line><span class=cl>    sql_print_error(&#34;Set &#39;rpl_semi_sync_slave=1&#39; on master failed&#34;);
+</span></span><span class=line><span class=cl>    return 1;
+</span></span><span class=line><span class=cl>  }
+</span></span><span class=line><span class=cl>  mysql_free_result(mysql_store_result(mysql));
+</span></span><span class=line><span class=cl>  rpl_semi_sync_slave_status= 1;
+</span></span><span class=line><span class=cl>  return 0;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>主库就是通过 <code>rpl_semi_sync_slave</code> 来判断一个 dump 请求的 SLAVE 是否是开启半同步复制。</p><p>到此为止，备库就已经初始化成功。</p><a class=anchor id=读取事件></a><h2>读取事件 <a href=#%e8%af%bb%e5%8f%96%e4%ba%8b%e4%bb%b6 aria-hidden=true>#</a></h2><p>同样是在 <code>handle_slave_io()</code> 中，会调用 <code>relay_io->after_read_event()</code> 钩子函数，而实际上调用的函数是 <code>repl_semi_slave_read_event()</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=k>extern</span> <span class=s>&#34;C&#34;</span> <span class=kt>void</span> <span class=o>*</span><span class=n>handle_slave_io</span><span class=p>(</span><span class=kt>void</span> <span class=o>*</span><span class=n>arg</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>while</span> <span class=p>(</span><span class=o>!</span><span class=n>io_slave_killed</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span><span class=n>mi</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>    <span class=k>while</span> <span class=p>(</span><span class=o>!</span><span class=n>io_slave_killed</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span><span class=n>mi</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=n>ulong</span> <span class=n>event_len</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=cm>/*
+</span></span></span><span class=line><span class=cl><span class=cm>         We say &#34;waiting&#34; because read_event() will wait if there&#39;s nothing to
+</span></span></span><span class=line><span class=cl><span class=cm>         read. But if there&#39;s something to read, it will not wait. The
+</span></span></span><span class=line><span class=cl><span class=cm>         important thing is to not confuse users by saying &#34;reading&#34; whereas
+</span></span></span><span class=line><span class=cl><span class=cm>         we&#39;re in fact receiving nothing.
+</span></span></span><span class=line><span class=cl><span class=cm>      */</span>
+</span></span><span class=line><span class=cl>      <span class=n>THD_STAGE_INFO</span><span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=n>stage_waiting_for_master_to_send_event</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>      <span class=n>event_len</span><span class=o>=</span> <span class=n>read_event</span><span class=p>(</span><span class=n>mysql</span><span class=p>,</span> <span class=n>mi</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>suppress_warnings</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>      <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=p>(</span><span class=n>RUN_HOOK</span><span class=p>(</span><span class=n>binlog_relay_io</span><span class=p>,</span> <span class=n>after_read_event</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                   <span class=p>(</span><span class=n>thd</span><span class=p>,</span> <span class=n>mi</span><span class=p>,(</span><span class=k>const</span> <span class=kt>char</span><span class=o>*</span><span class=p>)</span><span class=n>mysql</span><span class=o>-&gt;</span><span class=n>net</span><span class=p>.</span><span class=n>read_pos</span> <span class=o>+</span> <span class=mi>1</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                    <span class=n>event_len</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>event_buf</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>event_len</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl>      <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>mi</span><span class=o>-&gt;</span><span class=n>report</span><span class=p>(</span><span class=n>ERROR_LEVEL</span><span class=p>,</span> <span class=n>ER_SLAVE_FATAL_ERROR</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                   <span class=n>ER</span><span class=p>(</span><span class=n>ER_SLAVE_FATAL_ERROR</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>                   <span class=s>&#34;Failed to run &#39;after_read_event&#39; hook&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>goto</span> <span class=n>err</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=p>}</span>
+</span></span><span class=line><span class=cl>      <span class=p>...</span> <span class=p>...</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>关于半同步参数的介绍可以参考 <a href=https://dev.mysql.com/doc/refman/en/replication-semisync-interface.html>Semisynchronous Replication Administrative Interface</a>；以及 <a href=https://dev.mysql.com/doc/refman/5.7/en/replication-semisync.html>Reference Manual - Semisync</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#半同步复制配置>半同步复制配置</a></li><li><a href=#57-增强>5.7 增强</a></li></ul></li><li><a href=#源码实现>源码实现</a><ul><li><a href=#主库初始化>主库初始化</a></li><li><a href=#备库初始化>备库初始化</a></li></ul></li><li><a href=#详细操作>详细操作</a><ul><li><a href=#主库dump>主库DUMP</a></li><li><a href=#执行dml>执行DML</a></li><li><a href=#事务提交后>事务提交后</a></li><li><a href=#dump线程的处理>dump线程的处理</a></li><li><a href=#发送事件后>发送事件后</a></li></ul></li><li><a href=#备库>备库</a><ul><li><a href=#开启io线程>开启IO线程</a></li><li><a href=#发起dump请求>发起dump请求</a></li><li><a href=#读取事件>读取事件</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,103 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Systemd 服务管理 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Systemd 提供了很多系统服务的基本功能，包括了系统的系统进程、启动级别、cgroup 管理、进程管理等等。
+这里简单介绍进程管理功能。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Systemd 服务管理</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-08-27</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kernel/ role=button>kernel</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/software/ role=button>software</a></div></div><hr><div class=content><p>Systemd 提供了很多系统服务的基本功能，包括了系统的系统进程、启动级别、cgroup 管理、进程管理等等。</p><p>这里简单介绍进程管理功能。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>这里整理一下常用的配置参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Restart=always                       # 只要不通过stop停止，任何情况下都必须重启服务
+</span></span><span class=line><span class=cl>RestartSec=5                         # 重启间隔，异常后等待5秒再启动，默认为100ms
+</span></span><span class=line><span class=cl>RestartPreventExitStatus=12 SIGKILL  # 当退出码为12或者受到KILL信号时不再自动重启
+</span></span></code></pre></div><a class=anchor id=自动重启></a><h1>自动重启 <a href=#%e8%87%aa%e5%8a%a8%e9%87%8d%e5%90%af aria-hidden=true>#</a></h1><p>常见的大概有如下的几种场景。</p><a class=anchor id=始终重启></a><h2>始终重启 <a href=#%e5%a7%8b%e7%bb%88%e9%87%8d%e5%90%af aria-hidden=true>#</a></h2><p>大概每 3 秒重启一次，时间不会是严格的 3 秒，可能会略有出入。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Restart=always
+</span></span><span class=line><span class=cl>RestartSec=3
+</span></span></code></pre></div><p>如果设置为 <code>on-failure</code> ，那么当退出码为 0 时，将不会再重启，此时应该设置为 <code>always</code> 模式。</p><a class=anchor id=限制重启次数></a><h2>限制重启次数 <a href=#%e9%99%90%e5%88%b6%e9%87%8d%e5%90%af%e6%ac%a1%e6%95%b0 aria-hidden=true>#</a></h2><p>主要是为了防止程序异常，导致进程一直重复被拉起，可以限制某段时间内的重启次数。</p><p>systemd 可以限制重启的次数，当服务在 <code>StartLimitInterval</code> 内超过了 <code>StartLimitBurst</code> 次后，将不会再次拉起服务。默认的配置会从 <code>/etc/systemd/system.conf</code> 中继承相关参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>DefaultStartLimitInterval=10s
+</span></span><span class=line><span class=cl>DefaultStartLimitBurst=5
+</span></span></code></pre></div><p>也就是说，如果在 <code>10s</code> 内超过了 5 次，那么就不会再重新拉起，此时会打印 <code>start request repeated too quickly for XXX.service</code> ，然后服务进入 <code>failed</code> 状态。</p><p>当 <code>StartLimitBurst=0</code> 时，实际上是不会限制重启次数的。</p><a class=anchor id=版本依赖></a><h3>版本依赖 <a href=#%e7%89%88%e6%9c%ac%e4%be%9d%e8%b5%96 aria-hidden=true>#</a></h3><p>在 <code>v229</code> 版本之前，采用的是如下的配置，是在 <code>Service</code> 段中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>StartLimitInterval=200s
+</span></span><span class=line><span class=cl>StartLimitBurst=5
+</span></span></code></pre></div><p>在 <code>v230</code> 之后，采用的是下面配置，注意，此时在 <code>Unit</code> 段中，当然为了向前兼容，也支持上述的方式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>StartLimitIntervalSec=200s
+</span></span><span class=line><span class=cl>StartLimitBurst=5
+</span></span></code></pre></div><a class=anchor id=注意></a><h3>注意 <a href=#%e6%b3%a8%e6%84%8f aria-hidden=true>#</a></h3><p>这里需要配合 <code>RestartSec</code> 参数，才可以，否则仍然可能会一直生效。</p><a class=anchor id=notify></a><h1>notify <a href=#notify aria-hidden=true>#</a></h1><p>systemd 提供了一种 notify 机制，用于服务向 systemd 发送当前状态信息，然后可以直接通过通用的 <code>systemctl status XXX.service</code> 命令查看。</p><p>为了方便使用，同时提供了 <code>systemd-notify(1)</code> 命令，以及相关的 C API 接口 <code>sd_notify(3)</code> ，当然，C 接口使用需要依赖 <code>libsystemd-devel</code> 库。</p><p>其中 C 接口的使用可以详细查看 <a href=https://manpages.debian.org/jessie/libsystemd-dev/sd_notify.3.en.html>SD_NOTIFY(3)</a> 中的介绍，下面仅以脚本的方式作为示例。</p><a class=anchor id=示例脚本></a><h2>示例脚本 <a href=#%e7%a4%ba%e4%be%8b%e8%84%9a%e6%9c%ac aria-hidden=true>#</a></h2><p>新建测试脚本 <code>/tmp/systemd/mytest.sh</code> 以及服务配置文件 <code>/etc/systemd/system/mytest.service</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=cp>#!/bin/bash
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=s2>&#34;Current NOTIFY_SOCKET &#39;</span><span class=si>${</span><span class=nv>NOTIFY_SOCKET</span><span class=si>}</span><span class=s2>&#39;, WATCHDOG_USEC &#39;</span><span class=si>${</span><span class=nv>WATCHDOG_USEC</span><span class=si>}</span><span class=s2>&#39;&#34;</span>
+</span></span><span class=line><span class=cl>mkfifo /tmp/waldo
+</span></span><span class=line><span class=cl>sleep <span class=m>10</span>    <span class=c1># activating (start)</span>
+</span></span><span class=line><span class=cl>systemd-notify --ready --status<span class=o>=</span><span class=s2>&#34;First waiting for data...&#34;</span>
+</span></span><span class=line><span class=cl>            <span class=c1># active (running) &amp;&amp; Status: &#34;Waiting for data...&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>while</span> : <span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>        <span class=nb>read</span> a &lt; /tmp/waldo
+</span></span><span class=line><span class=cl>        systemd-notify --status<span class=o>=</span><span class=s2>&#34;Processing </span><span class=nv>$a</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1># Do something with $a …</span>
+</span></span><span class=line><span class=cl>        sleep <span class=m>10</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        systemd-notify --status<span class=o>=</span><span class=s2>&#34;Waiting for data...&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>done</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=My Test
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>Type=notify
+</span></span><span class=line><span class=cl>ExecStart=/tmp/systemd/mytest.sh
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span></code></pre></div><p>注意，脚本需要有可执行权限，否则会报错。</p><p>常用的操作如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># systemctl daemon-reload
+</span></span><span class=line><span class=cl># systemctl stop mytest.service
+</span></span><span class=line><span class=cl># systemctl start mytest.service
+</span></span><span class=line><span class=cl># systemctl status mytest.service
+</span></span></code></pre></div><p>启动时，<code>Active</code> 状态处于 <code>activating (start)</code>，如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>● mytest.service - My Test
+</span></span><span class=line><span class=cl>   Loaded: loaded (/etc/systemd/system/mytest.service; disabled; vendor preset: disabled)
+</span></span><span class=line><span class=cl>   Active: activating (start) since Mon 2018-05-14 19:25:17 CST; 3s ago
+</span></span><span class=line><span class=cl> Main PID: 31635 (mytest.sh)
+</span></span><span class=line><span class=cl>   Memory: 296.0K
+</span></span><span class=line><span class=cl>   CGroup: /system.slice/mytest.service
+</span></span><span class=line><span class=cl>           ├─31635 /bin/bash /tmp/systemd/mytest.sh
+</span></span><span class=line><span class=cl>           └─31637 sleep 10
+</span></span></code></pre></div><p>10 秒之后，也就是服务已经正常启动，同时设置了状态信息，此时会显示如下，注意其中的 <code>Status</code> 字段。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>● mytest.service - My Test
+</span></span><span class=line><span class=cl>   Loaded: loaded (/etc/systemd/system/mytest.service; disabled; vendor preset: disabled)
+</span></span><span class=line><span class=cl>   Active: active (running) since Mon 2018-05-14 19:25:27 CST; 17s ago
+</span></span><span class=line><span class=cl> Main PID: 31635 (mytest.sh)
+</span></span><span class=line><span class=cl>   Status: &#34;Waiting for data...&#34;
+</span></span><span class=line><span class=cl>   Memory: 204.0K
+</span></span><span class=line><span class=cl>   CGroup: /system.slice/mytest.service
+</span></span><span class=line><span class=cl>           └─31635 /bin/bash /tmp/systemd/mytest.sh
+</span></span></code></pre></div><p>通过 <code>echo somedata | tee /tmp/waldo</code> 命令向管道发送一些数据，那么会进入到数据处理过程，也就是处于如下状态。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>● mytest.service - My Test
+</span></span><span class=line><span class=cl>   Loaded: loaded (/etc/systemd/system/mytest.service; disabled; vendor preset: disabled)
+</span></span><span class=line><span class=cl>   Active: active (running) since Tue 2019-05-14 19:25:27 CST; 10min ago
+</span></span><span class=line><span class=cl> Main PID: 31635 (mytest.sh)
+</span></span><span class=line><span class=cl>   Status: &#34;Processing somedata&#34;
+</span></span><span class=line><span class=cl>   Memory: 296.0K
+</span></span><span class=line><span class=cl>   CGroup: /system.slice/mytest.service
+</span></span><span class=line><span class=cl>           ├─31635 /bin/bash /tmp/systemd/mytest.sh
+</span></span><span class=line><span class=cl>           └─38956 sleep 10
+</span></span></code></pre></div><p>实际上，该命令通过 <code>NOTIFY_SOCKET</code> 环境变量提供了一个 Unix Domain Socket 接口，在 CentOS 中，一般是在 <code>/run/systemd/notify</code> 路径下。</p><p>默认只接受主进程发送的请求，如果是单独起了一个进程发送请求，那么需要修改 <code>NotifyAccess</code> 的配置项。</p><a class=anchor id=总结></a><h3>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h3><p>通过 notify 接口，可以明确告知 systemd 服务何时启动正常；可以确定当前服务的执行状态。</p><a class=anchor id=watchdog></a><h1>watchdog <a href=#watchdog aria-hidden=true>#</a></h1><p>默认是不开启的，可以通过 <code>WatchdogSec</code> 选项设置，此时会在启动服务的时候设置 <code>WATCHDOG_USEC</code> 环境变量，注意，单位是微秒。</p><p><code>systemd-notify</code> 没有提供更新 watchdog 的方法，对于 <code>sd_notify()</code> 方法，直接周期调用 <code>sd_notify(0,"WATCHDOG=1")</code> 即可。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=My Test
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>Type=notify
+</span></span><span class=line><span class=cl>ExecStart=/usr/bin/sleep 1000
+</span></span><span class=line><span class=cl>WatchdogSec=60s
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span></code></pre></div><p>如果脚本里没有周期更新状态，那么超时之后会进入到 failed 状态，此时会在 <code>/var/log/messages</code> 中打印如下的日志信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>May 14 20:00:24 systemd: Starting My Test...
+</span></span><span class=line><span class=cl>May 14 20:00:24 mytest.sh: Current NOTIFY_SOCKET &#39;/run/systemd/notify&#39;, WATCHDOG_USEC &#39;60000000&#39;
+</span></span><span class=line><span class=cl>May 14 20:00:34 systemd: Started My Test.
+</span></span><span class=line><span class=cl>May 14 20:01:35 systemd: mytest.service watchdog timeout (limit 1min)!
+</span></span><span class=line><span class=cl>May 14 20:01:35 systemd: mytest.service: main process exited, code=killed, status=6/ABRT
+</span></span><span class=line><span class=cl>May 14 20:01:35 systemd: Unit mytest.service entered failed state.
+</span></span><span class=line><span class=cl>May 14 20:01:35 systemd: mytest.service failed.
+</span></span></code></pre></div><p>当然，也可以通过如下的配置，在服务 Watchdog 异常之后，自动重新拉起。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>Restart=always
+</span></span><span class=line><span class=cl>RestartSec=3
+</span></span></code></pre></div><p>另外，当一个服务异常时，可以通过 <code>OnFailure=notify-failed@%n</code> 配置的方式向另外一个服务发送消息。</p><a class=anchor id=cgroup></a><h1>cgroup <a href=#cgroup aria-hidden=true>#</a></h1><p>在服务的配置文件中，可以通过 <code>CPUQuota</code> <code>MemoryLimit</code> 来设置 cgroup ，当然也可以通过如下方式临时配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># systemctl set-property --runtime uagent.service CPUQuota=5% MemoryLimit=30M
+</span></span></code></pre></div><p>关于资源配置的选项可以通过 <code>man 5 systemd.resource-control</code> 方式查看，默认是没有开启审计的，所以通过 <code>systemd-cgtop</code> 没有显示具体的资源。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#自动重启>自动重启</a><ul><li><a href=#始终重启>始终重启</a></li><li><a href=#限制重启次数>限制重启次数</a></li></ul></li><li><a href=#notify>notify</a><ul><li><a href=#示例脚本>示例脚本</a></li></ul></li><li><a href=#watchdog>watchdog</a><ul><li><a href=#示例>示例</a></li></ul></li><li><a href=#cgroup>cgroup</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

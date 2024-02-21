@@ -1,0 +1,244 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux Core 文件详细介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Core 文件又称为 Core Dump 文件，对于线上的服务而言，也就意味着进程异常；而且，如果进程占用内存很大，但是 dump 到磁盘上，也会花很长时间。
+当然，Core 虽然会终止掉当前进程，但是也会保留下第一手的现场数据，包括了进程被终止时内存、CPU寄存器等信息，可以供后续开发人员进行调试。
+接下来，看看 MySQL 中 Core 文件的处理。
+简介 # 在开发一个程序时，程序可能会在运行过程中异常终止或者崩溃，这时操作系统就会把程序挂掉时的内存状态记录下来，并写入一个叫做 Core 的文件中，这种行为就叫做 Core Dump 操作，通过这个文件可以方便的进行调试。
+在使用半导体作为内存的材料前，人类使用的是线圈作为内存的材料，线圈叫做 Core，用线圈制作的内存就是 Core Memory。
+除了内存信息之外，还有些关键的程序运行状态也会同时 dump 下来，例如寄存器信息 (包括程序指针、栈指针等)、内存管理信息、其他处理器和操作系统状态和信息；而这些信息对于编程人员诊断和调试程序是非常有帮助。
+A core dump is the recorded state of the working memory of a computer program at a specific time, generally when the program has terminated abnormally (crashed). In practice, other key pieces of program state are usually dumped at the same time, including the processor registers, which may include the program counter and stack pointer, memory management information, and other processor and operating system flags and information."><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux Core 文件详细介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2022-03-17</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a></div></div><hr><div class=content><p>Core 文件又称为 Core Dump 文件，对于线上的服务而言，也就意味着进程异常；而且，如果进程占用内存很大，但是 dump 到磁盘上，也会花很长时间。</p><p>当然，Core 虽然会终止掉当前进程，但是也会保留下第一手的现场数据，包括了进程被终止时内存、CPU寄存器等信息，可以供后续开发人员进行调试。</p><p>接下来，看看 MySQL 中 Core 文件的处理。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p><img alt="core file logo" src=images/core-file-logo.jpg class="mx-auto d-block"></p><p>在开发一个程序时，程序可能会在运行过程中异常终止或者崩溃，这时操作系统就会把程序挂掉时的内存状态记录下来，并写入一个叫做 Core 的文件中，这种行为就叫做 Core Dump 操作，通过这个文件可以方便的进行调试。</p><blockquote><p>在使用半导体作为内存的材料前，人类使用的是线圈作为内存的材料，线圈叫做 Core，用线圈制作的内存就是 Core Memory。</p></blockquote><p>除了内存信息之外，还有些关键的程序运行状态也会同时 dump 下来，例如寄存器信息 (包括程序指针、栈指针等)、内存管理信息、其他处理器和操作系统状态和信息；而这些信息对于编程人员诊断和调试程序是非常有帮助。</p><blockquote><p>A core dump is the recorded state of the working memory of a computer program at a specific time, generally when the program has terminated abnormally (crashed). In practice, other key pieces of program state are usually dumped at the same time, including the processor registers, which may include the program counter and stack pointer, memory management information, and other processor and operating system flags and information. The name comes from the once-standard memory technology core memory. Core dumps are often used to diagnose or debug errors in computer programs.</p><p>On many operating systems, a fatal error in a program automatically triggers a core dump, and by extension the phrase &ldquo;to dump core&rdquo; has come to mean, in many cases, any fatal error, regardless of whether a record of the program memory is created.</p></blockquote><a class=anchor id=开启coredump></a><h2>开启CoreDump <a href=#%e5%bc%80%e5%90%afcoredump aria-hidden=true>#</a></h2><p>可以使用命令 ulimit 开启，也可以在程序中通过 setrlimit 系统调用开启；先介绍下前者配置方式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看配置，如果为0，则说明未开启
+</span></span><span class=line><span class=cl>$ ulimit -c
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 设置转储文件大小，单位是blocks(KB)，unlimited表示不限
+</span></span><span class=line><span class=cl># ulimit -c unlimited
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 设置转储文件大小为100KB
+</span></span><span class=line><span class=cl># ulimit -c 100
+</span></span></code></pre></div><p>当设置为 unlimited 时，则表示不限制内核转储文件的大小，发生问题时所有的内存都将转储到文件中；对于大量消耗内存的程序可以限制转储文件的大小。</p><p>如果要持久化，可以修改 <code>/etc/security/limits.conf</code> 文件即可，参考如下示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#&lt;domain&gt;      &lt;type&gt;  &lt;item&gt;         &lt;value&gt;
+</span></span><span class=line><span class=cl>    *           soft    core          unlimited
+</span></span></code></pre></div><p>默认生成的 core 文件保存在可执行文件所在目录下，文件名为 core；当然，也可以通过如下方式进行设置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 添加PID后缀
+</span></span><span class=line><span class=cl># echo 1 &gt; /proc/sys/kernel/core_uses_pid
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 设置输出目录，格式为core-命令名-PID-时间戳
+</span></span><span class=line><span class=cl># echo &#34;/tmp/core-%e-%p-%t&#34; &gt; /proc/sys/kernel/core_pattern
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>常见参数：
+</span></span><span class=line><span class=cl>   %t: 设置文件转储时的 unix 时间，从 1970.1.1 0:00:00 开始的秒数。
+</span></span><span class=line><span class=cl>   %e: 执行的命令名。
+</span></span><span class=line><span class=cl>   %p: 被转储进程的 PID 。
+</span></span><span class=line><span class=cl>   %u: 被转储进程的真实用户 ID ，也即 UID 。
+</span></span><span class=line><span class=cl>   %g: 被转储进程的真实组 ID ，也即 GID 。
+</span></span><span class=line><span class=cl>   %s: 引发转储的信号编号。
+</span></span><span class=line><span class=cl>   %h: 主机名，同 uname(2) 返回的 nodename 。
+</span></span><span class=line><span class=cl>   %c: 转储文件大小的上限，2.6.24 以后可以使用。
+</span></span></code></pre></div><p>设置完 <code>core_pattern</code> 之后，<code>core_user_pid</code> 会无效，也可以通过 <code>sysctl</code> 进行设置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># cat /etc/sysctl.conf
+</span></span><span class=line><span class=cl>kernel.core_pattern = /var/%e-%p-%t.core
+</span></span><span class=line><span class=cl>kernel.core_user_pid = 0
+</span></span><span class=line><span class=cl># sysctl -p
+</span></span></code></pre></div><a class=anchor id=测试示例></a><h1>测试示例 <a href=#%e6%b5%8b%e8%af%95%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h1><p>可以在程序执行期间发送 <code>SIGSEGV(11)</code> 信号，也即 <code>Ctrl+\</code> 快捷键。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 使用Ctrl+\退出程序，产生core dump
+</span></span><span class=line><span class=cl>$ sleep 100
+</span></span><span class=line><span class=cl>^\Quit (core dumped)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 或者发送SIGSEGV(11)信号
+</span></span><span class=line><span class=cl># kill -s SIGSEGV $$
+</span></span><span class=line><span class=cl># kill -11 &lt;pid&gt;
+</span></span></code></pre></div><p>接着看一个简单的示例程序。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat &lt;&lt; EOF &gt; create_core.c
+</span></span><span class=line><span class=cl>int a (int *p)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	int y = *p;
+</span></span><span class=line><span class=cl>	return y;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>int main (void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	int *p = NULL;
+</span></span><span class=line><span class=cl>	*p = 0;         // 访问0地址，发生Segmentation fault错误
+</span></span><span class=line><span class=cl>	return a(p);
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>EOF
+</span></span><span class=line><span class=cl>$ gcc -Wall -g create_core.c -o create_core
+</span></span><span class=line><span class=cl>$ ./create_core
+</span></span><span class=line><span class=cl>Segmentation fault (core dumped)
+</span></span></code></pre></div><p>也可以通过 API 进行设置，不过此时编译之后，在运行时需要 root 权限。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/resource.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#define CORE_SIZE   1024 * 1024 * 500
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>rlimit</span> <span class=n>rlmt</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>getrlimit</span><span class=p>(</span><span class=n>RLIMIT_CORE</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>rlmt</span><span class=p>)</span> <span class=o>==</span> <span class=o>-</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Before set rlimit CORE dump current is:%d, max is:%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_cur</span><span class=p>,</span> <span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_max</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_cur</span> <span class=o>=</span> <span class=p>(</span><span class=kt>rlim_t</span><span class=p>)</span><span class=n>CORE_SIZE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_max</span>  <span class=o>=</span> <span class=p>(</span><span class=kt>rlim_t</span><span class=p>)</span><span class=n>CORE_SIZE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>setrlimit</span><span class=p>(</span><span class=n>RLIMIT_CORE</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>rlmt</span><span class=p>)</span> <span class=o>==</span> <span class=o>-</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>getrlimit</span><span class=p>(</span><span class=n>RLIMIT_CORE</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>rlmt</span><span class=p>)</span> <span class=o>==</span> <span class=o>-</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;After set rlimit CORE dump current is:%d, max is:%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_cur</span><span class=p>,</span> <span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_max</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kt>int</span> <span class=o>*</span><span class=n>ptr</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>  <span class=c1>// 测试非法内存，产生core文件
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=o>*</span><span class=n>ptr</span> <span class=o>=</span> <span class=mi>10</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在调试时可以通过 <code>gdb program core-file</code> 调试，当然编译时，需要加上调试信息 <code>-g</code>。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gdb core_demo core_demo.core.24816
+</span></span><span class=line><span class=cl>...
+</span></span><span class=line><span class=cl>Core was generated by &#39;./core_demo&#39;.
+</span></span><span class=line><span class=cl>Program terminated with signal 11, Segmentation fault.
+</span></span><span class=line><span class=cl>#0  0x080483cd in func (p=0x0) at core_demo.c:5
+</span></span><span class=line><span class=cl>5       int y = *p;
+</span></span><span class=line><span class=cl>(gdb)  where                        # 或者backtrace
+</span></span><span class=line><span class=cl>#0  0x080483cd in func (p=0x0) at core_demo.c:5
+</span></span><span class=line><span class=cl>#1  0x080483ef in main () at core_demo.c:12
+</span></span><span class=line><span class=cl>(gdb) info frame
+</span></span><span class=line><span class=cl>Stack level 0, frame at 0xffd590a4:
+</span></span><span class=line><span class=cl> eip = 0x80483cd in func (core_demo.c:5); saved eip 0x80483ef
+</span></span><span class=line><span class=cl> called by frame at 0xffd590c0
+</span></span><span class=line><span class=cl> source language c.
+</span></span><span class=line><span class=cl> Arglist at 0xffd5909c, args: p=0x0
+</span></span><span class=line><span class=cl> Locals at 0xffd5909c, Previous frame&#39;s sp is 0xffd590a4
+</span></span><span class=line><span class=cl> Saved registers:
+</span></span><span class=line><span class=cl>  ebp at 0xffd5909c, eip at 0xffd590a0
+</span></span></code></pre></div><p>从上面可以看出，可以还原 <code>core_demo</code> 执行时的场景，使用 <code>where</code> 或者 <code>backtrace</code> 查看当前程序调用函数栈帧，来定位 <code>core dump</code> 的文件行，还可以查看寄存器、变量等信息。</p><p>也可以通过如下方式查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gdb -c core_demo.core.24816 core_demo
+</span></span><span class=line><span class=cl>$ gdb core_demo
+</span></span><span class=line><span class=cl>(gdb) core core_demo.core
+</span></span></code></pre></div><a class=anchor id=debuginfo></a><h1>debuginfo <a href=#debuginfo aria-hidden=true>#</a></h1><p>一般线上生成的文件会删除 Debug、符号表信息，但是一旦有问题了，例如发生了 CoreDump ，那么就需要使用符号表了。</p><p>使用 <code>file test</code> 命令查看时，会显示改文件为 <code>not stripped</code> ，当通过 <code>nm test</code> 查看时会发现一堆的符号，或者通过 <code>readelf -S test</code> 查看。</p><p>为了能够使用 <code>gdb</code> 跟踪调试程序，需要在编译期使用 <code>-g</code> 选项；而对于系统库或是 Linux 内核，使用 <code>gdb</code> 调试或使用 <code>systemtap</code> 探测时，还需要安装相应的 <code>debuginfo</code> 包。</p><p>例如 <code>glibc</code> 及它的 <code>debuginfo</code> 包。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># yum --enablerep=base-debuginfo install glibc-debuginfo
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ rpm -qa | grep glibc
+</span></span><span class=line><span class=cl>glibc-2.17-157.el7_3.1.x86_64
+</span></span><span class=line><span class=cl>glibc-debuginfo-2.17-157.el7_3.1.x86_64
+</span></span></code></pre></div><p>接下来，我们看看 <code>debuginfo</code> 包中包含了那些信息，该包是如何制作的，而且 <code>glibc</code> 和 <code>debuginfo</code> 是如何关联起来的。</p><a class=anchor id=包含信息></a><h2>包含信息 <a href=#%e5%8c%85%e5%90%ab%e4%bf%a1%e6%81%af aria-hidden=true>#</a></h2><p>首先看看 <code>glibc-debuginfo</code> 包中包含有什么内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ rpm -ql glibc-debuginfo
+</span></span><span class=line><span class=cl>/usr/lib/debug
+</span></span><span class=line><span class=cl>/usr/lib/debug/.build-id
+</span></span><span class=line><span class=cl>/usr/lib/debug/.build-id/00
+</span></span><span class=line><span class=cl>/usr/lib/debug/.build-id/00/98d7f56d263e087a1abad592e81e3e79e26652
+</span></span><span class=line><span class=cl>/usr/lib/debug/.build-id/00/98d7f56d263e087a1abad592e81e3e79e26652.debug
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>/usr/lib/debug/lib64
+</span></span><span class=line><span class=cl>/usr/lib/debug/lib64/ld-2.17.so.debug
+</span></span><span class=line><span class=cl>/usr/lib/debug/lib64/ld-linux-x86-64.so.2.debug
+</span></span><span class=line><span class=cl>/usr/lib/debug/lib64/libBrokenLocale-2.17.so.debug
+</span></span><span class=line><span class=cl>/usr/lib/debug/lib64/libBrokenLocale.so.1.debug
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>/usr/src/debug/glibc-2.17-c758a686
+</span></span><span class=line><span class=cl>/usr/src/debug/glibc-2.17-c758a686/argp
+</span></span><span class=line><span class=cl>/usr/src/debug/glibc-2.17-c758a686/argp/argp-ba.c
+</span></span><span class=line><span class=cl>/usr/src/debug/glibc-2.17-c758a686/argp/argp-eexst.c
+</span></span><span class=line><span class=cl>/usr/src/debug/glibc-2.17-c758a686/argp/argp-fmtstream.c
+</span></span><span class=line><span class=cl>... ...
+</span></span></code></pre></div><p>可以看出 <code>glibc-debuginfo</code> 大致有三类文件：</p><ol><li>存放在 <code>/usr/lib/debug/</code> 下的 <code>.build-id/nn/nnn...nnn.debug</code> 文件，文件名是 hash key 。</li><li>存放在 <code>/usr/lib/debug/</code> 下的其它 <code>*.debug</code> 文件，其文件名，是库文件名+<code>.debug</code> 后缀。</li><li><code>glibc</code> 的源代码。</li></ol><p>当使用 <code>gdb</code> 调试时，需要在机器码与源代码之间，建立起映射关系，这就需要三个信息：</p><ul><li>机器码：可执行文件、动态链接库，例如上面的 <code>/lib64/libc-2.18.so</code>；</li><li>源代码：显然就是 <code>glibc-debuginfo</code> 中，包含的 <code>*.c</code> 和 <code>*.h</code> 等源文件；</li><li>映射关系：也就是保存在 <code>*.debug</code> 文件中的信息。</li></ul><a class=anchor id=如何生成></a><h2>如何生成 <a href=#%e5%a6%82%e4%bd%95%e7%94%9f%e6%88%90 aria-hidden=true>#</a></h2><p>通过 <code>gcc -g</code> 编译时，默认机器码与源代码的映射关系会与可执行程序、动态链接库合并在一起；但是这样就导致文件特别大，而对于普通用户来说是不需要的。</p><p>正是了为解决这个问题，在 Linux 上的各种程序和库，在生成 RPM 时，就已经把 debuginfo 单独的抽取出来，因此形成了独立的 debuginfo 包。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat &lt;&lt; EOF &gt; foobar.c
+</span></span><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>int main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	printf(&#34;Hello World!!!\n&#34;);
+</span></span><span class=line><span class=cl>	return 0;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>EOF
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 其中参数-ggdb生成gdb格式调试信息
+</span></span><span class=line><span class=cl>$ gcc -ggdb foobar.c -o foobar
+</span></span><span class=line><span class=cl>----- 查看段信息，有一堆的.debug段
+</span></span><span class=line><span class=cl>$ readelf -S foobar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除.debug段的信息，符号表和字符串还在，调试仍可以查看符号信息
+</span></span><span class=line><span class=cl>$ strip --strip-debug foobar
+</span></span><span class=line><span class=cl>----- 同时删除.symtab和.strtab，默认的操作
+</span></span><span class=line><span class=cl>$ strip --strip-all foobar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 创建一个包含debuginfo的文件
+</span></span><span class=line><span class=cl>$ objcopy --only-keep-debug foobar foobar.debug
+</span></span><span class=line><span class=cl>----- 添加一个包含路径文件的.gnu_debuglink section，注意执行时文件必须存在
+</span></span><span class=line><span class=cl>$ objcopy --add-gnu-debuglink=foobar.debug foobar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 或者一步到位
+</span></span><span class=line><span class=cl>$ eu-strip foobar -f foobar.debug
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看新添加的.gnu_debuglink section 
+</span></span><span class=line><span class=cl>$ objdump -s -j .gnu_debuglink test
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 清除原执行文件中的调试信息，如下两个操作相同
+</span></span><span class=line><span class=cl>$ objcopy --strip-debug foobar
+</span></span><span class=line><span class=cl>$ strip --strip-debug foobar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 此时尝试加载调试符号时会报错
+</span></span><span class=line><span class=cl>$ gdb foobar
+</span></span><span class=line><span class=cl>GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-94.el7
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>Reading symbols from /tmp/foobar...(no debugging symbols found)...done.
+</span></span><span class=line><span class=cl>(gdb)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 当然，现在可以指定gdb需要加载的debuginfo即可，如下两者相同
+</span></span><span class=line><span class=cl>$ gdb foobar -s foobar.debug
+</span></span><span class=line><span class=cl>$ gdb
+</span></span><span class=line><span class=cl>(gdb) file foobar
+</span></span><span class=line><span class=cl>(gdb) symbol-file foobar.debug
+</span></span></code></pre></div><p>显然，<code>gdb</code> 现在无法找到调试信息了；我们需要告诉 <code>gdb</code> 如何正确地找到它对应的 <code>debug</code> 文件，也就是上述的 <code>foobar.debug</code> 文件。</p><p>对于 Linux 下的 ELF(Executable and Linkable Format) 格式文件，可以通过一个 <code>.gnu_debuglink</code> 段来保存信息，可通过 <code>objcopy --add-gnu-debuglink</code> 添加。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 添加一个包含路径文件的.gnu_debuglink section
+</span></span><span class=line><span class=cl>$ objcopy --add-gnu-debuglink=foobar.debug foobar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看.gnu_debuglink section
+</span></span><span class=line><span class=cl>$ objdump -s -j .gnu_debuglink foobar
+</span></span><span class=line><span class=cl>foobar:     file format elf64-x86-64
+</span></span><span class=line><span class=cl>Contents of section .gnu_debuglink:
+</span></span><span class=line><span class=cl> 0000 666f6f62 61722e64 65627567 00000000  foobar.debug....
+</span></span><span class=line><span class=cl> 0010 ba8924f6
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 现在可以直接调试了
+</span></span><span class=line><span class=cl>$ gdb foobar
+</span></span><span class=line><span class=cl>GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-94.el7
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>Reading symbols from /tmp/test/foobar...Reading symbols from /tmp/test/foobar.debug...done.
+</span></span><span class=line><span class=cl>done.
+</span></span><span class=line><span class=cl>(gdb)
+</span></span></code></pre></div><p>上面的 <code>objcopy</code> 是把 <code>foobar.debug</code> 的文件名以及这个文件的 <code>CRC</code> 校验码，写到了<code>.gnu_debuglink</code> 这个 ELF 的头部值中，但是并没有告诉 <code>foobar.debug</code> 所在的路径。</p><a class=anchor id=搜索路径></a><h2>搜索路径 <a href=#%e6%90%9c%e7%b4%a2%e8%b7%af%e5%be%84 aria-hidden=true>#</a></h2><p>在 Linux 中，在编译时会根据时间戳生成 <code>build-id</code>，并保存到 <code>gnu.build-id section</code> 中；可以通过如下命令查看 <code>"gnu.build-id" section</code> 信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ readelf -n foobar
+</span></span><span class=line><span class=cl>$ readelf -t foobar |grep build-id
+</span></span><span class=line><span class=cl>$ readelf --wide --sections foobar |grep build
+</span></span><span class=line><span class=cl>$ objdump -s -j .note.gnu.build-id foobar
+</span></span></code></pre></div><p>而 gdb 默认会搜索指定目录 (<code>show debug-file-directory</code>) 下与 <code>build-id</code> 关联的 <code>.debug</code> 文件。默认 <code>gdb</code> 搜索的文件名为 <code>NN/N...N.debug</code>, 前两个 <code>NN</code> 就是 <code>build-id</code> 前两位，后面的 <code>N...N</code> 则是 <code>build-id</code> 的剩余部分，只是改了个文件名而已。</p><p>而 <code>gdb</code> 则是通过下面的顺序查找 <code>foobar.debug</code> 文件：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>1. &lt;global debug directory&gt;/.build-id/nn/nnnn...nnnn.foobar.debug
+</span></span><span class=line><span class=cl>2. &lt;the path of foobar&gt;/foobar.debug
+</span></span><span class=line><span class=cl>3. &lt;the path of foobar&gt;/.debug/foobar.debug
+</span></span><span class=line><span class=cl>4. &lt;global debug directory&gt;/&lt;the patch of foobar&gt;/foobar.debug
+</span></span></code></pre></div><p>而 <code>&lt;global debug directory></code> 默认为 <code>/usr/lib/debug/</code>；可以通过 <code>set/show debug-file-directory</code> 命令来设置或查看这个值。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(gdb) show debug-file-directory
+</span></span><span class=line><span class=cl>(gdb) set debug-file-directory PATH
+</span></span></code></pre></div><p>假设 <code>foobar</code> 的 <code>Build ID</code> 为 <code>3bda624ab466b7725faaf5cde424a5674a741c5d</code>，可将 <code>foobar.debug</code> 文件移动到 <code>/usr/lib/debug/.build-id/3b/da624ab466b7725faaf5cde424a5674a741c5d.debug</code> 。</p><p><code>foobar.debug</code> 默认会采用 <code>DWARF 4</code> 格式来保存调试信息，可以通过 <code>readelf -w foobar.debug</code> 来查看 <code>DWARF</code> 的内容；详见 <a href=http://dwarfstd.org/doc/DWARF4.pdf>DWARF Debugging Information Format Version 4</a> 。</p><p>如下是放置到默认路径下的一个示例：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看二进制文件的BuildID，并添加默认目录下
+</span></span><span class=line><span class=cl>$ readelf -n test | grep Build
+</span></span><span class=line><span class=cl>    Build ID: e380efb0fe7873bcc96506035e8640a365b29ef4
+</span></span><span class=line><span class=cl>$ mkdir -p /usr/lib/debug/.build-id/e3
+</span></span><span class=line><span class=cl>$ mv test.debug /usr/lib/debug/.build-id/e3/80efb0fe7873bcc96506035e8640a365b29ef4.debug
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看当前debuginfo默认搜索目录，可通过set debug-file-directory path重新指定
+</span></span><span class=line><span class=cl>(gdb) show debug-file-directory
+</span></span><span class=line><span class=cl>The directory where separate debug symbols are searched for is &#34;/usr/lib/debug&#34;.  
+</span></span><span class=line><span class=cl>----- 会自动加载debuginfo文件
+</span></span><span class=line><span class=cl>(gdb) file test
+</span></span></code></pre></div><a class=anchor id=生成marker探针></a><h2>生成Marker探针 <a href=#%e7%94%9f%e6%88%90marker%e6%8e%a2%e9%92%88 aria-hidden=true>#</a></h2><p>通过 <code>gcc -g</code> 命令，所有函数名都会自动的生成相应的 <code>debuginfo</code>，供 <code>systemtap</code> 进行探测， 其局限性在于，只能收集到函数调用的初始时刻、以及函数返回的结束时刻的上下文信息。</p><p>为了解决这个问题，又提出了一种新方法 <code>Compiled-in instrumentation</code>，可以把探针安插到指定的某行代码中，从而可以收集到那行代码执行时的上下文信息，这种探针被称为 <code>Marker</code> 探针。</p><p>编写 <code>Marker</code> 探针，示例如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;sys/sdt.h&gt;
+</span></span><span class=line><span class=cl>DTRACE_PROBE(provider, name)
+</span></span><span class=line><span class=cl>DTRACE_PROBE4(provider, name, arg1, arg2, arg3, arg4)
+</span></span></code></pre></div><p>写好 <code>Marker</code> 探针并成功编译后，可以使用下面的 <code>systemtap</code> 指令来查看 <code>Marker</code> 探针是否生效。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>stap -L &#39;process(&#34;/path/to/foobar&#34;).mark(&#34;*&#34;)&#39;
+</span></span></code></pre></div><p>详细可以参考 <a href=https://sourceware.org/systemtap/wiki/AddingUserSpaceProbingToApps>Adding User Space Probing to an Application (heapsort example)</a> 。</p><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查找core文件，以及文件类型
+</span></span><span class=line><span class=cl># find $HOME -name &#34;core*&#34;
+</span></span><span class=line><span class=cl>/home/oli/core.6440
+</span></span><span class=line><span class=cl># file core
+</span></span><span class=line><span class=cl>core:      ELF 32-bit LSB core file Intel 80386, version 1 (SYSV), SVR4-style
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看是那个进程信息
+</span></span><span class=line><span class=cl># strings core.6440 | head
+</span></span></code></pre></div><p>可以在 <code>core_pattern</code> 中加入管道符，然后调用用户程序，例如将转储文件压缩。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># echo &#34;|/usr/local/sbin/core_helper %e %p %t&#34; &gt; /proc/sys/kernel/core_pattern</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ cat /usr/local/sbin/core_helper
+</span></span><span class=line><span class=cl><span class=c1>#!/bin/sh</span>
+</span></span><span class=line><span class=cl><span class=nb>exec</span> gzip - &gt; /var/<span class=nv>$1</span>-<span class=nv>$2</span>-<span class=nv>$3</span>.core.gz
+</span></span><span class=line><span class=cl>$ gunzip -c /var/xxx-xxx-xxx.core.gz &gt; ~/xxx-xxx-xxx.core
+</span></span></code></pre></div><p>可以将 <code>ulimit -S -c unlimited > /dev/null 2>&amp;1</code> 使用户登陆时即可以设置转储功能。默认内核会转储共享内存，可以设置排除共享内存。</p><a class=anchor id=mysql></a><h2>MySQL <a href=#mysql aria-hidden=true>#</a></h2><p>对于一般进程，要让进程崩溃时能生成 <code>core file</code> 用于调试，只需要设置 <code>rlimit</code> 的 <code>core file size > 0</code> 即可；比如，用在 <code>ulimit -c unlimited</code> 时启动程序。</p><p>对 MySQL 来说，由于 <code>core file</code> 中会包含表空间的数据，所以默认情况下为了安全，<code>mysqld</code> 捕获了 <code>SEGV</code> 等信号，崩溃时并不会生成 <code>core file</code>，需要在 <code>my.cnf</code> 或启动参数中加上 <code>core-file</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>core_file = ON
+</span></span></code></pre></div><p>但是即使做到了以上两点，在 <code>mysqld crash</code> 时可能还是无法 <code>core dump</code> 。</p><p>如果程序通过 <code>seteuid()/setegid()</code> 系统调用，改变了进程的有效用户或组，则在默认情况下系统不会为这些进程生成 CoreDump 。简单来说，如果你当初是以用户 <code>A</code> 运行了某个程序，但在 <code>ps</code> 里看到的这个程序的用户却是 <code>B</code> 的话，那么这些进程就是调用了 <code>seteuid</code> 了。</p><p>对于 MySQL 来说，无论通过什么用户利用 <code>mysqld_safe</code> 启动，<code>mysqld</code> 的有效用户始终是 <code>mysql</code> 用户；为了能让 MySQL 生成 <code>core dump</code>，需要设置 <code>/proc/sys/fs/suid_dumpable</code> 文件的内容改为 <code>1</code> 。</p><p>之后，就可以用 <code>kill -SEGV</code> 让 <code>mysqld</code> 崩溃，测试一下能不能正常产生 <code>core file</code> 了。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>关于 Core Dump 的常用命令可以参考 <a href=http://www.fromdual.com/hunting-the-core>Hunting the core</a> 。</li><li>对于如何分离 debuginfo 文件可以参考 <a href=https://sourceware.org/gdb/onlinedocs/gdb/Separate-Debug-Files.html>Debugging Information in Separate Files</a> 。</li><li>在 CentOS 中，对应的 debuginfo 信息可以直接从 <a href=http://debuginfo.centos.org/7/x86_64/>CentOS DebugInfo</a> 。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#开启coredump>开启CoreDump</a></li></ul></li><li><a href=#测试示例>测试示例</a></li><li><a href=#debuginfo>debuginfo</a><ul><li><a href=#包含信息>包含信息</a></li><li><a href=#如何生成>如何生成</a></li><li><a href=#搜索路径>搜索路径</a></li><li><a href=#生成marker探针>生成Marker探针</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#mysql>MySQL</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

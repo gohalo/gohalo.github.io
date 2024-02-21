@@ -1,0 +1,275 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>HDFS 基本介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Hadoop Distributed File System, HDFS
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>HDFS 基本介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2022-07-21</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/warehouse/ role=button>warehouse</a></div></div><hr><div class=content><p>Hadoop Distributed File System, HDFS</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>在 Hadoop 生态下的分布式文件系统，有如下的特点：</p><ol><li>大数据文件，适合 TB 级大文件存储。</li><li>分块多副本，将完整大文件分块多副本均匀存储到不同服务器上，可以提高并发以及防止数据丢失。</li><li>流式数据写入，无法动态修改文件内容，文件写入后不再变化，即使变化也只能在文件末尾添加内容。</li></ol><p>当单个文件比较大时，单块磁盘无法保存，那么可以将其切分成很多小块，然后分散存储在不同的服务器上，各个服务器通过网络连接，组成一个整体。在 <code>3.x</code> 以上的版本中每个块是 <code>128M</code>，会自动切割并分散存储在 <code>DataNode</code> 节点上，用户可以在 <code>hdfs-site.xml</code> 配置文件中通过 <code>dfs.replication</code> 参数配置副本数。</p><p>采用的是主从结构，主节点为 <code>NameNode</code> 从节点为 <code>DataNode</code> 。</p><a class=anchor id=namenode></a><h2>NameNode <a href=#namenode aria-hidden=true>#</a></h2><p>文件被分成了多份 Block 数据，在访问某个文件时需要确定由哪些文件组成，具体在哪些机器上，这也就是所谓的元数据。文件、Block、目录等大概会占用 150 字节，所以比较适合大文件存储，而小文件的存储效率过低。</p><p>所有的读写操作都与元数据相关，当文件很多之后，对应的元数据必然很大，那么就可能会引入并发性能问题，所以，性能、高可用是元数据操作的关键特性。</p><a class=anchor id=安装部署></a><h1>安装部署 <a href=#%e5%ae%89%e8%a3%85%e9%83%a8%e7%bd%b2 aria-hidden=true>#</a></h1><p>可以从 <a href=https://hadoop.apache.org/releases.html>Hadoop Release</a> 下载相应的二进制版本，一些默认配置可以参考 <code>share/doc/hadoop/hadoop-project-dist</code> 目录。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 解压保存在/opt/module/hadoop目录下
+</span></span><span class=line><span class=cl># mkdir -p /opt/module/hadoop/data/{data,name}
+</span></span><span class=line><span class=cl>----- 添加环境变量，并验证安装正常
+</span></span><span class=line><span class=cl># vim /etc/profile
+</span></span><span class=line><span class=cl>export HDFS_NAMENODE_USER=root
+</span></span><span class=line><span class=cl>export HDFS_DATANODE_USER=root
+</span></span><span class=line><span class=cl>export HDFS_SECONDARYNAMENODE_USER=root
+</span></span><span class=line><span class=cl>export HADOOP_HOME=/opt/module/hadoop
+</span></span><span class=line><span class=cl>export PATH=${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin:${PATH}
+</span></span><span class=line><span class=cl># source /etc/profile
+</span></span><span class=line><span class=cl># hadoop version
+</span></span><span class=line><span class=cl>----- 配置免密登录，注意，对本机也需要进行配置，或者直接添加到
+</span></span><span class=line><span class=cl># ssh-keygen -t rsa -f ~/.ssh/id_rsa -N &#34;&#34; -C &#34;hadoop related&#34;
+</span></span><span class=line><span class=cl># ssh-copy-id -i ~/.ssh/id_rsa.pub root@localhost
+</span></span></code></pre></div><p>直接在单节点上部署。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 修改全局参数，例如HDFS的URL、Hadoop临时目录等
+</span></span><span class=line><span class=cl># vim ${HADOOP_HOME}/etc/hadoop/core-site.xml
+</span></span><span class=line><span class=cl>&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;
+</span></span><span class=line><span class=cl>&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;
+</span></span><span class=line><span class=cl>&lt;configuration&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;fs.defaultFS&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;hdfs://package:8020/&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;/configuration&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- HDFS相关的参数，例如名称和数据节点的保存位置，文件副本数，文件读取权限
+</span></span><span class=line><span class=cl># vim ${HADOOP_HOME}/etc/hadoop/hdfs-site.xml
+</span></span><span class=line><span class=cl>&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;
+</span></span><span class=line><span class=cl>&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;
+</span></span><span class=line><span class=cl>&lt;configuration&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;dfs.namenode.http-address&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;0.0.0.0:9870&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;dfs.replication&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;1&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;/opt/module/hadoop/data/name&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;dfs.datanode.name.dir&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;/opt/module/hadoop/data/data&lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;/configuration&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 格式化NameNode的命令，详见如下的介绍
+</span></span><span class=line><span class=cl># hdfs namenode -format
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 如果通过start-dfs.sh启动会同时开启SecondaryNamenode，这里直接简单启动
+</span></span><span class=line><span class=cl># hadoop-daemon.sh start namenode
+</span></span><span class=line><span class=cl># hadoop-daemon.sh start datanode
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 上述命令适合比较老的集群
+</span></span><span class=line><span class=cl># hdfs --daemon stop namenode
+</span></span><span class=line><span class=cl># hdfs --daemon start namenode
+</span></span><span class=line><span class=cl># hdfs --daemon stop datanode
+</span></span><span class=line><span class=cl># hdfs --daemon start datanode
+</span></span></code></pre></div><p>Hadoop 集群中的 NameNode 节点用来管理文件系统的命令空间以及文件块的元数据信息，通常在部署、重建、修复集群时使用，会清理 NameNode 上的所有元数据，包括文件、目录、权限、命名空间等信息，将 NameNode 格式化为一个新的状态，所以执行前需要先备份数据。</p><p>启动之后就可以通过上述的 <code>dfs.namenode.http-address</code> 配置项访问 Hadoop 界面。</p><a class=anchor id=ssl-配置></a><h2>SSL 配置 <a href=#ssl-%e9%85%8d%e7%bd%ae aria-hidden=true>#</a></h2><p>Java 中包含了 KeyStore 和 TrustStore 两种，本质上都是 KeyStore 只是存放密钥的所有者不同而已，只不过通过文件名区分类型以及用途，其中 KeyStore 存放自己的私钥和公钥，而 TrustStore 则存放自己信任对象的公钥。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 创建CA证书，密码为 YourPass ，正常需要发送到各个 Client 节点，单机就不需要发送了
+</span></span><span class=line><span class=cl>openssl req -new -x509 -keyout /opt/module/keys/ssl/hadoop_ca_key -out /opt/module/keys/ssl/hadoop_ca_cert -days 9999 -subj &#39;/C=CN/ST=ZheJiang/L=HangZhou/O=FooBar/OU=Security/CN=example.com&#39;
+</span></span><span class=line><span class=cl>----- 生成 KeyStore 文件，并导出证书文件，需要输入 KeyStore 的密码，可以通过 -storetype PKCS12 配置不同格式，不过建议使用默认
+</span></span><span class=line><span class=cl>keytool -genkey -keystore hadoop.keystore -alias localhost -validity 9999 -keyalg RSA -keysize 2048 -dname &#34;C=CN, ST=ZheJIang, L=HangZhou, O=Foobar, OU=Security, CN=example.com&#34;
+</span></span><span class=line><span class=cl>keytool -certreq -alias localhost -keystore hadoop.keystore -file hadoop_cert
+</span></span><span class=line><span class=cl>----- 导入并生成 truststore 文件
+</span></span><span class=line><span class=cl>keytool -keystore hadoop.truststore -alias CARoot -import -file hadoop_ca_cert
+</span></span><span class=line><span class=cl>----- 用CA对导出证书进行签名
+</span></span><span class=line><span class=cl>openssl x509 -req -CA hadoop_ca_cert -CAkey hadoop_ca_key -in hadoop_cert -out hadoop_cert_signed -days 9999 -CAcreateserial
+</span></span><span class=line><span class=cl>----- 将CA和已经签名的证书导入 keystore 中
+</span></span><span class=line><span class=cl>keytool -keystore hadoop.keystore -alias CARoot -import -file hadoop_ca_cert
+</span></span><span class=line><span class=cl>keytool -keystore hadoop.keystore -alias localhost -import -file hadoop_cert_signed
+</span></span></code></pre></div><p>然后修改如下配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 修改 hdfs 相关配置文件，设置为支持 HTTPS
+</span></span><span class=line><span class=cl># vim /opt/module/hadoop/etc/hadoop/hdfs-site.xml
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.http.policy&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;HTTPS_ONLY&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>----- 修改客户端配置文件，直接从模板复制即可
+</span></span><span class=line><span class=cl># vim /opt/module/hadoop/etc/hadoop/ssl-client.xml
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.client.truststore.location&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;/opt/module/keys/ssl/hadoop.truststore&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.client.truststore.password&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;YourPass&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.client.truststore.type&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;jks&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.client.keystore.location&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;/opt/module/keys/ssl/hadoop.keystore&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.client.keystore.password&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;YourPass&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.client.keystore.keypassword&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;YourPass&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.client.keystore.type&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;PCKS12&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>----- 修改服务端配置文件，同样从模板复制即可
+</span></span><span class=line><span class=cl># vim /opt/module/hadoop/etc/hadoop/ssl-server.xml
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.server.truststore.location&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;/opt/module/keys/ssl/hadoop.truststore&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.server.truststore.password&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;YourPass&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.server.truststore.type&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;jks&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.server.keystore.location&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;/opt/module/keys/ssl/hadoop.keystore&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.server.keystore.password&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;YourPass&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.server.keystore.keypassword&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;YourPass&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.server.keystore.type&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;PKCS12&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;ssl.server.exclude.cipher.list&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;TLS_ECDHE_RSA_WITH_RC4_128_SHA,SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA,
+</span></span><span class=line><span class=cl>  SSL_RSA_WITH_DES_CBC_SHA,SSL_DHE_RSA_WITH_DES_CBC_SHA,
+</span></span><span class=line><span class=cl>  SSL_RSA_EXPORT_WITH_RC4_40_MD5,SSL_RSA_EXPORT_WITH_DES40_CBC_SHA,
+</span></span><span class=line><span class=cl>  SSL_RSA_WITH_RC4_128_MD5&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span></code></pre></div><p>注意，此时需要通过默认的 <code>9871</code> 端口访问 NameNode 的 Web 页面，也可以在 <code>hdfs-site.xml</code> 文件中通过 <code>dfs.namenode.https-address</code> 配置项修改。</p><a class=anchor id=安全集群></a><h2>安全集群 <a href=#%e5%ae%89%e5%85%a8%e9%9b%86%e7%be%a4 aria-hidden=true>#</a></h2><p>通过 Kerberos 配置，其中的 DataNode 启动时会对安全性进行检查，除了要配置 Kerberos 相关的内容外，还需要配置 SSL 才行。另外，因为进行鉴权时经常会验证域名，所以建议要先配置好，这里本地使用 package 作为主机名。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 创建一个Principal
+</span></span><span class=line><span class=cl># kadmin -proot/admin -w&#39;Mrs@2022&#39; -q&#34;addprinc -randkey hadoop/package&#34;
+</span></span><span class=line><span class=cl>----- 生成所需的Keytab文件
+</span></span><span class=line><span class=cl># kadmin -proot/admin -w&#39;Mrs@2022&#39; -q&#34;ktadd -k /opt/module/keys/hadoop.keytab hadoop/package&#34;
+</span></span><span class=line><span class=cl>----- 可以加载到缓存
+</span></span><span class=line><span class=cl># kinit -kt /opt/module/keys/hadoop.keytab hadoop/package
+</span></span><span class=line><span class=cl>----- 注意这里有个大坑，详见 Tips#1
+</span></span><span class=line><span class=cl># klist
+</span></span><span class=line><span class=cl>Ticket cache: FILE:/tmp/krb5cc_0
+</span></span><span class=line><span class=cl>Default principal: hadoop/package@EXAMPLE.COM
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Valid starting       Expires              Service principal
+</span></span><span class=line><span class=cl>08/24/2023 11:12:55  08/25/2023 11:12:55  krbtgt/EXAMPLE.COM@EXAMPLE.COM
+</span></span><span class=line><span class=cl>        renew until 08/24/2023 11:12:55
+</span></span></code></pre></div><p>查看时必须要保证 <code>Ticket Cache</code> 信息是以 <code>FILE</code> 的格式保存，在 CentOS 中还可能存在 <code>KEYRING</code> 和 <code>KCM</code> 等其它格式，需要将 <code>default_ccache_name</code> 配置项删除或者修改为 <code>FILE:/tmp/krb5cc_%{uid}</code> 这种方式。</p><p>注意，修改包括 <code>/etc/krb5.conf</code> 和 <code>/etc/krb5.conf.d/</code> 中的相关配置。</p><p>然后增加如下配置项，并重启 NameNode 和 DataNode 即可，另外，调试可以通过如下环境变量开启。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>export HADOOP_ROOT_LOGGER=DEBUG,console
+</span></span><span class=line><span class=cl>export HADOOP_OPTS=&#34;-Dsun.security.krb5.debug=true -Djavax.net.debug=ssl&#34;
+</span></span></code></pre></div><p>然后修改配置文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- Hadoop开启安全认证
+</span></span><span class=line><span class=cl># vim /opt/module/hadoop/etc/hadoop/core-site.xml
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;hadoop.security.authorization&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;true&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;hadoop.security.authentication&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;kerberos&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;hadoop.rpc.protection&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;authentication&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- HDFS配置安全规则
+</span></span><span class=line><span class=cl># vim /opt/module/hadoop/etc/hadoop/hdfs-site.xml
+</span></span><span class=line><span class=cl>&lt;property&gt; &lt;!-- HDFS开启安全配置 --&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.block.access.token.enable&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;true&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt; &lt;!-- NameNode开启安全配置 --&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.namenode.kerberos.principal&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;hadoop/_HOST@EXAMPLE.COM&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.namenode.keytab.file&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;/opt/module/keys/hadoop.keytab&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.namenode.kerberos.internal.spnego.principal&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;hadoop/_HOST@EXAMPLE.COM&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt; &lt;!-- DataNode开启安全配置 --&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.datanode.kerberos.principal&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;hadoop/_HOST@ESRICHINA.COM&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.datanode.keytab.file&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;/opt/module/keys/hadoop.keytab&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.datanode.kerberos.https.principal&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;hadoop/_HOST@EXAMPLE.COM&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.datanode.address&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;0.0.0.0:61004&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.datanode.http.address&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;0.0.0.0:61006&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span><span class=line><span class=cl>&lt;property&gt;
+</span></span><span class=line><span class=cl>  &lt;name&gt;dfs.data.transfer.protection&lt;/name&gt;
+</span></span><span class=line><span class=cl>  &lt;value&gt;integrity&lt;/value&gt;
+</span></span><span class=line><span class=cl>&lt;/property&gt;
+</span></span></code></pre></div><p>默认 Hadoop 会使用 Kerberos Principal 中的第一部分作为用户名，如果之前使用的是 <code>root</code> 创建的资源，那么当切换为类似 <code>hadoop/package@EXAMPLE.com</code> 这种的默认对应的用户为 <code>hadoop</code>，那么就会出现权限问题，最简单的方式是将其统一进行映射。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>  &lt;property&gt;
+</span></span><span class=line><span class=cl>    &lt;name&gt;hadoop.security.auth_to_local&lt;/name&gt;
+</span></span><span class=line><span class=cl>    &lt;value&gt;
+</span></span><span class=line><span class=cl>RULE:[2:$1@$0](.*@EXAMPLE.COM)s/.*/root/
+</span></span><span class=line><span class=cl>DEFAULT
+</span></span><span class=line><span class=cl>    &lt;/value&gt;
+</span></span><span class=line><span class=cl>  &lt;/property&gt;
+</span></span></code></pre></div><a class=anchor id=常用命令></a><h1>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h1><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看集群用户信息
+</span></span><span class=line><span class=cl>hadoop fs -ls /user
+</span></span><span class=line><span class=cl>----- 检查集群状态，包括NS、机器数等
+</span></span><span class=line><span class=cl>hdfs fsck /
+</span></span><span class=line><span class=cl>----- 设置副本数
+</span></span><span class=line><span class=cl>hadoop fs -setrep -R 4 FilePath
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看根目录，通过-R参数递归查看
+</span></span><span class=line><span class=cl>hadoop fs -ls /
+</span></span><span class=line><span class=cl>----- 统计信息，包括了目录个数、文件个数、文件总大小等信息
+</span></span><span class=line><span class=cl>hadoop fs -count &lt;hdfs path&gt;
+</span></span><span class=line><span class=cl>----- 文件大小，可以使用参数-h方便可读、-s总大小
+</span></span><span class=line><span class=cl>hadoop fs -du &lt;hdfs path&gt;
+</span></span><span class=line><span class=cl>----- 查看状态信息，格式有%b(文件大小)、%o(Block大小)、%n(文件名)、%r(副本个数)、%y(最后一次修改日期)
+</span></span><span class=line><span class=cl>hadoop fs -stat [format] &lt;hdfs path&gt;
+</span></span><span class=line><span class=cl>----- 上传文件，目的地可以是文件名或者目录，注意路径必须存在
+</span></span><span class=line><span class=cl>hadoop fs -put &lt;local file path&gt; &lt;hdfs file/dir path&gt;
+</span></span><span class=line><span class=cl>----- 下载文件，如果本地文件存在则不会下载
+</span></span><span class=line><span class=cl>hadoop fs -get &lt;hdfs file/dir path&gt; &lt;local file/dir path&gt;
+</span></span><span class=line><span class=cl>----- 删除文件，如果是目录需要使用-r参数，默认会放到回收站
+</span></span><span class=line><span class=cl>hadoop fs -rm &lt;hdfs file/dir path&gt;
+</span></span><span class=line><span class=cl>hadoop fs -rm -r -skipTrash &lt;hdfs file/dir path&gt;
+</span></span><span class=line><span class=cl>----- 创建目录，多个层级需要使用-p参数
+</span></span><span class=line><span class=cl>hadoop fs -mkdir &lt;hdfs dir path&gt;
+</span></span><span class=line><span class=cl>----- 删除目录，需要先确保目录为空
+</span></span><span class=line><span class=cl>hadoop fs -rmdir &lt;hdfs dir path&gt;
+</span></span></code></pre></div><p>其它，常用命令包括了复制 <code>-cp</code>、移动 <code>-mv</code> 等。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 清空回收站，数据会在一分钟后清除
+</span></span><span class=line><span class=cl>hdfs dfs -expunge
+</span></span><span class=line><span class=cl>----- 日志分区占用空间大小
+</span></span><span class=line><span class=cl>hdfs dfs -du -s -h /tmp/logs/dc_admin/logs
+</span></span><span class=line><span class=cl>----- 检查健康的节点
+</span></span><span class=line><span class=cl>hadoop dfsadmin -report
+</span></span></code></pre></div><a class=anchor id=用户></a><h1>用户 <a href=#%e7%94%a8%e6%88%b7 aria-hidden=true>#</a></h1><p>HDFS 提供了一套兼容 POSIX 的文件权限模型，包括粗粒度的 POSIX UGO 模型和细粒度的 POSIX ACL 协议。在使用时会从用户身份认证、用户组映射、数据访问鉴权三个环节进行验证，如果其中某个失败，那么就会返回报错。</p><p>使用客户端的常见操作，例如上传、下载等，都会通过一个用户来进行操作，当开启 ACL 之后还会通过用户信息来进行权限校验，默认会按照如下规则按照优先级获取：</p><ul><li><code>export HADOOP_USER_NAME=root</code> 通过环境变量配置，相比来说优先级更高。</li><li><code>export HADOOP_CLIENT_OPTS=-DHADOOP_USER_NAME=root</code> 执行 hdfs 脚本时会作为参数传入。</li><li>使用当前用户。</li></ul><p>如果是启用了 Kerberos 认证时，包含了：A) 从系统缓存票据 (Ticket) 内获取用户信息；B) 指定 Principal 以及 Keytab 文件调用 Hadoop 接口完成 Kerberos 认证并从中获取用户信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 通过缓存票据完成鉴权
+</span></span><span class=line><span class=cl># kinit root
+</span></span><span class=line><span class=cl># klist
+</span></span><span class=line><span class=cl># hdfs dfs -mkdir /user
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#namenode>NameNode</a></li></ul></li><li><a href=#安装部署>安装部署</a><ul><li><a href=#ssl-配置>SSL 配置</a></li><li><a href=#安全集群>安全集群</a></li></ul></li><li><a href=#常用命令>常用命令</a></li><li><a href=#用户>用户</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

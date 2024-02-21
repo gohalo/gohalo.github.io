@@ -1,0 +1,146 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Flex 简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="一种词法分析器，可以通过正则表达式识别文本中的词汇，然后自动生成对应的 C 代码，最后编译链接 C 代码就可以了。
+Flex 采用的是状态机，通过分析输入流 (字符流)，只要发现一段字符能够匹配一个关键字 (正则表达式)，就会采取对应的动作。
+简介 # Flex 文件被 %% 分成了上中下三个部分：
+第一部分中要写入 C/C++ 代码必须用 %{ 和 %} 括起来，将原封不动放到生成源码中。 第二部分是规则段，包括了模式 (正则表达式) 和动作，由空白分开，当匹配到模式时，就会执行后面的动作。 第三部分可以直接写入 C/C++ 代码。 yylex() 是扫描程序的入口，调用该函数启动或重新开始，该函数会初始化一些全局变量，然后开始扫描。如果定义的 flex 动作是将数值传递给调用程序，那么对 yylex() 的下次调用就从它停止的地方继续扫描。
+%{ #include &amp;lt;stdio.h&amp;gt; %} %% is | are { printf(&amp;#34;%s: VERB &amp;#34;, yytext); } island printf(&amp;#34;LAND &amp;#34;); [0-9]+ printf(&amp;#34;NUMBER &amp;#34;); [ \t]+ /* ignore whitespace */; [a-zA-Z][a-zA-Z0-9]* printf(&amp;#34;COMMON WORD &amp;#34;); .|\n { ECHO; } %% int main(void) { yylex(); } 特殊字符 '."><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Flex 简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-09-29</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a></div></div><hr><div class=content><p>一种词法分析器，可以通过正则表达式识别文本中的词汇，然后自动生成对应的 C 代码，最后编译链接 C 代码就可以了。</p><p>Flex 采用的是状态机，通过分析输入流 (字符流)，只要发现一段字符能够匹配一个关键字 (正则表达式)，就会采取对应的动作。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>Flex 文件被 <code>%%</code> 分成了上中下三个部分：</p><ol><li>第一部分中要写入 C/C++ 代码必须用 <code>%{</code> 和 <code>%}</code> 括起来，将原封不动放到生成源码中。</li><li>第二部分是规则段，包括了模式 (正则表达式) 和动作，由空白分开，当匹配到模式时，就会执行后面的动作。</li><li>第三部分可以直接写入 C/C++ 代码。</li></ol><p><code>yylex()</code> 是扫描程序的入口，调用该函数启动或重新开始，该函数会初始化一些全局变量，然后开始扫描。如果定义的 flex 动作是将数值传递给调用程序，那么对 <code>yylex()</code> 的下次调用就从它停止的地方继续扫描。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%{
+</span></span><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>%}
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>is |
+</span></span><span class=line><span class=cl>are                     { printf(&#34;%s: VERB &#34;, yytext); }
+</span></span><span class=line><span class=cl>island                  printf(&#34;LAND &#34;);
+</span></span><span class=line><span class=cl>[0-9]+                  printf(&#34;NUMBER &#34;);
+</span></span><span class=line><span class=cl>[ \t]+                  /* ignore whitespace */;
+</span></span><span class=line><span class=cl>[a-zA-Z][a-zA-Z0-9]*    printf(&#34;COMMON WORD &#34;);
+</span></span><span class=line><span class=cl>.|\n                    { ECHO; }
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>int main(void) {
+</span></span><span class=line><span class=cl>    yylex();
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>特殊字符 <code>'.'</code> 表示匹配换行符以外的任意单个字符，<code>'\n'</code> 匹配换行符；<code>ECHO</code> 表示输出匹配的模式，默认行为为，也就是将输入原样输出：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define ECHO fwrite(yytext, yyleng, 1, yyout)
+</span></span></span></code></pre></div><p>默认将 stdin 作为输入，可以通过如下命令测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 首先按照规则生成C源码lex.yy.c
+</span></span><span class=line><span class=cl>$ flex example.l
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 然后进行编译
+</span></span><span class=line><span class=cl>$ cc lex.yy.c -o example -lfl
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 直接执行测试，Ctrl-D退出
+</span></span><span class=line><span class=cl>$ ./example
+</span></span><span class=line><span class=cl>is
+</span></span><span class=line><span class=cl>is: VERB
+</span></span><span class=line><span class=cl>are
+</span></span><span class=line><span class=cl>are: VERB
+</span></span><span class=line><span class=cl>island
+</span></span><span class=line><span class=cl>LAND
+</span></span><span class=line><span class=cl>89
+</span></span><span class=line><span class=cl>NUMBER
+</span></span><span class=line><span class=cl>foobar
+</span></span><span class=line><span class=cl>COMMON WORD
+</span></span><span class=line><span class=cl>^*&amp;
+</span></span><span class=line><span class=cl>^*&amp;
+</span></span></code></pre></div><p>在处理时，flex 采用两个原则：A) 只匹配一次；B) 执行当前输入的最长可能匹配值。也就是对与 island 不会匹配 is 和 land 。当然，我们可以使用一个文件作为关键字列表，而非每次都需要编译。</p><p>解析时会通过 yyin 读取，如果需要在 yacc 或者其它文件中设置，那么可以通过如下方式修改。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>extern</span> <span class=n>FILE</span> <span class=o>*</span><span class=n>yyin</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=n>yyin</span> <span class=o>=</span> <span class=nf>fopen</span><span class=p>(</span><span class=s>&#34;filename&#34;</span><span class=p>,</span><span class=s>&#34;r&#34;</span><span class=p>);</span>
+</span></span></code></pre></div><p>通过 flex 处理文件后，会将匹配转化为指定的符号，然后供 yacc 处理。</p><p>例如 C 语言的 Lex 配置信息 <a href=https://www.lysator.liu.se/c/ANSI-C-grammar-l.html>ANSI C grammar, Lex specification</a> ，可以作为参考。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=o>%</span><span class=n>option</span> <span class=n>nounput</span>
+</span></span><span class=line><span class=cl><span class=o>%</span><span class=n>option</span> <span class=n>noinput</span>
+</span></span><span class=line><span class=cl><span class=o>%</span><span class=n>option</span> <span class=n>noyywrap</span>
+</span></span><span class=line><span class=cl><span class=o>%</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>yylineno</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=o>%</span><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=o>%%</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>^</span><span class=p>(.</span><span class=o>*</span><span class=p>)</span><span class=err>\</span><span class=n>n</span> <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%4d</span><span class=se>\t</span><span class=s>%s&#34;</span><span class=p>,</span> <span class=n>yylineno</span><span class=o>++</span><span class=p>,</span> <span class=n>yytext</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=o>%%</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>file</span> <span class=o>=</span> <span class=s>&#34;test.txt&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>yyin</span> <span class=o>=</span> <span class=nf>fopen</span><span class=p>(</span><span class=n>file</span><span class=p>,</span> <span class=s>&#34;r&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>yyin</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;open file &#39;%s&#39; failed, %d:%s.</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=n>file</span><span class=p>,</span> <span class=n>errno</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>yylex</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=nf>fclose</span><span class=p>(</span><span class=n>yyin</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如上是一个最简单的示例，会读取 <code>test.txt</code> 文件中的每行数据，并打印，可以通过如下方式编译。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ flex --outfile=test.yy.c test.l
+</span></span><span class=line><span class=cl>$ gcc test.yy.c -Wall -o test
+</span></span></code></pre></div><a class=anchor id=常用功能></a><h1>常用功能 <a href=#%e5%b8%b8%e7%94%a8%e5%8a%9f%e8%83%bd aria-hidden=true>#</a></h1><p>简单列举常用函数。</p><a class=anchor id=正则表达式></a><h2>正则表达式 <a href=#%e6%ad%a3%e5%88%99%e8%a1%a8%e8%be%be%e5%bc%8f aria-hidden=true>#</a></h2><p>flex 常用正则表达式：</p><ol><li>格式与 grep 相似；</li><li><code>&lt;&lt;EOF>></code> 标示文件结束；</li><li>常用字符集，如 <code>[:alpha:]</code>, <code>[:digit:]</code>, <code>[:alnum:]</code>, <code>[:space:]</code> 等；</li><li><code>{name}</code> 使用预定义的 name 。</li></ol><p>简单示例，计算平均值。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%{
+</span></span><span class=line><span class=cl>	#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>	#include &lt;stdlib.h&gt;
+</span></span><span class=line><span class=cl>%}
+</span></span><span class=line><span class=cl>dgt    [0-9] // 通过name方式定义
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>{dgt}+   return atoi(yytext);
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>void main(void)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	int val, total = 0, n = 0;
+</span></span><span class=line><span class=cl>	while ( (val = yylex()) &gt; 0 ) { // 到文件结束时返回0
+</span></span><span class=line><span class=cl>		total += val;
+</span></span><span class=line><span class=cl>		n++;
+</span></span><span class=line><span class=cl>	}
+</span></span><span class=line><span class=cl>	if (n &gt; 0)
+</span></span><span class=line><span class=cl>		printf(“ave = %d\n”, total/n);
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>如上如果在编译时使用 <code>-Wall</code> 参数，会报 <code>warning: `yyunput’ defined but not used</code> 之类的异常，如下介绍可以通过如下选项关闭。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%option nounput
+</span></span><span class=line><span class=cl>%option noinput
+</span></span></code></pre></div><p>如下是常见的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[ \t\n] ;                      // 忽略空格 Tab 换行字符
+</span></span><span class=line><span class=cl>[a-Z]+  printf(&#34;%s&#34;, yytext);  // 打印字符串输出
+</span></span><span class=line><span class=cl>[a-Z]+  ECHO;                  // 功能与上相同
+</span></span></code></pre></div><a class=anchor id=多规则匹配></a><h2>多规则匹配 <a href=#%e5%a4%9a%e8%a7%84%e5%88%99%e5%8c%b9%e9%85%8d aria-hidden=true>#</a></h2><p>如果有多个值匹配，那么 flex 会按照如下的规则选取。</p><ol><li>贪婪匹配，选择最大的匹配值；</li><li>多个规则匹配，选择第一个；</li><li>没有规则匹配则会选择默认规则。</li></ol><p>例如，有如下的规则。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>integer ...; // 关键字
+</span></span><span class=line><span class=cl>[a-z]++ ...; // 标识符
+</span></span></code></pre></div><p>当输入了 integers 后，会被识别为标识符，因为 <code>[a-z]++</code> 匹配的字符串更长，分别为 8 个和 7 个。当输入了 integer 之后，两个规则都匹配了 7 个字符，此时会选择第一个，也就是 <code>integer</code> 。</p><p>另外，如果通过 <code>"/*"(.|\n)*"*/"</code> 规则匹配 C 语言中的注释，那么如下场景可能出错。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;  /* definitions */</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span> <span class=n>argv</span><span class=p>[</span> <span class=p>])</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>argc</span> <span class=o>&lt;=</span> <span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Error!</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>  <span class=cm>/* no arguments */</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%d args given</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>argc</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>一般会有个默认的规则，例如 <code>. {}</code> ，否则，如果有不匹配的字符，那么默认会直接输出到终端。</p><p>贪婪匹配，会从 <code>/* def</code> 到 <code>nts */</code> 之间的内容都作为注释，此时就需要使用条件 (Condition) 规则。例如，以 <code>&lt;S></code> 开始的规则，只有在条件 S 时才会进行匹配，可以在 definition section 段通过如下方式定义条件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%x S exclusive start conditions
+</span></span><span class=line><span class=cl>%s S inclusive start conditions
+</span></span></code></pre></div><p>然后，通过 <code>BEGIN(S)</code> 进入条件，另外，flex 有个初始条件，可以通过 <code>BEGIN(INITIAL)</code> 返回；如果使用多个状态，那么实际上可以实现一个状态机，详见 [lex tutorial.ppt](https://www2.cs.arizona.edu/~debray/Teaching/CSc453/DOCS/lex tutorial.ppt) 或者 <a href=/reference/databases/mysql/lex_tutorial.ppt>本地文档</a> 。</p><p>关于上述内容，也可以参考 <a href=http://dinosaur.compilertools.net/flex/flex_11.html>Start conditions</a> 中的介绍。</p><a class=anchor id=yyterminate></a><h2>yyterminate() <a href=#yyterminate aria-hidden=true>#</a></h2><p>可在一个动作中代替 return 使用，用于结束扫描并向扫描器的调用者返回 0；可以通过如下方式自定义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#ifdef yyterminate
+</span></span></span><span class=line><span class=cl><span class=cp># undef yyterminate
+</span></span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp>#define yyterminate() \
+</span></span></span><span class=line><span class=cl><span class=cp>    do { free (foobar); foobar = NULL; pos = 0; len = 0; \
+</span></span></span><span class=line><span class=cl><span class=cp>        return YY_NULL; } while (0)
+</span></span></span></code></pre></div><a class=anchor id=配置选项></a><h2>配置选项 <a href=#%e9%85%8d%e7%bd%ae%e9%80%89%e9%a1%b9 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%option yylineno    提供当前的行信息，通常用于后续打印错误行信息
+</span></span><span class=line><span class=cl>%option noyywrap    不生成yywrap()声明
+</span></span><span class=line><span class=cl>%option noinput     会生成#define YY_NO_INPUT 1定义
+</span></span><span class=line><span class=cl>%option nounput     会生成#define YY_NO_UNPUT 1定义
+</span></span></code></pre></div><p>flex 会声明一个 <code>int yywarp(void);</code> 函数，但是不会自动定义，所以通常会在最后的 section 实现该函数。该函数的作用是将多个输入文件打包成一个输入，也就是当 <code>yylex()</code> 读取到一个文件结束 (EOF) 时，会调用 <code>yywrap()</code> ，如果返回 1 则表示后面没有其它输入文件了，此时 <code>yylex()</code> 函数结束；当然，<code>yywrap()</code> 也可以打开下一个输入文件，再向 <code>yylex()</code> 函数返回 0 ，告诉它后面还有别的输入文件。</p><p>如果只有一个文件，那么可以通过 <code>%option noyywrap</code> 不声明该函数，也就不需要再实现。</p><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><a class=anchor id=值传递></a><h2>值传递 <a href=#%e5%80%bc%e4%bc%a0%e9%80%92 aria-hidden=true>#</a></h2><p>在通过 flex 进行扫描时，会将值保存在 yylval 变量中，而 bison 则读取 yylval 中的值，该变量默认是 int 类型，如果要使用字符串类型，那么可以在 .l+.y 的头部第一句加入 <code>#define YYSTYPE char*</code> 即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>// 在.l赋值的时候，要特别注意，需要拷贝字符串
+</span></span><span class=line><span class=cl>yylval = strdup(yytext);  return WORD;
+</span></span><span class=line><span class=cl>// 在.y取用的时候，直接强转就可以了
+</span></span><span class=line><span class=cl>(char*)$1
+</span></span></code></pre></div><p>关于更优雅的实现方式，当然是用 union 啦，仿照上面，很容易写出来的。</p><a class=anchor id=标准格式></a><h2>标准格式 <a href=#%e6%a0%87%e5%87%86%e6%a0%bc%e5%bc%8f aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>%{
+</span></span><span class=line><span class=cl>/* C语言定义，包括了头文件、宏定义、全局变量定义、函数声明等 */
+</span></span><span class=line><span class=cl>}%
+</span></span><span class=line><span class=cl>%option noinput       /* 常见的配置选项 */
+</span></span><span class=line><span class=cl>WHITE_SPACE [\ \t\b]  /* 正则表达式的定义，如下section时可以直接使用这里定义的宏 */
+</span></span><span class=line><span class=cl>COMMENT #.*
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>{WHITE_SPACE}           |
+</span></span><span class=line><span class=cl>{COMMENT}               {/* ignore */}  /* 规则定义处理 */
+</span></span><span class=line><span class=cl>%%
+</span></span><span class=line><span class=cl>/* C语言，函数实现等 */
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#示例>示例</a></li></ul></li><li><a href=#常用功能>常用功能</a><ul><li><a href=#正则表达式>正则表达式</a></li><li><a href=#多规则匹配>多规则匹配</a></li><li><a href=#yyterminate>yyterminate()</a></li><li><a href=#配置选项>配置选项</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#值传递>值传递</a></li><li><a href=#标准格式>标准格式</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,161 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Python 异步任务队列 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Python 中有很多的调度系统，这里简单介绍一下常用的，例如 APScheduler、Redis Queue、Celery 等。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Python 异步任务队列</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-02-10</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/python/ role=button>python</a></div></div><hr><div class=content><p>Python 中有很多的调度系统，这里简单介绍一下常用的，例如 APScheduler、Redis Queue、Celery 等。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>Python 中 <a href=https://pypi.python.org/pypi/APScheduler/>APScheduler</a> 通常用于跨平台的 cron 操作，可以将任务保存在数据库中，不过比较适合嵌入的应用程序中执行，没有提供独立的执行进程。</p><a class=anchor id=redis-queue></a><h1>Redis Queue <a href=#redis-queue aria-hidden=true>#</a></h1><p><a href=http://www.python-rq.org>Redis Queue, RQ</a> 是一个比 Celery 更加简单的异步任务队列，当然他的功能没有 Celery 多，复杂程度也没有 Celery 大，但它足够简单，其 Broker 只能是 redis 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># pip install rq
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>127.0.0.1:6379&gt; type rq:job:fba1419d-2c0a-47a2-83c9-bd614309c92c
+</span></span><span class=line><span class=cl>hash
+</span></span><span class=line><span class=cl>127.0.0.1:6379&gt; hgetall rq:job:fba1419d-2c0a-47a2-83c9-bd614309c92c
+</span></span><span class=line><span class=cl> 1) &#34;status&#34;
+</span></span><span class=line><span class=cl>     2) &#34;finished&#34;
+</span></span><span class=line><span class=cl> 3) &#34;origin&#34;
+</span></span><span class=line><span class=cl>     4) &#34;default&#34;
+</span></span><span class=line><span class=cl> 5) &#34;description&#34;
+</span></span><span class=line><span class=cl>     6) &#34;database.tasks.reload.reload(1)&#34;
+</span></span><span class=line><span class=cl> 7) &#34;created_at&#34;
+</span></span><span class=line><span class=cl>     8) &#34;2016-10-10T13:54:40Z&#34;
+</span></span><span class=line><span class=cl> 9) &#34;enqueued_at&#34;
+</span></span><span class=line><span class=cl>    10) &#34;2016-10-10T13:54:40Z&#34;
+</span></span><span class=line><span class=cl>11) &#34;timeout&#34;
+</span></span><span class=line><span class=cl>    12) &#34;180&#34;
+</span></span><span class=line><span class=cl>13) &#34;data&#34;
+</span></span><span class=line><span class=cl>    14) &#34;\x80\x02(X\x1c\x00\x00\x00database.tasks.reload.reloadq\x01NK\x01\x85q\x02}q\x03tq\x04.&#34;
+</span></span><span class=line><span class=cl>15) &#34;started_at&#34;
+</span></span><span class=line><span class=cl>    16) &#34;2016-10-10T13:54:40Z&#34;
+</span></span><span class=line><span class=cl>17) &#34;ended_at&#34;
+</span></span><span class=line><span class=cl>    18) &#34;2016-10-10T13:54:41Z&#34;
+</span></span><span class=line><span class=cl>19) &#34;result&#34;
+</span></span><span class=line><span class=cl>    20) &#34;\x80\x02U\x05xxxxxq\x01.&#34;
+</span></span><span class=line><span class=cl>21) &#34;ttl&#34;
+</span></span><span class=line><span class=cl>    22) &#34;-1&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>ttl rq:job:88fc4ae9-a9c7-4532-98b7-e0c06ef01dbb
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>lrange rq:queue:default 1 100              通过list类型存放该队列中所含有的任务
+</span></span><span class=line><span class=cl>smembers rq:queues                         通过set保存了所有队列的信息
+</span></span></code></pre></div><p>任务会在 job 执行后调用 cleanup() 函数，默认会设置为 result_ttl 值。</p><a class=anchor id=celery></a><h1>Celery <a href=#celery aria-hidden=true>#</a></h1><p>Celery 是一个由 Python 编写的简单、灵活、可靠的用来处理大量信息的分布式系统，同时提供一些常用的运维操作工具，通过其提供的接口可以快速实现一个分布式的任务队列。</p><p>首先，要理解 Celery 本身不是消息队列，它是管理分布式任务的工具，或者说，它封装好了操作常见任务队列的各种操作，用它可以快速进行任务队列的使用与管理。</p><p>当然，也可以自己基于 RabbitMQ 等自己实现，但是成本会更高。</p><p>官方给出的解释如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Celery is an asynchronous task queue/job queue based on distributed message passing.
+</span></span><span class=line><span class=cl>It is focused on real-time operation, but supports scheduling as well.
+</span></span></code></pre></div><a class=anchor id=常用概念></a><h2>常用概念 <a href=#%e5%b8%b8%e7%94%a8%e6%a6%82%e5%bf%b5 aria-hidden=true>#</a></h2><p><img alt="Python Celery Process" src=images/python-celery-process.png class="mx-auto d-block"></p><a class=anchor id=brokers></a><h4>Brokers <a href=#brokers aria-hidden=true>#</a></h4><p>指任务队列本身，Celery 扮演生产者和消费者的角色，常见的有 RabbitMQ、Redis 等。</p><a class=anchor id=result-stores--backend></a><h4>Result Stores / Backend <a href=#result-stores--backend aria-hidden=true>#</a></h4><p>也即是保存运行结果的地方，可以是 Redis、Memcached 等缓存，也可以是数据库。</p><a class=anchor id=workers></a><h4>Workers <a href=#workers aria-hidden=true>#</a></h4><p>任务队列的消费者，从队列中取出任务并执行。</p><a class=anchor id=tasks></a><h4>Tasks <a href=#tasks aria-hidden=true>#</a></h4><p>也就是具体的任务了，一般由用户、触发器或其他操作将任务入队，然后交由 workers 进行处理。</p><a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 可以直接通过pip或者easy_install直接安装
+</span></span><span class=line><span class=cl># pip install -U Celery
+</span></span><span class=line><span class=cl># easy_install -U Celery
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 直接源码安装，会依赖setuptools工具，可以按需安装
+</span></span><span class=line><span class=cl>$ python setup.py build
+</span></span><span class=line><span class=cl># python setup.py install
+</span></span></code></pre></div><p>然后将路径 <code>/usr/local/python27-13/bin/</code> 添加到环境变量 PATH 中。</p><p>在安装 setuptools 时，遇到了 <code>ImportError: No module named packaging.version</code> 报错，主要是由于 pip 安装的问题，可以通过如下方式解决。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ wget https://bootstrap.pypa.io/get-pip.py
+</span></span><span class=line><span class=cl># python get-pip.py
+</span></span></code></pre></div><p>另外，也可以降低版本解决。</p><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><a class=anchor id=实现一个-worker></a><h4>实现一个 Worker <a href=#%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa-worker aria-hidden=true>#</a></h4><p>实现一个任务，等待执行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># tasks.py
+</span></span><span class=line><span class=cl>from celery import Celery
+</span></span><span class=line><span class=cl>app = Celery(&#39;tasks&#39;,  backend=&#39;redis://localhost:6379/0&#39;, broker=&#39;redis://localhost:6379/1&#39;)
+</span></span><span class=line><span class=cl>@app.task
+</span></span><span class=line><span class=cl>def add(x, y):
+</span></span><span class=line><span class=cl>    return x + y
+</span></span></code></pre></div><p>OK，到这里，broker 我们有了，backend 我们有了，task 我们也有了，现在就该运行 worker 进行工作了，在 tasks.py 所在目录下运行：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ celery -A tasks worker --loglevel=info
+</span></span></code></pre></div><p>意思就是运行 tasks 这个任务集合的 worker 进行工作，此时 Redis 中还不包含任务，所以 worker 相当于待命状态。</p><a class=anchor id=实现一个触发器></a><h4>实现一个触发器 <a href=#%e5%ae%9e%e7%8e%b0%e4%b8%80%e4%b8%aa%e8%a7%a6%e5%8f%91%e5%99%a8 aria-hidden=true>#</a></h4><p>接着就是触发任务执行，最简单方式是再写一个脚本然后调用那个被装饰成 task 的函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># trigger.py
+</span></span><span class=line><span class=cl>import time
+</span></span><span class=line><span class=cl>from tasks import add
+</span></span><span class=line><span class=cl>result = add.delay(4, 4)
+</span></span><span class=line><span class=cl>while not result.ready():
+</span></span><span class=line><span class=cl>    time.sleep(1)
+</span></span><span class=line><span class=cl>print &#39;task done: {0}&#39;.format(result.get())
+</span></span></code></pre></div><p>delay 返回的是一个 AsyncResult 对象，里面存的就是一个异步的结果，当任务完成时 <code>result.ready()</code> 为 true，然后用 <code>result.get()</code> 取结果即可。</p><p>这里实际上会一直循环等待，查询任务是否结束，也可以通过 <code>result.get(timeout=10)</code> 设置超时时间。</p><a class=anchor id=查看结果></a><h4>查看结果 <a href=#%e6%9f%a5%e7%9c%8b%e7%bb%93%e6%9e%9c aria-hidden=true>#</a></h4><p>在任务执行的 Worker 中会显示任务的 UUID 信息，其执行结果会保存到 Redis 编号为 0 的数据库中，类型为 string(实际就是字节流)，Key 在开头会添加 <code>celery-task-meta-</code> 前缀。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>redis-cli
+</span></span><span class=line><span class=cl>&gt; select 0
+</span></span><span class=line><span class=cl>&gt; keys *
+</span></span></code></pre></div><p>在 broker 中，也就是 Redis-1 数据库，包含了如下内容：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>127.0.0.1:6379[1]&gt; keys *
+</span></span><span class=line><span class=cl>1) &#34;_kombu.binding.celeryev&#34;       类型为set，
+</span></span><span class=line><span class=cl>2) &#34;_kombu.binding.celery&#34;         类型为set，估计是用于标示这个是Celery实例
+</span></span><span class=line><span class=cl>3) &#34;_kombu.binding.celery.pidbox&#34;  类型为set，记录了当前含有哪些Worker
+</span></span><span class=line><span class=cl>4) &#34;celery&#34;                        类型为list，保存了当前的任务信息，从Producer传递给Worker，为空时会删除
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&gt; smembers &#34;_kombu.binding.celery&#34; 查看集合信息
+</span></span><span class=line><span class=cl>&gt; lrange celery 0 5                部分任务信息，暂时还没有看懂
+</span></span></code></pre></div><a class=anchor id=高阶用法></a><h2>高阶用法 <a href=#%e9%ab%98%e9%98%b6%e7%94%a8%e6%b3%95 aria-hidden=true>#</a></h2><a class=anchor id=根据任务状态进行不同处理></a><h4>根据任务状态进行不同处理 <a href=#%e6%a0%b9%e6%8d%ae%e4%bb%bb%e5%8a%a1%e7%8a%b6%e6%80%81%e8%bf%9b%e8%a1%8c%e4%b8%8d%e5%90%8c%e5%a4%84%e7%90%86 aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># tasks.py
+</span></span><span class=line><span class=cl>from celery import Celery, Task
+</span></span><span class=line><span class=cl>app = Celery(&#39;tasks&#39;,  backend=&#39;redis://localhost:6379/0&#39;, broker=&#39;redis://localhost:6379/1&#39;)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>class MyTask(Task):
+</span></span><span class=line><span class=cl>    def on_success(self, retval, task_id, args, kwargs):
+</span></span><span class=line><span class=cl>        print &#39;task done: {0}&#39;.format(retval)
+</span></span><span class=line><span class=cl>        return super(MyTask, self).on_success(retval, task_id, args, kwargs)
+</span></span><span class=line><span class=cl>    def on_failure(self, exc, task_id, args, kwargs, einfo):
+</span></span><span class=line><span class=cl>        print &#39;task fail, reason: {0}&#39;.format(exc)
+</span></span><span class=line><span class=cl>        return super(MyTask, self).on_failure(exc, task_id, args, kwargs, einfo)
+</span></span><span class=line><span class=cl>@app.task(base=MyTask)
+</span></span><span class=line><span class=cl>def add(x, y):
+</span></span><span class=line><span class=cl>    # raise KeyError
+</span></span><span class=line><span class=cl>    return x + y
+</span></span></code></pre></div><a class=anchor id=绑定任务为实例方法></a><h4>绑定任务为实例方法 <a href=#%e7%bb%91%e5%ae%9a%e4%bb%bb%e5%8a%a1%e4%b8%ba%e5%ae%9e%e4%be%8b%e6%96%b9%e6%b3%95 aria-hidden=true>#</a></h4><p>实际上就是将任务信息通过第一个参数传入，可以获取关于任务的一些相关信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># tasks.py
+</span></span><span class=line><span class=cl>from celery.utils.log import get_task_logger
+</span></span><span class=line><span class=cl>from celery import Celery, Task
+</span></span><span class=line><span class=cl>app = Celery(&#39;tasks&#39;,  backend=&#39;redis://localhost:6379/0&#39;, broker=&#39;redis://localhost:6379/1&#39;)
+</span></span><span class=line><span class=cl>logger = get_task_logger(__name__)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>@app.task(bind=True)
+</span></span><span class=line><span class=cl>def add(self, x, y):
+</span></span><span class=line><span class=cl>    logger.info(self.request.__dict__)
+</span></span><span class=line><span class=cl>    return x + y
+</span></span></code></pre></div><p>传入的第一个参数包含了当前任务的信息，相关信息可以查看 <a href=http://docs.celeryproject.org/en/latest/userguide/tasks.html#task-request-info>Celery Task Request</a>，例如判断链式任务是否到结尾等等。上述示例，同时会将任务信息打印到日志中。</p><a class=anchor id=重试方法></a><h4>重试方法 <a href=#%e9%87%8d%e8%af%95%e6%96%b9%e6%b3%95 aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># tasks.py
+</span></span><span class=line><span class=cl>from celery.utils.log import get_task_logger
+</span></span><span class=line><span class=cl>from celery import Celery, Task
+</span></span><span class=line><span class=cl>app = Celery(&#39;tasks&#39;,  backend=&#39;redis://localhost:6379/0&#39;, broker=&#39;redis://localhost:6379/1&#39;)
+</span></span><span class=line><span class=cl>logger = get_task_logger(__name__)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>@app.task(bind=True)
+</span></span><span class=line><span class=cl>def div(self, x, y):
+</span></span><span class=line><span class=cl>    logger.info(&#39;doing div&#39;)
+</span></span><span class=line><span class=cl>    try:
+</span></span><span class=line><span class=cl>        result = x / y
+</span></span><span class=line><span class=cl>    except ZeroDivisionError as e:
+</span></span><span class=line><span class=cl>        raise self.retry(exc=e, countdown=5, max_retries=3)
+</span></span><span class=line><span class=cl>    return result
+</span></span></code></pre></div><a class=anchor id=任务状态回调></a><h4>任务状态回调 <a href=#%e4%bb%bb%e5%8a%a1%e7%8a%b6%e6%80%81%e5%9b%9e%e8%b0%83 aria-hidden=true>#</a></h4><p>Celery 内建有如下几种任务状态：</p><ul><li>PENDING 任务等待中</li><li>STARTED 任务已开始</li><li>SUCCESS 任务执行成功</li><li>FAILURE 任务执行失败</li><li>RETRY 任务将被重试</li><li>REVOKED 任务取消</li></ul><p>例如有个比较耗时的任务在运行，需要我们自定义一个任务状态来说明进度并手动更新状态，从而告诉回调当前任务的进度。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># tasks.py
+</span></span><span class=line><span class=cl>import time
+</span></span><span class=line><span class=cl>from celery import Celery
+</span></span><span class=line><span class=cl>app = Celery(&#39;tasks&#39;,  backend=&#39;redis://localhost:6379/0&#39;, broker=&#39;redis://localhost:6379/1&#39;)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>@app.task(bind=True)
+</span></span><span class=line><span class=cl>def foobar(self):
+</span></span><span class=line><span class=cl>    for i in xrange(1, 11):
+</span></span><span class=line><span class=cl>        time.sleep(0.3)
+</span></span><span class=line><span class=cl>        self.update_state(state=&#34;PROGRESS&#34;, meta={&#39;p&#39;: i*10})
+</span></span><span class=line><span class=cl>    return &#39;finish&#39;
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># trigger.py
+</span></span><span class=line><span class=cl>import sys
+</span></span><span class=line><span class=cl>from task import foobar
+</span></span><span class=line><span class=cl> 
+</span></span><span class=line><span class=cl>def pm(body):
+</span></span><span class=line><span class=cl>    res = body.get(&#39;result&#39;)
+</span></span><span class=line><span class=cl>    if body.get(&#39;status&#39;) == &#39;PROGRESS&#39;:
+</span></span><span class=line><span class=cl>        sys.stdout.write(&#39;\rProcessing: {0}%&#39;.format(res.get(&#39;p&#39;)))
+</span></span><span class=line><span class=cl>        sys.stdout.flush()
+</span></span><span class=line><span class=cl>    else:
+</span></span><span class=line><span class=cl>        print &#39;\r&#39;
+</span></span><span class=line><span class=cl>        print res
+</span></span><span class=line><span class=cl>print foobar.delay().get(on_message=pm, propagate=False)
+</span></span></code></pre></div><p>注意，在 4.0 之后的版本，对于 backend 为 AMQP 处于性能的考虑会直接删除掉 <code>on_message</code> 的异步功能，如果要使用最好用数据库。</p><p>在使用 AMQP 作为 result backend 时，Celery 会试着模拟持久化结果集，当任务并发过千时，且过期时间超过一天，那么就是导致 AMQP 性能变差，为此对于 AMQP 的后端就取消掉了这一功能。</p><a class=anchor id=定时周期任务></a><h4>定时/周期任务 <a href=#%e5%ae%9a%e6%97%b6%e5%91%a8%e6%9c%9f%e4%bb%bb%e5%8a%a1 aria-hidden=true>#</a></h4><p>只需要在配置中配置好周期任务，然后在运行一个周期任务触发器即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># celery_config.py
+</span></span><span class=line><span class=cl>from datetime import timedelta
+</span></span><span class=line><span class=cl>from celery.schedules import crontab
+</span></span><span class=line><span class=cl>CELERY_TIMEZONE = &#39;Asia/Shanghai&#39;
+</span></span><span class=line><span class=cl>CELERYBEAT_SCHEDULE = {
+</span></span><span class=line><span class=cl>    &#39;ptask&#39;: {
+</span></span><span class=line><span class=cl>        &#39;task&#39;: &#39;tasks.period_task&#39;,
+</span></span><span class=line><span class=cl>        &#39;schedule&#39;: timedelta(seconds=5),
+</span></span><span class=line><span class=cl>    },
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>CELERY_RESULT_BACKEND = &#39;redis://localhost:6379/0&#39;
+</span></span></code></pre></div><p>配置中 schedule 就是间隔执行的时间，这里可以用 <code>datetime.timedelta</code> 或者 crontab 甚至太阳系经纬度坐标进行间隔时间配置，具体可以参考 <a href=http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html#crontab-schedules>Crontab Schedules</a> 。</p><p>默认使用的是 UTC ，可以通过 <code>CELERY_TIMEZONE</code> 设置时区信息。</p><p>然后在 tasks.py 中增加要被周期执行的任务。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># tasks.py
+</span></span><span class=line><span class=cl>app = Celery(&#39;tasks&#39;, backend=&#39;redis://localhost:6379/0&#39;, broker=&#39;redis://localhost:6379/0&#39;)
+</span></span><span class=line><span class=cl>app.config_from_object(&#39;celery_config&#39;)
+</span></span><span class=line><span class=cl>@app.task(bind=True)
+</span></span><span class=line><span class=cl>def period_task(self):
+</span></span><span class=line><span class=cl>    print &#39;period task done: {0}&#39;.format(self.request.id)
+</span></span></code></pre></div><p>重新运行 worker 并通过 <code>celery -A tasks beat</code> 执行 beat 。</p><p>其它的高端用法还有链式任务，除了使用本地的 Python 文件作为 Worker 外，还可以通过 WebHook 实现，允许使用远程的 Web 服务作为 Worker 。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>官方网站可以参考 <a href=http://www.celeryproject.org/>Celery</a>，以及其文档 <a href=http://docs.celeryproject.org/en/latest/index.html>Celery - Distributed Task Queue</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#redis-queue>Redis Queue</a></li><li><a href=#celery>Celery</a><ul><li><a href=#常用概念>常用概念</a></li><li><a href=#安装>安装</a></li><li><a href=#示例>示例</a></li><li><a href=#高阶用法>高阶用法</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

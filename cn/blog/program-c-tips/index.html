@@ -1,0 +1,387 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>C 语言的奇技淫巧 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="整理下 C 语言中常用的技巧。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>C 语言的奇技淫巧</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2015-08-16</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/c/cpp/ role=button>c/cpp</a></div></div><hr><div class=content><p>整理下 C 语言中常用的技巧。</p><a class=anchor id=缓冲类型></a><h1>缓冲类型 <a href=#%e7%bc%93%e5%86%b2%e7%b1%bb%e5%9e%8b aria-hidden=true>#</a></h1><p>流分为了文本流和二进制流，在 Linux 中两者没有区别，而 Windows 会做区分。</p><p>基于流的操作最终会调用 <code>read()/write()</code> 函数进行 IO 操作，为了提高程序的运行效率，流对象通常会提供缓冲区，以减少调用系统 IO 库函数的次数。</p><p>通常提供如下的三种缓冲方式：</p><ol><li>全缓冲。在缓冲区满了之后才调用系统 IO 函数，例如磁盘文件。</li><li>行缓冲。直到遇到换行符 <code>'\n'</code> 或者缓冲区满时才调用系统 IO 库函数，例如标准输出。</li><li>无缓冲。无缓冲区，数据会立即读入或者输出到外存文件和设备上。例如标准错误输出，可以保证及时将错误反馈给客户。</li></ol><p>对于标准输入、输出可以通过如下的程序进行测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>print_info</span><span class=p>(</span><span class=n>FILE</span> <span class=o>*</span><span class=n>f</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span><span class=p>(</span><span class=n>f</span><span class=o>-&gt;</span><span class=n>_flags</span> <span class=o>&amp;</span> <span class=n>_IO_UNBUFFERED</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;unbuffered</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>else</span> <span class=k>if</span><span class=p>(</span><span class=n>f</span><span class=o>-&gt;</span><span class=n>_flags</span> <span class=o>&amp;</span> <span class=n>_IO_LINE_BUF</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;line-buffered</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>else</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;fully-buffered</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;    buffer size: %ld</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>f</span><span class=o>-&gt;</span><span class=n>_IO_buf_end</span> <span class=o>-</span> <span class=n>f</span><span class=o>-&gt;</span><span class=n>_IO_buf_base</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;    discriptor : %d</span><span class=se>\n\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>fileno</span><span class=p>(</span><span class=n>f</span><span class=p>));</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;stdin  is &#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>print_info</span><span class=p>(</span><span class=n>stdin</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;stdout is &#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>print_info</span><span class=p>(</span><span class=n>stdout</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;stderr is &#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>print_info</span><span class=p>(</span><span class=n>stderr</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>也可以通过命令 <code>./foobar &lt;main.c 1>out.txt 2>err.txt</code> 测试重定向之后的属性。</p><p>可以通过 <code>setvbuf(stdout, NULL, _IOLBF, 0);</code> 设置为行缓冲模式。</p><a class=anchor id=变长数组></a><h1>变长数组 <a href=#%e5%8f%98%e9%95%bf%e6%95%b0%e7%bb%84 aria-hidden=true>#</a></h1><p>实际编程中，经常会使用变长数组，但是 C 语言并不支持变长的数组，可以使用结构体实现。</p><p>类似如下的结构体，其中 value 成员变量不占用内存空间，也可以使用 <code>char value[]</code> ，但是不要使用 <code>char *value</code>，该变量会占用指针对应的空间。</p><p>常见的操作示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span> <span class=k>struct</span> <span class=n>foobar</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kt>int</span> <span class=n>len</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kt>char</span> <span class=n>value</span><span class=p>[</span><span class=mi>0</span><span class=p>];</span>
+</span></span><span class=line><span class=cl><span class=p>}</span> <span class=kt>foobar_t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=n>argv</span><span class=p>[])</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 两者占用的存储空间相同，也就是value不占用空间
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%li %li</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=kt>int</span><span class=p>),</span> <span class=k>sizeof</span><span class=p>(</span><span class=kt>foobar_t</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 初始化
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>int</span> <span class=o>*</span><span class=n>values</span> <span class=o>=</span> <span class=p>(</span><span class=kt>int</span> <span class=o>*</span><span class=p>)</span><span class=nf>malloc</span><span class=p>(</span><span class=mi>10</span><span class=o>*</span><span class=k>sizeof</span><span class=p>(</span><span class=kt>int</span><span class=p>)),</span> <span class=n>i</span><span class=p>,</span> <span class=n>j</span><span class=p>,</span> <span class=o>*</span><span class=n>ptr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=mi>10</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=n>values</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=o>=</span> <span class=mi>10</span><span class=o>*</span><span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=mi>10</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=nf>printf</span><span class=p>(</span><span class=s>&#34; %i&#34;</span><span class=p>,</span> <span class=n>values</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 针对单个结构体的操作
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>foobar_t</span> <span class=o>*</span><span class=n>buff</span> <span class=o>=</span> <span class=p>(</span><span class=kt>foobar_t</span> <span class=o>*</span><span class=p>)</span><span class=nf>malloc</span><span class=p>(</span><span class=k>sizeof</span><span class=p>(</span><span class=kt>foobar_t</span><span class=p>)</span> <span class=o>+</span> <span class=mi>10</span><span class=o>*</span><span class=k>sizeof</span><span class=p>(</span><span class=kt>int</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=n>buff</span><span class=o>-&gt;</span><span class=n>len</span> <span class=o>=</span> <span class=mi>10</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>memcpy</span><span class=p>(</span><span class=n>buff</span><span class=o>-&gt;</span><span class=n>value</span><span class=p>,</span> <span class=n>values</span><span class=p>,</span> <span class=mi>10</span><span class=o>*</span><span class=k>sizeof</span><span class=p>(</span><span class=kt>int</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=n>ptr</span> <span class=o>=</span> <span class=p>(</span><span class=kt>int</span> <span class=o>*</span><span class=p>)</span><span class=n>buff</span><span class=o>-&gt;</span><span class=n>value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;length: %i, vlaues:&#34;</span><span class=p>,</span> <span class=n>buff</span><span class=o>-&gt;</span><span class=n>len</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=mi>10</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=nf>printf</span><span class=p>(</span><span class=s>&#34; %i&#34;</span><span class=p>,</span> <span class=n>ptr</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>free</span><span class=p>(</span><span class=n>buff</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 针对数组的操作
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=cp>#define FOOBAR_T_SIZE(elements) (sizeof(foobar_t) + sizeof(int) * (elements))
+</span></span></span><span class=line><span class=cl><span class=cp></span>    <span class=kt>foobar_t</span> <span class=o>**</span><span class=n>buf</span> <span class=o>=</span> <span class=p>(</span><span class=kt>foobar_t</span> <span class=o>**</span><span class=p>)</span><span class=nf>malloc</span><span class=p>(</span><span class=mi>6</span><span class=o>*</span><span class=nf>FOOBAR_T_SIZE</span><span class=p>(</span><span class=mi>10</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=kt>foobar_t</span> <span class=o>*</span><span class=n>ptr_buf</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=mi>6</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=n>ptr_buf</span> <span class=o>=</span> <span class=p>(</span><span class=kt>foobar_t</span><span class=o>*</span><span class=p>)((</span><span class=kt>char</span> <span class=o>*</span><span class=p>)</span><span class=n>buf</span> <span class=o>+</span> <span class=n>i</span><span class=o>*</span><span class=nf>FOOBAR_T_SIZE</span><span class=p>(</span><span class=mi>10</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>      <span class=n>ptr_buf</span><span class=o>-&gt;</span><span class=n>len</span> <span class=o>=</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=nf>memcpy</span><span class=p>(</span><span class=n>ptr_buf</span><span class=o>-&gt;</span><span class=n>value</span><span class=p>,</span> <span class=n>values</span><span class=p>,</span> <span class=mi>10</span><span class=o>*</span><span class=k>sizeof</span><span class=p>(</span><span class=kt>int</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=n>ptr</span> <span class=o>=</span> <span class=p>(</span><span class=kt>int</span> <span class=o>*</span><span class=p>)</span><span class=n>ptr_buf</span><span class=o>-&gt;</span><span class=n>value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;length: %i, vlaues:&#34;</span><span class=p>,</span> <span class=n>ptr_buf</span><span class=o>-&gt;</span><span class=n>len</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>      <span class=k>for</span> <span class=p>(</span><span class=n>j</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>j</span> <span class=o>&lt;</span> <span class=mi>10</span><span class=p>;</span> <span class=n>j</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34; %i&#34;</span><span class=p>,</span> <span class=n>ptr</span><span class=p>[</span><span class=n>j</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>      <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nf>free</span><span class=p>(</span><span class=n>values</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>free</span><span class=p>(</span><span class=n>buf</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=调试></a><h1>调试 <a href=#%e8%b0%83%e8%af%95 aria-hidden=true>#</a></h1><p>当调试时定义 DEBUG 输出信息，通常有如下的几种方式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>// 常用格式
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#ifdef DEBUG
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=cp>#define debug(fmt, args...) printf(&#34;debug: &#34; fmt &#34;\n&#34;, ##args) </span><span class=c1>// OR
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=cp>#define debug(fmt, ...) printf(&#34;debug: &#34; fmt &#34;\n&#34;, ## __VA_ARGS__);
+</span></span></span><span class=line><span class=cl><span class=cp>#else
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=cp>#define debug(fmt,args...)
+</span></span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=c1>// 输出文件名、函数名、行数
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#ifdef DEBUG
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=cp>#define debug(fmt, args...) printf(&#34;%s, %s, %d: &#34; fmt , __FILE__, __FUNCTION__, __LINE__, ##args)
+</span></span></span><span class=line><span class=cl><span class=cp>#else
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=cp>#define debug(fmt, args...)
+</span></span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=c1>// 输出信息含有彩色
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#ifdef DEBUG
+</span></span></span><span class=line><span class=cl><span class=cp></span>   <span class=cp>#define debug(fmt,args...)    \
+</span></span></span><span class=line><span class=cl><span class=cp>      do{                        \
+</span></span></span><span class=line><span class=cl><span class=cp>         printf(&#34;\033[32;40m&#34;);  \
+</span></span></span><span class=line><span class=cl><span class=cp>         printf(fmt, ##args);    \
+</span></span></span><span class=line><span class=cl><span class=cp>         printf(&#34;\033[0m&#34;);      \
+</span></span></span><span class=line><span class=cl><span class=cp>      } while(0);
+</span></span></span><span class=line><span class=cl><span class=cp>#else
+</span></span></span><span class=line><span class=cl><span class=cp></span>   <span class=cp>#define debug(fmt,args...)
+</span></span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span></code></pre></div><p>另外，也可以通过如下方式判断支持可变参数的格式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#if defined __STDC_VERSION__ &amp;&amp; __STDC_VERSION__ &gt;= 199901L
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=cp>#define _debug(...) do { printf(&#34;debug: &#34; __VA_ARGS__); putchar(&#39;\n&#39;); } while(0);
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=cp>#define _warn(...)  do { printf(&#34;warn : &#34; __VA_ARGS__); putchar(&#39;\n&#39;); } while(0);
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=cp>#define _error(...) do { printf(&#34;error: &#34; __VA_ARGS__); putchar(&#39;\n&#39;); } while(0);
+</span></span></span><span class=line><span class=cl><span class=cp>#elif defined __GNUC__
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=cp>#define _debug(fmt, args...)  do { printf(&#34;debug: &#34; fmt, ## args); putchar(&#39;\n&#39;); } while(0);
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=cp>#define _warn(fmt, args...)   do { printf(&#34;warn: &#34;  fmt, ## args); putchar(&#39;\n&#39;); } while(0);
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=cp>#define _error(fmt, args...)  do { printf(&#34;error: &#34; fmt, ## args); putchar(&#39;\n&#39;); } while(0);
+</span></span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span></code></pre></div><p>如果通过 gcc 编译时，没有使用 <code>-std=</code> 参数就使用后者的宏定义，否则是前者。</p><a class=anchor id=变参></a><h2>变参 <a href=#%e5%8f%98%e5%8f%82 aria-hidden=true>#</a></h2><p>在最早的 C 实现标准中，可变参数只能出现在真正的函数中，而不能使用在宏中，直到 C99 版本中允许定义可变参数宏，类似如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define debug(...) printf(__VA_ARGS__)
+</span></span></span></code></pre></div><p>缺省号代表一个可以变化的参数表，然后使用保留名 <code>__VA_ARGS__</code> 把参数传递给宏，当宏的调用展开时，实际的参数就传递给对应的 <code>printf()</code>了。</p><p>在 GUNC 中的扩展，其形式如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define log_debug(fmt, args...)  do { printf(&#34;gnu debug: &#34; fmt, ## args); putchar(&#39;\n&#39;); } while(0);
+</span></span></span></code></pre></div><p>这里的 <code>##</code> 用来将前面多余的 <code>,</code> 去掉，当可变参数的个数为 <code>0</code> 时，实际上在宏扩展时删掉了 <code>,</code> ，而多个参数时是有的。</p><p>另外一个比较有意思的是，可以多次嵌套，例如。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define log_it(...)    do { printf(&#34;(log) &#34; __VA_ARGS__); putchar(&#39;\n&#39;); } while(0);
+</span></span></span><span class=line><span class=cl><span class=cp>#define log_debug(...) do { log_it(&#34;debug==&gt; &#34; __VA_ARGS__); } while(0);
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>log_debug</span><span class=p>(</span><span class=s>&#34;your id %d&#34;</span><span class=p>,</span> <span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=参数解析></a><h1>参数解析 <a href=#%e5%8f%82%e6%95%b0%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h1><p><code>getopt()</code> 是采用缓冲机制，因此对于多线程编程是 <strong>不安全</strong> 的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;unistd.h&gt;
+</span></span><span class=line><span class=cl>// 选项的参数指针
+</span></span><span class=line><span class=cl>extern char *optarg;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>// 初值为1, 下次调用时，从optind位置开始检测，通过agrv[optind]可以得到下一个参数，从而可以自行检测
+</span></span><span class=line><span class=cl>extern int optind;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>// 对于不能识别的参数将输出错误信息，可以将opterr设置为0，从而阻止向stderr输出错误信息
+</span></span><span class=line><span class=cl>extern int opterr;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>// 如果选项字符不再optstring中则返回&#39;:&#39;或&#39;?&#39;，并将字符保存在optopt中
+</span></span><span class=line><span class=cl>extern int optopt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int getopt(int argc, char * const argv[],const char *optstring);
+</span></span><span class=line><span class=cl>描述：
+</span></span><span class=line><span class=cl>  该函数处理&#34;-&#34;起始的参数，有些平台可能支持&#34;--&#34;
+</span></span><span class=line><span class=cl>参数：
+</span></span><span class=line><span class=cl>  argc、argv分别为main()传入的参数；其中optstring可以有如下的选项:
+</span></span><span class=line><span class=cl>    单个字符，表示选项。
+</span></span><span class=line><span class=cl>    单个字符后接一个冒号，表示该选项后必须跟一个参数，参数紧跟在选项后或者以空格隔开，该参数的指针赋给optarg。
+</span></span><span class=line><span class=cl>    单个字符后跟两个冒号，表示该选项后必须跟一个参数，参数必须紧跟在选项后不能以空格隔开，否则optarg指向为NULL，
+</span></span><span class=line><span class=cl>        该参数的指针赋给optarg，这个特性是GNU的扩展。
+</span></span></code></pre></div><p>如 <code>optstring="ab:c::d::"</code> ，命令行为 <code>getopt.exe -a -b host -ckeke -d haha</code>，在这个命令行参数中，<code>-a</code> <code>-b</code> 和 <code>-c</code> 是选项元素，去掉 <code>'-'</code>，a b c 就是选项。</p><p>host 是 b 的参数，keke 是 c 的参数，但 haha 并不是 d 的参数，因为它们中间有空格隔开。</p><p><strong>注意</strong>：如果 optstring 中的字符串以 <code>'+'</code> 加号开头或者环境变量 <code>POSIXLY_CORRE</code> 被设置，那么一遇到不包含选项的命令行参数，getopt 就会停止，返回 -1；命令参数中的 <code>"--"</code> 用来强制终止扫描。</p><p>默认情况下 getopt 会重新排列命令行参数的顺序，所以到最后所有不包含选项的命令行参数都排到最后，如 <code>getopt -a ima -b host -ckeke -d haha</code>，都最后命令行参数的顺序是 <code>-a -b host -ckeke -d ima haha</code> 。</p><p>如果检测到设置的参数项，则返回参数项；如果检测完成则返回 -1；如果有不能识别的参数则将该参数保存在 optopt 中，输出错误信息到 stderr，如果 optstring 以 <code>':'</code> 开头则返回 <code>':'</code> 否则返回 <code>'?'</code>。</p><a class=anchor id=长选项></a><h2>长选项 <a href=#%e9%95%bf%e9%80%89%e9%a1%b9 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;getopt.h&gt;
+</span></span><span class=line><span class=cl>int getopt_long(int argc, char * const argv[],
+</span></span><span class=line><span class=cl>    const char *optstring, const struct option *longopts, int *longindex);
+</span></span><span class=line><span class=cl>int getopt_long_only(int argc, char * const argv[],
+</span></span><span class=line><span class=cl>    const char *optstring, const struct option *longopts, int *longindex);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>描述：
+</span></span><span class=line><span class=cl>  该函数与getopt函数类似，不过可以接收长选项(通常以&#34;--&#34;开头)，如果只接收长选项则optstring应该设置为&#34;&#34;，而非NULL。
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ getopt-long a.out -a -b -c -x foo --add --back  --check --extra=foo
+</span></span></code></pre></div><p><code>getopt_long_only()</code> 和 <code>getopt_long()</code> 类似，但是 <code>'-'</code> 和 <code>'--'</code> 均被认为是长选项，只有当 <code>'-'</code> 没有对应的选项时才会与相应的短选项匹配。</p><a class=anchor id=整型溢出></a><h1>整型溢出 <a href=#%e6%95%b4%e5%9e%8b%e6%ba%a2%e5%87%ba aria-hidden=true>#</a></h1><p>以 8-bits 的数据为例，unsigned 取值范围为 0~255，signed 的取值范围为 -128~127。在计算机中数据以补码（正数原码与补码相同，原码=除符号位的补码求反+1）的形式存在，且规定 0x80 为-128 。</p><a class=anchor id=无符号整数></a><h2>无符号整数 <a href=#%e6%97%a0%e7%ac%a6%e5%8f%b7%e6%95%b4%e6%95%b0 aria-hidden=true>#</a></h2><p>对于无符号整数，当超过 255 后将会溢出，常见的是 Linux 内核中的 jiffies 变量，jiffies 以及相关的宏保存在 linux/jiffies.h 中，如果 a 发生在 b 之后则返回真，即 a>b 返回真，无论是否有溢出。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define time_after(a,b)     \
+</span></span></span><span class=line><span class=cl><span class=cp>    (typecheck(unsigned long, a) &amp;&amp; \
+</span></span></span><span class=line><span class=cl><span class=cp>     typecheck(unsigned long, b) &amp;&amp; \
+</span></span></span><span class=line><span class=cl><span class=cp>     ((long)((b) - (a)) &lt; 0))
+</span></span></span></code></pre></div><a class=anchor id=assert></a><h1>assert() <a href=#assert aria-hidden=true>#</a></h1><p>其作用是如果它的条件返回错误，则输出错误信息 (包括文件名，函数名等信息)，并终止程序执行，原型定义：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;assert.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>void</span> <span class=nf>assert</span><span class=p>(</span><span class=kt>int</span> <span class=n>expression</span><span class=p>);</span>
+</span></span></code></pre></div><p>如下是一个简单的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;assert.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=kt>char</span> <span class=o>**</span><span class=n>argv</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>FILE</span> <span class=o>*</span><span class=n>fp</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   <span class=n>fp</span> <span class=o>=</span> <span class=nf>fopen</span><span class=p>(</span> <span class=s>&#34;test.txt&#34;</span><span class=p>,</span> <span class=s>&#34;w&#34;</span> <span class=p>);</span> <span class=c1>// 不存在就创建一个同名文件
+</span></span></span><span class=line><span class=cl><span class=c1></span>   <span class=nf>assert</span><span class=p>(</span> <span class=n>fp</span> <span class=p>);</span>                  <span class=c1>// 所以这里不会出错
+</span></span></span><span class=line><span class=cl><span class=c1></span>   <span class=nf>fclose</span><span class=p>(</span> <span class=n>fp</span> <span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>fp</span> <span class=o>=</span> <span class=nf>fopen</span><span class=p>(</span> <span class=s>&#34;noexitfile.txt&#34;</span><span class=p>,</span> <span class=s>&#34;r&#34;</span> <span class=p>);</span>  <span class=c1>// 不存在就打开文件失败
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nf>assert</span><span class=p>(</span> <span class=n>fp</span> <span class=p>);</span>                         <span class=c1>// 这里出错
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nf>fclose</span><span class=p>(</span> <span class=n>fp</span> <span class=p>);</span>                         <span class=c1>// 程序不会执行到此处
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>当在 <code>&lt;assert.h></code> 之前定义 NDEBUG 时，assert 不会产生任何代码，否则会显示错误。</p><a class=anchor id=判断程序是否有-assert></a><h2>判断程序是否有 assert <a href=#%e5%88%a4%e6%96%ad%e7%a8%8b%e5%ba%8f%e6%98%af%e5%90%a6%e6%9c%89-assert aria-hidden=true>#</a></h2><p>在 glibc 中，会定义如下的内容：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define assert(e) ((e \
+</span></span></span><span class=line><span class=cl><span class=cp>    ? ((void)0) \
+</span></span></span><span class=line><span class=cl><span class=cp>    :__assert_fail(#e,__FILE__,__LINE__))
+</span></span></span></code></pre></div><p>可以通过 nm 查看程序，判断是否存在 <code>__assert_fail@@GLIBC_2.2.5</code> ，如果存在该函数则说明未关闭 <code>assert()</code> 。</p><p>对于 autotool 可以通过如下的一种方式关闭：</p><ol><li>在 <code>configure.ac</code> 文件中添加 <code>AC_HEADER_ASSERT</code> ，然后如果关闭是添加 <code>--disable-assert</code> 参数，注意，一定要保证源码包含了 <code>config.h</code> 头文件；</li><li>执行 configure 命令前设置环境变量，如 <code>CPPFLAGS="CPPFLAGS=-DNDEBUG" ./configure</code>；</li><li>也可以在 <code>Makefile.am</code> 中设置 <code>AM_CPPFLAGS += -DNDEBUG</code> 参数。</li></ol><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><a class=anchor id=is-not-a-symbolic-link></a><h3>is not a symbolic link <a href=#is-not-a-symbolic-link aria-hidden=true>#</a></h3><p>正常情况下，类似库 <code>libxerces-c-3.0.so</code> 应该是个符号链接，而不是实体文件，对于这种情况只需要修改其为符号链接即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># mv libxerces-c-3.0.so libxerces-c.so.3.0
+</span></span><span class=line><span class=cl># ln -s libxerces-c.so.3.0 libxerces-c-3.0.so
+</span></span></code></pre></div><a class=anchor id=结构体初始化></a><h3>结构体初始化 <a href=#%e7%bb%93%e6%9e%84%e4%bd%93%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h3><p>对于 C 中结构体初始化可以通过如下设置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;stdio.h&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>struct foobar {
+</span></span><span class=line><span class=cl>    int foo;
+</span></span><span class=line><span class=cl>    struct a {
+</span></span><span class=line><span class=cl>        int type;
+</span></span><span class=line><span class=cl>        int value;
+</span></span><span class=line><span class=cl>    } *array;
+</span></span><span class=line><span class=cl>    int length;
+</span></span><span class=line><span class=cl>};
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int main(int argc, char **argv)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    int i = 0;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    struct foobar f = {
+</span></span><span class=line><span class=cl>        .foo = 1,
+</span></span><span class=line><span class=cl>        .length = 3,
+</span></span><span class=line><span class=cl>        .array = (struct a[]){
+</span></span><span class=line><span class=cl>            {.type = 1, .value = 2},
+</span></span><span class=line><span class=cl>            {.type = 1, .value = 3},
+</span></span><span class=line><span class=cl>            {.type = 1, .value = 3}
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>    };
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    for (i = 0; i &lt; f.length; i++)
+</span></span><span class=line><span class=cl>        printf(&#34;&gt;&gt;&gt;&gt; %d %d\n&#34;, i, f.array[i].type);
+</span></span><span class=line><span class=cl>    return 0;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=结构体地址定位></a><h2>结构体地址定位 <a href=#%e7%bb%93%e6%9e%84%e4%bd%93%e5%9c%b0%e5%9d%80%e5%ae%9a%e4%bd%8d aria-hidden=true>#</a></h2><p>通过结构体可以将多种不同类型的对象聚合到一个对象中，编译器会按照成员列表顺序分配内存，不过由于内存对齐机制不同，导致不同架构有所区别，所以各个成员之间可能会有间隙，所以不能简单的通过成员类型所占的字长来推断其它成员或结构体对象的地址。</p><p>假设有如下的一个链表。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>typedef struct list_node {
+</span></span><span class=line><span class=cl>	int ivar;
+</span></span><span class=line><span class=cl>	char cvar;
+</span></span><span class=line><span class=cl>	double dvar;
+</span></span><span class=line><span class=cl>	struct list_node *next;
+</span></span><span class=line><span class=cl>} list_node;
+</span></span></code></pre></div><p>当已知一个变量的地址时，如何获取到某个成员的偏移量，Linux 内核中的实现如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define offsetof(TYPE, MEMBER) ((size_t) &amp;((TYPE *)0)-&gt;MEMBER)
+</span></span></span></code></pre></div><p>当知道了成员偏移量，那么就可以通过结构体成员的地址，反向求结构体的地址，如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define container_of(ptr, type, member) ({
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=k>const</span> <span class=nf>typeof</span><span class=p>(((</span><span class=n>type</span> <span class=o>*</span><span class=p>)</span><span class=mi>0</span><span class=p>)</span><span class=o>-&gt;</span><span class=n>member</span> <span class=p>)</span> <span class=o>*</span><span class=n>__mptr</span> <span class=o>=</span> <span class=p>(</span><span class=n>ptr</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>(</span><span class=n>type</span> <span class=o>*</span><span class=p>)((</span><span class=kt>char</span> <span class=o>*</span><span class=p>)</span><span class=n>__mptr</span> <span class=o>-</span> <span class=nf>offsetof</span><span class=p>(</span><span class=n>type</span><span class=p>,</span><span class=n>member</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>	<span class=p>})</span>
+</span></span></code></pre></div><p>现在很多的动态语言是可以支持动态获取变量类型的，其中 GCC 提供了 <code>typeof</code> 关键字，所不同的是这个只在预编译时，最后实际转化为数据类型被编译器处理。基本用法是这样的：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=n>a</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=nf>typeof</span><span class=p>(</span><span class=n>a</span><span class=p>)</span>  <span class=n>b</span><span class=p>;</span> <span class=c1>// int b;
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nf>typeof</span><span class=p>(</span><span class=o>&amp;</span><span class=n>a</span><span class=p>)</span> <span class=n>c</span><span class=p>;</span> <span class=c1>// int* c;
+</span></span></span></code></pre></div><p>如上的宏定义中， ptr 代表已知成员的地址，type 代表结构体的类型，member 代表已知的成员。</p><p>如下示例，如果 <code>foobar.hello</code> 是通过内存动态获取的，那么就不能通过 <code>container_of()</code> 实现，需要在 <code>struct hello</code> 中保存一个反向指针。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define container_of(ptr, type, member)                         \
+</span></span></span><span class=line><span class=cl><span class=cp>        (type *)((char *)(ptr) - (char *) &amp;((type *)0)-&gt;member)
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>struct</span> <span class=n>hello</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>id</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>struct</span> <span class=n>foobar</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=n>name</span><span class=p>[</span><span class=mi>10</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>hello</span> <span class=o>*</span><span class=n>hello</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>foobar</span> <span class=o>*</span><span class=n>f</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>hello</span> <span class=o>*</span><span class=n>h</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>f</span> <span class=o>=</span> <span class=nf>malloc</span><span class=p>(</span><span class=k>sizeof</span><span class=p>(</span><span class=k>struct</span> <span class=n>foobar</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=n>h</span> <span class=o>=</span> <span class=nf>malloc</span><span class=p>(</span><span class=k>sizeof</span><span class=p>(</span><span class=k>struct</span> <span class=n>hello</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=n>f</span><span class=o>-&gt;</span><span class=n>hello</span> <span class=o>=</span> <span class=n>h</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;foobar=%p foobar.hello=%p</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>f</span><span class=p>,</span> <span class=o>&amp;</span><span class=p>(</span><span class=n>f</span><span class=o>-&gt;</span><span class=n>hello</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* failed */</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;container foobar=%p</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>container_of</span><span class=p>(</span><span class=o>&amp;</span><span class=n>h</span><span class=p>,</span> <span class=k>struct</span> <span class=n>foobar</span><span class=p>,</span> <span class=n>hello</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=指针参数修改></a><h2>指针参数修改 <a href=#%e6%8c%87%e9%92%88%e5%8f%82%e6%95%b0%e4%bf%ae%e6%94%b9 aria-hidden=true>#</a></h2><p>一个比较容易犯错的地方，愿意是在 <code>foobar()</code> 函数内修改 <code>main()</code> 中的 v 指向的变量，其中后者实际上是修改的本地栈中保存的临时版本。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span> <span class=k>struct</span> <span class=n>value_s</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>union</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=o>*</span><span class=n>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span> <span class=n>value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span> <span class=kt>value_t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cp>#if 1
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>void</span> <span class=nf>foobar</span> <span class=p>(</span> <span class=kt>value_t</span> <span class=o>*</span><span class=n>t</span> <span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kt>char</span> <span class=o>**</span><span class=n>v</span> <span class=o>=</span> <span class=o>&amp;</span><span class=n>t</span><span class=o>-&gt;</span><span class=n>value</span><span class=p>.</span><span class=n>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;foobar %p %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=o>*</span><span class=n>v</span><span class=p>,</span> <span class=o>*</span><span class=n>v</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=o>*</span><span class=n>v</span> <span class=o>=</span> <span class=s>&#34;yang&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;foobar %p %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=o>*</span><span class=n>v</span><span class=p>,</span> <span class=o>*</span><span class=n>v</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=cp>#else
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>void</span> <span class=nf>foobar</span> <span class=p>(</span> <span class=kt>value_t</span> <span class=o>*</span><span class=n>t</span> <span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kt>value_t</span> <span class=n>v</span> <span class=o>=</span> <span class=o>*</span><span class=n>t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;foobar %p %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>v</span><span class=p>.</span><span class=n>value</span><span class=p>.</span><span class=n>string</span><span class=p>,</span> <span class=n>v</span><span class=p>.</span><span class=n>value</span><span class=p>.</span><span class=n>string</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=n>v</span><span class=p>.</span><span class=n>value</span><span class=p>.</span><span class=n>string</span> <span class=o>=</span> <span class=s>&#34;yang&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;foobar %p %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>v</span><span class=p>.</span><span class=n>value</span><span class=p>.</span><span class=n>string</span><span class=p>,</span> <span class=n>v</span><span class=p>.</span><span class=n>value</span><span class=p>.</span><span class=n>string</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kt>value_t</span> <span class=n>v</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=n>v</span><span class=p>.</span><span class=n>value</span><span class=p>.</span><span class=n>string</span> <span class=o>=</span> <span class=s>&#34;jin&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;       %p %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>v</span><span class=p>.</span><span class=n>value</span><span class=p>.</span><span class=n>string</span><span class=p>,</span> <span class=n>v</span><span class=p>.</span><span class=n>value</span><span class=p>.</span><span class=n>string</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=nf>foobar</span><span class=p>(</span> <span class=o>&amp;</span><span class=n>v</span> <span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;       %p %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>v</span><span class=p>.</span><span class=n>value</span><span class=p>.</span><span class=n>string</span><span class=p>,</span> <span class=n>v</span><span class=p>.</span><span class=n>value</span><span class=p>.</span><span class=n>string</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>return</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=取固定大小的变量></a><h2>取固定大小的变量 <a href=#%e5%8f%96%e5%9b%ba%e5%ae%9a%e5%a4%a7%e5%b0%8f%e7%9a%84%e5%8f%98%e9%87%8f aria-hidden=true>#</a></h2><p>Linux 每个数据类型的大小可以在 <code>sys/types.h</code> 中查看</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/types.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=k>typedef</span>    <span class=kt>int8_t</span>            <span class=n>S8</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span>    <span class=kt>int16_t</span>           <span class=n>S16</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span>    <span class=kt>int32_t</span>           <span class=n>S32</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span>    <span class=kt>int64_t</span>           <span class=n>S64</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>typedef</span>    <span class=kt>u_int8_t</span>          <span class=n>U8</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span>    <span class=kt>u_int16_t</span>         <span class=n>U16</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span>    <span class=kt>u_int32_t</span>         <span class=n>U32</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span>    <span class=kt>u_int64_t</span>         <span class=n>U64</span><span class=p>;</span>
+</span></span></code></pre></div><a class=anchor id=环境变量></a><h2>环境变量 <a href=#%e7%8e%af%e5%a2%83%e5%8f%98%e9%87%8f aria-hidden=true>#</a></h2><p>简单介绍下 C 中，如何获取以及设置环境变量。</p><p>其中设置环境变量方法包括了 <code>putenv()</code> 以及 <code>setenv()</code> 两种，前者必须是 <code>Key=Value</code> 这种格式，后者则以参数形式传递。</p><p>对于 <code>putenv()</code> 如果环境变量已经存在则替换，而 <code>setenv()</code> 则可以设置是否覆盖 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>char</span> <span class=o>*</span><span class=n>p</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span><span class=p>((</span><span class=n>p</span> <span class=o>=</span> <span class=nf>getenv</span><span class=p>(</span><span class=s>&#34;USER&#34;</span><span class=p>)))</span>
+</span></span><span class=line><span class=cl>		<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;USER = %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>p</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>setenv</span><span class=p>(</span><span class=s>&#34;USER&#34;</span><span class=p>,</span> <span class=s>&#34;test&#34;</span><span class=p>,</span> <span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;USER = %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>getenv</span><span class=p>(</span><span class=s>&#34;USER&#34;</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>putenv</span><span class=p>(</span><span class=s>&#34;NAME=foobar&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;NAME = %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>getenv</span><span class=p>(</span><span class=s>&#34;NAME&#34;</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>unsetenv</span><span class=p>(</span><span class=s>&#34;USER&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;USER = %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>getenv</span><span class=p>(</span><span class=s>&#34;USER&#34;</span><span class=p>));</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=其它-1></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83-1 aria-hidden=true>#</a></h2><a class=anchor id=最大值></a><h3>最大值 <a href=#%e6%9c%80%e5%a4%a7%e5%80%bc aria-hidden=true>#</a></h3><p>一般在 C 中有很多的长度限制，例如 <code>PATH_MAX</code> 路径长度、<code>NAME_MAX</code> 文件名称长度。</p><p>对于 CentOS 来说，一般使用时常见的头文件有：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>/usr/include/linux/limits.h
+</span></span><span class=line><span class=cl>PATH_MAX、NAME_MAX、ARG_MAX etc.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>/usr/include/bits/local_lim.h
+</span></span><span class=line><span class=cl>HOST_NAME_MAX、TTY_NAME_MAX etc.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>/usr/include/limits.h
+</span></span><span class=line><span class=cl>INT_MAX、LONG_MAX etc.
+</span></span></code></pre></div><a class=anchor id=flt_radix></a><h3>FLT_RADIX <a href=#flt_radix aria-hidden=true>#</a></h3><p>C 语言标准库 <code>float.h</code> 中的 <code>FLT_RADIX</code> 常数用于定义指数的基数，也就是以这个数为底的多少次方。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>FLT_RADIX 10     10 的多少次方
+</span></span><span class=line><span class=cl>FLT_RADIX 2       2 的多少次方
+</span></span></code></pre></div><p>例如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#define FLT_MAX_EXP 128
+</span></span><span class=line><span class=cl>#define FLT_RADIX   2
+</span></span></code></pre></div><p>意思是 float 型，最大指数是 128，它的底是 2，也就说最大指数是 2 的 128 方。</p><a class=anchor id=implicit-declaration></a><h4>implicit declaration <a href=#implicit-declaration aria-hidden=true>#</a></h4><p>按常规来讲，出现 <code>implicit declaration of function 'xxxx'</code> 是因为头文件未包含导致的！</p><p>这里是由于 <code>nanosleep()</code> 函数的报错，而实际上 <code>time.h</code> 头文件已经包含了，后来才发现原来是在 <code>Makefile</code> 中添加了 <code>-std=c99</code> 导致，可以通过 <code>-std=gnu99</code> 替换即可。</p><p>另外，不能定义 <code>-D_POSIX_SOURCE</code> 宏。</p><a class=anchor id=多个值赋值></a><h4>多个值赋值 <a href=#%e5%a4%9a%e4%b8%aa%e5%80%bc%e8%b5%8b%e5%80%bc aria-hidden=true>#</a></h4><p>C 语言中如何一次将多个值进行赋值？</p><p>一般来说，对于基本的变量类型，使用比较多的是单个的赋值，实际上也可以一次赋值多个，只是需要点技巧。</p><p>简单来说就是使用结构体，示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>struct</span> <span class=n>foobar</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>count</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>name</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>foobar</span> <span class=n>foo</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=p>.</span><span class=n>count</span> <span class=o>=</span> <span class=mi>0</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=p>.</span><span class=n>name</span> <span class=o>=</span> <span class=s>&#34;foobar&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span> <span class=n>bar</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>bar</span> <span class=o>=</span> <span class=n>foo</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;bar.count = %d, bar.name = &#39;%s&#39;</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>bar</span><span class=p>.</span><span class=n>count</span><span class=p>,</span> <span class=n>bar</span><span class=p>.</span><span class=n>name</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=科学计数></a><h4>科学计数 <a href=#%e7%a7%91%e5%ad%a6%e8%ae%a1%e6%95%b0 aria-hidden=true>#</a></h4><p>使用 C 语言中的科学计数法时，表示 10 的多少次幂，这样就不需要再查有多少个 0 了，示例如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>double a = 1e3;    // a = 1000
+</span></span><span class=line><span class=cl>double b = 1e-3;   // b = 0.001
+</span></span><span class=line><span class=cl>double c = 2.3e2;  // b = 230
+</span></span><span class=line><span class=cl>double d = -1.3e2; // c = -130
+</span></span></code></pre></div><p>需要注意，指数只能是整数，包括正负 0 ，不能将浮点数、变量等作为 e 的指数。</p><a class=anchor id=snprintf></a><h4>snprintf <a href=#snprintf aria-hidden=true>#</a></h4><p>标准库的 snprintf 不会在末尾添加 <code>\0</code> 终止符，返回的长度同样不含 <code>\0</code> ，正常应该做如下的处理。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>int len;
+</span></span><span class=line><span class=cl>char buff[3];
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>len = snprintf(buff, sizeof(buff), &#34;%d\n&#34;, 10);
+</span></span><span class=line><span class=cl>assert(len &gt; 0 &amp;&amp; len &lt; sizeof(buff));
+</span></span><span class=line><span class=cl>if (len &lt; 0 || len &gt;= (int)sizeof(buff)) {
+</span></span><span class=line><span class=cl>    printf(&#34;format failed or no enough buff, rc %d.\n&#34;, len);
+</span></span><span class=line><span class=cl>    return -1;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p><a href=https://github.com/ludocode/schemaless-benchmarks>Schemaless Benchmarking Suite</a></p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#缓冲类型>缓冲类型</a></li><li><a href=#变长数组>变长数组</a></li><li><a href=#调试>调试</a><ul><li><a href=#变参>变参</a></li></ul></li><li><a href=#参数解析>参数解析</a><ul><li><a href=#长选项>长选项</a></li></ul></li><li><a href=#整型溢出>整型溢出</a><ul><li><a href=#无符号整数>无符号整数</a></li></ul></li><li><a href=#assert>assert()</a><ul><li><a href=#判断程序是否有-assert>判断程序是否有 assert</a></li></ul></li><li><a href=#其它>其它</a><ul><li></li><li><a href=#结构体地址定位>结构体地址定位</a></li><li><a href=#指针参数修改>指针参数修改</a></li><li><a href=#取固定大小的变量>取固定大小的变量</a></li><li><a href=#环境变量>环境变量</a></li><li><a href=#其它-1>其它</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

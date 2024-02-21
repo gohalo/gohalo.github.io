@@ -1,0 +1,394 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 自带工具 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="简单介绍下 MySQL 中自带的工具集。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL 自带工具</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-08-19</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a></div></div><hr><div class=content><p>简单介绍下 MySQL 中自带的工具集。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>MySQL 提供了许多命令行工具，这些工具可以用来管理 MySQL 服务器、进行数据库备份和恢复、对数据库进行访问控制、对数据库进行压测等等。</p><p>首先，简单介绍下各个命令行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- MySQL安装、初始化
+</span></span><span class=line><span class=cl>mysql_install_db
+</span></span><span class=line><span class=cl>    初始化 MySQL 数据目录程序，主要是新建数据库，初始化用户；5.7 已使用 mysqld 替换；
+</span></span><span class=line><span class=cl>mysql_secure_installation
+</span></span><span class=line><span class=cl>    安装完之后进行一些安全性配置，例如设置root用户、删除test数据库等；
+</span></span><span class=line><span class=cl>mysql_safe
+</span></span><span class=line><span class=cl>    一个shell脚本程序，用来安全启动mysqld程序；
+</span></span><span class=line><span class=cl>mysql_tzinfo_to_sql
+</span></span><span class=line><span class=cl>    将时区信息转换为SQL语句，可以直接加载到MySQL的mysql.time_zone%文件中；
+</span></span><span class=line><span class=cl>mysql_upgrade
+</span></span><span class=line><span class=cl>    用于升级时检查MySQL表；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- MySQL客户端程序
+</span></span><span class=line><span class=cl>mysql
+</span></span><span class=line><span class=cl>    MySQL命令行程序，用于链接数据库；
+</span></span><span class=line><span class=cl>mysqlslap
+</span></span><span class=line><span class=cl>    压测程序，可以用来简单的对数据库进行性能压测；
+</span></span><span class=line><span class=cl>mysqldump
+</span></span><span class=line><span class=cl>    逻辑备份程序；
+</span></span><span class=line><span class=cl>mysqlimport
+</span></span><span class=line><span class=cl>    数据导入工具；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- MySQL管理和实用程序
+</span></span><span class=line><span class=cl>mysqlbinlog
+</span></span><span class=line><span class=cl>    用于处理二进制日志文件(binlog)，可以用于打印数据；
+</span></span><span class=line><span class=cl>mysqldumpslow
+</span></span><span class=line><span class=cl>    用于处理慢查询日志文件；
+</span></span><span class=line><span class=cl>mysqladmin
+</span></span><span class=line><span class=cl>    用于管理MySQL服务器；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 其它
+</span></span><span class=line><span class=cl>my_print_defaults
+</span></span><span class=line><span class=cl>    读取配置文件中的配置选项；
+</span></span></code></pre></div><a class=anchor id=mysql_tzinfo_to_sql></a><h1>mysql_tzinfo_to_sql <a href=#mysql_tzinfo_to_sql aria-hidden=true>#</a></h1><p>该命令用于加载时区表，首先看下 MySQL 中时区的设置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看MySQL当前时间以及当前时区
+</span></span><span class=line><span class=cl>mysql&gt; SELECT curtime();                      # 也可以使用now()
+</span></span><span class=line><span class=cl>mysql&gt; SHOW VARIABLES LIKE &#34;%time_zone%&#34;;
+</span></span><span class=line><span class=cl>+------------------+--------+
+</span></span><span class=line><span class=cl>|   Variable_name  | Value  |
+</span></span><span class=line><span class=cl>+------------------+--------+
+</span></span><span class=line><span class=cl>| system_time_zone | CST    |                 # system使用CST时区
+</span></span><span class=line><span class=cl>| time_zone        | SYSTEM |                 # 使用system时区，也就是上述的参数
+</span></span><span class=line><span class=cl>+------------------+--------+
+</span></span><span class=line><span class=cl>2 rows in set (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改MySQL时区为北京时间，也即东8区；并立即生效
+</span></span><span class=line><span class=cl>mysql&gt; SET [GLOBAL | SESSION] time_zone=&#39;+8:00&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH PRIVILEGES;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 也可以直接修改配置文件，需要重启服务器
+</span></span><span class=line><span class=cl>$ cat /etc/my.cnf
+</span></span><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>default-time_zone = &#39;+8:00&#39;
+</span></span></code></pre></div><p>Linux 系统中，与时区相关的内容保存在 <code>/usr/share/zoneinfo</code> 目录下；MySQL 中与时区相关的信息保存在 <code>mysql.time_zone%</code> 表中，可以通过该命令将时区信息导入到 MySQL 中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 将全部时区信息，或者指定时区信息转换为SQL，并导入到MySQL中
+</span></span><span class=line><span class=cl>$ mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
+</span></span><span class=line><span class=cl>$ mysql_tzinfo_to_sql tz_file tz_name | mysql -u root mysql
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 如果有闰秒，则同时设置
+</span></span><span class=line><span class=cl>$ mysql_tzinfo_to_sql --leap tz_file | mysql -u root mysql
+</span></span></code></pre></div><a class=anchor id=mysqlslap></a><h1>mysqlslap <a href=#mysqlslap aria-hidden=true>#</a></h1><p>这是一个压测工具，源码在 <code>client/mysqlslap.c</code>，测试的步骤为：A) 创建数据库+表；B) 插入测试数据；C) 执行压测；D) 删除创建的数据库。</p><p>常见参数为：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>--delimiter
+</span></span><span class=line><span class=cl>    分隔符，用于分割命令行或文件指定的SQL；
+</span></span><span class=line><span class=cl>--auto-generate-sql, -a
+</span></span><span class=line><span class=cl>    自动生成测试表和数据，并自动生成 SQL 脚本来测试并发压力；
+</span></span><span class=line><span class=cl>--create-schema (mysqlslap)
+</span></span><span class=line><span class=cl>    测试 schema 名称，也就是 database；
+</span></span><span class=line><span class=cl>--only-print
+</span></span><span class=line><span class=cl>    只打印测试语句而不实际执行；
+</span></span><span class=line><span class=cl>--concurrency=N, -c N
+</span></span><span class=line><span class=cl>    控制并发，用于模拟多少个客户端同时执行select，可以指定多个数值，用于不同迭代时的并发；
+</span></span><span class=line><span class=cl>--iterations=N, -i N
+</span></span><span class=line><span class=cl>    执行的迭代次数，代表要在不同并发环境下，各自运行测试多少次；
+</span></span><span class=line><span class=cl>--number-of-queries=N
+</span></span><span class=line><span class=cl>    总的测试查询次数，其值 = 并发客户数 x 每次查询数；
+</span></span><span class=line><span class=cl>--debug-info, -T
+</span></span><span class=line><span class=cl>    最后执行结果打印内存和 CPU 的相关信息；
+</span></span><span class=line><span class=cl>--auto-generate-sql-load-type=type
+</span></span><span class=line><span class=cl>    测试语句的类型，代表要测试的环境是读操作还是写操作还是两者混合的，取值包括：read，key，write，update和mixed(默认)；
+</span></span><span class=line><span class=cl>--auto-generate-sql-add-auto-increment
+</span></span><span class=line><span class=cl>    代表对生成的表自动添加auto_increment列，从5.1.18版本开始支持；
+</span></span><span class=line><span class=cl>--number-char-cols=N, -x N
+</span></span><span class=line><span class=cl>    自动生成的测试表中包含多少个字符类型的列，默认1；
+</span></span><span class=line><span class=cl>--number-int-cols=N, -y N
+</span></span><span class=line><span class=cl>    自动生成的测试表中包含多少个数字类型的列，默认1；
+</span></span><span class=line><span class=cl>--query=name,-q
+</span></span><span class=line><span class=cl>    使用自定义脚本执行测试，例如可以调用自定义的一个存储过程或者sql语句来执行测试；
+</span></span><span class=line><span class=cl>--commint=N
+</span></span><span class=line><span class=cl>    多少条DML后提交一次；
+</span></span><span class=line><span class=cl>--compress, -C
+</span></span><span class=line><span class=cl>    如果服务器和客户端支持都压缩，则压缩信息传递；
+</span></span><span class=line><span class=cl>--engine=engine_name, -e engine_name
+</span></span><span class=line><span class=cl>    代表要测试的引擎，可以有多个，用分隔符隔开。例如：--engines=myisam,innodb；
+</span></span><span class=line><span class=cl>--detach=N
+</span></span><span class=line><span class=cl>    执行N条语句后断开重连。
+</span></span></code></pre></div><p>如下是常见的测试用例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 单线程测试，打印执行的SQL，查看具体做了什么
+</span></span><span class=line><span class=cl>$ mysqlslap --auto-generate-sql --only-print -uroot -pYourPassword
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 设置并发以及循环次数，也就是说在并发为10,20,50时，均执行4次，返回10,20,50时的统计结果
+</span></span><span class=line><span class=cl>$ mysqlslap --auto-generate-sql --concurrency=10,20,50 --iterations=4 --number-of-queries 1000 \
+</span></span><span class=line><span class=cl>    -uroot -pYourPassword
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 测试不同类型存储引擎的性能指标
+</span></span><span class=line><span class=cl>$ mysqlslap --auto-generate-sql --concurrency=10,20,50 --iterations=4 --number-of-queries 1000 \
+</span></span><span class=line><span class=cl>    --engine=myisam,innodb -uroot -pYourPassword
+</span></span></code></pre></div><a class=anchor id=mysqldump></a><h1>mysqldump <a href=#mysqldump aria-hidden=true>#</a></h1><p>这是一个逻辑备份工具，其处理流程基本如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-mysql data-lang=mysql><span class=line><span class=cl><span class=mi>01</span><span class=w> </span><span class=n>Connect</span><span class=w>     </span><span class=n>root</span><span class=o>@</span><span class=n>localhost</span><span class=w> </span><span class=k>on</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>02</span><span class=w> </span><span class=n>Query</span><span class=w>       </span><span class=cm>/*!40100 SET @@SQL_MODE=&#39;&#39; */</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>03</span><span class=w> </span><span class=n>Init</span><span class=w> </span><span class=n>DB</span><span class=w>     </span><span class=n>foobar</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>04</span><span class=w> </span><span class=n>Query</span><span class=w>       </span><span class=k>SHOW</span><span class=w> </span><span class=kp>TABLES</span><span class=w> </span><span class=k>LIKE</span><span class=w> </span><span class=s1>&#39;foobar&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>05</span><span class=w> </span><span class=n>Query</span><span class=w>       </span><span class=k>LOCK</span><span class=w> </span><span class=kp>TABLES</span><span class=w> </span><span class=o>`</span><span class=n>foobar</span><span class=o>`</span><span class=w> </span><span class=k>READ</span><span class=w> </span><span class=cm>/*!32311 LOCAL */</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>06</span><span class=w> </span><span class=n>Query</span><span class=w>       </span><span class=kt>SET</span><span class=w> </span><span class=k>OPTION</span><span class=w> </span><span class=n>SQL_QUOTE_SHOW_CREATE</span><span class=o>=</span><span class=mi>1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>07</span><span class=w> </span><span class=n>Query</span><span class=w>       </span><span class=k>SHOW</span><span class=w> </span><span class=k>CREATE</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=o>`</span><span class=n>foobar</span><span class=o>`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>08</span><span class=w> </span><span class=n>Query</span><span class=w>       </span><span class=k>SHOW</span><span class=w> </span><span class=n>FIELDS</span><span class=w> </span><span class=k>FROM</span><span class=w> </span><span class=o>`</span><span class=n>foobar</span><span class=o>`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>09</span><span class=w> </span><span class=n>Query</span><span class=w>       </span><span class=k>SHOW</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=n>STATUS</span><span class=w> </span><span class=k>LIKE</span><span class=w> </span><span class=s1>&#39;foobar&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>11</span><span class=w> </span><span class=n>Query</span><span class=w>       </span><span class=k>SELECT</span><span class=w> </span><span class=o>*</span><span class=w> </span><span class=k>FROM</span><span class=w> </span><span class=o>`</span><span class=n>foobar</span><span class=o>`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>12</span><span class=w> </span><span class=n>Query</span><span class=w>       </span><span class=k>UNLOCK</span><span class=w> </span><span class=kp>TABLES</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>13</span><span class=w> </span><span class=n>Quit</span><span class=w>
+</span></span></span></code></pre></div><p>接下来，主要查看一些常见的参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-mysql data-lang=mysql><span class=line><span class=cl><span class=o>-</span><span class=n>q</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=err>导出数据时加了一个</span><span class=n>SQL_NO_CACHE</span><span class=err>来确保不会读取缓存里的数据，第</span><span class=mi>11</span><span class=err>行修改如下；</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Query</span><span class=w>       </span><span class=k>SELECT</span><span class=w> </span><span class=cm>/*!40001 SQL_NO_CACHE */</span><span class=w> </span><span class=o>*</span><span class=w> </span><span class=k>FROM</span><span class=w> </span><span class=o>`</span><span class=n>foobar</span><span class=o>`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>--</span><span class=k>lock</span><span class=o>-</span><span class=kp>tables</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=err>跟上面类似，不过多加了一个</span><span class=n>READ</span><span class=w> </span><span class=n>LOCAL</span><span class=w> </span><span class=k>LOCK</span><span class=err>，该锁不会阻止读，也不会阻止新的数据插入；</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>--</span><span class=k>lock</span><span class=o>-</span><span class=k>all</span><span class=o>-</span><span class=kp>tables</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=err>备份前会发起一个全局的读锁，会阻止对所有表的写入，以此确保数据的一致性，备份完成后会话断开，会自动解锁；</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=err>会在开头增加如下命令；</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Query</span><span class=w>       </span><span class=k>FLUSH</span><span class=w> </span><span class=kp>TABLES</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Query</span><span class=w>       </span><span class=k>FLUSH</span><span class=w> </span><span class=kp>TABLES</span><span class=w> </span><span class=k>WITH</span><span class=w> </span><span class=k>READ</span><span class=w> </span><span class=k>LOCK</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>--</span><span class=n>master</span><span class=o>-</span><span class=n>data</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=err>和</span><span class=o>--</span><span class=k>lock</span><span class=o>-</span><span class=k>all</span><span class=o>-</span><span class=n>tables</span><span class=err>参数相同，同时多了个</span><span class=n>SHOW</span><span class=w> </span><span class=n>MASTER</span><span class=w> </span><span class=n>STATUS</span><span class=err>命令；</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Query</span><span class=w>       </span><span class=k>FLUSH</span><span class=w> </span><span class=kp>TABLES</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Query</span><span class=w>       </span><span class=k>FLUSH</span><span class=w> </span><span class=kp>TABLES</span><span class=w> </span><span class=k>WITH</span><span class=w> </span><span class=k>READ</span><span class=w> </span><span class=k>LOCK</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Query</span><span class=w>       </span><span class=k>SHOW</span><span class=w> </span><span class=n>MASTER</span><span class=w> </span><span class=n>STATUS</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>--</span><span class=n>single</span><span class=o>-</span><span class=n>transaction</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>InnoDB</span><span class=err>表在备份时，通常会启用参数来保证备份的一致性，其工作原理是设定本次会话的隔离级别为</span><span class=n>REPEATABLE</span><span class=w> </span><span class=k>READ</span><span class=err>，</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=err>以确保本次会话</span><span class=p>(</span><span class=n>dump</span><span class=p>)</span><span class=err>时，不会看到其他会话已经提交了的数据；同样开始增加如下命令：</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Query</span><span class=w>       </span><span class=kt>SET</span><span class=w> </span><span class=n>SESSION</span><span class=w> </span><span class=n>TRANSACTION</span><span class=w> </span><span class=n>ISOLATION</span><span class=w> </span><span class=n>LEVEL</span><span class=w> </span><span class=n>REPEATABLE</span><span class=w> </span><span class=k>READ</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Query</span><span class=w>       </span><span class=n>BEGIN</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Query</span><span class=w>       </span><span class=k>UNLOCK</span><span class=w> </span><span class=kp>TABLES</span><span class=w>
+</span></span></span></code></pre></div><a class=anchor id=mysqldumpslow></a><h1>mysqldumpslow <a href=#mysqldumpslow aria-hidden=true>#</a></h1><p>该命令用于处理慢查询日志，这是一个 Perl 脚本程序。首先，需要设置好配置文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat /etc/my.cnf
+</span></span><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>long_query_time=2                    # 设置慢查询的超时时间，单位为秒
+</span></span><span class=line><span class=cl>log-slow-queries=slow-query.log
+</span></span></code></pre></div><p>另外，可以通过 <code>log-queries-not-using-indexes</code> 参数设置没有使用索引的 SQL 。</p><p>可以使用该命令查看慢查询日志，常用的命令可以通过如下方式查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>常用参数：
+</span></span><span class=line><span class=cl>   -h    : 查看帮助信息；
+</span></span><span class=line><span class=cl>   -t NUM: 显示头NUM条记录；
+</span></span><span class=line><span class=cl>   -s ARG: 排序参数，有如下的选项，其中前面添加a表示倒序，如ac、at、al、ar；
+</span></span><span class=line><span class=cl>        c: 记录的次数；
+</span></span><span class=line><span class=cl>        t: 查询时的时间戳；
+</span></span><span class=line><span class=cl>        l: 查询使用的时间；
+</span></span><span class=line><span class=cl>        r: 返回记录数目；
+</span></span><span class=line><span class=cl>   -g REG: 根据正则表达式进行匹配，大小写不敏感；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>实例：
+</span></span><span class=line><span class=cl>----- 返回访问次数最多的20个SQL语句
+</span></span><span class=line><span class=cl>$ mysqldumpslow -s c -t 20 slow-query.log
+</span></span><span class=line><span class=cl>----- 按照时间返回前10条里面含有左连接的SQL语句
+</span></span><span class=line><span class=cl>$ mysqldumpslow -s t -t 10 -g &#34;left join&#34; slow-query.log
+</span></span></code></pre></div><p>通过这个工具可以查询出来那些 SQL 语句是性能的瓶颈，如下是上述命令的输出：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Count: 2  Time=2.31s (5s)  Lock=0.00s (0s)  Rows=1000.0 (2000), root[root]@[localhost]
+</span></span><span class=line><span class=cl>    SELECT * FROM sms_send WHERE service_id&lt;=N GROUP BY content LIMIT N, N;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>输出解析：
+</span></span><span class=line><span class=cl>    出现次数(Count) 2；
+</span></span><span class=line><span class=cl>    最大耗时时间(Time) 2.31s；
+</span></span><span class=line><span class=cl>    累计总耗费时间(Time) 5s；
+</span></span><span class=line><span class=cl>    等待锁的时间(Lock) 0.00s；
+</span></span><span class=line><span class=cl>    等待锁的总耗时(Lock) 0s；
+</span></span><span class=line><span class=cl>    发送给客户端的行总数(Rows) 1000；
+</span></span><span class=line><span class=cl>    扫描的行总数(Rows) 2000；
+</span></span><span class=line><span class=cl>    用户以及SQL语句本身，其中的数字会被替换为N。
+</span></span></code></pre></div><a class=anchor id=mysqlcheck></a><h1>mysqlcheck <a href=#mysqlcheck aria-hidden=true>#</a></h1><p>数据库经常可能遇到错误，譬如数据写入磁盘时发生错误、索引没有同步更新、数据库宕机等；从而可能会导致数据库异常。</p><p>mysqlcheck 的功能类似 myisamchk，但其工作不同，前者需要在服务器运行的时候执行，而后者需要停服务。</p><p>实际上，mysqlcheck 只是提供了一种方便的使用 SQL 语句的方式，会根据不同类型拼接 SQL 语句，真正调用的还是 <code>CHECK TABLE</code>、<code>REPAIR TABLE</code>、<code>ANALYZE TABLE</code> 和 <code>OPTIMIZE TABLE</code> 命令。</p><p>可以通过 3 种方式来调用 mysqlcheck 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 检查表
+</span></span><span class=line><span class=cl>$ mysqlcheck [options] db_name [tables]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 检查多个数据库
+</span></span><span class=line><span class=cl>$ mysqlcheck [options] ---database DB1 [DB2 DB3...]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 检查所有的数据库
+</span></span><span class=line><span class=cl>$ mysqlcheck [options] --all--database
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>选项：
+</span></span><span class=line><span class=cl>  --database，-B
+</span></span><span class=line><span class=cl>    指定数据库名，可以为多个；
+</span></span><span class=line><span class=cl>  --all--database，-A
+</span></span><span class=line><span class=cl>    检查所有数据库；
+</span></span></code></pre></div><p>源码在 <code>client/check</code> 目录下，处理过程简单介绍如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>main()
+</span></span><span class=line><span class=cl> |-get_options()                    ← 加载配置文件默认配置
+</span></span><span class=line><span class=cl> | |-load_defaults()                ← 通过load_default_groups指定配置文件加载的groups
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-mysql_check()
+</span></span><span class=line><span class=cl>   |-disable_binlog()               ← 根据参数设置SET SQL_LOG_BIN=0
+</span></span><span class=line><span class=cl>   |-process_all_databases()        ← 处理所有数据库
+</span></span><span class=line><span class=cl>   | |-process_one_db()
+</span></span><span class=line><span class=cl>   |   |-process_all_tables_in_db()
+</span></span><span class=line><span class=cl>   |     |-process_selected_tables()
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-process_selected_tables()
+</span></span><span class=line><span class=cl>   | |-handle_request_for_tables()  ← 真正的拼接命令处
+</span></span><span class=line><span class=cl>   |
+</span></span><span class=line><span class=cl>   |-process_databases()
+</span></span></code></pre></div><p>其中 <code>handle_request_for_tables()</code> 函数的处理流程如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=k>static</span> <span class=kt>int</span> <span class=nf>handle_request_for_tables</span><span class=p>(</span><span class=n>string</span> <span class=n>tables</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=n>string</span> <span class=n>operation</span><span class=p>,</span> <span class=n>options</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>switch</span> <span class=p>(</span><span class=n>what_to_do</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nl>DO_CHECK</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=n>operation</span> <span class=o>=</span> <span class=s>&#34;CHECK&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>opt_quick</span><span class=p>)</span>              <span class=n>options</span><span class=o>+=</span> <span class=s>&#34; QUICK&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>opt_fast</span><span class=p>)</span>               <span class=n>options</span><span class=o>+=</span> <span class=s>&#34; FAST&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>opt_medium_check</span><span class=p>)</span>       <span class=n>options</span><span class=o>+=</span> <span class=s>&#34; MEDIUM&#34;</span><span class=p>;</span> <span class=cm>/* Default */</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>opt_extended</span><span class=p>)</span>           <span class=n>options</span><span class=o>+=</span> <span class=s>&#34; EXTENDED&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>opt_check_only_changed</span><span class=p>)</span> <span class=n>options</span><span class=o>+=</span> <span class=s>&#34; CHANGED&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>opt_upgrade</span><span class=p>)</span>            <span class=n>options</span><span class=o>+=</span> <span class=s>&#34; FOR UPGRADE&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nl>DO_REPAIR</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=n>operation</span><span class=o>=</span> <span class=p>(</span><span class=n>opt_write_binlog</span><span class=p>)</span> <span class=o>?</span> <span class=s>&#34;REPAIR&#34;</span> <span class=o>:</span> <span class=s>&#34;REPAIR NO_WRITE_TO_BINLOG&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>opt_quick</span><span class=p>)</span>              <span class=n>options</span><span class=o>+=</span> <span class=s>&#34; QUICK&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>opt_extended</span><span class=p>)</span>           <span class=n>options</span><span class=o>+=</span> <span class=s>&#34; EXTENDED&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>opt_frm</span><span class=p>)</span>                <span class=n>options</span><span class=o>+=</span> <span class=s>&#34; USE_FRM&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nl>DO_ANALYZE</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=n>operation</span><span class=o>=</span> <span class=p>(</span><span class=n>opt_write_binlog</span><span class=p>)</span> <span class=o>?</span> <span class=s>&#34;ANALYZE&#34;</span> <span class=o>:</span> <span class=s>&#34;ANALYZE NO_WRITE_TO_BINLOG&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nl>DO_OPTIMIZE</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=n>operation</span><span class=o>=</span> <span class=p>(</span><span class=n>opt_write_binlog</span><span class=p>)</span> <span class=o>?</span> <span class=s>&#34;OPTIMIZE&#34;</span> <span class=o>:</span> <span class=s>&#34;OPTIMIZE NO_WRITE_TO_BINLOG&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nl>DO_UPGRADE</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>fix_table_storage_name</span><span class=p>(</span><span class=n>tables</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=n>string</span> <span class=n>query</span><span class=o>=</span> <span class=n>operation</span> <span class=o>+</span> <span class=s>&#34; TABLE &#34;</span> <span class=o>+</span> <span class=n>tables</span> <span class=o>+</span> <span class=s>&#34; &#34;</span> <span class=o>+</span> <span class=n>options</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>mysql_real_query</span><span class=p>(</span><span class=n>sock</span><span class=p>,</span> <span class=n>query</span><span class=p>.</span><span class=n>c_str</span><span class=p>(),</span> <span class=p>(</span><span class=n>ulong</span><span class=p>)</span><span class=n>query</span><span class=p>.</span><span class=n>length</span><span class=p>()))</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>DBError</span><span class=p>(</span><span class=n>sock</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=s>&#34;when executing &#39;&#34;</span> <span class=o>+</span> <span class=n>operation</span> <span class=o>+</span> <span class=s>&#34; TABLE ... &#34;</span> <span class=o>+</span> <span class=n>options</span> <span class=o>+</span> <span class=s>&#34;&#39;&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=n>print_result</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>也即是实际上会生成如下的命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>   CHECK TABLE table_name {QUICK|FAST|MEDIUM|EXTENDED|CHANGED|FOR UPGRADE}
+</span></span><span class=line><span class=cl>  REPAIR NO_WRITE_TO_BINLOG TABLE table_name {QUICK|EXTENDED|USE_FRM}
+</span></span><span class=line><span class=cl> ANALYZE NO_WRITE_TO_BINLOG TABLE table_name
+</span></span><span class=line><span class=cl>OPTIMIZE NO_WRITE_TO_BINLOG TABLE table_name
+</span></span></code></pre></div><p>每个表会记录最近的一次检查时间，可以通过如下命令查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SELECT table_name, check_time FROM information_schema.tables
+</span></span><span class=line><span class=cl>          WHERE table_name = &#39;tbl-name&#39; AND table_schema = &#39;db-name&#39;;
+</span></span></code></pre></div><a class=anchor id=mysqladmin></a><h1>mysqladmin <a href=#mysqladmin aria-hidden=true>#</a></h1><p>该工具最常见的是用来关闭数据库，还可以查看 MySQL 运行状态、进程信息、关闭进程等，如下是常用的子命令；所有命令可以通过 <code>--help</code> 查看帮助文档。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysqladmin [option] command [command-option] command ......
+</span></span><span class=line><span class=cl>参数如下：
+</span></span><span class=line><span class=cl>  extended-status
+</span></span><span class=line><span class=cl>    可获得所有MySQL性能指标，即SHOW GLOBAL STATUS的输出
+</span></span><span class=line><span class=cl>  status
+</span></span><span class=line><span class=cl>    获取当前MySQL的几个基本的状态值，包括线程数、查询量、慢查询等
+</span></span><span class=line><span class=cl>  variables
+</span></span><span class=line><span class=cl>    打印出可用变量
+</span></span><span class=line><span class=cl>  ping
+</span></span><span class=line><span class=cl>    查看服务器是否存活
+</span></span><span class=line><span class=cl>  shutdown
+</span></span><span class=line><span class=cl>    关掉服务器
+</span></span><span class=line><span class=cl>  processlist
+</span></span><span class=line><span class=cl>    显示服务其中活跃线程列表
+</span></span><span class=line><span class=cl>  version
+</span></span><span class=line><span class=cl>    得到服务器的版本信息
+</span></span><span class=line><span class=cl>  password &#39;new-password&#39;
+</span></span><span class=line><span class=cl>    新口令，将老口令改为新口令
+</span></span></code></pre></div><a class=anchor id=extended-status></a><h2>extended-status <a href=#extended-status aria-hidden=true>#</a></h2><p>默认输出的都是累计值，可以通过 <code>-r/--relative</code> 查看各个指标的差值；然后再配合 <code>-i/--sleep</code> 指定刷新的频率。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ mysqladmin -uroot -pnew-password -h127.1 -P3307 -r -i 1 extended-status |\
+</span></span><span class=line><span class=cl>   grep &#34;Questions\|Queries\|Innodb_rows\|Com_select \|Com_insert \|Com_update \|Com_delete&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ mysqladmin -uroot -pnew-password -h127.1 -P3307 -r -i 1 extended-status |\
+</span></span><span class=line><span class=cl>   awk -F&#34;|&#34; &#39;{\
+</span></span><span class=line><span class=cl>     if($2 ~ /Variable_name/){\
+</span></span><span class=line><span class=cl>       print &#34; &lt;-------------    &#34;  strftime(&#34;%H:%M:%S&#34;) &#34;    -------------&gt;&#34;;\
+</span></span><span class=line><span class=cl>     }\
+</span></span><span class=line><span class=cl>     if($2 ~ /Questions|Queries|Innodb_rows|Com_select |Com_insert |Com_update |Com_delete/)\
+</span></span><span class=line><span class=cl>       print $2 $3;\
+</span></span><span class=line><span class=cl>   }&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ mysqladmin -uroot -pnew-password -h127.1 -P3307 -r -i 1 extended-status |\
+</span></span><span class=line><span class=cl>   awk &#39;BEGIN{ FS=&#34;|&#34;; count=0; } { \
+</span></span><span class=line><span class=cl>   if($2 ~ /Variable_name/ &amp;&amp; ((++count)%20 == 1)){ \
+</span></span><span class=line><span class=cl>       print &#34;----------|---------|--- MySQL Command Status --|----- Innodb row operation ----&#34;;\
+</span></span><span class=line><span class=cl>       print &#34;---Time---|---QPS---|select insert update delete|  read inserted updated deleted&#34;;\
+</span></span><span class=line><span class=cl>   } \
+</span></span><span class=line><span class=cl>   else if ($2 ~ /Queries/){queries=$3;}\
+</span></span><span class=line><span class=cl>   else if ($2 ~ /Com_select /){com_select=$3;}\
+</span></span><span class=line><span class=cl>   else if ($2 ~ /Com_insert /){com_insert=$3;}\
+</span></span><span class=line><span class=cl>   else if ($2 ~ /Com_update /){com_update=$3;}\
+</span></span><span class=line><span class=cl>   else if ($2 ~ /Com_delete /){com_delete=$3;}\
+</span></span><span class=line><span class=cl>   else if ($2 ~ /Innodb_rows_read/){innodb_rows_read=$3;}\
+</span></span><span class=line><span class=cl>   else if ($2 ~ /Innodb_rows_deleted/){innodb_rows_deleted=$3;}\
+</span></span><span class=line><span class=cl>   else if ($2 ~ /Innodb_rows_inserted/){innodb_rows_inserted=$3;}\
+</span></span><span class=line><span class=cl>   else if ($2 ~ /Innodb_rows_updated/){innodb_rows_updated=$3;}\
+</span></span><span class=line><span class=cl>   else if ($2 ~ /Uptime / &amp;&amp; count &gt;= 2){\
+</span></span><span class=line><span class=cl>     printf(&#34; %s |%9d&#34;,strftime(&#34;%H:%M:%S&#34;),queries);\
+</span></span><span class=line><span class=cl>     printf(&#34;|%6d %6d %6d %6d&#34;,com_select,com_insert,com_update,com_delete);\
+</span></span><span class=line><span class=cl>     printf(&#34;|%6d %8d %7d %7d\n&#34;,innodb_rows_read,innodb_rows_inserted,innodb_rows_updated,innodb_rows_deleted);\
+</span></span><span class=line><span class=cl>   }}&#39;
+</span></span></code></pre></div><a class=anchor id=mysqlbinlog></a><h1>mysqlbinlog <a href=#mysqlbinlog aria-hidden=true>#</a></h1><p>二进制日志 (Binary Log) 是由多个事件 (events) 组成，用于描述对于数据库的修改内容，MySQL 服务器以二进制的形式写入，可以通过该工具显示文件中具体事件的内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 备份时指定多个binlog文件
+</span></span><span class=line><span class=cl>$ mysqlbinlog --stop-date=&#34;2015-04-20 9:59:59&#34; mysql-bin.[0-9]* | \
+</span></span><span class=line><span class=cl>    mysql -u root -pyour-password
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 只恢复单个库example
+</span></span><span class=line><span class=cl>$ mysqlbinlog --stop-date=&#34;2015-04-20 9:59:59&#34; mysql-bin.000001 | \
+</span></span><span class=line><span class=cl>    mysql -u root -pyour-password --one-database example
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 指定起始时间以及库
+</span></span><span class=line><span class=cl>$ mysqlbinlog --start-datetime=&#39;2015-08-05 00:00:00&#39; --stop-datetime=&#39;2015-08-05 10:00:00&#39; \
+</span></span><span class=line><span class=cl>    --database=db_name mysql-bin.000001
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 也可以指定binlog的position位置
+</span></span><span class=line><span class=cl>$ mysqlbinlog --start-postion=107 --stop-position=1000 --database=db_name mysql-bin.000001
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 从远程服务器读取
+</span></span><span class=line><span class=cl>$ mysqlbinlog -u username -p password -h127.1 -P3306 --read-from-remote-server \
+</span></span><span class=line><span class=cl>    --start-datetime=&#39;2015-08-05 00:00:00&#39; --stop-datetime=&#39;2015-08-05 10:00:00&#39; mysql-bin.000001
+</span></span></code></pre></div><a class=anchor id=row格式解析></a><h2>ROW格式解析 <a href=#row%e6%a0%bc%e5%bc%8f%e8%a7%a3%e6%9e%90 aria-hidden=true>#</a></h2><p>首先准备下数据。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=line><span class=cl><span class=k>CREATE</span><span class=w> </span><span class=k>DATABASE</span><span class=w> </span><span class=n>test</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>USE</span><span class=w> </span><span class=n>test</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>CREATE</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=n>foobar</span><span class=w> </span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>id</span><span class=w> </span><span class=nb>INT</span><span class=w> </span><span class=n>UNSIGNED</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>NULL</span><span class=w> </span><span class=n>AUTO_INCREMENT</span><span class=w> </span><span class=k>PRIMARY</span><span class=w> </span><span class=k>KEY</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>name</span><span class=w> </span><span class=nb>CHAR</span><span class=p>(</span><span class=mi>20</span><span class=p>)</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>NULL</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>sex</span><span class=w> </span><span class=n>ENUM</span><span class=p>(</span><span class=s1>&#39;F&#39;</span><span class=p>,</span><span class=s1>&#39;M&#39;</span><span class=p>)</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>NULL</span><span class=w> </span><span class=k>DEFAULT</span><span class=w> </span><span class=s1>&#39;M&#39;</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>address</span><span class=w> </span><span class=nb>VARCHAR</span><span class=p>(</span><span class=mi>30</span><span class=p>)</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>NULL</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>)</span><span class=w> </span><span class=n>Engine</span><span class=o>=</span><span class=n>InnoDB</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>INSERT</span><span class=w> </span><span class=k>INTO</span><span class=w> </span><span class=n>foobar</span><span class=p>(</span><span class=n>name</span><span class=p>,</span><span class=n>sex</span><span class=p>,</span><span class=n>address</span><span class=p>)</span><span class=w> </span><span class=k>VALUES</span><span class=p>(</span><span class=s1>&#39;Barton&#39;</span><span class=p>,</span><span class=s1>&#39;M&#39;</span><span class=p>,</span><span class=s1>&#39;Washington&#39;</span><span class=p>),(</span><span class=s1>&#39;Borg&#39;</span><span class=p>,</span><span class=s1>&#39;M&#39;</span><span class=p>,</span><span class=s1>&#39;New Mexico&#39;</span><span class=p>),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>(</span><span class=s1>&#39;Steven&#39;</span><span class=p>,</span><span class=s1>&#39;M&#39;</span><span class=p>,</span><span class=s1>&#39;Colorado&#39;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>UPDATE</span><span class=w> </span><span class=n>foobar</span><span class=w> </span><span class=k>SET</span><span class=w> </span><span class=n>address</span><span class=o>=</span><span class=s1>&#39;Texas&#39;</span><span class=p>;</span><span class=w>
+</span></span></span></code></pre></div><p>可以直接通过 mysqlbinlog 解析。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-mysql data-lang=mysql><span class=line><span class=cl><span class=o>---</span><span class=c1>-- 解析ROW格式binlog文件
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=err>$</span><span class=w> </span><span class=n>mysqlbinlog</span><span class=w> </span><span class=o>--</span><span class=n>no</span><span class=o>-</span><span class=n>defaults</span><span class=w> </span><span class=o>-</span><span class=n>v</span><span class=w> </span><span class=o>-</span><span class=n>v</span><span class=w> </span><span class=o>--</span><span class=n>base64</span><span class=o>-</span><span class=n>output</span><span class=o>=</span><span class=n>DECODE</span><span class=o>-</span><span class=n>ROWS</span><span class=w> </span><span class=n>mysql</span><span class=o>-</span><span class=n>bin</span><span class=p>.</span><span class=mi>000003</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>...</span><span class=w> </span><span class=p>...</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>### INSERT INTO `test`.`foobar`
+</span></span></span><span class=line><span class=cl><span class=c1>### SET
+</span></span></span><span class=line><span class=cl><span class=c1>###   @1=1 /* INT meta=0 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1>###   @2=&#39;Barton&#39; /* STRING(60) meta=65084 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1>###   @3=2 /* ENUM(1 byte) meta=63233 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1>###   @4=&#39;Washington&#39; /* VARSTRING(90) meta=90 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>...</span><span class=w> </span><span class=p>...</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>### UPDATE `test`.`foobar`
+</span></span></span><span class=line><span class=cl><span class=c1>### WHERE
+</span></span></span><span class=line><span class=cl><span class=c1>###   @1=3 /* INT meta=0 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1>###   @2=&#39;Steven&#39; /* STRING(60) meta=65084 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1>###   @3=2 /* ENUM(1 byte) meta=63233 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1>###   @4=&#39;Colorado&#39; /* VARSTRING(90) meta=90 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1>### SET
+</span></span></span><span class=line><span class=cl><span class=c1>###   @1=3 /* INT meta=0 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1>###   @2=&#39;Steven&#39; /* STRING(60) meta=65084 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1>###   @3=2 /* ENUM(1 byte) meta=63233 nullable=0 is_null=0 */
+</span></span></span><span class=line><span class=cl><span class=c1>###   @4=&#39;Texas&#39; /* VARSTRING(90) meta=90 nullable=0 is_null=0 */
+</span></span></span></code></pre></div><p><code>@1</code>、<code>@2</code>、<code>@3</code>、<code>@4</code> 分别代表了第 <code>1~4</code> 列。</p><a class=anchor id=innochecksum></a><h1>innochecksum <a href=#innochecksum aria-hidden=true>#</a></h1><p>使用该工具时必须停止 MySQL 服务器，否则会报 <code>Unable to lock file</code> 错误，如果是在线的最好使用 <code>CHECK TABLE</code> 命令。</p><p>简单来说，该工具会读取 InnoDB 的表空间，计算每个页的 Checksum 值，然后与页中的值比较，如果不同则会报错。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>innochecksum --verbose=FALSE --log=/tmp/innocheck.log
+</span></span><span class=line><span class=cl>常用参数：
+</span></span><span class=line><span class=cl>  --help/info
+</span></span><span class=line><span class=cl>    查看帮助信息；
+</span></span><span class=line><span class=cl>  --verbose
+</span></span><span class=line><span class=cl>    打印详细信息，可以通过--verbose=FALSE关闭；
+</span></span><span class=line><span class=cl>  --count/-c
+</span></span><span class=line><span class=cl>    只打印页的数量信息；
+</span></span><span class=line><span class=cl>  --start-page=NUM/-s NUM; --end-page=NUM/-e NUM; --page=NUM/-p NUM
+</span></span><span class=line><span class=cl>    指定开始、结束页，或者只查看指定的页；
+</span></span><span class=line><span class=cl>  --strict-check/-C
+</span></span><span class=line><span class=cl>    指定checksum算法，通常有innodb、crc32、none，默认是从三者中选择，否则强制指定；
+</span></span><span class=line><span class=cl>  --page-type-summary/-S
+</span></span><span class=line><span class=cl>    打印文件中页的统计信息，包括了总页类型以及数量；
+</span></span><span class=line><span class=cl>  --page-type-dump=file-name/-D file-name
+</span></span><span class=line><span class=cl>    打印各个页的详细信息，将其输出到一个文件中；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>常用示例：
+</span></span><span class=line><span class=cl>  ----- 检查系统表空间，也可以使用table-name.ibd，默认出错时才会输出异常
+</span></span><span class=line><span class=cl>  innodbchecksum ibdata1
+</span></span><span class=line><span class=cl>  ----- 保存文件中各个页的信息，并在最后打印统计信息
+</span></span><span class=line><span class=cl>  innodbchecksum -S -D /tmp/page.info schema/*.ibd
+</span></span></code></pre></div><p>详细使用文档可以参考 <a href=https://dev.mysql.com/doc/refman/en/innochecksum.html>innochecksum</a> 。</p><a class=anchor id=my_print_defaults></a><h1>my_print_defaults <a href=#my_print_defaults aria-hidden=true>#</a></h1><p>会按照顺序读取配置文件，并提取相应属组的配置项，可以指定多个属组。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 使用示例
+</span></span><span class=line><span class=cl>$ my_print_defaults mysqlcheck client
+</span></span><span class=line><span class=cl>--user=myusername
+</span></span><span class=line><span class=cl>--password=secret
+</span></span><span class=line><span class=cl>--host=localhost
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>常见参数如下：
+</span></span><span class=line><span class=cl>  --config-file=file_name, --defaults-file=file_name, -c file_name
+</span></span><span class=line><span class=cl>    只读取如上选项指定的配置文件。
+</span></span><span class=line><span class=cl>  --defaults-extra-file=file_name, --extra-file=file_name, -e file_name
+</span></span><span class=line><span class=cl>    读取全局配置项且在读取用户配置前的配置文件。
+</span></span></code></pre></div><p>如果不添加任何参数，可以看到配置文件默认的加载顺序。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Default options are read from the following files in the given order:
+</span></span><span class=line><span class=cl>/etc/mysql/my.cnf /etc/my.cnf ~/.my.cnf
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>关于 MySQL 自带的程序，可以直接参考官方网站 <a href=https://dev.mysql.com/doc/refman/en/programs.html>Reference Manual - MySQL Programs</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#mysql_tzinfo_to_sql>mysql_tzinfo_to_sql</a></li><li><a href=#mysqlslap>mysqlslap</a></li><li><a href=#mysqldump>mysqldump</a></li><li><a href=#mysqldumpslow>mysqldumpslow</a></li><li><a href=#mysqlcheck>mysqlcheck</a></li><li><a href=#mysqladmin>mysqladmin</a><ul><li><a href=#extended-status>extended-status</a></li></ul></li><li><a href=#mysqlbinlog>mysqlbinlog</a><ul><li><a href=#row格式解析>ROW格式解析</a></li></ul></li><li><a href=#innochecksum>innochecksum</a></li><li><a href=#my_print_defaults>my_print_defaults</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

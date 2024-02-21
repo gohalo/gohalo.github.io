@@ -1,0 +1,382 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>ETCD 示例源码 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="现在已知的 Golang 版本的 RAFT 的开源实现主要有两个：一个是 CoreOS 的 etcd 中的实现，使用的项目有比如 tidb、cockroachdb 等；另外一个是 hashcorp 的 RAFT 实现，使用的项目有比如 consul、InfluxDB 等。
+相比而言，前者只实现了一个整体框架，很多的功能需要用户实现，难度增加但是更加灵活；而后者则是完整的实现，WAL、SnapShot、存储、序列化等。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>ETCD 示例源码</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-11-15</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><p>现在已知的 Golang 版本的 RAFT 的开源实现主要有两个：一个是 CoreOS 的 etcd 中的实现，使用的项目有比如 tidb、cockroachdb 等；另外一个是 hashcorp 的 RAFT 实现，使用的项目有比如 consul、InfluxDB 等。</p><p>相比而言，前者只实现了一个整体框架，很多的功能需要用户实现，难度增加但是更加灵活；而后者则是完整的实现，WAL、SnapShot、存储、序列化等。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>整体来说，该库实现了 RAFT 协议核心内容，如 append log、选主逻辑、snapshot、成员变更等；但该库没有实现消息传输和接收，只会把待发送消息保存在内存中，通过用户自定义的网络传输层取出消息并发送出去，并且在网络接收端，需要调一个库函数，用于将收到的消息传入库。</p><p>同时，该库定义了一个 Storage 接口，需要库的使用者自行实现。</p><a class=anchor id=示例程序></a><h2>示例程序 <a href=#%e7%a4%ba%e4%be%8b%e7%a8%8b%e5%ba%8f aria-hidden=true>#</a></h2><p>RAFT 协议的实现主要包括了四部分：协议逻辑、存储、消息序列化和网络传输，而 ETCD 对应的 RAFT 库只实现了最核心算法。</p><p>源码可以直接下载 <a href=https://github.com/coreos/etcd>Github coreos/etcd</a> 其中有一个简单的示例 <a href=https://github.com/coreos/etcd/tree/master/contrib/raftexample>contrib/raftexample</a>，这是一个内存的 KV 存储引擎。</p><p>示例中的 wal 和 snapshot 实际上使用的是 ETCD 中的实现。</p><a class=anchor id=使用></a><h2>使用 <a href=#%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h2><p>看下如何在系统中使用。</p><a class=anchor id=编译></a><h4>编译 <a href=#%e7%bc%96%e8%af%91 aria-hidden=true>#</a></h4><p>直接修改编译脚本 build 中的编译命令，然后直接运行 <code>./build</code> 即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>go build -o &#34;${out}/raftexample&#34; ${REPO_PATH}/contrib/raftexample || return
+</span></span></code></pre></div><a class=anchor id=测试></a><h4>测试 <a href=#%e6%b5%8b%e8%af%95 aria-hidden=true>#</a></h4><p>可以在一个节点上启动三个服务进程(也可以只启动一个)。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ raftexample --id 1 --cluster http://127.0.0.1:12379,http://127.0.0.1:22379,http://127.0.0.1:32379 --port 12380
+</span></span><span class=line><span class=cl>$ raftexample --id 2 --cluster http://127.0.0.1:12379,http://127.0.0.1:22379,http://127.0.0.1:32379 --port 22380
+</span></span><span class=line><span class=cl>$ raftexample --id 3 --cluster http://127.0.0.1:12379,http://127.0.0.1:22379,http://127.0.0.1:32379 --port 32380
+</span></span></code></pre></div><p>如上，通过参数指定整个集群的节点数，启动后会发起一次选举过程。</p><p>为了调试方便，可以通过 [goreman]({{ site.production_url }}/post/golang-introduce.html#goreman) 启动。</p><a class=anchor id=发送数据></a><h4>发送数据 <a href=#%e5%8f%91%e9%80%81%e6%95%b0%e6%8d%ae aria-hidden=true>#</a></h4><p>然后，通过如下方式发送和获取数据。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>curl -L http://127.0.0.1:12380/my-key -XPUT -d hello
+</span></span><span class=line><span class=cl>curl -L http://127.0.0.1:12380/my-key
+</span></span></code></pre></div><a class=anchor id=结点管理></a><h4>结点管理 <a href=#%e7%bb%93%e7%82%b9%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h4><p>可以通过以下方式将一个新节点加入集群:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ curl -L http://127.0.0.1:12380/4 -XPOST -d http://127.0.0.1:42379
+</span></span><span class=line><span class=cl>$ raftexample --id 4 --port 42380 --join \
+</span></span><span class=line><span class=cl>     --cluster http://127.0.0.1:12379,http://127.0.0.1:22379,http://127.0.0.1:32379,http://127.0.0.1:42379
+</span></span></code></pre></div><p>或者删除节点。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ curl -L http://127.0.0.1:12380/3 -XDELETE
+</span></span></code></pre></div><a class=anchor id=压测></a><h4>压测 <a href=#%e5%8e%8b%e6%b5%8b aria-hidden=true>#</a></h4><p>可以通过如下的脚本生成压测的脚本。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=cp>#!/bin/sh -e
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>for</span> <span class=o>((</span><span class=nv>i</span><span class=o>=</span>1<span class=p>;</span> i&lt;<span class=o>=</span>150<span class=p>;</span> i ++<span class=o>))</span><span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>        <span class=nv>uuid</span><span class=o>=</span><span class=sb>`</span>uuidgen<span class=sb>`</span>
+</span></span><span class=line><span class=cl>        <span class=nb>echo</span> <span class=s2>&#34;curl -L http://127.0.0.1:12380/</span><span class=si>${</span><span class=nv>uuid</span><span class=si>}</span><span class=s2> -XPUT -d &#39;</span><span class=si>${</span><span class=nv>uuid</span><span class=si>}</span><span class=s2>-hello&#39;&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>done</span>
+</span></span></code></pre></div><a class=anchor id=数据结构></a><h1>数据结构 <a href=#%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84 aria-hidden=true>#</a></h1><p>简单介绍下常见的数据结构。</p><a class=anchor id=kvstore></a><h2>KVStore <a href=#kvstore aria-hidden=true>#</a></h2><p>通过 kvstore 抽象了应用的全部相关内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>kvstore</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>proposeC</span>    <span class=kd>chan</span><span class=o>&lt;-</span> <span class=kt>string</span>
+</span></span><span class=line><span class=cl>	<span class=nx>mu</span>          <span class=nx>sync</span><span class=p>.</span><span class=nx>RWMutex</span>
+</span></span><span class=line><span class=cl>	<span class=nx>kvStore</span>     <span class=kd>map</span><span class=p>[</span><span class=kt>string</span><span class=p>]</span><span class=kt>string</span>
+</span></span><span class=line><span class=cl>	<span class=nx>snapshotter</span> <span class=o>*</span><span class=nx>snap</span><span class=p>.</span><span class=nx>Snapshotter</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>最核心的成员有：</p><ul><li>proposeC 这是应用和底层 RAFT 库之间的通信管道(Channel)，所有对应用的更新请求都会由应用通过该管道向底层 RAFT 库传递；</li><li>kvStore：内存状态机，存储应用的状态数据；</li><li>snapshotter 应用管理 Snapshot 的接口。</li></ul><a class=anchor id=raftnode></a><h2>RaftNode <a href=#raftnode aria-hidden=true>#</a></h2><p>该结构用来衔接底层 RAFT 协议以及应用层，通过该结构可以简化 RAFT 底层的细节，降低系统耦合度。该结构需要处理的任务包括：</p><ul><li>应用的更新请求传递给底层 RAFT 协议；</li><li>RAFT 已提交的请求传输给应用以更新应用的状态机；</li><li>处理 RAFT 组件产生的指令，如选举指令、数据复制指令、集群节点变更指令等；</li><li>处理 WAL 日志；</li><li>将底层 RAFT 组件的指令通过网络传输至集群其它节点等。</li></ul><p>相较于应用来说，该结构 (type raftNode struct) 功能的实现更为复杂，其核心数据结构定义如下：</p><ul><li>proposeC 应用将客户的更新请求传递至底层 RAFT 组件的管道；</li><li>commitC 底层 RAFT 组件通知应用层准备提交的通道；</li></ul><a class=anchor id=ready-数据></a><h1>Ready 数据 <a href=#ready-%e6%95%b0%e6%8d%ae aria-hidden=true>#</a></h1><p>通过 <code>type Ready struct</code> 定义可以知道，其中保存了多种状态的数据：</p><ol><li>什么时候可以读。ReadState 用来支持 Linearizable Read。</li><li>需要持久话的状态。HardState、Entries 需要在正式发送数据之前持久化。</li><li>需要执行SnapShot的数据。Snapshot 。</li><li>已经提交的数据，可以应用到状态机。CommittedEntries 。</li><li>需要发送到其它机器的消息。Messages 需要在处理完持久化数据之后处理。</li></ol><p>在 <code>node.run()[raft/node.go]</code> 中，会通过 <code>newReady()</code> 新建 Ready 对象，其中包含了上述的成员内容，那么新建 Ready 对象无非就是如何构建其中的成员变量。</p><p>另外，在示例代码 <code>raftNode.serveChannels()</code> 中，可以将 Ready 对象打印出来。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Ready</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=o>*</span><span class=nx>SoftState</span>
+</span></span><span class=line><span class=cl>        <span class=nx>pb</span><span class=p>.</span><span class=nx>HardState</span>                <span class=c1>// 在发送信息前需要持久化的状态
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>ReadStates</span> <span class=p>[]</span><span class=nx>ReadState</span>
+</span></span><span class=line><span class=cl>        <span class=nx>Entries</span> <span class=p>[]</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Entry</span>          <span class=c1>// 通过raftLog.unstableEntries()读取的是raftLog.unstable.entries中的数据
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>Snapshot</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>Snapshot</span>
+</span></span><span class=line><span class=cl>        <span class=nx>CommittedEntries</span> <span class=p>[]</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Entry</span> <span class=c1>// 包括了所有已经持久化到日志但是还没有应用到状态机的数据
+</span></span></span><span class=line><span class=cl><span class=c1></span>                                    <span class=c1>//   raftLog.nextEnts() raft/log.go 用来获取所有需要提交的日志，用来应用到状态机
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>Messages</span> <span class=p>[]</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Message</span>       <span class=c1>// 包含了应该发送给对端的数据，也就是直接读取的raft.msgs[]中缓存的数据
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>MustSync</span> <span class=kt>bool</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>raftLog</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>storage</span> <span class=nx>Storage</span>             <span class=c1>// 包含了上次snapshot之后所有持久化的日志
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>unstable</span> <span class=nx>unstable</span>           <span class=c1>// 未提交的日志，包括snapshot
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>committed</span> <span class=kt>uint64</span>            <span class=c1>// 已经在多数节点上持久化的最大日志号
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>applied</span> <span class=kt>uint64</span>              <span class=c1>// 在本节点已经应用到状态机的日志号
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>logger</span> <span class=nx>Logger</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在启动时会将已经写入到 WAL 中的数据写入到 Ready CommittedEntries 。</p><a class=anchor id=处理流程></a><h1>处理流程 <a href=#%e5%a4%84%e7%90%86%e6%b5%81%e7%a8%8b aria-hidden=true>#</a></h1><p>RAFT 协议是一种在多节点组成的集群之间进行状态同步的协议，示例是通过 <code>newRaftNode()</code> 新建一个 raftNode 抽象对象，在创建时需要指定其它节点的 IP(peers)、该节点的 ID(id) 等信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>main()                                  main.go
+</span></span><span class=line><span class=cl>  |-make(chan string)                   新建proposeC管道，用来将用户层数据发送给RAFT协议层
+</span></span><span class=line><span class=cl>  |-make(chan raftpb.ConfChange)        新建confChangeC管道，用来将配置修改信息发送给RAFT协议层
+</span></span><span class=line><span class=cl>  |-newRaftNode()                       raft.go 返回结构体会作为底层RAFT协议与上层应用的中间结合体
+</span></span><span class=line><span class=cl>  | |                                       同时会返回commitC errorC管道，用来接收请求和错误信息
+</span></span><span class=line><span class=cl>  | |-raftNode()                        &lt;&lt;&lt;1&gt;&gt;&gt;新建raftNode对象，重点proposeC
+</span></span><span class=line><span class=cl>  | |-raftNode.startRaft()              [协程] 启动示例中的代码
+</span></span><span class=line><span class=cl>  |   |-os.Mkdir()                      如果snapshot目录不存在则创建
+</span></span><span class=line><span class=cl>  |   |-snap.New()                      snap/snapshotter.go 只是实例化一个对象，并设置其中的dir成员
+</span></span><span class=line><span class=cl>  |   |-wal.Exist()                     wal/util.go 判断WAL日志目录是否存在，用来确定是否是第一次启动
+</span></span><span class=line><span class=cl>  |   |-raftNode.replayWAL()            raft.go 开始读取WAL日志，并赋值到raftNode.wal中
+</span></span><span class=line><span class=cl>  |   | |-raftNode.loadSnapshot()
+</span></span><span class=line><span class=cl>  |   | | |-snap.Snapshotter.Load()     snap/snapshotter.go 中的Load()函数
+</span></span><span class=line><span class=cl>  |   | |   |-Snapshotter.snapNames()   会打开目录并遍历目录下的文件，按照文件名进行排序
+</span></span><span class=line><span class=cl>  |   | |   |-Snapshotter.loadSnap()
+</span></span><span class=line><span class=cl>  |   | |     |-Snapshotter.Read()      会读取文件并计算CRC校验值，判断文件是否合法
+</span></span><span class=line><span class=cl>  |   | |-raftNode.openWAL()            打开snapshot，如果不存在则创建目录，否则加载snapshot中保存的值并尝试加载
+</span></span><span class=line><span class=cl>  |   | | |-wal.Open()                  wal/wal.go 打开指定snap位置的WAL日志，注意snap需要持久化到WAL中才可以
+</span></span><span class=line><span class=cl>  |   | |   |-wal.openAtIndex()         打开某个snapshot处的日志，并读取之后
+</span></span><span class=line><span class=cl>  |   | |     |-readWalNames()          wal/util.go读取日志目录下的文件，会检查命名格式
+</span></span><span class=line><span class=cl>  |   | |     |-searchIndex()           查找指定的index序号
+</span></span><span class=line><span class=cl>  |   | |-ReadAll()                     读取所有日志，真正开始读取WAL
+</span></span><span class=line><span class=cl>  |   | |-raft.NewMemoryStorage()       使用ETCD中的内存存储
+</span></span><span class=line><span class=cl>  |   | |-raft.NewMemoryStorage()       raft/storage.go 新建内存存储
+</span></span><span class=line><span class=cl>  |   | |---&gt;&gt;&gt;                         从这里开始的三步操作是文档中启动节点前要求的
+</span></span><span class=line><span class=cl>  |   | |-MemoryStorage.ApplySnapshot() 这里实际上只更新snapshot和新建ents成员，并未做其它操作
+</span></span><span class=line><span class=cl>  |   | |-MemoryStorage.SetHartState()  更新hardState成员
+</span></span><span class=line><span class=cl>  |   | |-MemoryStorage.Append()        添加到ents中
+</span></span><span class=line><span class=cl>  |   | |-raftNode.lastIndex            更新成员变量
+</span></span><span class=line><span class=cl>  |   |
+</span></span><span class=line><span class=cl>  |   |-raft.Config{}                   raft/raft.go 构建RAFT核心的配置项，详细可以查看源码中的定义
+</span></span><span class=line><span class=cl>  |   |-raft.RestartNode()              raft/node.go 如果已经安装过WAL则直接重启Node，这最常见场景
+</span></span><span class=line><span class=cl>  |   |  |-raft.newRaft()               raft/raft.go
+</span></span><span class=line><span class=cl>  |   |  | |-raft.becomeFollower()      启动后默认先成为follower 【became follower at term】
+</span></span><span class=line><span class=cl>  |   |  | |                            返回新建对象 【newRaft】
+</span></span><span class=line><span class=cl>  |   |  |-newNode()                    raft/node.go 这里只是实例化一个node对象，并未做实际初始化操作
+</span></span><span class=line><span class=cl>  |   |  |-node.run()                   启动一个后台协程开始运行
+</span></span><span class=line><span class=cl>  |   |
+</span></span><span class=line><span class=cl>  |   |-raft.StartNode()                第一次安装，则重新部署
+</span></span><span class=line><span class=cl>  |   |
+</span></span><span class=line><span class=cl>  |   |-rafthttp.Transport{}            传输层的配置参数
+</span></span><span class=line><span class=cl>  |   |-transport.Start()               rafthttp/transport.go 启动HTTP服务
+</span></span><span class=line><span class=cl>  |   |  |-newStreamRoundTripper()      如下的实现是对http库的封装，保存在pkg/transport目录下
+</span></span><span class=line><span class=cl>  |   |  | |-NewTimeoutTransport()
+</span></span><span class=line><span class=cl>  |   |  |   |-NewTransport()
+</span></span><span class=line><span class=cl>  |   |  |     |-http.Transport{}       调用http库创建实例
+</span></span><span class=line><span class=cl>  |   |  |-NewRoundTripper()
+</span></span><span class=line><span class=cl>  |   |-transport.AddPeer()             rafthttp/transport.go 添加对端服务，如果是三个节点，会添加两个
+</span></span><span class=line><span class=cl>  |   | |-startPeer()                   rafthttp/peer.go 【starting peer】
+</span></span><span class=line><span class=cl>  |   | | |-pipeline.start()            rafthttp/pipeline.go
+</span></span><span class=line><span class=cl>  |   | | | |-pipeline.handle()         这里会启动一个协程处理
+</span></span><span class=line><span class=cl>  |   | | |---&gt;                        【started HTTP pipelining with peer】
+</span></span><span class=line><span class=cl>  |   | | |-peer{}                      新建对象
+</span></span><span class=line><span class=cl>  |   | | | |-startStreamWriter()       会启动两个streamWriter
+</span></span><span class=line><span class=cl>  |   | | |   |-streamWriter.run()      启动协程处理 【started streaming with peer (writer)】
+</span></span><span class=line><span class=cl>  |   | | |     |  &lt;&lt;&lt;cw.connc&gt;&gt;&gt;
+</span></span><span class=line><span class=cl>  |   | | |     |-cw.status.active()    与对端已经建立链接【peer 1 became active】
+</span></span><span class=line><span class=cl>  |   | | |     |---&gt;                  【established a TCP streaming connection with peer (... writer)】
+</span></span><span class=line><span class=cl>  |   | | |-streamReader.start()        这里会启动msgAppV2Reader、msgAppReader两个streamReader读取
+</span></span><span class=line><span class=cl>  |   | |   |-streamReader.run()        启动协程处理，这里是一个循环处理 【started streaming with peer (... reader)】
+</span></span><span class=line><span class=cl>  |   | |---&gt;                          【started peer】
+</span></span><span class=line><span class=cl>  |   |
+</span></span><span class=line><span class=cl>  |   |-raftNode.serveRaft()            [协程] 主要是启动网络监听
+</span></span><span class=line><span class=cl>  |   |-raftNode.serveChannels()        [协程] raft.go 真正的业务处理，在协程中监听用户请求、配置等命令
+</span></span><span class=line><span class=cl>  |   | |-raftStorage.Snapshot()        获取snapshot
+</span></span><span class=line><span class=cl>  |   | |-raft.Node.Propose()           阻塞等待该用户请求被RAFT状态机接受
+</span></span><span class=line><span class=cl>  |   | |-raft.Node.ProposeConfChange() 发送配置请求
+</span></span><span class=line><span class=cl>  |   |
+</span></span><span class=line><span class=cl>  |   |-raft.Node.Tick()                另外的协程处理RAFT组件的同步信息
+</span></span><span class=line><span class=cl>  |
+</span></span><span class=line><span class=cl>  |-newKVStore()                        kvstore.go 创建内存KV存储结构
+</span></span><span class=line><span class=cl>  | |-kvstore{}                         实例化KVStore存储对象
+</span></span><span class=line><span class=cl>  | |-kvstore.readCommits()             会启动一个协程，也是存储的核心，用于读取已经提交的数据
+</span></span><span class=line><span class=cl>  |   |                                    这里实际上调用了两次，第一次是函数内调用，第二次是协程
+</span></span><span class=line><span class=cl>  |   |-snapshot.Load()                 第一次commitC中没有数据，实际上是加载snapshot
+</span></span><span class=line><span class=cl>  |   |-recoverFromSnapshot()           从snapshot中恢复
+</span></span><span class=line><span class=cl>  |   |                                 接下来是协程的处理
+</span></span><span class=line><span class=cl>  |   |-gob.NewDecoder()                反序列化
+</span></span><span class=line><span class=cl>  |   |-kvStore[]                       保存到内存中
+</span></span><span class=line><span class=cl>  |
+</span></span><span class=line><span class=cl>  |-serveHttpKVAPI()                    启动对外提供服务的HTTP端口
+</span></span><span class=line><span class=cl>    |-srv.ListenAndServe()              真正启动客户端的监听服务
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>一般是定时器超时
+</span></span><span class=line><span class=cl>raft.Step()
+</span></span><span class=line><span class=cl> | &lt;&lt;&lt;pb.MsgHup&gt;&gt;&gt;
+</span></span><span class=line><span class=cl> |---&gt;                                  【is starting a new election at term】
+</span></span><span class=line><span class=cl> |-raft.campaign()
+</span></span><span class=line><span class=cl>   |-raft.becomeCandidate()             进入到选举状态，也可以是PreCandidate
+</span></span><span class=line><span class=cl>   |-raft.poll()                        首先模拟收到消息给自己投票
+</span></span><span class=line><span class=cl>   |-raft.quorum()                      因为集群可能是单个节点，这里会检查是否满足条件，如果是
+</span></span><span class=line><span class=cl>   | |-raft.becomeLeader()              如果满足则成为主
+</span></span><span class=line><span class=cl>   |-raft.send()                        发送选举请求，消息类型可以是MsgPreVote或者MsgVote
+</span></span><span class=line><span class=cl>   |---&gt;                                【sent MsgVote request】
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>raft.stepCandidate()
+</span></span><span class=line><span class=cl> |-raft.poll()                          【received MsgVoteResp from】
+</span></span><span class=line><span class=cl> | |-raft.becomeLeader()                如果满足多数派
+</span></span><span class=line><span class=cl> | | |-raft.appendEntry()               添加一个空日志，记录成为主的事件
+</span></span><span class=line><span class=cl> | | |---&gt;                              【became leader at term】
+</span></span><span class=line><span class=cl> | |-raft.bcastAppend()                 广播发送
+</span></span><span class=line><span class=cl> |   |-raft.sendAppend()
+</span></span><span class=line><span class=cl> |---&gt;                                  【has received 2 MsgVoteResp votes and 0 vote rejections】
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>node.run()
+</span></span><span class=line><span class=cl> |---&gt;                                  【raft.node ... elected leader at term ...】
+</span></span></code></pre></div><p>其中 <code>RestartNode()</code> 与 <code>StartNode()</code> 的区别在于，前者从日志文件中读取配置，而后者需要从命令行中传参。</p><a class=anchor id=初始化></a><h1>初始化 <a href=#%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h1><p>启动流程主要分为了三步：</p><ol><li>初始化 RAFT</li><li>应用初始化</li><li>应用开启对外服务</li></ol><p>应用和 RAFT 组件之间是通过 Channel 进行信息传递。</p><p>上述的 HTTP 端口中真正处理请求的函数为 <code>ServeHTTP()</code> 函数，下面会挨个介绍。</p><a class=anchor id=新建raftnode对象></a><h2>新建raftNode对象 <a href=#%e6%96%b0%e5%bb%baraftnode%e5%af%b9%e8%b1%a1 aria-hidden=true>#</a></h2><p>在初始化时，为了与 RAFT 内的协议层进行通讯，需要提供 4 个 Channel，分别是：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>proposeC := make(chan string)
+</span></span><span class=line><span class=cl>confChangeC := make(chan raftpb.ConfChange)
+</span></span><span class=line><span class=cl>commitC := make(chan *string)
+</span></span><span class=line><span class=cl>errorC := make(chan error)
+</span></span></code></pre></div><p>其中，前两个在创建 <code>raftNode</code> 前创建传入，就是数据的入口；而后两个则是在创建完成后返回，相当于数据的出口。</p><ul><li>proposeC 用于向RAFT协议层提交写请求，也就是 Propose；</li><li>confChangeC 用于向RAFT协议层提交配置变更请求，也就是 ProposeConfChange；</li><li>commitC 把已经提交的entries从RAFT协议层暴露给用户 State Machine；</li><li>errorC 让用户可以及时处理RAFT协议层抛出的错误信息。</li></ul><a class=anchor id=写数据></a><h1>写数据 <a href=#%e5%86%99%e6%95%b0%e6%8d%ae aria-hidden=true>#</a></h1><p>简单来说就是，用户发送一个 PUT 请求，用来写入 KV 内存数据，可以分为如下步骤。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>http PUT -1-&gt; kvStore.Propose -2-&gt; proposeC -3-&gt; raft -4-&gt; commitC -5-&gt; map[string] string
+</span></span></code></pre></div><p>HTTP 请求数据调用 <code>kvStore.Propose()</code> 方法把请求数据通过 <code>proposeC</code> 管道发送给 RAFT 协议核心，在 RAFT 协议中经过一系列的操作后再把数据通过 <code>commitC</code> 这个管道暴露出来。</p><p>初始化时，会启动一个协程来消费 <code>commitC</code> 这个管道，也就是把已经提交的结果最终写入到内存中的 <code>map[string]stringe</code> 里边去。</p><a class=anchor id=处理流程-1></a><h2>处理流程 <a href=#%e5%a4%84%e7%90%86%e6%b5%81%e7%a8%8b-1 aria-hidden=true>#</a></h2><p>如上所述，HTTP 真正处理请求是在 <code>ServeHTTP()</code> 函数中，包括了 PUT(增加数据) GET(查看数据) POST(修改配置) DELETE(删除数据) 四种类型的请求处理。</p><p>对于客户端的更新请求，首先通过 HTTP 协议传输给应用，目前无法直接处理更新 KVStore，需要先提交至 RAFT 组件在集群内部对本次提交达成一致。也即是，要将这次请求通过 proposeC 管道将请求发送给 raftNode 结构。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>ServeHTTP()                           httpapi.go
+</span></span><span class=line><span class=cl>  |====&gt; PUT方法
+</span></span><span class=line><span class=cl>  |-ioutil.ReadAll()                  从HTTP中读取请求
+</span></span><span class=line><span class=cl>  |-kvstore.Propose()                 kvstore.go 正式提交请求，阻塞直到RAFT状态机提交成功
+</span></span><span class=line><span class=cl>  | |-glob.NewEncoder()               序列化
+</span></span><span class=line><span class=cl>  | |-s.proposeC &lt;- buf.String()      通过proposeC管道发送请求到RAFT核心，会阻塞直到返回
+</span></span><span class=line><span class=cl>  |
+</span></span><span class=line><span class=cl>  |-http.ResponseWriter.WriteHeader() 返回数据结果
+</span></span><span class=line><span class=cl>  |
+</span></span><span class=line><span class=cl>  |====&gt; GET方法
+</span></span><span class=line><span class=cl>  |-kvstore.Lookup()                  查找并返回数据
+</span></span></code></pre></div><p>在发送到 proposeC 之后，实际上会开始调用 <code>serveChannels()</code> 启动的协程中，然后会一直阻塞直到该请求返回结果。</p><p>接下来就是 RAFT 组件的核心处理部分，也即是提供的 <code>Propose()</code> API 接口，这里暂时不讨论。</p><a class=anchor id=提交数据></a><h2>提交数据 <a href=#%e6%8f%90%e4%ba%a4%e6%95%b0%e6%8d%ae aria-hidden=true>#</a></h2><p>也就是第二步，会调用 raftNode 中的 <code>raftNode.node.Propose()</code> 方法把数据交给 raft 核心处理。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// raft/node.go
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>n</span> <span class=o>*</span><span class=nx>node</span><span class=p>)</span> <span class=nf>Propose</span><span class=p>(</span><span class=nx>ctx</span> <span class=nx>context</span><span class=p>.</span><span class=nx>Context</span><span class=p>,</span> <span class=nx>data</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>n</span><span class=p>.</span><span class=nf>step</span><span class=p>(</span><span class=nx>ctx</span><span class=p>,</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>Message</span><span class=p>{</span><span class=nx>Type</span><span class=p>:</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>MsgProp</span><span class=p>,</span> <span class=nx>Entries</span><span class=p>:</span> <span class=p>[]</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Entry</span><span class=p>{</span><span class=nx>Data</span><span class=p>:</span> <span class=nx>data</span><span class=p>}})</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>其中的 <code>step</code> 是一个函数指针，根据角色可以是 <code>stepFollower()</code>、<code>stepCandidate()</code>、<code>stepLeader()</code> 等不同的函数，当然这些处理都是在 RAFT 核心中完成的。</p><p>在启动之后，实际上会在后台运行一个 long running 的协程，也就是 <code>raft/node.go</code> 中的 <code>run()</code> 方法，核心代码的示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>n</span> <span class=o>*</span><span class=nx>node</span><span class=p>)</span> <span class=nf>run</span><span class=p>(</span><span class=nx>r</span> <span class=o>*</span><span class=nx>raft</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=p>{</span> <span class=c1>// 死循环
+</span></span></span><span class=line><span class=cl><span class=c1></span>		<span class=k>if</span> <span class=nx>advancec</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>readyc</span> <span class=p>=</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>rd</span> <span class=p>=</span> <span class=nf>newReady</span><span class=p>(</span><span class=nx>r</span><span class=p>,</span> <span class=nx>prevSoftSt</span><span class=p>,</span> <span class=nx>prevHardSt</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>rd</span><span class=p>.</span><span class=nf>containsUpdates</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>readyc</span> <span class=p>=</span> <span class=nx>n</span><span class=p>.</span><span class=nx>readyc</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>readyc</span> <span class=p>=</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>消息先进入 <code>r.msgs</code> 被 <code>newReady()</code> 函数取走，用户代码通过消费 <code>Ready() &lt;-chan Ready</code> 来处理各种消息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>rc</span> <span class=o>*</span><span class=nx>raftNode</span><span class=p>)</span> <span class=nf>serveChannels</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// event loop on raft state machine updates
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>case</span> <span class=o>&lt;-</span><span class=nx>ticker</span><span class=p>.</span><span class=nx>C</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=nx>rc</span><span class=p>.</span><span class=nx>node</span><span class=p>.</span><span class=nf>Tick</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>// store raft entries to wal, then publish over commit channel
+</span></span></span><span class=line><span class=cl><span class=c1></span>		<span class=k>case</span> <span class=nx>rd</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>rc</span><span class=p>.</span><span class=nx>node</span><span class=p>.</span><span class=nf>Ready</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>			<span class=nx>rc</span><span class=p>.</span><span class=nx>wal</span><span class=p>.</span><span class=nf>Save</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>HardState</span><span class=p>,</span> <span class=nx>rd</span><span class=p>.</span><span class=nx>Entries</span><span class=p>)</span> <span class=c1>// 保存到持久化存储中
+</span></span></span><span class=line><span class=cl><span class=c1></span>			<span class=k>if</span> <span class=p>!</span><span class=nx>raft</span><span class=p>.</span><span class=nf>IsEmptySnap</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Snapshot</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>rc</span><span class=p>.</span><span class=nf>saveSnap</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Snapshot</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=nx>rc</span><span class=p>.</span><span class=nx>raftStorage</span><span class=p>.</span><span class=nf>ApplySnapshot</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Snapshot</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=nx>rc</span><span class=p>.</span><span class=nf>publishSnapshot</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Snapshot</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>			<span class=nx>rc</span><span class=p>.</span><span class=nx>raftStorage</span><span class=p>.</span><span class=nf>Append</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Entries</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=nx>rc</span><span class=p>.</span><span class=nx>transport</span><span class=p>.</span><span class=nf>Send</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Messages</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=c1>// 通过commitC告诉给下游的用户代码
+</span></span></span><span class=line><span class=cl><span class=c1></span>			<span class=k>if</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>rc</span><span class=p>.</span><span class=nf>publishEntries</span><span class=p>(</span><span class=nx>rc</span><span class=p>.</span><span class=nf>entriesToApply</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>CommittedEntries</span><span class=p>));</span> <span class=p>!</span><span class=nx>ok</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>rc</span><span class=p>.</span><span class=nf>stop</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>			<span class=nx>rc</span><span class=p>.</span><span class=nf>maybeTriggerSnapshot</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>			<span class=nx>rc</span><span class=p>.</span><span class=nx>node</span><span class=p>.</span><span class=nf>Advance</span><span class=p>()</span>   <span class=c1>// 处理完成需要主动告诉raft
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>		<span class=k>case</span> <span class=nx>err</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>rc</span><span class=p>.</span><span class=nx>transport</span><span class=p>.</span><span class=nx>ErrorC</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=nx>rc</span><span class=p>.</span><span class=nf>writeError</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>case</span> <span class=o>&lt;-</span><span class=nx>rc</span><span class=p>.</span><span class=nx>stopc</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=nx>rc</span><span class=p>.</span><span class=nf>stop</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// publishEntries writes committed log entries to commit channel and returns
+</span></span></span><span class=line><span class=cl><span class=c1>// whether all entries could be published.
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>rc</span> <span class=o>*</span><span class=nx>raftNode</span><span class=p>)</span> <span class=nf>publishEntries</span><span class=p>(</span><span class=nx>ents</span> <span class=p>[]</span><span class=nx>raftpb</span><span class=p>.</span><span class=nx>Entry</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>ents</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>switch</span> <span class=nx>ents</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Type</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=c1>// 正常的HTTP PUT会触发一个EntryNormal请求
+</span></span></span><span class=line><span class=cl><span class=c1></span>		<span class=k>case</span> <span class=nx>raftpb</span><span class=p>.</span><span class=nx>EntryNormal</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nb>len</span><span class=p>(</span><span class=nx>ents</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Data</span><span class=p>)</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=c1>// ignore empty messages
+</span></span></span><span class=line><span class=cl><span class=c1></span>				<span class=k>break</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>			<span class=nx>s</span> <span class=o>:=</span> <span class=nb>string</span><span class=p>(</span><span class=nx>ents</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Data</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=nx>rc</span><span class=p>.</span><span class=nx>commitC</span> <span class=o>&lt;-</span> <span class=o>&amp;</span><span class=nx>s</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=o>&lt;-</span><span class=nx>rc</span><span class=p>.</span><span class=nx>stopc</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span> <span class=kc>false</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>case</span> <span class=nx>raftpb</span><span class=p>.</span><span class=nx>EntryConfChange</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=kd>var</span> <span class=nx>cc</span> <span class=nx>raftpb</span><span class=p>.</span><span class=nx>ConfChange</span>
+</span></span><span class=line><span class=cl>			<span class=nx>cc</span><span class=p>.</span><span class=nf>Unmarshal</span><span class=p>(</span><span class=nx>ents</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Data</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=nx>rc</span><span class=p>.</span><span class=nx>confState</span> <span class=p>=</span> <span class=o>*</span><span class=nx>rc</span><span class=p>.</span><span class=nx>node</span><span class=p>.</span><span class=nf>ApplyConfChange</span><span class=p>(</span><span class=nx>cc</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=k>switch</span> <span class=nx>cc</span><span class=p>.</span><span class=nx>Type</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=nx>raftpb</span><span class=p>.</span><span class=nx>ConfChangeAddNode</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>				<span class=k>if</span> <span class=nb>len</span><span class=p>(</span><span class=nx>cc</span><span class=p>.</span><span class=nx>Context</span><span class=p>)</span> <span class=p>&gt;</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>					<span class=nx>rc</span><span class=p>.</span><span class=nx>transport</span><span class=p>.</span><span class=nf>AddPeer</span><span class=p>(</span><span class=nx>types</span><span class=p>.</span><span class=nf>ID</span><span class=p>(</span><span class=nx>cc</span><span class=p>.</span><span class=nx>NodeID</span><span class=p>),</span> <span class=p>[]</span><span class=kt>string</span><span class=p>{</span><span class=nb>string</span><span class=p>(</span><span class=nx>cc</span><span class=p>.</span><span class=nx>Context</span><span class=p>)})</span>
+</span></span><span class=line><span class=cl>				<span class=p>}</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=nx>raftpb</span><span class=p>.</span><span class=nx>ConfChangeRemoveNode</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>				<span class=k>if</span> <span class=nx>cc</span><span class=p>.</span><span class=nx>NodeID</span> <span class=o>==</span> <span class=nb>uint64</span><span class=p>(</span><span class=nx>rc</span><span class=p>.</span><span class=nx>id</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>					<span class=nx>log</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;I&#39;ve been removed from the cluster! Shutting down.&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>					<span class=k>return</span> <span class=kc>false</span>
+</span></span><span class=line><span class=cl>				<span class=p>}</span>
+</span></span><span class=line><span class=cl>				<span class=nx>rc</span><span class=p>.</span><span class=nx>transport</span><span class=p>.</span><span class=nf>RemovePeer</span><span class=p>(</span><span class=nx>types</span><span class=p>.</span><span class=nf>ID</span><span class=p>(</span><span class=nx>cc</span><span class=p>.</span><span class=nx>NodeID</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>// after commit, update appliedIndex
+</span></span></span><span class=line><span class=cl><span class=c1></span>		<span class=nx>rc</span><span class=p>.</span><span class=nx>appliedIndex</span> <span class=p>=</span> <span class=nx>ents</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Index</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>// special nil commit to signal replay has finished
+</span></span></span><span class=line><span class=cl><span class=c1></span>		<span class=k>if</span> <span class=nx>ents</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>Index</span> <span class=o>==</span> <span class=nx>rc</span><span class=p>.</span><span class=nx>lastIndex</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=nx>rc</span><span class=p>.</span><span class=nx>commitC</span> <span class=o>&lt;-</span> <span class=kc>nil</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=o>&lt;-</span><span class=nx>rc</span><span class=p>.</span><span class=nx>stopc</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span> <span class=kc>false</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=kc>true</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=raft-指令处理></a><h1>RAFT 指令处理 <a href=#raft-%e6%8c%87%e4%bb%a4%e5%a4%84%e7%90%86 aria-hidden=true>#</a></h1><p>现在客户端的请求通过 <code>proposeC</code> 管道进入了 RAFT 组件，在数据完成同步之后还是通过 <code>Ready()</code> 暴露给应用，然后由应用负责写日志，完成提交，同步给其它的 Follower 节点等。</p><p>也就是如何一步步的处理 RAFT 组件内部的指令请求，同样是在 <code>serveChannels()</code> 中启动的协程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>rc</span> <span class=o>*</span><span class=nx>raftNode</span><span class=p>)</span> <span class=nf>serveChannels</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 上面部分是启动了一个协程处理Propose请求
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// event loop on raft state machine updates
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=o>&lt;-</span><span class=nx>ticker</span><span class=p>.</span><span class=nx>C</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>            <span class=nx>rc</span><span class=p>.</span><span class=nx>node</span><span class=p>.</span><span class=nf>Tick</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>// 1. 通过Ready()获取到RAFT组件指令
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=k>case</span> <span class=nx>rd</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>rc</span><span class=p>.</span><span class=nx>node</span><span class=p>.</span><span class=nf>Ready</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>            <span class=c1>// 2. 写WAL日志，包含的是当前的状态信息
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=nx>rc</span><span class=p>.</span><span class=nx>wal</span><span class=p>.</span><span class=nf>Save</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>HardState</span><span class=p>,</span> <span class=nx>rd</span><span class=p>.</span><span class=nx>Entries</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>if</span> <span class=p>!</span><span class=nx>raft</span><span class=p>.</span><span class=nf>IsEmptySnap</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Snapshot</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>rc</span><span class=p>.</span><span class=nf>saveSnap</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Snapshot</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=nx>rc</span><span class=p>.</span><span class=nx>raftStorage</span><span class=p>.</span><span class=nf>ApplySnapshot</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Snapshot</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=nx>rc</span><span class=p>.</span><span class=nf>publishSnapshot</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Snapshot</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>            <span class=c1>// 3. 这是干什么?
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=nx>rc</span><span class=p>.</span><span class=nx>raftStorage</span><span class=p>.</span><span class=nf>Append</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Entries</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=c1>// 4. 发送给某个Follower
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=nx>rc</span><span class=p>.</span><span class=nx>transport</span><span class=p>.</span><span class=nf>Send</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>Messages</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=c1>// 5. 将已经commit的日志提交到应用状态机
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>rc</span><span class=p>.</span><span class=nf>publishEntries</span><span class=p>(</span><span class=nx>rc</span><span class=p>.</span><span class=nf>entriesToApply</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>CommittedEntries</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>            <span class=k>if</span> <span class=p>!</span><span class=nx>ok</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>rc</span><span class=p>.</span><span class=nf>stop</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>            <span class=nx>rc</span><span class=p>.</span><span class=nf>maybeTriggerSnapshot</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>			<span class=c1>// 6. 通知RAFT组件该请求已经处理完成，可以进行下次的请求了
+</span></span></span><span class=line><span class=cl><span class=c1></span>            <span class=nx>rc</span><span class=p>.</span><span class=nx>node</span><span class=p>.</span><span class=nf>Advance</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=nx>err</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>rc</span><span class=p>.</span><span class=nx>transport</span><span class=p>.</span><span class=nx>ErrorC</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>            <span class=nx>rc</span><span class=p>.</span><span class=nf>writeError</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=o>&lt;-</span><span class=nx>rc</span><span class=p>.</span><span class=nx>stopc</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>            <span class=nx>rc</span><span class=p>.</span><span class=nf>stop</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>当 RAFT 组件判定已经复制到了多个节点之后，也就是认为已经提交(Commit)，此时 RAFT 组件会通过 commitC 管道将请求返回给应用(KVStore)，应用收到请求后将其应用到状态机，也就是内存中的 KV 存储。</p><p>简单来说，通过 <code>readCommits()</code> 接收用户发送的请求并发送给 RAFT 组件；在 RAFT 组件处理完成提交后，再发送给 <code>serveChannels()</code> 继续处理，保存到应用的 KV 存储中。</p><a class=anchor id=定时器></a><h1>定时器 <a href=#%e5%ae%9a%e6%97%b6%e5%99%a8 aria-hidden=true>#</a></h1><p>在 <code>raft/raft.go</code> 中定义了 <code>type Config struct</code> 结构体。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>type Config struct {
+</span></span><span class=line><span class=cl>	ID uint64                // 本节点的ID，不能为0
+</span></span><span class=line><span class=cl>	peers []uint64           // 当前集群的所有ID列表，目前仅用来测试
+</span></span><span class=line><span class=cl>	learners []uint64        // 集群中的Learner列表，仅用来接收Leader节点发送的消息，不会进行投票选举
+</span></span><span class=line><span class=cl>	ElectionTick int         // 也就是选举的超时时间，单位是Node.Tick；当Follower在当前选举周期内没有
+</span></span><span class=line><span class=cl>	                         //   收到任何消息时开始变成Candidate开始选举
+</span></span><span class=line><span class=cl>	HeartbeatTick int Leader // 为了维持其当前的角色发起的心跳请求
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>一般来说要满足 <code>ElectionTick >> HeartbeatTick</code> ，以防非必要的主切换，一般为 <code>ElectionTick = 10 * HeartbeatTick</code> 。</p><a class=anchor id=定时器创建></a><h2>定时器创建 <a href=#%e5%ae%9a%e6%97%b6%e5%99%a8%e5%88%9b%e5%bb%ba aria-hidden=true>#</a></h2><p>对于 ETCD 来说，在 newRaftNode() 函数中，会新建一个 ticker 时钟触发器，用来产生时钟事件。示例中，会在 <code>raftNode.serveChannels()</code> 中初始化定时器。</p><p>对于时间间隔，默认是保存在 <code>embed/config.go</code> 中的 <code>cfg.TickMs</code> ，当然，也可以通过命令行的入参 <code>--heartbeat-interval</code> 指定。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>NewServer()                 etcdserver/server.go
+</span></span><span class=line><span class=cl> |-heartbeat                会设置为cfg.TickMs的值，而该值默认在embed/config.go中初始化为100ms
+</span></span><span class=line><span class=cl> |-newRaftNode()            etcdserver/raft.go 在该函数中会将相应的heartbeat的值传入
+</span></span><span class=line><span class=cl>   |-time.NewTicker()       调用time包中提供的函数实现
+</span></span></code></pre></div><p>接着看下这里的配置是如何生效的。</p><p>无论是通过 <code>RestartNode()</code> 还是 <code>StartNode()</code> ，最终都会调用 <code>newRaft()</code> 新建一个 raft 对象，其中会将上述的配置分别赋值给 <code>electionTimeout</code> 和 <code>heartbeatTimeout</code> 。</p><a class=anchor id=定时器触发></a><h2>定时器触发 <a href=#%e5%ae%9a%e6%97%b6%e5%99%a8%e8%a7%a6%e5%8f%91 aria-hidden=true>#</a></h2><p>在 <code>raftNode.start()[etcdserver/raft.go]</code> 中，会等待时钟事件的触发，一次也就是一个 Tick 。</p><p>每次 Tick 都需要调用 <code>node.Tick()[raft/node.go]</code> 函数，该函数实际上就是向 tickc 中发送一个空的结构体，用来触发一次心跳事件。</p><p>为了防止由于负载过高导致时钟事件丢失，会将管道设置为 128 缓冲。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>raftNode.start()
+</span></span><span class=line><span class=cl> | &lt;&lt;&lt;raftNode.ticker.C&gt;&gt;&gt;
+</span></span><span class=line><span class=cl> |-node.Tick() 触发tick事件，向tickc中发送一个结构体
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>node.run() raft/node.go
+</span></span><span class=line><span class=cl> | &lt;&lt;&lt;node.tickc&gt;&gt;&gt; 触发了心跳事件
+</span></span><span class=line><span class=cl> |-raft.tick() 这里是一个函数指针，不同的角色调用的函数不同
+</span></span><span class=line><span class=cl> |=== Leader
+</span></span><span class=line><span class=cl> |-raft.tickHeartBeat() 对于Leader会调用该函数
+</span></span><span class=line><span class=cl>   | 判断是否要发送心跳信息，如果需要则发送MsgBeat类型的消息
+</span></span></code></pre></div><a class=anchor id=日志管理></a><h1>日志管理 <a href=#%e6%97%a5%e5%bf%97%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h1><p>在实现时，实际上日志 (WAL) 和 Snapshot 已经糅合到了一起，因此在重新构建状态机时必须要两者合作才可以，那么介绍时同样合到一起。</p><p>首先需要加载 snapshot 的最新值，然后根据这个 index 在 WAL 目录下查找之后的日志，并回放这些日志即可。</p><p>示例使用了 ETCD 提供的通用日志库来进行日志管理，这里重点看下应用层如何使用提供的 WAL 日志模块，其实现后面再详细描述。</p><a class=anchor id=日志追加></a><h2>日志追加 <a href=#%e6%97%a5%e5%bf%97%e8%bf%bd%e5%8a%a0 aria-hidden=true>#</a></h2><p>为了防止数据丢失，在更新之前会先将日志项追加到日志文件中，也就是如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>rc</span> <span class=o>*</span><span class=nx>raftNode</span><span class=p>)</span> <span class=nf>serveChannels</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=o>......</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>case</span> <span class=o>&lt;-</span><span class=nx>ticker</span><span class=p>.</span><span class=nx>C</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>           <span class=nx>rc</span><span class=p>.</span><span class=nx>node</span><span class=p>.</span><span class=nf>Tick</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>// 正常更新请求,第一步先追加日志
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=k>case</span> <span class=nx>rd</span> <span class=o>:=</span> <span class=o>&lt;-</span><span class=nx>rc</span><span class=p>.</span><span class=nx>node</span><span class=p>.</span><span class=nf>Ready</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>            <span class=nx>rc</span><span class=p>.</span><span class=nx>wal</span><span class=p>.</span><span class=nf>Save</span><span class=p>(</span><span class=nx>rd</span><span class=p>.</span><span class=nx>HardState</span><span class=p>,</span> <span class=nx>rd</span><span class=p>.</span><span class=nx>Entries</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=o>......</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=o>......</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=日志重放></a><h2>日志重放 <a href=#%e6%97%a5%e5%bf%97%e9%87%8d%e6%94%be aria-hidden=true>#</a></h2><p>在程序启动时，第一步便是进行日志重放，构建内存状态机。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>rc</span> <span class=o>*</span><span class=nx>raftNode</span><span class=p>)</span> <span class=nf>replayWAL</span><span class=p>()</span> <span class=o>*</span><span class=nx>wal</span><span class=p>.</span><span class=nx>WAL</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>snapshot</span> <span class=o>:=</span> <span class=nx>rc</span><span class=p>.</span><span class=nf>loadSnapshot</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=nx>w</span> <span class=o>:=</span> <span class=nx>rc</span><span class=p>.</span><span class=nf>openWAL</span><span class=p>(</span><span class=nx>snapshot</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>_</span><span class=p>,</span> <span class=nx>st</span><span class=p>,</span> <span class=nx>ents</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>w</span><span class=p>.</span><span class=nf>ReadAll</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;raftexample: failed to read WAL (%v)&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nx>rc</span><span class=p>.</span><span class=nx>raftStorage</span> <span class=p>=</span> <span class=nx>raft</span><span class=p>.</span><span class=nf>NewMemoryStorage</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>snapshot</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>rc</span><span class=p>.</span><span class=nx>raftStorage</span><span class=p>.</span><span class=nf>ApplySnapshot</span><span class=p>(</span><span class=o>*</span><span class=nx>snapshot</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>rc</span><span class=p>.</span><span class=nx>raftStorage</span><span class=p>.</span><span class=nf>SetHardState</span><span class=p>(</span><span class=nx>st</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>rc</span><span class=p>.</span><span class=nx>raftStorage</span><span class=p>.</span><span class=nf>Append</span><span class=p>(</span><span class=nx>ents</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nb>len</span><span class=p>(</span><span class=nx>ents</span><span class=p>)</span> <span class=p>&gt;</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>rc</span><span class=p>.</span><span class=nx>lastIndex</span> <span class=p>=</span> <span class=nx>ents</span><span class=p>[</span><span class=nb>len</span><span class=p>(</span><span class=nx>ents</span><span class=p>)</span><span class=o>-</span><span class=mi>1</span><span class=p>].</span><span class=nx>Index</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>rc</span><span class=p>.</span><span class=nx>commitC</span> <span class=o>&lt;-</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>w</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><a class=anchor id=bugfix></a><h2>BugFix <a href=#bugfix aria-hidden=true>#</a></h2><p>如果直接运行示例会发现日志的格式有所区别。</p><p>实际上，在 <code>etcdserver/raft.go</code> 文件中，有定义 <code>init()</code> 函数用于设置默认的 logger，也就是 <code>raft.SetLogger()</code> 的处理。</p><p>在 <code>raftexample/raft.go</code> 中增加 <code>init()</code> 函数，然后添加如下内容即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>init</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>raft</span><span class=p>.</span><span class=nf>SetLogger</span><span class=p>(</span><span class=nx>capnslog</span><span class=p>.</span><span class=nf>NewPackageLogger</span><span class=p>(</span><span class=s>&#34;github.com/coreos/etcd&#34;</span><span class=p>,</span> <span class=s>&#34;raft&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#示例程序>示例程序</a></li><li><a href=#使用>使用</a></li></ul></li><li><a href=#数据结构>数据结构</a><ul><li><a href=#kvstore>KVStore</a></li><li><a href=#raftnode>RaftNode</a></li></ul></li><li><a href=#ready-数据>Ready 数据</a></li><li><a href=#处理流程>处理流程</a></li><li><a href=#初始化>初始化</a><ul><li><a href=#新建raftnode对象>新建raftNode对象</a></li></ul></li><li><a href=#写数据>写数据</a><ul><li><a href=#处理流程-1>处理流程</a></li><li><a href=#提交数据>提交数据</a></li></ul></li><li><a href=#raft-指令处理>RAFT 指令处理</a></li><li><a href=#定时器>定时器</a><ul><li><a href=#定时器创建>定时器创建</a></li><li><a href=#定时器触发>定时器触发</a></li></ul></li><li><a href=#日志管理>日志管理</a><ul><li><a href=#日志追加>日志追加</a></li><li><a href=#日志重放>日志重放</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#bugfix>BugFix</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

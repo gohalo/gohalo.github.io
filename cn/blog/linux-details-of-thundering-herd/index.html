@@ -1,0 +1,205 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 惊群详解 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="简言之，惊群现象就是当多个进程或线程在同时阻塞等待同一个事件时，如果这个事件发生，会唤醒所有的进程，但最终只可能有一个进程/线程对该事件进行处理，其他进程/线程会在失败后重新休眠，这种性能浪费就是惊群。
+这里对 Linux 中的惊群现象进行简单介绍。
+惊群 # 关于惊群的解释可以查看 Wiki 的解释 Thundering herd problem 。
+accept() # 常见的场景如下。
+主进程执行 socket()+bind()+listen() 后，fork() 多个子进程，每个子进程都通过 accept() 循环处理这个 socket；此时，每个进程都阻塞在 accpet() 调用上，当一个新连接到来时，所有的进程都会被唤醒，但其中只有一个进程会 accept() 成功，其余皆失败，重新休眠。这就是 accept 惊群。
+如果只用一个进程去 accept 新连接，并通过消息队列等同步方式使其他子进程处理这些新建的连接，那么将会造成效率低下；因为这个进程只能用来 accept 连接，该进程可能会造成瓶颈。
+而实际上，对于 Linux 来说，这只是历史上的问题，现在的内核都解决该问题，也即只会唤醒一个进程。可以通过如下程序进行测试，只会激活一个进程。
+#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;string.h&amp;gt; #include &amp;lt;unistd.h&amp;gt; #include &amp;lt;sys/wait.h&amp;gt; #include &amp;lt;netinet/in.h&amp;gt; #define PROCESS_NUM 10 int main() { int fd = socket(PF_INET, SOCK_STREAM, 0); int connfd; int pid, i, status; char sendbuff[1024]; struct sockaddr_in serveraddr; printf(&amp;#34;Listening 0."><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 惊群详解</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-02-06</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/network/ role=button>network</a></div></div><hr><div class=content><p>简言之，惊群现象就是当多个进程或线程在同时阻塞等待同一个事件时，如果这个事件发生，会唤醒所有的进程，但最终只可能有一个进程/线程对该事件进行处理，其他进程/线程会在失败后重新休眠，这种性能浪费就是惊群。</p><p>这里对 Linux 中的惊群现象进行简单介绍。</p><a class=anchor id=惊群></a><h1>惊群 <a href=#%e6%83%8a%e7%be%a4 aria-hidden=true>#</a></h1><p>关于惊群的解释可以查看 Wiki 的解释 <a href=https://en.wikipedia.org/wiki/Thundering_herd_problem>Thundering herd problem</a> 。</p><a class=anchor id=accept></a><h2>accept() <a href=#accept aria-hidden=true>#</a></h2><p>常见的场景如下。</p><p>主进程执行 <code>socket()+bind()+listen()</code> 后，<code>fork()</code> 多个子进程，每个子进程都通过 <code>accept()</code> 循环处理这个 socket；此时，每个进程都阻塞在 <code>accpet()</code> 调用上，当一个新连接到来时，所有的进程都会被唤醒，但其中只有一个进程会 <code>accept()</code> 成功，其余皆失败，重新休眠。这就是 accept 惊群。</p><p>如果只用一个进程去 accept 新连接，并通过消息队列等同步方式使其他子进程处理这些新建的连接，那么将会造成效率低下；因为这个进程只能用来 accept 连接，该进程可能会造成瓶颈。</p><p>而实际上，对于 Linux 来说，这只是历史上的问题，现在的内核都解决该问题，也即只会唤醒一个进程。可以通过如下程序进行测试，只会激活一个进程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/wait.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;netinet/in.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define PROCESS_NUM 10
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>fd</span> <span class=o>=</span> <span class=nf>socket</span><span class=p>(</span><span class=n>PF_INET</span><span class=p>,</span> <span class=n>SOCK_STREAM</span><span class=p>,</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>connfd</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>pid</span><span class=p>,</span> <span class=n>i</span><span class=p>,</span> <span class=n>status</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=n>sendbuff</span><span class=p>[</span><span class=mi>1024</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>sockaddr_in</span> <span class=n>serveraddr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Listening 0.0.0.0:1234</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>serveraddr</span><span class=p>.</span><span class=n>sin_family</span> <span class=o>=</span> <span class=n>AF_INET</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>serveraddr</span><span class=p>.</span><span class=n>sin_addr</span><span class=p>.</span><span class=n>s_addr</span> <span class=o>=</span> <span class=nf>htonl</span><span class=p>(</span><span class=n>INADDR_ANY</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>serveraddr</span><span class=p>.</span><span class=n>sin_port</span> <span class=o>=</span> <span class=nf>htons</span><span class=p>(</span><span class=mi>1234</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>bind</span><span class=p>(</span><span class=n>fd</span><span class=p>,</span> <span class=p>(</span><span class=k>struct</span> <span class=n>sockaddr</span><span class=o>*</span><span class=p>)</span><span class=o>&amp;</span><span class=n>serveraddr</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>serveraddr</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=nf>listen</span><span class=p>(</span><span class=n>fd</span><span class=p>,</span> <span class=mi>1024</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span><span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>PROCESS_NUM</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>pid</span> <span class=o>=</span> <span class=nf>fork</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span><span class=p>(</span><span class=n>pid</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>while</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=n>connfd</span> <span class=o>=</span> <span class=nf>accept</span><span class=p>(</span><span class=n>fd</span><span class=p>,</span> <span class=p>(</span><span class=k>struct</span> <span class=n>sockaddr</span><span class=o>*</span><span class=p>)</span><span class=nb>NULL</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>                <span class=nf>snprintf</span><span class=p>(</span><span class=n>sendbuff</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>sendbuff</span><span class=p>),</span> <span class=s>&#34;accept PID is %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>getpid</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                <span class=nf>send</span><span class=p>(</span><span class=n>connfd</span><span class=p>,</span> <span class=n>sendbuff</span><span class=p>,</span> <span class=nf>strlen</span><span class=p>(</span><span class=n>sendbuff</span><span class=p>)</span> <span class=o>+</span> <span class=mi>1</span><span class=p>,</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>                <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;process %d accept success!</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>getpid</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>                <span class=nf>close</span><span class=p>(</span><span class=n>connfd</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nf>wait</span><span class=p>(</span><span class=o>&amp;</span><span class=n>status</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>然后，通过 <code>telnet 127.1 1234</code> 或者 <code>nc 127.1 1234</code> 测试链接即可。</p><a class=anchor id=epoll></a><h2>epoll() <a href=#epoll aria-hidden=true>#</a></h2><p>另外还有一个是关于 <code>epoll_wait()</code> 的，目前来仍然存在惊群现象。</p><p>主进程仍执行 <code>socket()+bind()+listen()</code> 后，将该 socket 加入到 epoll 中，然后 fork 出多个子进程，每个进程都阻塞在 <code>epoll_wait()</code> 上，如果有事件到来，则判断该事件是否是该 socket 上的事件，如果是，说明有新的连接到来了，则进行 accept 操作。</p><p>为了简化处理，忽略后续的读写以及对 accept 返回的新的套接字的处理，直接断开连接。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;netdb.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;fcntl.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/wait.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/epoll.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/types.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/socket.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define PROCESS_NUM 10
+</span></span></span><span class=line><span class=cl><span class=cp>#define MAXEVENTS 64
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span> <span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=n>argv</span><span class=p>[])</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>sfd</span><span class=p>,</span> <span class=n>efd</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>flags</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>n</span><span class=p>,</span> <span class=n>i</span><span class=p>,</span> <span class=n>k</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>epoll_event</span> <span class=n>event</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>epoll_event</span> <span class=o>*</span><span class=n>events</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>sockaddr_in</span> <span class=n>serveraddr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>sfd</span> <span class=o>=</span> <span class=nf>socket</span><span class=p>(</span><span class=n>PF_INET</span><span class=p>,</span> <span class=n>SOCK_STREAM</span><span class=p>,</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>serveraddr</span><span class=p>.</span><span class=n>sin_family</span> <span class=o>=</span> <span class=n>AF_INET</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>serveraddr</span><span class=p>.</span><span class=n>sin_addr</span><span class=p>.</span><span class=n>s_addr</span> <span class=o>=</span> <span class=nf>htonl</span><span class=p>(</span><span class=n>INADDR_ANY</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>serveraddr</span><span class=p>.</span><span class=n>sin_port</span> <span class=o>=</span> <span class=nf>htons</span><span class=p>(</span><span class=nf>atoi</span><span class=p>(</span><span class=s>&#34;1234&#34;</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=nf>bind</span><span class=p>(</span><span class=n>sfd</span><span class=p>,</span> <span class=p>(</span><span class=k>struct</span> <span class=n>sockaddr</span><span class=o>*</span><span class=p>)</span><span class=o>&amp;</span><span class=n>serveraddr</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>serveraddr</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>flags</span> <span class=o>=</span> <span class=nf>fcntl</span> <span class=p>(</span><span class=n>sfd</span><span class=p>,</span> <span class=n>F_GETFL</span><span class=p>,</span> <span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>flags</span> <span class=o>|=</span> <span class=n>O_NONBLOCK</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>fcntl</span> <span class=p>(</span><span class=n>sfd</span><span class=p>,</span> <span class=n>F_SETFL</span><span class=p>,</span> <span class=n>flags</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=nf>listen</span><span class=p>(</span><span class=n>sfd</span><span class=p>,</span> <span class=n>SOMAXCONN</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>perror</span> <span class=p>(</span><span class=s>&#34;listen&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=n>EXIT_SUCCESS</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>((</span><span class=n>efd</span> <span class=o>=</span> <span class=nf>epoll_create</span><span class=p>(</span><span class=n>MAXEVENTS</span><span class=p>))</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>perror</span><span class=p>(</span><span class=s>&#34;epoll_create&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=n>EXIT_SUCCESS</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>event</span><span class=p>.</span><span class=n>data</span><span class=p>.</span><span class=n>fd</span> <span class=o>=</span> <span class=n>sfd</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>event</span><span class=p>.</span><span class=n>events</span> <span class=o>=</span> <span class=n>EPOLLIN</span><span class=p>;</span> <span class=c1>// | EPOLLET;
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=nf>epoll_ctl</span><span class=p>(</span><span class=n>efd</span><span class=p>,</span> <span class=n>EPOLL_CTL_ADD</span><span class=p>,</span> <span class=n>sfd</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>event</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>perror</span><span class=p>(</span><span class=s>&#34;epoll_ctl&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=n>EXIT_SUCCESS</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* Buffer where events are returned */</span>
+</span></span><span class=line><span class=cl>    <span class=n>events</span> <span class=o>=</span> <span class=p>(</span><span class=k>struct</span> <span class=n>epoll_event</span><span class=o>*</span><span class=p>)</span><span class=nf>calloc</span><span class=p>(</span><span class=n>MAXEVENTS</span><span class=p>,</span> <span class=k>sizeof</span> <span class=n>event</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span><span class=p>(</span><span class=n>k</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>k</span> <span class=o>&lt;</span> <span class=n>PROCESS_NUM</span><span class=p>;</span> <span class=n>k</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=nf>fork</span><span class=p>()</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span> <span class=cm>/* children process */</span>
+</span></span><span class=line><span class=cl>            <span class=k>while</span> <span class=p>(</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>    <span class=cm>/* The event loop */</span>
+</span></span><span class=line><span class=cl>                <span class=n>n</span> <span class=o>=</span> <span class=nf>epoll_wait</span><span class=p>(</span><span class=n>efd</span><span class=p>,</span> <span class=n>events</span><span class=p>,</span> <span class=n>MAXEVENTS</span><span class=p>,</span> <span class=o>-</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>                <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;process #%d return from epoll_wait!</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>getpid</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>                <span class=nf>sleep</span><span class=p>(</span><span class=mi>2</span><span class=p>);</span>  <span class=cm>/* sleep here is very important!*/</span>
+</span></span><span class=line><span class=cl>                <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>n</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                    <span class=k>if</span> <span class=p>((</span><span class=n>events</span><span class=p>[</span><span class=n>i</span><span class=p>].</span><span class=n>events</span> <span class=o>&amp;</span> <span class=n>EPOLLERR</span><span class=p>)</span> <span class=o>||</span>
+</span></span><span class=line><span class=cl>                        <span class=p>(</span><span class=n>events</span><span class=p>[</span><span class=n>i</span><span class=p>].</span><span class=n>events</span> <span class=o>&amp;</span> <span class=n>EPOLLHUP</span><span class=p>)</span> <span class=o>||</span>
+</span></span><span class=line><span class=cl>                        <span class=p>(</span><span class=o>!</span><span class=p>(</span><span class=n>events</span><span class=p>[</span><span class=n>i</span><span class=p>].</span><span class=n>events</span> <span class=o>&amp;</span> <span class=n>EPOLLIN</span><span class=p>)))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=cm>/* An error has occured on this fd, or the socket is not
+</span></span></span><span class=line><span class=cl><span class=cm>                         * ready for reading (why were we notified then?)
+</span></span></span><span class=line><span class=cl><span class=cm>                         */</span>
+</span></span><span class=line><span class=cl>                        <span class=nf>fprintf</span> <span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;epoll error</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>                        <span class=nf>close</span> <span class=p>(</span><span class=n>events</span><span class=p>[</span><span class=n>i</span><span class=p>].</span><span class=n>data</span><span class=p>.</span><span class=n>fd</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>                        <span class=k>continue</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>                    <span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=n>sfd</span> <span class=o>==</span> <span class=n>events</span><span class=p>[</span><span class=n>i</span><span class=p>].</span><span class=n>data</span><span class=p>.</span><span class=n>fd</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=cm>/* We have a notification on the listening socket, which
+</span></span></span><span class=line><span class=cl><span class=cm>                         * means one or more incoming connections.
+</span></span></span><span class=line><span class=cl><span class=cm>                         */</span>
+</span></span><span class=line><span class=cl>                        <span class=k>struct</span> <span class=n>sockaddr</span> <span class=n>in_addr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>                        <span class=kt>socklen_t</span> <span class=n>in_len</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>                        <span class=kt>int</span> <span class=n>infd</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>                        <span class=c1>//char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>                        <span class=n>in_len</span> <span class=o>=</span> <span class=k>sizeof</span> <span class=n>in_addr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                        <span class=n>infd</span> <span class=o>=</span> <span class=nf>accept</span><span class=p>(</span><span class=n>sfd</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>in_addr</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>in_len</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>                        <span class=k>if</span> <span class=p>(</span><span class=n>infd</span> <span class=o>==</span> <span class=o>-</span><span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                            <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;process %d accept failed!</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>getpid</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>                            <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>                        <span class=p>}</span>
+</span></span><span class=line><span class=cl>                        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;process %d accept successed!</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>getpid</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                        <span class=cm>/* Make the incoming socket non-blocking and add it to the
+</span></span></span><span class=line><span class=cl><span class=cm>                        list of fds to monitor. */</span>
+</span></span><span class=line><span class=cl>                        <span class=nf>close</span><span class=p>(</span><span class=n>infd</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>                    <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>status</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>wait</span><span class=p>(</span><span class=o>&amp;</span><span class=n>status</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>free</span> <span class=p>(</span><span class=n>events</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>close</span> <span class=p>(</span><span class=n>sfd</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>EXIT_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>注意：上述的处理中添加了 <code>sleep()</code> 函数，实际上，如果很快处理完了这个 <code>accept()</code> 请求，那么其余进程可能还没有来得及被唤醒，内核队列上已经没有这个事件，无需唤醒其他进程。</p><p>那么，为什么只解决了 <code>accept()</code> 的惊群问题，而没有解决 <code>epoll()</code> 的？</p><p>当接收到一个报文后，显然只能由一个进程处理 (accept)；而 <code>epoll()</code> 却不同，因为内核不知道对应的触发事件具体由哪些进程处理，那么只能是唤醒所有的进程，然后由不同的进程进行处理。</p><a class=anchor id=nginx-解决></a><h1>Nginx 解决 <a href=#nginx-%e8%a7%a3%e5%86%b3 aria-hidden=true>#</a></h1><p>如上所述，如果采用 epoll，则仍然存在该问题，nginx 就是这种场景的一个典型，我们接下来看看其具体的处理方法。</p><p>nginx 的每个 worker 进程都会在函数 <code>ngx_process_events_and_timers()</code> 中处理不同的事件，然后通过 <code>ngx_process_events()</code> 封装了不同的事件处理机制，在 Linux 上默认采用 <code>epoll_wait()</code>。</p><p>主要在 <code>ngx_process_events_and_timers()</code> 函数中解决惊群现象。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>void ngx_process_events_and_timers(ngx_cycle_t *cycle)
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    ... ...
+</span></span><span class=line><span class=cl>    // 是否通过对accept加锁来解决惊群问题，需要工作线程数&gt;1且配置文件打开accetp_mutex
+</span></span><span class=line><span class=cl>    if (ngx_use_accept_mutex) {
+</span></span><span class=line><span class=cl>        // 超过配置文件中最大连接数的7/8时，该值大于0，此时满负荷不会再处理新连接，简单负载均衡
+</span></span><span class=line><span class=cl>        if (ngx_accept_disabled &gt; 0) {
+</span></span><span class=line><span class=cl>            ngx_accept_disabled--;
+</span></span><span class=line><span class=cl>        } else {
+</span></span><span class=line><span class=cl>            // 多个worker仅有一个可以得到这把锁。获取锁不会阻塞过程，而是立刻返回，获取成功的话
+</span></span><span class=line><span class=cl>            // ngx_accept_mutex_held被置为1。拿到锁意味着监听句柄被放到本进程的epoll中了，如果
+</span></span><span class=line><span class=cl>            // 没有拿到锁，则监听句柄会被从epoll中取出。
+</span></span><span class=line><span class=cl>            if (ngx_trylock_accept_mutex(cycle) == NGX_ERROR) {
+</span></span><span class=line><span class=cl>                return;
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>            if (ngx_accept_mutex_held) {
+</span></span><span class=line><span class=cl>                // 此时意味着ngx_process_events()函数中，任何事件都将延后处理，会把accept事件放到
+</span></span><span class=line><span class=cl>                // ngx_posted_accept_events链表中，epollin|epollout事件都放到ngx_posted_events链表中
+</span></span><span class=line><span class=cl>                flags |= NGX_POST_EVENTS;
+</span></span><span class=line><span class=cl>            } else {
+</span></span><span class=line><span class=cl>                // 拿不到锁，也就不会处理监听的句柄，这个timer实际是传给epoll_wait的超时时间，修改
+</span></span><span class=line><span class=cl>                // 为最大ngx_accept_mutex_delay意味着epoll_wait更短的超时返回，以免新连接长时间没有得到处理
+</span></span><span class=line><span class=cl>                if (timer == NGX_TIMER_INFINITE || timer &gt; ngx_accept_mutex_delay) {
+</span></span><span class=line><span class=cl>                    timer = ngx_accept_mutex_delay;
+</span></span><span class=line><span class=cl>                }
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    ... ...
+</span></span><span class=line><span class=cl>    (void) ngx_process_events(cycle, timer, flags);   // 实际调用ngx_epoll_process_events函数开始处理
+</span></span><span class=line><span class=cl>    ... ...
+</span></span><span class=line><span class=cl>    if (ngx_posted_accept_events) { //如果ngx_posted_accept_events链表有数据，就开始accept建立新连接
+</span></span><span class=line><span class=cl>        ngx_event_process_posted(cycle, &amp;ngx_posted_accept_events);
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    if (ngx_accept_mutex_held) { //释放锁后再处理下面的EPOLLIN EPOLLOUT请求
+</span></span><span class=line><span class=cl>        ngx_shmtx_unlock(&amp;ngx_accept_mutex);
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    if (delta) {
+</span></span><span class=line><span class=cl>        ngx_event_expire_timers();
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    ngx_log_debug1(NGX_LOG_DEBUG_EVENT, cycle-&gt;log, 0, &#34;posted events %p&#34;, ngx_posted_events);
+</span></span><span class=line><span class=cl>	// 然后再处理正常的数据读写请求。因为这些请求耗时久，所以在ngx_process_events里NGX_POST_EVENTS标
+</span></span><span class=line><span class=cl>    // 志将事件都放入ngx_posted_events链表中，延迟到锁释放了再处理。
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>关于 <code>ngx_use_accept_mutex</code>、<code>ngx_accept_disabled</code> 的修改可以直接 grep 查看。</p><a class=anchor id=so_reuseport></a><h1>SO_REUSEPORT <a href=#so_reuseport aria-hidden=true>#</a></h1><p>Linux 内核的 3.9 版本带来了 <code>SO_REUSEPORT</code> 特性，该特性支持多个进程或者线程绑定到同一端口，提高服务器程序的性能，允许多个套接字 <code>bind()</code> 以及 <code>listen()</code> 同一个 TCP 或者 UDP 端口，并且在内核层面实现负载均衡。</p><p>在未开启 <code>SO_REUSEPORT</code> 时，由一个监听 socket 将新接收的链接请求交给各个 worker 处理。</p><p><img alt="thunder reuseport" src=images/thunder-reuseport-01.png class="mx-auto d-block"></p><p>在使用 <code>SO_REUSEPORT</code> 后，多个进程可以同时监听同一个 IP:Port ，然后由内核决定将新链接发送给那个进程，显然会降低各个 worker 接收新链接时锁竞争。</p><p><img alt="thunder reuseport" src=images/thunder-reuseport-02.png class="mx-auto d-block"></p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>关于 Nginx 使用 <code>SO_REUSEPORT</code> 的介绍 <a href=https://www.nginx.com/blog/socket-sharding-nginx-release-1-9-1/>Socket Sharding in NGINX Release 1.9.1</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#惊群>惊群</a><ul><li><a href=#accept>accept()</a></li><li><a href=#epoll>epoll()</a></li></ul></li><li><a href=#nginx-解决>Nginx 解决</a></li><li><a href=#so_reuseport>SO_REUSEPORT</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

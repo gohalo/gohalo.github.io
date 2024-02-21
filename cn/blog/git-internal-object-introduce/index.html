@@ -1,0 +1,68 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>git 对象简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="git 作为当前最流行的版本管理工具，简单、易用，而且功能强大，不过其依托的是一组极为简洁的数据结构。
+这里简单介绍其核心概念。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>git 对象简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-01-21</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/develop/ role=button>develop</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/git/ role=button>git</a></div></div><hr><div class=content><p>git 作为当前最流行的版本管理工具，简单、易用，而且功能强大，不过其依托的是一组极为简洁的数据结构。</p><p>这里简单介绍其核心概念。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>git 维护着一个微型的文件系统，其中的文件也被称作数据对象，所有的数据对象均存储于项目下面的 <code>.git/objects</code> 目录中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git init foobar &amp;&amp; cd foobar
+</span></span><span class=line><span class=cl>$ echo &#39;Hello World !!!&#39; &gt; README.md
+</span></span><span class=line><span class=cl>$ git add README.md
+</span></span></code></pre></div><p>此时已经将文件添加到了 <code>.git/objects</code> 目录下了，可以通过如下命令查找。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ find .git/objects -type f
+</span></span><span class=line><span class=cl>.git/objects/2a/c7fb025641058bed0a8ebaa7a862d90bbb9522
+</span></span></code></pre></div><p>该对象被称为 Blob 对象，可以通过下面的命令把文件内容打印出来，或者查看文件的类型。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git cat-file -p 2ac7fb
+</span></span><span class=line><span class=cl>Hello World !!!
+</span></span><span class=line><span class=cl>$ git cat-file -t 2ac7fb
+</span></span><span class=line><span class=cl>blob
+</span></span></code></pre></div><p>版本库中的每个文件，包括了图片、文本、二进制文件等，都会被映射为一个 Blob 对象。</p><p>除了 Blob 对象，还存储着另外三种数据对象：Tree、Commit、Tag 。</p><a class=anchor id=常用操作></a><h2>常用操作 <a href=#%e5%b8%b8%e7%94%a8%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看对象的值以及内容，可以指定具体的类型
+</span></span><span class=line><span class=cl>$ git cat-file -t &lt;SHA1&gt;
+</span></span><span class=line><span class=cl>$ git cat-file -p &lt;SHA1&gt;
+</span></span><span class=line><span class=cl>$ git cat-file blob &lt;SHA1&gt;
+</span></span><span class=line><span class=cl>$ git cat-file commit &lt;SHA1&gt;
+</span></span></code></pre></div><p>可以通过如下命令查看所有对象的类型。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ find .git/objects -type f -a ! -name &#34;*pack*&#34; | \
+</span></span><span class=line><span class=cl>	awk -F &#34;/&#34; &#39;{printf(&#34;%s%s &#34;, $3, $4); system(&#34;git cat-file -t &#34;$3$4)}&#39;
+</span></span></code></pre></div><p>查看 <code>blog</code> 对象。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 将一个文件生成对应的SHA1值，也就是对象的ID
+</span></span><span class=line><span class=cl>$ git hash-object filename
+</span></span><span class=line><span class=cl>----- 查看对象的内容，如果文件不存在则会报错
+</span></span><span class=line><span class=cl>$ git show &lt;SHA1&gt;
+</span></span></code></pre></div><p>查看 <code>commit</code> 对象。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 列出所有的commit信息
+</span></span><span class=line><span class=cl>$ git log --pretty=oneline
+</span></span><span class=line><span class=cl>----- 查看commit的内容
+</span></span><span class=line><span class=cl>$ git show &lt;SHA1&gt;
+</span></span><span class=line><span class=cl>----- 该commit对象所对应的tree
+</span></span><span class=line><span class=cl>$ git cat-file -p &lt;SHA1&gt;
+</span></span></code></pre></div><a class=anchor id=blob-对象></a><h1>Blob 对象 <a href=#blob-%e5%af%b9%e8%b1%a1 aria-hidden=true>#</a></h1><p>其全称为 Binary Large Object ，一个 Blob 对象就是一段二进制数据。</p><p>为了把文件映射为 Blob 对象，Git 会执行如下的步骤：</p><ol><li>读取文件内容，并添加一段特殊标记到头部 <code>"blob %u\0%s", len, content</code> ，得到新的内容；</li><li>对上述的输出内容执行 SHA-1 哈希加密，此时，会得到一个长度为 40 字符的 hash 值，例如上述的 <code>2ac7fb025641058bed0a8ebaa7a862d90bbb9522</code>；</li><li>取该 hash 值的前两位作为子目录，剩下的 38 位作为文件名；</li><li>然后对第一步输出的内容进行 zip 压缩，得到新的二进制内容，存入文件中。</li></ol><a class=anchor id=查找过程></a><h1>查找过程 <a href=#%e6%9f%a5%e6%89%be%e8%bf%87%e7%a8%8b aria-hidden=true>#</a></h1><p>如果要查看某个分支的历史提交记录，那么使用过程如下。</p><p>首先会找到 HEAD 中对应的索引文件，该文件记录了最近一次 commit 对象的 hash 值。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cat .git/HEAD
+</span></span><span class=line><span class=cl>ref: refs/heads/feature/resource
+</span></span><span class=line><span class=cl>$ cat .git/refs/heads/feature/resource
+</span></span><span class=line><span class=cl>8e9c66dca71bd8e6452cf7534d1271e1fc60d54e
+</span></span><span class=line><span class=cl>$ git log --pretty=oneline
+</span></span><span class=line><span class=cl>8e9c66dca71bd8e6452cf7534d1271e1fc60d54e Your Commit
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>$ git cat-file -p 8e9c66dca71bd8e6452cf7534d1271e1fc60d54e
+</span></span><span class=line><span class=cl>tree 71a4f5f84f9fd37004204a243c4f1f37aefbe15f
+</span></span><span class=line><span class=cl>parent 9dfe4f99303977ff25db9880cc457bdad1ad91e7
+</span></span><span class=line><span class=cl>author foobar &lt;foobar@foobar.com&gt; 1555426113 +0800
+</span></span><span class=line><span class=cl>committer foobar &lt;foobar@foobar.com&gt; 1555426113 +0800
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Your Commit
+</span></span><span class=line><span class=cl>$ git ls-tree 71a4f5f8          # 当前版本包含的数据
+</span></span><span class=line><span class=cl>100644 blob 9e2b32adba25a2a1c6de532dc7ab004717c2171e    CMakeLists.txt
+</span></span><span class=line><span class=cl>100644 blob 311e372615b8926986e6a5e4a34f1c58a04ba003    README.md
+</span></span><span class=line><span class=cl>040000 tree 9d0d57f47b4aaccb220fe8139f92c4bda5c8f54d    include
+</span></span><span class=line><span class=cl>$ git cat-file blob 311e3726    # 查看某个文件对应的内容
+</span></span><span class=line><span class=cl>Hello World
+</span></span><span class=line><span class=cl>$ git cat-file -p 9d0d57f4      # 查看某个tree对象对应的内容，或者git ls-tree 9d0d57f4
+</span></span><span class=line><span class=cl>120000 blob d4715f1f09960daa402fc1b9fdbc0afb2b0927a1    common.h
+</span></span><span class=line><span class=cl>100644 blob 5c99a3054cc022ad981260b18d1dddebc7c749b6    sockets.h
+</span></span></code></pre></div><p>一个 tree 对象和 parent 对象是关键，tree 表示了当前 commit 对象下的所有内容，而 parent 对象指向了前一个 commit 对象。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ git rev-parse HEAD
+</span></span><span class=line><span class=cl>8e9c66dca71bd8e6452cf7534d1271e1fc60d54e
+</span></span><span class=line><span class=cl>$ git rev-parse HEAD~
+</span></span><span class=line><span class=cl>9dfe4f99303977ff25db9880cc457bdad1ad91e7
+</span></span></code></pre></div><p>可以看到当前 tree 对象的 parent 对象与前一次的 commit 对应的 hash 值是相同的，这样就可以按照这一关联关系依次查找。</p><blockquote><p>git 中绝大部分对象都是通过 SHA1 来标识，通过 <code>rev-parse</code> 可以将一些习惯用的标识转换为 SHA1 内部 ID ，例如 <code>HEAD^</code> <code>origin/master</code> 。
+除此之外，还有一些其它的用法，例如 <code>git rev-parse --symbolic --tags</code> 查看所有的 tag 信息，<code>git rev-parse --symbolic --branches</code> 本地所有的分支信息。</p></blockquote></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#常用操作>常用操作</a></li></ul></li><li><a href=#blob-对象>Blob 对象</a></li><li><a href=#查找过程>查找过程</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

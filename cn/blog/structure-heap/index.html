@@ -1,0 +1,130 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>优先队列详细介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="堆 (Heap) 又被为优先队列 (Priority Queue)，通过堆可以按照元素的优先级取出元素，而不是按照元素进入队列的先后顺序取出元素。
+这里详细介绍其实现。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>优先队列详细介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2020-08-17</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/algorithm/ role=button>Algorithm</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/structure/ role=button>Structure</a></div></div><hr><div class=content><p>堆 (Heap) 又被为优先队列 (Priority Queue)，通过堆可以按照元素的优先级取出元素，而不是按照元素进入队列的先后顺序取出元素。</p><p>这里详细介绍其实现。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>堆的一个经典的实现是完全二叉树 (Complete Binary Tree)，这样实现的堆成为二叉堆 (Binary Heap)，二叉树要求前 <code>n-1</code> 层必须填满，第 <code>n</code> 层也必须按照从左到右的顺序被填满。</p><p>二叉堆的性质包括了：A) Max Heap 每个子树的 root key 要比两个 child key 大；B) Min Heap 每个子树的 root key 要比两个 child key 小。</p><p>但是二叉堆对左右两个元素的大小没有限制，如下以最小堆为例，示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                 0/2
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/31             2/4
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/17    4/23     5/20    6/10
+</span></span><span class=line><span class=cl>   /   \
+</span></span><span class=line><span class=cl> 7/22 8/8
+</span></span></code></pre></div><p>在校验时，只需要遍历所有含叶子节点的节点，检查是否满足条件即可，叶子节点可以忽略。</p><a class=anchor id=pushdown></a><h2>PushDown <a href=#pushdown aria-hidden=true>#</a></h2><p>也有被称为 <code>heapify()</code> 的，就是从上到下保证满足堆的性质，一般用作删除。实际上就是对每个节点，选择 left 和 right 中 key 最小的节点，与该节点进行交换；然后依次类推，例如如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                 0/2
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/31             2/20
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/17    4/23     5/4      6/10
+</span></span><span class=line><span class=cl>   /   \
+</span></span><span class=line><span class=cl> 7/22 8/8
+</span></span></code></pre></div><p>将 1 作为起点，最小的是 3/17 ，那么与之交换，成为。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                 0/2
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/17             2/20
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/31    4/23     5/4      6/10
+</span></span><span class=line><span class=cl>   /   \
+</span></span><span class=line><span class=cl> 7/22 8/8
+</span></span></code></pre></div><p>再以被交换的 3 节点，此时需要与 8 交换，变成。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                 0/2
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/17             2/20
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/8    4/23     5/4      6/10
+</span></span><span class=line><span class=cl>   /   \
+</span></span><span class=line><span class=cl> 7/22 8/31
+</span></span></code></pre></div><p>注意，此时只是保证添加的元素满足堆条件，例如 31 已经添加到了合适位置，但是对于 <code>3/8</code> 却不满足条件。也就是说，通过单次 PushDown 操作不一定会同时满足条件。</p><a class=anchor id=pushup></a><h2>PushUp <a href=#pushup aria-hidden=true>#</a></h2><p>从底层向上，一般用于添加，例如将 4 的 15 替换为 3 ，那么就可以逐层向上检查。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                0/4
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/7               2/10
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/8    4/3        5/20   6/12
+</span></span><span class=line><span class=cl>   /
+</span></span><span class=line><span class=cl> 7/22
+</span></span></code></pre></div><a class=anchor id=构建></a><h2>构建 <a href=#%e6%9e%84%e5%bb%ba aria-hidden=true>#</a></h2><p>直接通过数组构建时，因为只有一半的节点是有叶子节点的，所以，只需要检查一半的节点确保其满足条件即可，详见 <code>heap_node_max()</code> 实现，例如如下节点，返回 4 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                  0
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>         1                 2
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>     3       4        5        6
+</span></span><span class=line><span class=cl>   /   \   /
+</span></span><span class=line><span class=cl>  7    8   9
+</span></span></code></pre></div><p>构建时执行 <code>PushDown</code> 即可，构建过程以如下示例为例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 原始数组如下
+</span></span><span class=line><span class=cl>                0/12
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/15             2/20
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/22   4/2        5/4      6/10
+</span></span><span class=line><span class=cl>   /   \
+</span></span><span class=line><span class=cl> 7/7  8/8
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 首先从 3 开始
+</span></span><span class=line><span class=cl>                0/12
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/15             2/20
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/7    4/2        5/4      6/10
+</span></span><span class=line><span class=cl>   /   \
+</span></span><span class=line><span class=cl> 7/22 8/8
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 然后检查 2 节点
+</span></span><span class=line><span class=cl>                0/12
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/15             2/4
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/7    4/2        5/20   6/10
+</span></span><span class=line><span class=cl>   /   \
+</span></span><span class=line><span class=cl> 7/22 8/8
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 接着是 1 节点
+</span></span><span class=line><span class=cl>                0/12
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/2              2/4
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/7    4/15       5/20   6/10
+</span></span><span class=line><span class=cl>   /   \
+</span></span><span class=line><span class=cl> 7/22 8/8
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 最后一个 0 节点
+</span></span><span class=line><span class=cl>                0/2
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/12             2/4
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/7    4/15       5/20   6/10
+</span></span><span class=line><span class=cl>   /   \
+</span></span><span class=line><span class=cl> 7/22 8/8
+</span></span></code></pre></div><a class=anchor id=extract></a><h2>Extract <a href=#extract aria-hidden=true>#</a></h2><p>获取根节点，这跟是最大堆还是最小堆有关，移除根节点之后，把最后一个节点放到根节点，移动之后可能会违反堆的特性，所以，需要利用 DownPush 进行检查。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                0/2
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/7               2/4
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/8    4/15       5/20   6/10
+</span></span><span class=line><span class=cl>   /   \
+</span></span><span class=line><span class=cl> 7/22 8/12
+</span></span></code></pre></div><p>移除第一个节点后，将最后一个节点替换到最开始节点，然后执行 PushDown 操作。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                0/12
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/7               2/4
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/8    4/15       5/20   6/10
+</span></span><span class=line><span class=cl>   /
+</span></span><span class=line><span class=cl> 7/22
+</span></span></code></pre></div><p>最终结果是。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                0/4
+</span></span><span class=line><span class=cl>          /               \
+</span></span><span class=line><span class=cl>        1/7               2/10
+</span></span><span class=line><span class=cl>      /     \           /     \
+</span></span><span class=line><span class=cl>    3/8    4/15       5/20   6/12
+</span></span><span class=line><span class=cl>   /
+</span></span><span class=line><span class=cl> 7/22
+</span></span></code></pre></div><a class=anchor id=insert></a><h2>Insert <a href=#insert aria-hidden=true>#</a></h2><p>只需要添加到最后，然后 PushUp 即可。</p><a class=anchor id=remove></a><h2>Remove <a href=#remove aria-hidden=true>#</a></h2><p>当删除节点的数值时，原来的位置就会出现一个孔，填充这个孔的方法是把最后的叶子的值赋给该孔，并下调到合适位置，最后把该叶子删除。</p><a class=anchor id=实现></a><h1>实现 <a href=#%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h1><p>因为是完全二叉树，通常通过数组完成，对于 n 叉堆来说，下标为 x 的元素，其孩子节点的下标范围是 <code>[nx+1, nx+n]</code>，比如 2 叉堆，下标为 x 的元素，其孩子节点的下标为 <code>2x+1</code> 和 <code>2x+2</code> 。</p><p>如下简单以二叉堆作为示例，有如下特点 (中括号假设开始为 1 ，小括号的开始为 0 )：</p><ul><li>堆的根节点存放在数组位置 <code>array[1] (0)</code> 的地方；</li><li>父节点 <code>i</code> 的左子节点在位置 <code>array[2*i] (2*i+1)</code>；</li><li>父节点 <code>i</code> 的右子节点在位置 <code>array[2*i+1] (2*i+2)</code>；</li><li>子节点 <code>i</code> 的父节点在位置 <code>array[floor(i/2)] (floor((i-1)/2))</code>。</li><li>最多非子节点数为 <code>floor(i/2) floor((i - 1)/2)</code> 。</li></ul><p>上述的 <code>floor()</code> 表示取整，例如 <code>5/2=2</code> 。在实现时，可以将 <code>0</code> 作为临时存储，那么第一个元素就可以 <code>1</code> 开始。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                  0                                       1
+</span></span><span class=line><span class=cl>          /               \                        /              \
+</span></span><span class=line><span class=cl>         1                 2                      2                3
+</span></span><span class=line><span class=cl>      /     \           /     \               /      \          /      \
+</span></span><span class=line><span class=cl>     3       4        5        6             4        5        6         7
+</span></span><span class=line><span class=cl>   /   \   /   \    /   \    /   \         /   \    /   \    /    \    /    \
+</span></span><span class=line><span class=cl>  7    8   9   10  11   12  13   14       8    9   10   11  12    13  14    15
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>             C 语言格式                                正常格式
+</span></span></code></pre></div><p>在实现时，包括了两个主要操作：A) UpHeap 在添加的时候；B) DownHeap 以某个节点从上向下调整，通常删除节点时使用。</p><a class=anchor id=基本接口></a><h2>基本接口 <a href=#%e5%9f%ba%e6%9c%ac%e6%8e%a5%e5%8f%a3 aria-hidden=true>#</a></h2><p>一般会包含如下的几个接口：</p><ul><li><code>insert()</code> 添加元素。</li><li><code>extract()</code> 获取最大、最小元素。</li><li><code>degrade()</code> 用于降级某个元素。</li></ul><p>其中的更新只是向上增长，例如最小堆是 Decrease 而最大堆是 Increase ，也就是只支持 PushUp 操作，这样可以保证只需要执行该操作即可，而执行 PushDown 可能会违反栈的规则。</p><a class=anchor id=总结></a><h1>总结 <a href=#%e6%80%bb%e7%bb%93 aria-hidden=true>#</a></h1><p>如果所有节点还没有满足栈性质，那么针对单个节点执行 <code>PushDown</code> 可能会违反规则，此时需要对所有的非叶子节点执行；而单个节点的 <code>PushUp</code> 操作仍然可以确保满足条件。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#pushdown>PushDown</a></li><li><a href=#pushup>PushUp</a></li><li><a href=#构建>构建</a></li><li><a href=#extract>Extract</a></li><li><a href=#insert>Insert</a></li><li><a href=#remove>Remove</a></li></ul></li><li><a href=#实现>实现</a><ul><li><a href=#基本接口>基本接口</a></li></ul></li><li><a href=#总结>总结</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,206 +1,211 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>K8S 简单安装部署服务 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="现在很多的 K8S 部署是通过容器安装的，这里介绍如何在物理机上独立部署，这也是最简单的方式。
-"><link rel=canonical href=https://gohalo.github.io/cn/blog/kubernets-simple-install/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/kubernets-simple-install/","url":"https://gohalo.github.io/cn/blog/kubernets-simple-install/","name":"K8S 简单安装部署服务","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2021-08-01T21:15:32CET","dateModified":"2021-08-01T21:15:32CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/kubernets-simple-install/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/kubernets-simple-install/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/kubernets-simple-install/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/kubernets-simple-install/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/kubernets-simple-install/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"K8S 简单安装部署服务","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/kubernets-simple-install/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/kubernets-simple-install/"},"datePublished":"2021-08-01T21:15:32CET","dateModified":"2021-08-01T21:15:32CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/kubernets-simple-install/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/kubernets-simple-install/#/schema/image/2","url":null,"contentUrl":null,"caption":"K8S 简单安装部署服务"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
-<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
-<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
-<span>页面目录</span>
-<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#组件组成>组件组成</a></li><li><a href=#组件安装>组件安装</a><ul><li><a href=#环境准备>环境准备</a></li><li><a href=#etcd-master>etcd (master)</a></li><li><a href=#kubeapiserver-master>KubeAPIServer (master)</a></li><li><a href=#kubecontrollermanagermaster>KubeControllerManager(master)</a></li><li><a href=#kubeproxyslave>KubeProxy(slave)</a></li><li><a href=#kubeletslave>Kubelet(slave)</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#组件组成>组件组成</a></li><li><a href=#组件安装>组件安装</a><ul><li><a href=#环境准备>环境准备</a></li><li><a href=#etcd-master>etcd (master)</a></li><li><a href=#kubeapiserver-master>KubeAPIServer (master)</a></li><li><a href=#kubecontrollermanagermaster>KubeControllerManager(master)</a></li><li><a href=#kubeproxyslave>KubeProxy(slave)</a></li><li><a href=#kubeletslave>Kubelet(slave)</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>K8S 简单安装部署服务</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2021-08-01</span>
-<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/container/ role=button>container</a>
-<a class="btn btn-light" href=https://gohalo.github.io/tags/k8s/ role=button>k8s</a></div></div><hr><div class=content-body><p>现在很多的 K8S 部署是通过容器安装的，这里介绍如何在物理机上独立部署，这也是最简单的方式。</p><h1 id=组件组成>组件组成 <a href=#%e7%bb%84%e4%bb%b6%e7%bb%84%e6%88%90 class=anchor aria-hidden=true>#</a></h1><p>可以通过 kubeadm 更简单安装，实际上是通过容器进行部署，相比来说要简单很多，通过 kubeadm config images list 查看其依赖的镜像列表，如果要离线安装，那么就需要提前准备好。另外，还可以使用 kind 进行部署。</p><p>K8S 主要包含了 Master 和 Nodes 两种类型的节点，不同类型节点包含的服务不同。</p><pre tabindex=0><code>----- Master 节点
-etcd                    用来保存集群的元数据，保证数据的一致性以及高可用。
-kube-apiserver          对外提供API服务，是 K8S 入口服务，会进行鉴权、认证等操作。
-kube-scheduler          资源调度
-kube-controller-manager 管理控制器
------ Nodes 节点
-kubelet                 确保容器运行，管理由 K8S 创建的容器
-kube-proxy              维护容器的网络规则
-docker                  容器运行环境
-</code></pre><p>包含了 UnSecret 以及 Secret 两个版本，前者是不包含鉴权、权限等功能的，仅做简单的功能测试。</p><h1 id=组件安装>组件安装 <a href=#%e7%bb%84%e4%bb%b6%e5%ae%89%e8%a3%85 class=anchor aria-hidden=true>#</a></h1><p>所有与 K8S 相关的组件安装在 <code>/opt/k8s</code> 目录下，包括数据、执行文件等，可以单机安装或通过 VirtualBox 安装。另外，出于安全的考虑，类似 <code>insecure-port</code> 参数在 <code>v1.20.x</code> 中移除，所以这里建议使用 <code>v1.19.x</code> 版本。</p><p>也可以参考如下的安全加固方式。</p><h2 id=环境准备>环境准备 <a href=#%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87 class=anchor aria-hidden=true>#</a></h2><p>如果使用 VirtualBox 搭建环境，那么需要确认 MAC 和 UUID 不同，如下是 CentOS 中的配置。</p><pre tabindex=0><code>ifconfig
-cat /sys/class/dmi/id/product_uuid
-
------ 停止防火墙
-systemctl status firewalld
-systemctl stop firewalld
-systemctl disable firewalld
-
------ 关闭 SELinux ，如果要完全关闭需要重启，建议先重启
-sestatus -v
-setenforce 0
-sed -i &#39;s/enforcing/disabled/&#39; /etc/selinux/config
-
------ 关闭Swap
-swapon -s
-swapoff -a
-vim /etc/fstab
-
------ 为了方便使用，新增主机名映射关系
-cat /etc/hosts
-192.168.56.107 master
-192.168.56.108 slave1
-192.168.56.110 slave2
-
------ 修改Node主机名，直接修改/etc/hostname即可，可以通过如下命令删除Node
-/opt/bin/kubectl --server=192.168.56.107:8080 delete node localhost.localdomain
-
------ 添加默认网关，临时添加重启后会失效
-route add default gw 192.168.56.1
------ 永久配置，网上有很多的配置，实际生效的为 static-routes 配置文件
-/etc/sysconfig/network
-/etc/sysconfig/network-scripts/route-enp0s3
-/etc/sysconfig/static-routes XXX
-default via 192.168.56.1 dev enp0s3
-192.168.56.0/255.255.255.0 via 192.168.56.1 dev enp0s3
-</code></pre><p>如果是本地，则可以使用本地回环不同网段。</p><p>另外，在调试时，可以通过 <code>-v=8</code> 设置日志级别，这是显示最为详细的日志配置。</p><h2 id=etcd-master>etcd (master) <a href=#etcd-master class=anchor aria-hidden=true>#</a></h2><p>直接从 <a href=https://github.com/etcd-io/etcd/releases/>GitHub</a> 下载安装包，增加 <code>etcd</code> 的 <code>systemd</code> 服务配置文件，其对应路径为 <code>/usr/lib/systemd/system/etcd.service</code> 文件，内容如下。</p><pre tabindex=0><code>[Unit]
-Description=Etcd Server
-After=network.target
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=notify
-WorkingDirectory=/opt/k8s/data/etcd
-ExecStart=/opt/k8s/bin/etcd --enable-v2              \
-    --data-dir=/opt/k8s/data/etcd                    \
-    --listen-peer-urls=http://192.168.56.107:2380    \
-    --listen-client-urls=http://192.168.56.107:2379  \
-    --advertise-client-urls=http://192.168.56.107:2379
-
-#---&gt; for local
-#  --listen-peer-urls=http://127.0.9.100:2380    \
-#  --listen-client-urls=http://127.0.9.100:2379  \
-#  --advertise-client-urls=http://127.0.9.100:2379
-
-Restart=on-failure
-LimitNOFILE=65536
-
-[Install]
-WantedBy=multi-user.target
-</code></pre><p>如下是常用的配置参数。</p><ul><li><code>listen-peer-urls</code> 集群内部通讯地址。</li><li><code>advertise-client-urls</code> <code>listen-client-urls</code> 客户端连接地址。</li></ul><p>安装启动完之后可以通过 <code>/opt/k8s/bin/etcdctl --endpoints=http://192.168.56.107:2379 endpoint health</code> 命令查看服务是否正常，如下是常见的命令。</p><pre tabindex=0><code>systemctl start etcd
-systemctl status etcd
-systemctl enable etcd
-systemctl daemon-reload
-</code></pre><h2 id=kubeapiserver-master>KubeAPIServer (master) <a href=#kubeapiserver-master class=anchor aria-hidden=true>#</a></h2><p>对应 <code>/usr/lib/systemd/system/kube-apiserver.service</code> 文件。</p><pre tabindex=0><code>[Unit]
-Description=kube-apiserver Server
-After=network.target
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-ExecStart=/opt/k8s/bin/kube-apiserver                          \
-    --v=2 --log-dir=/opt/k8s/log/apiserver --logtostderr=false \
-    --allow-privileged=true                                    \
-    --insecure-port=8080                                       \
-    --insecure-bind-address=192.168.56.107                     \
-    --etcd-servers=http://192.168.56.107:2379                  \
-    --admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ResourceQuota
-
-#---&gt; for local
-#    --insecure-bind-address=127.0.9.101                        \
-#    --etcd-servers=http://127.0.9.100:2379                     \
-
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-</code></pre><p>其中参数为。</p><ul><li><code>allow-privileged=true</code> 是否允许特权容器，可以查看 docker 的特性。</li></ul><p>通过 <code>/opt/k8s/bin/kubectl --server=192.168.56.107:8080 get cs</code> 可以看到 ectd 服务已经正常。</p><pre tabindex=0><code>systemctl start kube-apiserver
-systemctl status kube-apiserver
-systemctl enable kube-apiserver
-systemctl daemon-reload
-</code></pre><h2 id=kubecontrollermanagermaster>KubeControllerManager(master) <a href=#kubecontrollermanagermaster class=anchor aria-hidden=true>#</a></h2><p>对应 <code>/usr/lib/systemd/system/kube-controller-manager.service</code> 文件。</p><pre tabindex=0><code>[Unit]
-Description=kube-controller-manager
-After=network.target
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-ExecStart=/opt/k8s/bin/kube-controller-manager  \
-    --master=192.168.56.107:8080                \
-    --v=2 --log-dir=/opt/k8s/log/controller --logtostderr=false
-
-#---&gt; for local
-#    --master=127.0.9.101:8080                \
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-</code></pre><p>启动后同样可以通过如上命令检查是否正常。</p><pre tabindex=0><code>systemctl start kube-controller-manager
-systemctl status kube-controller-manager
-systemctl enable kube-controller-manager
-systemctl daemon-reload
-</code></pre><h3 id=kubeschedullermaster>KubeScheduller(master) <a href=#kubeschedullermaster class=anchor aria-hidden=true>#</a></h3><p>对应 <code>/usr/lib/systemd/system/kube-scheduler.service</code> 文件。</p><pre tabindex=0><code>[Unit]
-Description=kube-scheduler
-After=network.target
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-ExecStart=/opt/k8s/bin/kube-scheduler  \
-    --master=192.168.56.107:8080       \
-    --v=2 --log-dir=/opt/k8s/log/scheduler --logtostderr=false
-
-#---&gt; for local
-#    --master=127.0.9.101:8080                \
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-</code></pre><p>启动后同样可以通过如上命令检查是否正常。</p><pre tabindex=0><code>systemctl start kube-scheduler
-systemctl status kube-scheduler
-systemctl enable kube-scheduler
-systemctl daemon-reload
-</code></pre><h2 id=kubeproxyslave>KubeProxy(slave) <a href=#kubeproxyslave class=anchor aria-hidden=true>#</a></h2><p>对应 <code>/usr/lib/systemd/system/kube-proxy.service</code> 文件。</p><pre tabindex=0><code>[Unit]
-Description=kube-proxy
-After=network.target
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-ExecStart=/opt/k8s/bin/kube-proxy  \
-    --master=192.168.56.107:8080   \
-    --v=2 --log-dir=/opt/k8s/log/proxy --logtostderr=false
-
-#--&gt; for local
-#    --master=127.0.9.101:8080      \
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-</code></pre><pre tabindex=0><code>systemctl start kube-proxy
-systemctl status kube-proxy
-systemctl enable kube-proxy
-systemctl daemon-reload
-</code></pre><h2 id=kubeletslave>Kubelet(slave) <a href=#kubeletslave class=anchor aria-hidden=true>#</a></h2><p>对应 <code>/usr/lib/systemd/system/kubelet.service</code> 文件。</p><pre tabindex=0><code>[Unit]
-Description=kubelet
-After=network.target
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-ExecStart=/opt/k8s/bin/kubelet                               \
-    --v=2 --log-dir=/opt/k8s/log/kubelet --logtostderr=false \
-    --cluster-dns=10.0.0.3 --cluster-domain=cluster.local    \
-    --kubeconfig=/opt/k8s/kubelet/config --cgroup-driver=cgroupfs
-CPUAccounting=true
-MemoryAccounting=true
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-</code></pre><p>其中 <code>cgroup-driver</code> 对应的值要与 <code>docker</code> 保持一致，后者可以从 <code>/etc/docker/daemon.json</code> 文件查看。</p><pre tabindex=0><code>systemctl start kubelet
-systemctl status kubelet
-systemctl enable kubelet
-systemctl daemon-reload
-
-apiVersion: v1
-kind: Config
-clusters:
-- name: scratch
-  cluster:
-    insecure-skip-tls-verify: true
-    server: http://192.168.56.107:8080
-contexts:
-- name: default
-  context:
-    user: kubelet
-    cluster: scratch
-current-context: default
-</code></pre><h1 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h1><ul><li><a href=https://kubernetes.io/releases/download/>Download Kubernetes</a> 可以下载容器镜像或者二进制文件。</li></ul></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/kubernets-create-offline-images/>K8S 制作离线镜像</a></li><li><a class=text-body href=/cn/blog/docker-image-layers-analyze/>Docker 镜像分析工具 Dive 简介</a></li><li><a class=text-body href=/cn/blog/kubernets-examples-nginx/>Kubernets 网络示例</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>K8S 简单安装部署服务 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="现在很多的 K8S 部署是通过容器安装的，这里介绍如何在物理机上独立部署，这也是最简单的方式。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>K8S 简单安装部署服务</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2021-05-04</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/container/ role=button>container</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/k8s/ role=button>k8s</a></div></div><hr><div class=content><p>现在很多的 K8S 部署是通过容器安装的，这里介绍如何在物理机上独立部署，这也是最简单的方式。</p><a class=anchor id=组件组成></a><h1>组件组成 <a href=#%e7%bb%84%e4%bb%b6%e7%bb%84%e6%88%90 aria-hidden=true>#</a></h1><p>可以通过 kubeadm 更简单安装，实际上是通过容器进行部署，相比来说要简单很多，通过 kubeadm config images list 查看其依赖的镜像列表，如果要离线安装，那么就需要提前准备好。另外，还可以使用 kind 进行部署。</p><p>K8S 主要包含了 Master 和 Nodes 两种类型的节点，不同类型节点包含的服务不同。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- Master 节点
+</span></span><span class=line><span class=cl>etcd                    用来保存集群的元数据，保证数据的一致性以及高可用。
+</span></span><span class=line><span class=cl>kube-apiserver          对外提供API服务，是 K8S 入口服务，会进行鉴权、认证等操作。
+</span></span><span class=line><span class=cl>kube-scheduler          资源调度
+</span></span><span class=line><span class=cl>kube-controller-manager 管理控制器
+</span></span><span class=line><span class=cl>----- Nodes 节点
+</span></span><span class=line><span class=cl>kubelet                 确保容器运行，管理由 K8S 创建的容器
+</span></span><span class=line><span class=cl>kube-proxy              维护容器的网络规则
+</span></span><span class=line><span class=cl>docker                  容器运行环境
+</span></span></code></pre></div><p>包含了 UnSecret 以及 Secret 两个版本，前者是不包含鉴权、权限等功能的，仅做简单的功能测试。</p><a class=anchor id=组件安装></a><h1>组件安装 <a href=#%e7%bb%84%e4%bb%b6%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h1><p>所有与 K8S 相关的组件安装在 <code>/opt/k8s</code> 目录下，包括数据、执行文件等，可以单机安装或通过 VirtualBox 安装。另外，出于安全的考虑，类似 <code>insecure-port</code> 参数在 <code>v1.20.x</code> 中移除，所以这里建议使用 <code>v1.19.x</code> 版本。</p><p>也可以参考如下的安全加固方式。</p><a class=anchor id=环境准备></a><h2>环境准备 <a href=#%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87 aria-hidden=true>#</a></h2><p>如果使用 VirtualBox 搭建环境，那么需要确认 MAC 和 UUID 不同，如下是 CentOS 中的配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>ifconfig
+</span></span><span class=line><span class=cl>cat /sys/class/dmi/id/product_uuid
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 停止防火墙
+</span></span><span class=line><span class=cl>systemctl status firewalld
+</span></span><span class=line><span class=cl>systemctl stop firewalld
+</span></span><span class=line><span class=cl>systemctl disable firewalld
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 关闭 SELinux ，如果要完全关闭需要重启，建议先重启
+</span></span><span class=line><span class=cl>sestatus -v
+</span></span><span class=line><span class=cl>setenforce 0
+</span></span><span class=line><span class=cl>sed -i &#39;s/enforcing/disabled/&#39; /etc/selinux/config
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 关闭Swap
+</span></span><span class=line><span class=cl>swapon -s
+</span></span><span class=line><span class=cl>swapoff -a
+</span></span><span class=line><span class=cl>vim /etc/fstab
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 为了方便使用，新增主机名映射关系
+</span></span><span class=line><span class=cl>cat /etc/hosts
+</span></span><span class=line><span class=cl>192.168.56.107 master
+</span></span><span class=line><span class=cl>192.168.56.108 slave1
+</span></span><span class=line><span class=cl>192.168.56.110 slave2
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改Node主机名，直接修改/etc/hostname即可，可以通过如下命令删除Node
+</span></span><span class=line><span class=cl>/opt/bin/kubectl --server=192.168.56.107:8080 delete node localhost.localdomain
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 添加默认网关，临时添加重启后会失效
+</span></span><span class=line><span class=cl>route add default gw 192.168.56.1
+</span></span><span class=line><span class=cl>----- 永久配置，网上有很多的配置，实际生效的为 static-routes 配置文件
+</span></span><span class=line><span class=cl>/etc/sysconfig/network
+</span></span><span class=line><span class=cl>/etc/sysconfig/network-scripts/route-enp0s3
+</span></span><span class=line><span class=cl>/etc/sysconfig/static-routes XXX
+</span></span><span class=line><span class=cl>default via 192.168.56.1 dev enp0s3
+</span></span><span class=line><span class=cl>192.168.56.0/255.255.255.0 via 192.168.56.1 dev enp0s3
+</span></span></code></pre></div><p>如果是本地，则可以使用本地回环不同网段。</p><p>另外，在调试时，可以通过 <code>-v=8</code> 设置日志级别，这是显示最为详细的日志配置。</p><a class=anchor id=etcd-master></a><h2>etcd (master) <a href=#etcd-master aria-hidden=true>#</a></h2><p>直接从 <a href=https://github.com/etcd-io/etcd/releases/>GitHub</a> 下载安装包，增加 <code>etcd</code> 的 <code>systemd</code> 服务配置文件，其对应路径为 <code>/usr/lib/systemd/system/etcd.service</code> 文件，内容如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=Etcd Server
+</span></span><span class=line><span class=cl>After=network.target
+</span></span><span class=line><span class=cl>After=network-online.target
+</span></span><span class=line><span class=cl>Wants=network-online.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>Type=notify
+</span></span><span class=line><span class=cl>WorkingDirectory=/opt/k8s/data/etcd
+</span></span><span class=line><span class=cl>ExecStart=/opt/k8s/bin/etcd --enable-v2              \
+</span></span><span class=line><span class=cl>    --data-dir=/opt/k8s/data/etcd                    \
+</span></span><span class=line><span class=cl>    --listen-peer-urls=http://192.168.56.107:2380    \
+</span></span><span class=line><span class=cl>    --listen-client-urls=http://192.168.56.107:2379  \
+</span></span><span class=line><span class=cl>    --advertise-client-urls=http://192.168.56.107:2379
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#---&gt; for local
+</span></span><span class=line><span class=cl>#  --listen-peer-urls=http://127.0.9.100:2380    \
+</span></span><span class=line><span class=cl>#  --listen-client-urls=http://127.0.9.100:2379  \
+</span></span><span class=line><span class=cl>#  --advertise-client-urls=http://127.0.9.100:2379
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Restart=on-failure
+</span></span><span class=line><span class=cl>LimitNOFILE=65536
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span></code></pre></div><p>如下是常用的配置参数。</p><ul><li><code>listen-peer-urls</code> 集群内部通讯地址。</li><li><code>advertise-client-urls</code> <code>listen-client-urls</code> 客户端连接地址。</li></ul><p>安装启动完之后可以通过 <code>/opt/k8s/bin/etcdctl --endpoints=http://192.168.56.107:2379 endpoint health</code> 命令查看服务是否正常，如下是常见的命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>systemctl start etcd
+</span></span><span class=line><span class=cl>systemctl status etcd
+</span></span><span class=line><span class=cl>systemctl enable etcd
+</span></span><span class=line><span class=cl>systemctl daemon-reload
+</span></span></code></pre></div><a class=anchor id=kubeapiserver-master></a><h2>KubeAPIServer (master) <a href=#kubeapiserver-master aria-hidden=true>#</a></h2><p>对应 <code>/usr/lib/systemd/system/kube-apiserver.service</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=kube-apiserver Server
+</span></span><span class=line><span class=cl>After=network.target
+</span></span><span class=line><span class=cl>After=network-online.target
+</span></span><span class=line><span class=cl>Wants=network-online.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>ExecStart=/opt/k8s/bin/kube-apiserver                          \
+</span></span><span class=line><span class=cl>    --v=2 --log-dir=/opt/k8s/log/apiserver --logtostderr=false \
+</span></span><span class=line><span class=cl>    --allow-privileged=true                                    \
+</span></span><span class=line><span class=cl>    --insecure-port=8080                                       \
+</span></span><span class=line><span class=cl>    --insecure-bind-address=192.168.56.107                     \
+</span></span><span class=line><span class=cl>    --etcd-servers=http://192.168.56.107:2379                  \
+</span></span><span class=line><span class=cl>    --admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ResourceQuota
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#---&gt; for local
+</span></span><span class=line><span class=cl>#    --insecure-bind-address=127.0.9.101                        \
+</span></span><span class=line><span class=cl>#    --etcd-servers=http://127.0.9.100:2379                     \
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Restart=on-failure
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span></code></pre></div><p>其中参数为。</p><ul><li><code>allow-privileged=true</code> 是否允许特权容器，可以查看 docker 的特性。</li></ul><p>通过 <code>/opt/k8s/bin/kubectl --server=192.168.56.107:8080 get cs</code> 可以看到 ectd 服务已经正常。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>systemctl start kube-apiserver
+</span></span><span class=line><span class=cl>systemctl status kube-apiserver
+</span></span><span class=line><span class=cl>systemctl enable kube-apiserver
+</span></span><span class=line><span class=cl>systemctl daemon-reload
+</span></span></code></pre></div><a class=anchor id=kubecontrollermanagermaster></a><h2>KubeControllerManager(master) <a href=#kubecontrollermanagermaster aria-hidden=true>#</a></h2><p>对应 <code>/usr/lib/systemd/system/kube-controller-manager.service</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=kube-controller-manager
+</span></span><span class=line><span class=cl>After=network.target
+</span></span><span class=line><span class=cl>After=network-online.target
+</span></span><span class=line><span class=cl>Wants=network-online.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>ExecStart=/opt/k8s/bin/kube-controller-manager  \
+</span></span><span class=line><span class=cl>    --master=192.168.56.107:8080                \
+</span></span><span class=line><span class=cl>    --v=2 --log-dir=/opt/k8s/log/controller --logtostderr=false
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#---&gt; for local
+</span></span><span class=line><span class=cl>#    --master=127.0.9.101:8080                \
+</span></span><span class=line><span class=cl>Restart=on-failure
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span></code></pre></div><p>启动后同样可以通过如上命令检查是否正常。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>systemctl start kube-controller-manager
+</span></span><span class=line><span class=cl>systemctl status kube-controller-manager
+</span></span><span class=line><span class=cl>systemctl enable kube-controller-manager
+</span></span><span class=line><span class=cl>systemctl daemon-reload
+</span></span></code></pre></div><a class=anchor id=kubeschedullermaster></a><h3>KubeScheduller(master) <a href=#kubeschedullermaster aria-hidden=true>#</a></h3><p>对应 <code>/usr/lib/systemd/system/kube-scheduler.service</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=kube-scheduler
+</span></span><span class=line><span class=cl>After=network.target
+</span></span><span class=line><span class=cl>After=network-online.target
+</span></span><span class=line><span class=cl>Wants=network-online.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>ExecStart=/opt/k8s/bin/kube-scheduler  \
+</span></span><span class=line><span class=cl>    --master=192.168.56.107:8080       \
+</span></span><span class=line><span class=cl>    --v=2 --log-dir=/opt/k8s/log/scheduler --logtostderr=false
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#---&gt; for local
+</span></span><span class=line><span class=cl>#    --master=127.0.9.101:8080                \
+</span></span><span class=line><span class=cl>Restart=on-failure
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span></code></pre></div><p>启动后同样可以通过如上命令检查是否正常。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>systemctl start kube-scheduler
+</span></span><span class=line><span class=cl>systemctl status kube-scheduler
+</span></span><span class=line><span class=cl>systemctl enable kube-scheduler
+</span></span><span class=line><span class=cl>systemctl daemon-reload
+</span></span></code></pre></div><a class=anchor id=kubeproxyslave></a><h2>KubeProxy(slave) <a href=#kubeproxyslave aria-hidden=true>#</a></h2><p>对应 <code>/usr/lib/systemd/system/kube-proxy.service</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=kube-proxy
+</span></span><span class=line><span class=cl>After=network.target
+</span></span><span class=line><span class=cl>After=network-online.target
+</span></span><span class=line><span class=cl>Wants=network-online.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>ExecStart=/opt/k8s/bin/kube-proxy  \
+</span></span><span class=line><span class=cl>    --master=192.168.56.107:8080   \
+</span></span><span class=line><span class=cl>    --v=2 --log-dir=/opt/k8s/log/proxy --logtostderr=false
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>#--&gt; for local
+</span></span><span class=line><span class=cl>#    --master=127.0.9.101:8080      \
+</span></span><span class=line><span class=cl>Restart=on-failure
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>systemctl start kube-proxy
+</span></span><span class=line><span class=cl>systemctl status kube-proxy
+</span></span><span class=line><span class=cl>systemctl enable kube-proxy
+</span></span><span class=line><span class=cl>systemctl daemon-reload
+</span></span></code></pre></div><a class=anchor id=kubeletslave></a><h2>Kubelet(slave) <a href=#kubeletslave aria-hidden=true>#</a></h2><p>对应 <code>/usr/lib/systemd/system/kubelet.service</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[Unit]
+</span></span><span class=line><span class=cl>Description=kubelet
+</span></span><span class=line><span class=cl>After=network.target
+</span></span><span class=line><span class=cl>After=network-online.target
+</span></span><span class=line><span class=cl>Wants=network-online.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Service]
+</span></span><span class=line><span class=cl>ExecStart=/opt/k8s/bin/kubelet                               \
+</span></span><span class=line><span class=cl>    --v=2 --log-dir=/opt/k8s/log/kubelet --logtostderr=false \
+</span></span><span class=line><span class=cl>    --cluster-dns=10.0.0.3 --cluster-domain=cluster.local    \
+</span></span><span class=line><span class=cl>    --kubeconfig=/opt/k8s/kubelet/config --cgroup-driver=cgroupfs
+</span></span><span class=line><span class=cl>CPUAccounting=true
+</span></span><span class=line><span class=cl>MemoryAccounting=true
+</span></span><span class=line><span class=cl>Restart=on-failure
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>[Install]
+</span></span><span class=line><span class=cl>WantedBy=multi-user.target
+</span></span></code></pre></div><p>其中 <code>cgroup-driver</code> 对应的值要与 <code>docker</code> 保持一致，后者可以从 <code>/etc/docker/daemon.json</code> 文件查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>systemctl start kubelet
+</span></span><span class=line><span class=cl>systemctl status kubelet
+</span></span><span class=line><span class=cl>systemctl enable kubelet
+</span></span><span class=line><span class=cl>systemctl daemon-reload
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>apiVersion: v1
+</span></span><span class=line><span class=cl>kind: Config
+</span></span><span class=line><span class=cl>clusters:
+</span></span><span class=line><span class=cl>- name: scratch
+</span></span><span class=line><span class=cl>  cluster:
+</span></span><span class=line><span class=cl>    insecure-skip-tls-verify: true
+</span></span><span class=line><span class=cl>    server: http://192.168.56.107:8080
+</span></span><span class=line><span class=cl>contexts:
+</span></span><span class=line><span class=cl>- name: default
+</span></span><span class=line><span class=cl>  context:
+</span></span><span class=line><span class=cl>    user: kubelet
+</span></span><span class=line><span class=cl>    cluster: scratch
+</span></span><span class=line><span class=cl>current-context: default
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li><a href=https://kubernetes.io/releases/download/>Download Kubernetes</a> 可以下载容器镜像或者二进制文件。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#组件组成>组件组成</a></li><li><a href=#组件安装>组件安装</a><ul><li><a href=#环境准备>环境准备</a></li><li><a href=#etcd-master>etcd (master)</a></li><li><a href=#kubeapiserver-master>KubeAPIServer (master)</a></li><li><a href=#kubecontrollermanagermaster>KubeControllerManager(master)</a></li><li><a href=#kubeproxyslave>KubeProxy(slave)</a></li><li><a href=#kubeletslave>Kubelet(slave)</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,405 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>MySQL 复制方式 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="MySQL 的复制包括了多种方式，一种是基于 Binlog 的原生复制方式，除此之外，还包括了通过插件实现的 semi-sync 复制。另外，针对 InnoDB 实现的 xtrabackup 也可以作为一种复制方式。
+在本文中，简单介绍下 MySQL 中的复制方式。
+简介 # MySQL 在复制时，可以指定要忽略的数据库、需要复制的数据库甚至具体那些表；支持异步复制、半同步复制、同步复制 (NDB Cluster, Group Replication)、延迟复制等模式。
+在进行复制的时候，有两种格式： Statement Based、Row Based，也可以是两者的组合，在配置文件中通过 binlog_format 参数进行设置；后面再介绍与格式相关的内容。
+其中，MySQL 的复制原理如下图所示。
+在主服务器上，会将数据的更新写入到 binary log 中，而备服务器会从该文件中读取对数据的更改；每次备服务器链接到主时，都会分配一个单独的线程进行处理；该线程会将 binlog 产生的事件发送到备服务器。
+通常来说，主服务器会直接从缓存中读取 binlog ，所以不会对磁盘造成压力；但是，如果读取的数据是半小时，甚至更长事件之前的数据，那么就会不可避免的发生磁盘 IO 。
+备服务器 # 在备服务器上有两个线程，分别是 IO Thread 以及 SQL Thread 。
+IO Thread 线程会从主服务器读取数据，然后保存到本地的日志文件 relay log，该线程当前的状态可以通过 show slave status 查看。
+SQL thread 会读取本地的 relay log，然后将相应的语句写入到数据库。
+延迟复制 # 当发生延迟复制 (Replication Lag) 时，通常是由于 SQL 线程延迟导致的，当然，最好是通过 show slave status 查看两个线程的状态。如果是 IO 线程导致，最好是打开压缩协议，减小网络 IO 的消耗量。"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>MySQL 复制方式</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-05-08</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/mysql/ role=button>mysql</a></div></div><hr><div class=content><p>MySQL 的复制包括了多种方式，一种是基于 Binlog 的原生复制方式，除此之外，还包括了通过插件实现的 semi-sync 复制。另外，针对 InnoDB 实现的 xtrabackup 也可以作为一种复制方式。</p><p>在本文中，简单介绍下 MySQL 中的复制方式。</p><p><img alt="mysql replication logo" src=images/replication-logo.jpg class="mx-auto d-block"></p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>MySQL 在复制时，可以指定要忽略的数据库、需要复制的数据库甚至具体那些表；支持异步复制、半同步复制、同步复制 (NDB Cluster, Group Replication)、延迟复制等模式。</p><p>在进行复制的时候，有两种格式： Statement Based、Row Based，也可以是两者的组合，在配置文件中通过 binlog_format 参数进行设置；后面再介绍与格式相关的内容。</p><p>其中，MySQL 的复制原理如下图所示。</p><p><img alt="mysql basic replication" src=images/replication-basic.png class="mx-auto d-block"></p><p>在主服务器上，会将数据的更新写入到 binary log 中，而备服务器会从该文件中读取对数据的更改；每次备服务器链接到主时，都会分配一个单独的线程进行处理；该线程会将 binlog 产生的事件发送到备服务器。</p><p>通常来说，主服务器会直接从缓存中读取 binlog ，所以不会对磁盘造成压力；但是，如果读取的数据是半小时，甚至更长事件之前的数据，那么就会不可避免的发生磁盘 IO 。</p><a class=anchor id=备服务器></a><h2>备服务器 <a href=#%e5%a4%87%e6%9c%8d%e5%8a%a1%e5%99%a8 aria-hidden=true>#</a></h2><p>在备服务器上有两个线程，分别是 IO Thread 以及 SQL Thread 。</p><p>IO Thread 线程会从主服务器读取数据，然后保存到本地的日志文件 relay log，该线程当前的状态可以通过 show slave status 查看。</p><p>SQL thread 会读取本地的 relay log，然后将相应的语句写入到数据库。</p><a class=anchor id=延迟复制></a><h2>延迟复制 <a href=#%e5%bb%b6%e8%bf%9f%e5%a4%8d%e5%88%b6 aria-hidden=true>#</a></h2><p>当发生延迟复制 (Replication Lag) 时，通常是由于 SQL 线程延迟导致的，当然，最好是通过 show slave status 查看两个线程的状态。如果是 IO 线程导致，最好是打开压缩协议，减小网络 IO 的消耗量。</p><p>如果是 SQL 线程导致的，那么会比较复杂一些，需要根据具体的情况排查。</p><a class=anchor id=reset-命令></a><h2>reset 命令 <a href=#reset-%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h2><p>简单介绍下常用的相关的命令。</p><a class=anchor id=reset-master></a><h3>RESET MASTER <a href=#reset-master aria-hidden=true>#</a></h3><p>用于删除所有的 binglog 日志文件，并将日志索引文件清空，重新开始所有新的日志文件；通常用于第一次进行搭建主从库时，进行 binlog 初始化工作。</p><a class=anchor id=reset-slave></a><h3>RESET SLAVE <a href=#reset-slave aria-hidden=true>#</a></h3><p>用于删除 SLAVE 数据库的 relaylog 日志文件，并重新启用新的 relaylog 文件；如果使用 ALL 参数，同时会清理相关的主库信息。</p><p>通常用于在主备切换时，为了防止备库异常链接原主库导致数据不一致，需要清理与主库的链接信息，保证新主库不会再链接到原主库，为此，提供了 <code>RESET SLAVE</code> 命令。</p><p>但是不同的 MySQL 版本，对应的命令可能会有所区别，简述如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>MySQL 5.0+5.1 执行 STOP SLAVE; CHANGE MASTER TO MASTER_HOST=&#39;&#39;; RESET SLAVE；
+</span></span><span class=line><span class=cl>MySQL 5.5+5.6 执行 STOP SLAVE; RESET SLAVE ALL；
+</span></span></code></pre></div><p>对于所有版本都严禁设置 <code>master-user</code>、<code>master-host</code>、<code>master-password</code> 参数，当然在 MySQL 5.5 之后的版本不再支持这些参数了。</p><a class=anchor id=相关文件></a><h2>相关文件 <a href=#%e7%9b%b8%e5%85%b3%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h2><p>除了上述的二进制日志和中继日志文件外，还有其它一些与复制相关的文件。</p><a class=anchor id=index></a><h4>*.index <a href=#index aria-hidden=true>#</a></h4><p>服务器一旦开启二进制日志，会产生一个与二日志文件同名，但是以 <code>.index</code> 结尾的文件；该文件用于跟踪磁盘上存在哪些二进制日志文件，MySQL 用它来定位二进制日志文件。</p><p>与 binlog 相似，对于中继日志，同样存在一个索引文件。</p><a class=anchor id=info></a><h4>*.info <a href=#info aria-hidden=true>#</a></h4><p>一般为 <code>master.info</code> 以及 <code>relay-log.info</code>，前者保存 master 的相关信息，slave 重启后会通过该信息连接 master；后者包含备中当前二进制日志和中继日志的信息。</p><p>注意，上述设置需要保证在配置文件中添加如下配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>master_info_repository     = FILE
+</span></span><span class=line><span class=cl>relay_log_info_repository  = FILE
+</span></span></code></pre></div><p>也可以将上述的值设置为 TABLE ，此时会将上述的数据保存在 mysql 库的 <code>slave_master_info</code> 以及 <code>slave_relay_log_info</code> 两个表中；存放表里有两个好处：</p><ol><li>明文存储在表中相比文件存储要安全很多；</li><li>可避免 relay.info 更新不及时，SLAVE 重启后导致的主从复制出错。</li></ol><p>上述保存的表默认采用 MyISAM 存储引擎，官方建议改为 InnoDB 引擎，防止表损坏后自行修复。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; ALTER TABLE slave_master_info    Engine=InnoDB;
+</span></span><span class=line><span class=cl>mysql&gt; ALTER TABLE slave_relay_log_info Engine=InnoDB;
+</span></span><span class=line><span class=cl>mysql&gt; ALTER TABLE slave_worker_info    Engine=InnoDB;
+</span></span></code></pre></div><p>另外，可以开启如下两个参数，这两个是启用 relaylog 的自动修复功能，避免由于网络之类的外因造成日志损坏，导致主从停止。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>relay_log_purge = ON
+</span></span><span class=line><span class=cl>relay_log_recovery = ON
+</span></span></code></pre></div><a class=anchor id=测试实例></a><h1>测试实例 <a href=#%e6%b5%8b%e8%af%95%e5%ae%9e%e4%be%8b aria-hidden=true>#</a></h1><p>在此介绍下一些常见的数据复制方式，包括了执行的步骤，以及相关示例。</p><a class=anchor id=搭建步骤></a><h2>搭建步骤 <a href=#%e6%90%ad%e5%bb%ba%e6%ad%a5%e9%aa%a4 aria-hidden=true>#</a></h2><p>整体步骤如下。</p><a class=anchor id=1-增加配置></a><h4>1. 增加配置 <a href=#1-%e5%a2%9e%e5%8a%a0%e9%85%8d%e7%bd%ae aria-hidden=true>#</a></h4><p>如果要使用 MySQL 的复制，则必须要有如下的两个配置项。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>log-bin=mysql-bin             # 开启binlog日志
+</span></span><span class=line><span class=cl>server-id=1                   # 范围1~(2^32-1)
+</span></span></code></pre></div><a class=anchor id=2-创建用户></a><h4>2. 创建用户 <a href=#2-%e5%88%9b%e5%bb%ba%e7%94%a8%e6%88%b7 aria-hidden=true>#</a></h4><p>备库链接到主库时，需要通过指定帐号链接，且有 <code>REPLICATION SLAVE</code> 权限；在使用时，可以多个备库使用不同帐号密码，也可以使用相同的帐号密码。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; CREATE USER &#39;replication&#39;@&#39;%.foobar.com&#39; IDENTIFIED BY &#39;slave-password&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; GRANT REPLICATION SLAVE ON *.* TO &#39;replication&#39;@&#39;%.foobar.com&#39;;
+</span></span></code></pre></div><a class=anchor id=3-获取位置></a><h4>3. 获取位置 <a href=#3-%e8%8e%b7%e5%8f%96%e4%bd%8d%e7%bd%ae aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 在一个会话中锁表，对与InnoDB会阻塞commit
+</span></span><span class=line><span class=cl>mysql&gt; FLUSH TABLES WITH READ LOCK;
+</span></span><span class=line><span class=cl>----- 新建另外一个会话，查看当前的File+Position
+</span></span><span class=line><span class=cl>mysql&gt; SHOW MASTER STATUS;
+</span></span></code></pre></div><p>如果已存在数据，对于 InnoDB 可以通过 <code>mysqldump</code> 或者 <code>mysqlbackup</code> 进行历史备份。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 其中--master-data会自动添加CHANGE MASTER TO命令
+</span></span><span class=line><span class=cl>$ mysqldump --all-databases --master-data &gt; dbdump.db
+</span></span></code></pre></div><a class=anchor id=4-配置主库信息></a><h4>4. 配置主库信息 <a href=#4-%e9%85%8d%e7%bd%ae%e4%b8%bb%e5%ba%93%e4%bf%a1%e6%81%af aria-hidden=true>#</a></h4><p>在备库上执行如下命令，相关信息会保存在 <code>master.info</code> 文件中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; CHANGE MASTER TO
+</span></span><span class=line><span class=cl>           MASTER_HOST=&#39;master_host_name&#39;,
+</span></span><span class=line><span class=cl>           MASTER_USER=&#39;replication_user_name&#39;,
+</span></span><span class=line><span class=cl>           MASTER_PASSWORD=&#39;replication_password&#39;,
+</span></span><span class=line><span class=cl>           MASTER_LOG_FILE=&#39;recorded_log_file_name&#39;,
+</span></span><span class=line><span class=cl>           MASTER_LOG_POS=recorded_log_position;
+</span></span></code></pre></div><a class=anchor id=常用命令></a><h2>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h2><p>简单记录下常用的命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW SLAVE STATUS\G                    ← 查看slave详细信息
+</span></span><span class=line><span class=cl>mysql&gt; HELP CHANGE MASTER TO;                 ← 查看帮助
+</span></span><span class=line><span class=cl>mysql&gt; CHANGE MASTER TO
+</span></span><span class=line><span class=cl>       master_host=&#39;localhost&#39;,               ← 主服务器地址
+</span></span><span class=line><span class=cl>       master_port=3307,                      ← 主服务器端口，无引号
+</span></span><span class=line><span class=cl>       master_user=&#39;mysync&#39;,                  ← 连接到主服务器的用户
+</span></span><span class=line><span class=cl>       master_password=&#39;kidding&#39;,             ← 连接到主服务器的用户密码
+</span></span><span class=line><span class=cl>       master_log_file=&#39;mysql-bin.000003&#39;,    ← 指定从主那个binlog文件开始复制
+</span></span><span class=line><span class=cl>       master_log_pos=496;                    ← 从主binlog的指定位置开始复制，无引号
+</span></span><span class=line><span class=cl>mysql&gt; START SLAVE;
+</span></span><span class=line><span class=cl>mysql&gt; START SLAVE IO_THREAD;                 ← 也可以使用sql_thread
+</span></span><span class=line><span class=cl>mysql&gt; STOP SLAVE;                            ← 也可以停止
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看binlog日志信息
+</span></span><span class=line><span class=cl>$ mysqlbinlog -v --base64-output=decode-rows mysql-bin.000019
+</span></span></code></pre></div><p>在执行 <code>CHANGE MASTER TO</code> 命令时，可以只修改部分命令参数，例如只修改同步的位置信息。</p><p>如果不指定 <code>master_log_file</code> 和 <code>master_log_pos</code> 参数，则会从头开始复制；但是如果已经有很多数据了，可以通过 <code>mysqldump</code> 导出，并记录二进制文件以及位置。</p><a class=anchor id=重置复制></a><h2>重置复制 <a href=#%e9%87%8d%e7%bd%ae%e5%a4%8d%e5%88%b6 aria-hidden=true>#</a></h2><p>在如下的测试中，可以通过下面的方式重置复制。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 备库上执行，停止复制，等待SQL线程执行完成之后都停止
+</span></span><span class=line><span class=cl>mysql&gt; STOP SLAVE IO_THREAD;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected, 1 warning (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; STOP SLAVE;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected, 1 warning (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 备库上执行，重置备库
+</span></span><span class=line><span class=cl>mysql&gt; RESET SLAVE;              # 删除master.info和relay-log.info，但会保留同步信息
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected, 1 warning (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; RESET SLAVE ALL;          # 会彻底清除备库所有信息，包括同步信息
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected, 1 warning (0.00 sec)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 主库上执行，重置主库
+</span></span><span class=line><span class=cl>mysql&gt; RESET MASTER ALL;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected, 1 warning (0.00 sec)
+</span></span></code></pre></div><p>然后，根据不同的复制方式重新建立链接。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 对于常规的异步方式或者半同步方式
+</span></span><span class=line><span class=cl>mysql&gt; SHOW MASTER STATUS;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; CHANGE MASTER TO master_host=&#39;localhost&#39;,master_port=3307,
+</span></span><span class=line><span class=cl>       master_user=&#39;mysync&#39;,master_password=&#39;kidding&#39;,
+</span></span><span class=line><span class=cl>       master_log_file=&#39;mysql-bin.000003&#39;,master_log_pos=496;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 对于GTID模式
+</span></span><span class=line><span class=cl>mysql&gt; CHANGE MASTER TO master_host=&#39;localhost&#39;,master_port=3307,
+</span></span><span class=line><span class=cl>       master_user=&#39;mysync&#39;,master_password=&#39;kidding&#39;,
+</span></span><span class=line><span class=cl>       master_auto_position = 1;
+</span></span></code></pre></div><a class=anchor id=主备复制></a><h2>主备复制 <a href=#%e4%b8%bb%e5%a4%87%e5%a4%8d%e5%88%b6 aria-hidden=true>#</a></h2><p>在此，我们会在同一台机器的 <code>/tmp</code> 目录下部署两个主备实例；当然，这只是一个示例，也只是为了测试而已。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1.1 安装主备两个实例
+</span></span><span class=line><span class=cl>$ /opt/mysql-5.7/bin/mysqld --initialize-insecure --basedir=/opt/mysql-5.7 \
+</span></span><span class=line><span class=cl>    --datadir=/tmp/mysql-master --user=mysql
+</span></span><span class=line><span class=cl>$ /opt/mysql-5.7/bin/mysqld --initialize-insecure --basedir=/opt/mysql-5.7 \
+</span></span><span class=line><span class=cl>    --datadir=/tmp/mysql-slave  --user=mysql
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 1.2 修改配置文件，其中log-bin必须设置，server-id需要不同
+</span></span><span class=line><span class=cl>$ cat /tmp/mysql-master/my.cnf
+</span></span><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>binlog_format   = mixed
+</span></span><span class=line><span class=cl>log_warnings    = 1
+</span></span><span class=line><span class=cl>log_error       = localhost.err
+</span></span><span class=line><span class=cl>log-bin         = mysql-bin
+</span></span><span class=line><span class=cl>basedir         = /opt/mysql-5.7
+</span></span><span class=line><span class=cl>socket          = /tmp/mysql-master.sock
+</span></span><span class=line><span class=cl>pid-file        = /tmp/mysql-master.pid
+</span></span><span class=line><span class=cl>datadir         = /tmp/mysql-master
+</span></span><span class=line><span class=cl>port            = 3307
+</span></span><span class=line><span class=cl>server-id       = 1
+</span></span><span class=line><span class=cl>$ cat /tmp/mysql-slave/my.cnf
+</span></span><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>binlog_format   = mixed
+</span></span><span class=line><span class=cl>log_warnings    = 1
+</span></span><span class=line><span class=cl>log_error       = localhost.err
+</span></span><span class=line><span class=cl>log-bin         = mysql-bin
+</span></span><span class=line><span class=cl>basedir         = /opt/mysql-5.7
+</span></span><span class=line><span class=cl>socket          = /tmp/mysql-slave.sock
+</span></span><span class=line><span class=cl>pid-file        = /tmp/mysql-slave.pid
+</span></span><span class=line><span class=cl>datadir         = /tmp/mysql-slave
+</span></span><span class=line><span class=cl>port            = 3308
+</span></span><span class=line><span class=cl>server-id       = 2
+</span></span><span class=line><span class=cl>relay_log_index = relay-bin.index
+</span></span><span class=line><span class=cl>relay_log       = relay-bin
+</span></span><span class=line><span class=cl>report_host     = 127.1
+</span></span><span class=line><span class=cl>report_port     = 3308
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2.1 分别启动主备服务器
+</span></span><span class=line><span class=cl>$ /opt/mysql-5.7/bin/mysqld --defaults-file=/tmp/mysql-master/my.cnf  \
+</span></span><span class=line><span class=cl>    --basedir=/opt/mysql-5.7 --datadir=/tmp/mysql-master &gt; /dev/null 2&gt;&amp;1 &amp;
+</span></span><span class=line><span class=cl>$ /opt/mysql-5.7/bin/mysqld --defaults-file=/tmp/mysql-slave/my.cnf  \
+</span></span><span class=line><span class=cl>    --basedir=/opt/mysql-5.7 --datadir=/tmp/mysql-slave  &gt; /dev/null 2&gt;&amp;1 &amp;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2.2.0 登陆
+</span></span><span class=line><span class=cl>$ mysql -p -P3307 -uroot -S/tmp/mysql-master.sock
+</span></span><span class=line><span class=cl>$ mysql -p -P3308 -uroot -S/tmp/mysql-slave.sock
+</span></span><span class=line><span class=cl>----- 2.2.1 修改密码
+</span></span><span class=line><span class=cl>mysql&gt; ALTER USER &#39;root&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;new-password&#39;;
+</span></span><span class=line><span class=cl>----- 2.2.2 然后用新密码登陆
+</span></span><span class=line><span class=cl>$ mysql -p&#39;new-password&#39; -P3307 -uroot -S/tmp/mysql-master.sock
+</span></span><span class=line><span class=cl>$ mysql -p&#39;new-password&#39; -P3308 -uroot -S/tmp/mysql-slave.sock
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 3.1 配置主服务器，需要新建一个用户
+</span></span><span class=line><span class=cl>mysql&gt; GRANT REPLICATION SLAVE ON *.* to &#39;mysync&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;kidding&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; SHOW MASTER STATUS;            # 查看相应的File以及Position
+</span></span><span class=line><span class=cl>----- 3.2 配置从服务器，然后启动
+</span></span><span class=line><span class=cl>mysql&gt; CHANGE MASTER TO master_host=&#39;localhost&#39;,master_port=3307,
+</span></span><span class=line><span class=cl>       master_user=&#39;mysync&#39;,master_password=&#39;kidding&#39;,
+</span></span><span class=line><span class=cl>       master_log_file=&#39;mysql-bin.000003&#39;,master_log_pos=496;
+</span></span><span class=line><span class=cl>mysql&gt; START SLAVE;
+</span></span><span class=line><span class=cl>mysql&gt; STOP SLAVE;                    # 也可以停止
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 4. 关闭数据库
+</span></span><span class=line><span class=cl>$ mysqladmin -uroot -S /tmp/mysql-master.sock shutdown
+</span></span><span class=line><span class=cl>$ mysqladmin -uroot -S /tmp/mysql-slave.sock shutdown
+</span></span></code></pre></div><p>现在基本就在同一个服务器上创建了一个主备的测试实例，接下来就可以通过创建数据库、表、写入数据等进行测试，如果正常则可以直接在备上看到主所作的操作。</p><p>另外，在主从上分别执行 <code>show processlist</code> 就可以看到，主多一个线程处理 <code>Binlog Dump</code>；而在从上有两个线程，分别在等待主发送 event，另外一个线程则进行回放。</p><a class=anchor id=主主复制></a><h2>主主复制 <a href=#%e4%b8%bb%e4%b8%bb%e5%a4%8d%e5%88%b6 aria-hidden=true>#</a></h2><p>同上，会在同一台机器的 <code>/tmp</code> 目录下部署两个主主实例，用于测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1.1 安装主主两个实例
+</span></span><span class=line><span class=cl>$ /opt/mysql-5.7/bin/mysqld --initialize-insecure --basedir=/opt/mysql-5.7 \
+</span></span><span class=line><span class=cl>    --datadir=/tmp/mysql-master1 --user=mysql
+</span></span><span class=line><span class=cl>$ /opt/mysql-5.7/bin/mysqld --initialize-insecure --basedir=/opt/mysql-5.7 \
+</span></span><span class=line><span class=cl>    --datadir=/tmp/mysql-master2 --user=mysql
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 1.2 修改配置文件，其中log-bin必须设置，server-id需要不同
+</span></span><span class=line><span class=cl>$ cat /tmp/mysql-master1/my.cnf
+</span></span><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>binlog_format   = mixed
+</span></span><span class=line><span class=cl>log_warnings    = 1
+</span></span><span class=line><span class=cl>log_error       = localhost.err
+</span></span><span class=line><span class=cl>log-bin         = mysql-bin
+</span></span><span class=line><span class=cl>basedir         = /opt/mysql-5.7
+</span></span><span class=line><span class=cl>basedir         = /opt/mysql-5.7
+</span></span><span class=line><span class=cl>socket          = /tmp/mysql-master1.sock
+</span></span><span class=line><span class=cl>pid-file        = /tmp/mysql-master1.pid
+</span></span><span class=line><span class=cl>datadir         = /tmp/mysql-master1
+</span></span><span class=line><span class=cl>port            = 3307
+</span></span><span class=line><span class=cl>server-id       = 1
+</span></span><span class=line><span class=cl>relay_log_index = relay-bin.index
+</span></span><span class=line><span class=cl>relay_log       = relay-bin
+</span></span><span class=line><span class=cl>report_host     = 127.1
+</span></span><span class=line><span class=cl>report_port     = 3307
+</span></span><span class=line><span class=cl>auto-increment-increment = 2
+</span></span><span class=line><span class=cl>auto-increment-offset    = 1
+</span></span><span class=line><span class=cl>$ cat /tmp/mysql-master2/my.cnf
+</span></span><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>binlog_format   = mixed
+</span></span><span class=line><span class=cl>log_warnings    = 1
+</span></span><span class=line><span class=cl>log_error       = localhost.err
+</span></span><span class=line><span class=cl>log-bin         = mysql-bin
+</span></span><span class=line><span class=cl>basedir         = /opt/mysql-5.7
+</span></span><span class=line><span class=cl>socket          = /tmp/mysql-master2.sock
+</span></span><span class=line><span class=cl>pid-file        = /tmp/mysql-master2.pid
+</span></span><span class=line><span class=cl>datadir         = /tmp/mysql-master2
+</span></span><span class=line><span class=cl>port            = 3308
+</span></span><span class=line><span class=cl>server-id       = 2
+</span></span><span class=line><span class=cl>relay_log_index = relay-bin.index
+</span></span><span class=line><span class=cl>relay_log       = relay-bin
+</span></span><span class=line><span class=cl>report_host     = 127.1
+</span></span><span class=line><span class=cl>report_port     = 3308
+</span></span><span class=line><span class=cl>auto-increment-increment = 2
+</span></span><span class=line><span class=cl>auto-increment-offset    = 2
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2.1 分别启动主主服务器
+</span></span><span class=line><span class=cl>$ /opt/mysql-5.7/bin/mysqld --defaults-file=/tmp/mysql-master1/my.cnf  \
+</span></span><span class=line><span class=cl>    --basedir=/opt/mysql-5.7 --datadir=/tmp/mysql-master1 &gt; /dev/null 2&gt;&amp;1 &amp;
+</span></span><span class=line><span class=cl>$ /opt/mysql-5.7/bin/mysqld --defaults-file=/tmp/mysql-master2/my.cnf  \
+</span></span><span class=line><span class=cl>    --basedir=/opt/mysql-5.7 --datadir=/tmp/mysql-master2 &gt; /dev/null 2&gt;&amp;1 &amp;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2.2.0 登陆
+</span></span><span class=line><span class=cl>$ mysql -p -P3307 -uroot -S/tmp/mysql-master1.sock
+</span></span><span class=line><span class=cl>$ mysql -p -P3308 -uroot -S/tmp/mysql-master2.sock
+</span></span><span class=line><span class=cl>----- 2.2.1 修改密码
+</span></span><span class=line><span class=cl>mysql&gt; ALTER USER &#39;root&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;new-password&#39;;
+</span></span><span class=line><span class=cl>----- 2.2.2 然后用新密码登陆
+</span></span><span class=line><span class=cl>$ mysql -p&#39;new-password&#39; -P3307 -uroot -S/tmp/mysql-master1.sock
+</span></span><span class=line><span class=cl>$ mysql -p&#39;new-password&#39; -P3308 -uroot -S/tmp/mysql-master2.sock
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 3.1 配置两个主服务器，需要新建一个用户
+</span></span><span class=line><span class=cl>mysql&gt; GRANT REPLICATION SLAVE ON *.* to &#39;mysync&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;kidding&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; SHOW MASTER STATUS;            # 查看相应的File以及Position
+</span></span><span class=line><span class=cl>----- 3.2 配置两个主服务器，然后启动
+</span></span><span class=line><span class=cl>mysql&gt; CHANGE MASTER TO master_host=&#39;localhost&#39;,master_port=3307,
+</span></span><span class=line><span class=cl>       master_user=&#39;mysync&#39;,master_password=&#39;kidding&#39;,
+</span></span><span class=line><span class=cl>       master_log_file=&#39;mysql-bin.000003&#39;,master_log_pos=496;
+</span></span><span class=line><span class=cl>mysql&gt; START SLAVE;
+</span></span><span class=line><span class=cl>mysql&gt; STOP SLAVE;                    # 也可以停止
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 4. 关闭数据库
+</span></span><span class=line><span class=cl>$ mysqladmin -uroot -S /tmp/mysql-master1.sock shutdown
+</span></span><span class=line><span class=cl>$ mysqladmin -uroot -S /tmp/mysql-master2.sock shutdown
+</span></span></code></pre></div><p>两台服务器都需要开启二进制日志和中继日志。</p><p>主备设置主键自动增长 <code>auto-increment-increment</code> 步长均为 <code>2</code>，而起始数值则分别为 <code>1</code> 和 <code>2</code>，这样两个服务的 <code>auto_increment</code> 值分别为奇数和偶数，从而避免数据同步时出现主键冲突。</p><a class=anchor id=半同步机制></a><h2>半同步机制 <a href=#%e5%8d%8a%e5%90%8c%e6%ad%a5%e6%9c%ba%e5%88%b6 aria-hidden=true>#</a></h2><p>执行流程为。</p><ol><li>当 Master 上开启半同步复制的功能时，至少应该有一个 Slave 开启其功能；此时，一个线程在 Master 上提交事务将受到阻塞，直到得知一个已开启半同步复制功能的 Slave 已收到此事务的所有事件，或等待超时。</li><li>当 Slave 主机连接到 Master 时，能够查看其是否处于半同步复制的机制。</li><li>当一个事务的事件都已写入其 relay-log 中且已刷新到磁盘上，Slave 才会告知已收到。</li><li>如果等待超时，也就是 Master 没被告知已收到，此时 Master 会自动转换为异步复制的机制。当至少一个半同步的 Slave 赶上了，Master 与其 Slave 自动转换为半同步复制的机制。</li><li>半同步复制的功能要在 Master，Slave 都开启，半同步复制才会起作用；否则，只开启一边，它依然为异步复制。</li></ol><p>如下是搭建的方法。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1. 安装半同步模块并启动，模块保存在lib/plugin目录下
+</span></span><span class=line><span class=cl>mysql&gt; INSTALL PLUGIN rpl_semi_sync_slave SONAME &#39;semisync_slave.so&#39;;
+</span></span><span class=line><span class=cl>mysql&gt; INSTALL PLUGIN rpl_semi_sync_master SONAME &#39;semisync_master.so&#39;;
+</span></span><span class=line><span class=cl>----- 1.1 启动半同步模块，并设置超时时间2s
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL rpl_semi_sync_slave_enabled = ON;
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL rpl_semi_sync_master_enabled = ON;
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL rpl_semi_sync_master_timeout = 2000;
+</span></span><span class=line><span class=cl>----- 1.2 也可以设置配置文件
+</span></span><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>plugin_dir = /opt/mysql-5.7/lib/plugin
+</span></span><span class=line><span class=cl>plugin_load = &#34;rpl_semi_sync_master=semisync_master.so;rpl_semi_sync_slave=semisync_slave.so&#34;
+</span></span><span class=line><span class=cl>rpl_semi_sync_master_enabled = ON
+</span></span><span class=line><span class=cl>rpl_semi_sync_slave_enabled = ON
+</span></span><span class=line><span class=cl>rpl_semi_sync_master_timeout = 2000
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2 如果已经搭建主备复制，则从节点需要重新连接主服务器半同步才会生效
+</span></span><span class=line><span class=cl>mysql&gt; STOP SLAVE IO_THREAD;
+</span></span><span class=line><span class=cl>mysql&gt; START SLAVE IO_THREAD;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 3. 查看是否已经启动，需要大于等于1
+</span></span><span class=line><span class=cl>mysql&gt; SHOW GLOBAL STATUS LIKE &#39;rpl_semi_sync_master_clients&#39;;
+</span></span></code></pre></div><p>现在半同步已正常工作，可以验证一下半同步超时，是否会自动降为异步工作；可在 Slave 上停掉半同步协议，然后在 Master 上创建数据库看一下能不能复制到 Slave 上。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>-----  slave ------------------------+----- master -------------------------------
+</span></span><span class=line><span class=cl>### 关闭备库的IO线程
+</span></span><span class=line><span class=cl>mysql&gt; STOP SLAVE IO_THREAD;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>                                       ### 执行2s超时，主库仍然执行成功，备库失败
+</span></span><span class=line><span class=cl>                                       mysql&gt; CREATE DATABASE foobar;
+</span></span><span class=line><span class=cl>                                       Query OK, 1 row affected (2.01 sec)
+</span></span><span class=line><span class=cl>### 启动备库的IO线程，查看DB已经同步
+</span></span><span class=line><span class=cl>mysql&gt; START SLAVE IO_THREAD;
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>mysql&gt; SHOW DATABASES LIKE &#39;foobar&#39; ;
+</span></span><span class=line><span class=cl>+-------------------+
+</span></span><span class=line><span class=cl>| Database (foobar) |
+</span></span><span class=line><span class=cl>+-------------------+
+</span></span><span class=line><span class=cl>| foobar            |
+</span></span><span class=line><span class=cl>+-------------------+
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span><span class=line><span class=cl>                                       ### 可以执行成功
+</span></span><span class=line><span class=cl>                                       mysql&gt; CREATE DATABASE foobar1;
+</span></span><span class=line><span class=cl>                                       Query OK, 1 row affected (0.01 sec)
+</span></span></code></pre></div><p>创建第一个数据库花了 2.01 秒，如前设置的超时时间是 2 秒；而创建第二个数据库只花了 0.01 秒，由此得出结论是超时转换为异步传送。</p><a class=anchor id=gtid-复制></a><h2>GTID 复制 <a href=#gtid-%e5%a4%8d%e5%88%b6 aria-hidden=true>#</a></h2><p>如下是搭建的方法，需要注意的是，执行 <code>CHANGE MASTER TO</code> 的命令与原生的稍微有些区别。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 在配置文件中添加如下内容
+</span></span><span class=line><span class=cl>[mysqld]
+</span></span><span class=line><span class=cl>gtid-mode                 = ON
+</span></span><span class=line><span class=cl>enforce-gtid-consistency  = ON
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 设置主库信息
+</span></span><span class=line><span class=cl>mysql&gt; CHANGE MASTER TO master_host=&#39;localhost&#39;,master_port=3307,
+</span></span><span class=line><span class=cl>       master_user=&#39;mysync&#39;,master_password=&#39;kidding&#39;,
+</span></span><span class=line><span class=cl>       master_auto_position = 1;
+</span></span></code></pre></div><a class=anchor id=状态监控></a><h2>状态监控 <a href=#%e7%8a%b6%e6%80%81%e7%9b%91%e6%8e%a7 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; SHOW SLAVE STATUS\G
+</span></span><span class=line><span class=cl>*************************** 1. row ***************************
+</span></span><span class=line><span class=cl>               Slave_IO_State: Waiting for master to send event
+</span></span><span class=line><span class=cl>                  Master_Host: localhost           # 主服务器地址
+</span></span><span class=line><span class=cl>                  Master_User: mysync              # 授权用户名
+</span></span><span class=line><span class=cl>                  Master_Port: 3307                # 主服务器绑定的端口号
+</span></span><span class=line><span class=cl>                Connect_Retry: 60
+</span></span><span class=line><span class=cl>              Master_Log_File: mysql-bin.000003
+</span></span><span class=line><span class=cl>          Read_Master_Log_Pos: 496                 # 主服务器二进制日志位置
+</span></span><span class=line><span class=cl>               Relay_Log_File: mysql-slave-relay-bin.000001
+</span></span><span class=line><span class=cl>                Relay_Log_Pos: 4
+</span></span><span class=line><span class=cl>        Relay_Master_Log_File: mysql-bin.000003
+</span></span><span class=line><span class=cl>             Slave_IO_Running: Yes                 # 重要
+</span></span><span class=line><span class=cl>            Slave_SQL_Running: Yes                 # 重要
+</span></span><span class=line><span class=cl>              Replicate_Do_DB:
+</span></span><span class=line><span class=cl>          Replicate_Ignore_DB:
+</span></span><span class=line><span class=cl>           Replicate_Do_Table:
+</span></span><span class=line><span class=cl>       Replicate_Ignore_Table:
+</span></span><span class=line><span class=cl>      Replicate_Wild_Do_Table:
+</span></span><span class=line><span class=cl>  Replicate_Wild_Ignore_Table:
+</span></span><span class=line><span class=cl>                   Last_Errno: 0
+</span></span><span class=line><span class=cl>                   Last_Error:
+</span></span><span class=line><span class=cl>                 Skip_Counter: 0
+</span></span><span class=line><span class=cl>          Exec_Master_Log_Pos: 447
+</span></span><span class=line><span class=cl>              Relay_Log_Space: 531
+</span></span><span class=line><span class=cl>              Until_Condition: None
+</span></span><span class=line><span class=cl>               Until_Log_File:
+</span></span><span class=line><span class=cl>                Until_Log_Pos: 0
+</span></span><span class=line><span class=cl>           Master_SSL_Allowed: No
+</span></span><span class=line><span class=cl>           Master_SSL_CA_File:
+</span></span><span class=line><span class=cl>           Master_SSL_CA_Path:
+</span></span><span class=line><span class=cl>              Master_SSL_Cert:
+</span></span><span class=line><span class=cl>            Master_SSL_Cipher:
+</span></span><span class=line><span class=cl>               Master_SSL_Key:
+</span></span><span class=line><span class=cl>        Seconds_Behind_Master: 0
+</span></span><span class=line><span class=cl>Master_SSL_Verify_Server_Cert: No
+</span></span><span class=line><span class=cl>                Last_IO_Errno: 0
+</span></span><span class=line><span class=cl>                Last_IO_Error:
+</span></span><span class=line><span class=cl>               Last_SQL_Errno: 0
+</span></span><span class=line><span class=cl>               Last_SQL_Error:
+</span></span><span class=line><span class=cl>  Replicate_Ignore_Server_Ids:
+</span></span><span class=line><span class=cl>             Master_Server_Id: 1
+</span></span><span class=line><span class=cl>                  Master_UUID: 10de195f-f051-11e6-8362-ac2b6e8b4228
+</span></span><span class=line><span class=cl>             Master_Info_File: /tmp/mysql-slave/master.info
+</span></span><span class=line><span class=cl>                    SQL_Delay: 0
+</span></span><span class=line><span class=cl>          SQL_Remaining_Delay: NULL
+</span></span><span class=line><span class=cl>      Slave_SQL_Running_State: Slave has read all relay log; waiting for more updates
+</span></span><span class=line><span class=cl>           Master_Retry_Count: 86400
+</span></span><span class=line><span class=cl>                  Master_Bind:
+</span></span><span class=line><span class=cl>      Last_IO_Error_Timestamp:
+</span></span><span class=line><span class=cl>     Last_SQL_Error_Timestamp:
+</span></span><span class=line><span class=cl>               Master_SSL_Crl:
+</span></span><span class=line><span class=cl>           Master_SSL_Crlpath:
+</span></span><span class=line><span class=cl>           Retrieved_Gtid_Set:
+</span></span><span class=line><span class=cl>            Executed_Gtid_Set:
+</span></span><span class=line><span class=cl>                Auto_Position: 0
+</span></span><span class=line><span class=cl>         Replicate_Rewrite_DB:
+</span></span><span class=line><span class=cl>                 Channel_Name:
+</span></span><span class=line><span class=cl>           Master_TLS_Version:
+</span></span><span class=line><span class=cl>1 row in set (0.00 sec)
+</span></span></code></pre></div><a class=anchor id=常用工具></a><h1>常用工具 <a href=#%e5%b8%b8%e7%94%a8%e5%b7%a5%e5%85%b7 aria-hidden=true>#</a></h1><p>一些主备复制中常用的工具，主要来自 percona-tools 。</p><a class=anchor id=pt_heartbeat></a><h2>pt_heartbeat <a href=#pt_heartbeat aria-hidden=true>#</a></h2><p>该工具用来监控主备复制的延迟。</p><p>通常，是执行 <code>SHOW SLAVE STATUS</code> 查看 Slave_IO_Running (Yes)、Slave_SQL_Running (Yes)、Seconds_Behind_Master (0)；实际上这个是不可靠的，其原因如下：</p><ol><li>延迟时间的计算是服务器当前的时间戳与二进制日志中的事件时间戳相减得到的，也就是只有在执行事件时才能计算延迟；</li><li>如果备库复制线程没有运行，或者由于某些错误导致备库无法计算延迟，就会报延迟 NULL。</li><li>长事务执行更新达一个小时，最后提交，从而导致这条更新将比它实际发生时间要晚一个小时才记录到二进制日志中；而当备库执行这条语句时，会临时地报告备库延迟为一个小时，然后又很快变成 0 。</li><li>库级联时，二级备库已经追赶上了它的备库，此时延迟显示为 0 ；但实际上与源主库是存在延迟的。</li></ol><p>而该工具会在主机写入数据，在备机读取，然后计算两者的差值。可以通过如下方式执行：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 主机执行如下命令
+</span></span><span class=line><span class=cl>$ pt-heartbeat -D test -u root -P 3307 -h 127.1 --update --create-table --daemonize
+</span></span><span class=line><span class=cl>参数：
+</span></span><span class=line><span class=cl>          --database, -D  需要监控的数据库
+</span></span><span class=line><span class=cl>              --user, -u  用户
+</span></span><span class=line><span class=cl>          --password, -p  密码
+</span></span><span class=line><span class=cl>              --port, -P  端口
+</span></span><span class=line><span class=cl>              --host, -h  主机
+</span></span><span class=line><span class=cl>            --socket, -S  主机
+</span></span><span class=line><span class=cl>                --update  在指定的时间更新一个时间戳；
+</span></span><span class=line><span class=cl>          --create-table  自动生成heartbeat表
+</span></span><span class=line><span class=cl>             --daemonize  在后台运行
+</span></span><span class=line><span class=cl>              --ask-pass  隐式输入MySQL密码
+</span></span><span class=line><span class=cl>               --charset  字符集设置
+</span></span><span class=line><span class=cl>              --interval  检查、更新的间隔时间，默认1s，最小单位0.01s
+</span></span><span class=line><span class=cl>                 --table  指定心跳表名，默认heartbeat
+</span></span><span class=line><span class=cl>      --master-server-id  指定主的server_id
+</span></span><span class=line><span class=cl>--print-master-server-id  monitor和check 模式下，打印出主server_id
+</span></span></code></pre></div><p>如上，会在 test 数据库中创建一个 heartbeat 表，然后就可以监控复制在备库上的延迟了。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 持续监控slave状态
+</span></span><span class=line><span class=cl>$ pt-heartbeat -D test -u root -P 3308 -h 127.1 --master-server-id=1 --monitor
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 只查看一次
+</span></span><span class=line><span class=cl>$ pt-heartbeat -D test -u root -P 3308 -h 127.1 --master-server-id=1 --check
+</span></span></code></pre></div><p>通过如下命令可以查看下二进制日志中到底记录了什么。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-mysql data-lang=mysql><span class=line><span class=cl><span class=err>$</span><span class=w> </span><span class=n>mysqlbinlog</span><span class=w> </span><span class=o>--</span><span class=n>no</span><span class=o>-</span><span class=n>defaults</span><span class=w> </span><span class=o>/</span><span class=n>tmp</span><span class=o>/</span><span class=n>mysql</span><span class=o>-</span><span class=n>master</span><span class=o>/</span><span class=n>mysql</span><span class=o>-</span><span class=n>bin</span><span class=p>.</span><span class=mi>000010</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>BEGIN</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=cm>/*!*/</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># at 588960
+</span></span></span><span class=line><span class=cl><span class=c1>#130822  6:44:01 server id 1  end_log_pos 589202        Query   thread_id=28    exec_time=0     error_code=0
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kt>SET</span><span class=w> </span><span class=kt>TIMESTAMP</span><span class=o>=</span><span class=mi>1377168241</span><span class=cm>/*!*/</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>UPDATE</span><span class=w> </span><span class=o>`</span><span class=n>test</span><span class=o>`</span><span class=p>.</span><span class=o>`</span><span class=n>heartbeat</span><span class=o>`</span><span class=w> </span><span class=kt>SET</span><span class=w> </span><span class=n>ts</span><span class=o>=</span><span class=s1>&#39;2013-08-22T06:44:01.005550&#39;</span><span class=p>,</span><span class=w> </span><span class=n>file</span><span class=o>=</span><span class=s1>&#39;mysql-bin.000010&#39;</span><span class=p>,</span><span class=w> </span><span class=n>position</span><span class=o>=</span><span class=s1>&#39;588555&#39;</span><span class=p>,</span><span class=w> </span><span class=n>relay_master_log_file</span><span class=o>=</span><span class=no>NULL</span><span class=p>,</span><span class=w> </span><span class=n>exec_master_log_pos</span><span class=o>=</span><span class=no>NULL</span><span class=w> </span><span class=k>WHERE</span><span class=w> </span><span class=n>server_id</span><span class=o>=</span><span class=s1>&#39;1&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=cm>/*!*/</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># at 589202
+</span></span></span><span class=line><span class=cl><span class=c1>#130822  6:44:01 server id 1  end_log_pos 589229        Xid = 6980
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>COMMIT</span><span class=cm>/*!*/</span><span class=p>;</span><span class=w>
+</span></span></span></code></pre></div><p>可以看到 heratbeat 表一直在更改 ts 和 position，而 ts 是我们检查复制延迟的关键。</p><p>如果要停止，可以直接执行如下的命令即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ pt-heartbeat --stop
+</span></span></code></pre></div><a class=anchor id=pt-slave-find></a><h2>pt-slave-find <a href=#pt-slave-find aria-hidden=true>#</a></h2><p>查看当前主从复制的拓扑结构。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ pt-slave-find -u root -P 3307 -h 127.1
+</span></span></code></pre></div><a class=anchor id=pt-slave-restart></a><h2>pt-slave-restart <a href=#pt-slave-restart aria-hidden=true>#</a></h2><p>当备服务器报错时，直接重启复制；特别注意，如果使用不当，可能会导致数据不一致，可以通过下面的工具进行校验。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ pt-slave-restart --socket=/tmp/mysql-slave.sock --ask-pass --error-numbers=1062
+</span></span></code></pre></div><a class=anchor id=pt-table-checksum></a><h2>pt-table-checksum <a href=#pt-table-checksum aria-hidden=true>#</a></h2><p>用来校验主备的数据是否一致，在主上执行校验查询对复制的一致性进行检查，对比主从的校验值，从而产生结果。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># pt-table-checksum --nocheck-replication-filters --no-check-binlog-format \
+</span></span><span class=line><span class=cl>  --user=root --port=3307 --host=127.1 --databases=test --tables=heartbeat \
+</span></span><span class=line><span class=cl>  --replicate=test.checksums
+</span></span></code></pre></div><p>上述的表，如果要检查多个，可以通过逗号分割。</p><p>如果 DIFFS 是 1 就说明主从的表数据不一致，如果指定 <code>--replicate=test.checksums</code> 参数，则会将检查信息都写到了 <code>checksums</code> 表中。</p><a class=anchor id=测试></a><h3>测试 <a href=#%e6%b5%8b%e8%af%95 aria-hidden=true>#</a></h3><p>可以通过如下方式新建一个表，然后进行测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 在主库执行如下的SQL
+</span></span><span class=line><span class=cl>mysql&gt; CREATE TABLE test.foobar (id INT PRIMARY KEY, name VARCHAR(20));
+</span></span><span class=line><span class=cl>Query OK, 0 rows affected (0.01 sec)
+</span></span><span class=line><span class=cl>mysql&gt; INSERT INTO test.foobar VALUES(1, &#34;Andy&#34;), (2, &#34;Alan&#34;), (3, &#34;Bernard&#34;), (4, &#34;Christian&#34;);
+</span></span><span class=line><span class=cl>Query OK, 4 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>Records: 4  Duplicates: 0  Warnings: 0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 在备库执行如下的SQL
+</span></span><span class=line><span class=cl>mysql&gt; INSERT INTO test.foobar VALUES(5, &#34;Hobart&#34;), (6, &#34;Raymond&#34;);
+</span></span><span class=line><span class=cl>Query OK, 2 rows affected (0.00 sec)
+</span></span><span class=line><span class=cl>Records: 2  Duplicates: 0  Warnings: 0
+</span></span><span class=line><span class=cl>mysql&gt; DELETE FROM test.foobar WHERE id = 3;
+</span></span><span class=line><span class=cl>Query OK, 1 row affected (0.00 sec)
+</span></span></code></pre></div><p>然后执行如下命令校验该表，然后可以在备库的 <code>test.checksums</code> 查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># pt-table-checksum --nocheck-replication-filters --no-check-binlog-format \
+</span></span><span class=line><span class=cl>  --user=root --port=3307 --host=127.1 --databases=test --tables=foobar \
+</span></span><span class=line><span class=cl>  --replicate=test.checksums
+</span></span></code></pre></div><a class=anchor id=pt-table-sync></a><h2>pt-table-sync <a href=#pt-table-sync aria-hidden=true>#</a></h2><p>用于主备表的数据同步，可以单向、双向同步表的数据，但不同步表结构、索引或者其它对象，所以需保证修复数据前保证表存在。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># pt-table-sync --replicate=test.checksums h=127.1,u=root,P=3307 h=127.1,u=root,P=3308 --print
+</span></span><span class=line><span class=cl>参数：
+</span></span><span class=line><span class=cl>   --replicate  过pt-table-checksum得到校验表
+</span></span><span class=line><span class=cl>   --databases  执行同步的数据库，多个用逗号隔开
+</span></span><span class=line><span class=cl>      --tables  执行同步的表，多个用逗号隔开
+</span></span><span class=line><span class=cl>       --print  打印，但不执行命令
+</span></span><span class=line><span class=cl>     --execute  执行命令
+</span></span></code></pre></div><p>此时，直接在备库执行如上打印的 SQL 即可，也可以通过 <code>--execute</code> 执行命令。</p><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><p>常见报错。</p><a class=anchor id=cannot-connect-to-pxxxhuxxx></a><h3>Cannot connect to P=xxx,h=,u=xxx <a href=#cannot-connect-to-pxxxhuxxx aria-hidden=true>#</a></h3><p>也就是无法连接备库，详细的报错日志如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Cannot connect to P=xxx,h=,u=xxx
+</span></span><span class=line><span class=cl>Diffs cannot be detected because no slaves were found.  Please read the --recursion-method
+</span></span><span class=line><span class=cl>documentation for information.
+</span></span></code></pre></div><p>默认是通过 <code>show processlist</code> 或者 <code>show slave hosts</code> 找到 <code>host</code> 的值。不过对于后者，需要在配置文件里面已经配置自己的地址和端口。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>report_host = 192.168.0.20
+</span></span><span class=line><span class=cl>report_port = 3306
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>MySQL 中与复制相关的内容，可以参考官方文档 <a href=http://dev.mysql.com/doc/refman/en/replication.html>MySQL Reference Manual - Replication</a>。</li><li>一个基于 PyMySQL，纯 Python 编写的 MySQL 复制协议的实现 <a href=https://github.com/noplay/python-mysql-replication>python-mysql-replication</a> 。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#备服务器>备服务器</a></li><li><a href=#延迟复制>延迟复制</a></li><li><a href=#reset-命令>reset 命令</a></li><li><a href=#相关文件>相关文件</a></li></ul></li><li><a href=#测试实例>测试实例</a><ul><li><a href=#搭建步骤>搭建步骤</a></li><li><a href=#常用命令>常用命令</a></li><li><a href=#重置复制>重置复制</a></li><li><a href=#主备复制>主备复制</a></li><li><a href=#主主复制>主主复制</a></li><li><a href=#半同步机制>半同步机制</a></li><li><a href=#gtid-复制>GTID 复制</a></li><li><a href=#状态监控>状态监控</a></li></ul></li><li><a href=#常用工具>常用工具</a><ul><li><a href=#pt_heartbeat>pt_heartbeat</a></li><li><a href=#pt-slave-find>pt-slave-find</a></li><li><a href=#pt-slave-restart>pt-slave-restart</a></li><li><a href=#pt-table-checksum>pt-table-checksum</a></li><li><a href=#pt-table-sync>pt-table-sync</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,44 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Curl 命令使用简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="常用的 curl 相关命令整理。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Curl 命令使用简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2021-04-29</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/network/ role=button>network</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/command/ role=button>command</a></div></div><hr><div class=content><p>常用的 curl 相关命令整理。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>curl 用于向服务器传输数据，它支持 http、https、ftp、ftps、scp、sftp、tftp、telnet 等协议。</p><a class=anchor id=常见示例></a><h2>常见示例 <a href=#%e5%b8%b8%e8%a7%81%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看源码，保存到某个文件；默认输出到终端
+</span></span><span class=line><span class=cl>$ curl -o filename www.sina.com
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 自动调转到新地址，会自动跳转为www.sina.com.cn
+</span></span><span class=line><span class=cl>$ curl -L www.sina.com
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 显示头信息以及网页代码，如果只查看头则可以使用-I参数
+</span></span><span class=line><span class=cl>$ curl -i www.sina.com
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 显示通信过程，通过-v可显示http通信的整个过程，包括端口连接和http request头信息
+</span></span><span class=line><span class=cl>$ curl -v www.sina.com                             # 显示交互信息
+</span></span><span class=line><span class=cl>$ curl --trace output.txt www.sina.com             # 显示更加信息的信息
+</span></span><span class=line><span class=cl>$ curl --trace-ascii output.txt www.sina.com
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 发送GET表单
+</span></span><span class=line><span class=cl>$ curl www.example.com/form.cgi?data=xxx
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 发送POST表单信息，需要把数据和网址分开，也就是--data参数，通过第一个参数对表单编码
+</span></span><span class=line><span class=cl>$ curl --data-urlencode --data &#34;data=April 1&#34; www.example.com/form.cgi
+</span></span><span class=line><span class=cl>$ curl -H &#34;Content-Type: application/json&#34; -X POST   \
+</span></span><span class=line><span class=cl>	-d &#39;{&#34;userid&#34;:&#34;123&#34;,&#34;address&#34;:100}&#39; http://127.0.0.1:8001/test
+</span></span></code></pre></div><a class=anchor id=各阶段时间></a><h2>各阶段时间 <a href=#%e5%90%84%e9%98%b6%e6%ae%b5%e6%97%b6%e9%97%b4 aria-hidden=true>#</a></h2><p>可以通过如下方式检查 HTTP 请求各个阶段的耗时。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>-w 在执行完成后，按照指定的格式将信息输出到终端，更多参数可以查看man(1) curl
+</span></span><span class=line><span class=cl>  time_namelookup DNS解析域名的时间 
+</span></span><span class=line><span class=cl>  time_connect 客户端和服务端建立TCP连接的时间
+</span></span><span class=line><span class=cl>  time_starttransfer 从客户端发出请求到收到服务端响应第一个字节的时间
+</span></span><span class=line><span class=cl>  time_total 从客户端发出请求到收到服务端收到所有字节的时间
+</span></span><span class=line><span class=cl>  speed_download 下载速度单位是B/s
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ curl -o /dev/null -s -w &#34;%{time_namelookup}:%{time_connect}:%{time_starttransfer}:%{time_total}\n&#34; \
+</span></span><span class=line><span class=cl>	http://www.baidu.com
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#常见示例>常见示例</a></li><li><a href=#各阶段时间>各阶段时间</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

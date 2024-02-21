@@ -1,78 +1,71 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>npm 使用详解 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="NPM # NPM 是 Node 的模块管理和发布工具，类似于 Python 的 setuptools，一些常见的工具，例如 grunt、bower 等工具都是通过 NPM 发布的，NPM 默认包含在 NodeJS 的安装包中，其中 npx 是 npm v5.2.0 引入的命令，所以这里直接安装 NodeJS 包。
-详细可以查看官网 www.npmjs.com，也可以从 npm.taobao.org 上下载最新安装包，直接下载二进制安装包解压即可。
-安装配置 # 使用默认的镜像源时，可能会导致不稳定，可以通过如下两种方式指定源，如下是淘宝的。
------ 1. 临时指定镜像源 $ npm install --registry http://registry.npm.taobao.org express ----- 2. 永久设置，并查看是否已经修改 $ npm config set registry http://registry.npm.taobao.org $ npm config get registry NPM 安装分为本地安装和全局安装两种，区别在于是否使用 -g 参数。
-$ npm info grunt-cli ← 查看版本、依赖等信息 # npm install -g grunt-cli ← 全局安装客户端 $ npm install grunt ← 安装本项目的目录下 $ npm install grunt --save ← 安装本项目的目录下，同时保存在package文件中 $ npm install grunt --save-dev ← 安装本项目的目录下，同时保存在package文件中 # npm uninstall -g &amp;lt;package&amp;gt; ← 删除全局包 $ npm list grunt ← 查看grunt版本信息 $ npm list --depth=0 ← 仅查看本地直接安装包 $ npm list --depth=0 -global ← 仅查看全局直接依赖 $ npm config set prefix &amp;#34;PATH&amp;#34; ← 设置全局路径 $ npm config get prefix ← 获取当前设置的目录，也就是包的安装路径 全局会安装到 /usr/lib/node_modules 目录下，本地则会安装到 node_modules 目录下，而一些二进制文件，例如 lite-server 包，通常同时会在 /usr/bin 目录下安装一个二进制文件。"><link rel=canonical href=https://gohalo.github.io/cn/blog/web-npm-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/web-npm-introduce/","url":"https://gohalo.github.io/cn/blog/web-npm-introduce/","name":"npm 使用详解","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2010-12-15T22:10:52CET","dateModified":"2010-12-15T22:10:52CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/web-npm-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/web-npm-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/web-npm-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/web-npm-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/web-npm-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"npm 使用详解","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/web-npm-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/web-npm-introduce/"},"datePublished":"2010-12-15T22:10:52CET","dateModified":"2010-12-15T22:10:52CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/web-npm-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/web-npm-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"npm 使用详解"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
-<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
-<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
-<span>页面目录</span>
-<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#npm>NPM</a><ul><li><a href=#安装配置>安装配置</a></li></ul></li><li><a href=#packagejson>package.json</a><ul><li></li><li><a href=#流水线>流水线</a></li></ul></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#npm>NPM</a><ul><li><a href=#安装配置>安装配置</a></li></ul></li><li><a href=#packagejson>package.json</a><ul><li></li><li><a href=#流水线>流水线</a></li></ul></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>npm 使用详解</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2010-12-15</span>
-<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/web/ role=button>web</a></div></div><hr><div class=content-body><h1 id=npm>NPM <a href=#npm class=anchor aria-hidden=true>#</a></h1><p>NPM 是 Node 的模块管理和发布工具，类似于 Python 的 setuptools，一些常见的工具，例如 grunt、bower 等工具都是通过 NPM 发布的，NPM 默认包含在 NodeJS 的安装包中，其中 npx 是 npm v5.2.0 引入的命令，所以这里直接安装 NodeJS 包。</p><p>详细可以查看官网 <a href=https://www.npmjs.com/>www.npmjs.com</a>，也可以从 <a href=https://npm.taobao.org/mirrors/npm/>npm.taobao.org</a> 上下载最新安装包，直接下载二进制安装包解压即可。</p><h2 id=安装配置>安装配置 <a href=#%e5%ae%89%e8%a3%85%e9%85%8d%e7%bd%ae class=anchor aria-hidden=true>#</a></h2><p>使用默认的镜像源时，可能会导致不稳定，可以通过如下两种方式指定源，如下是淘宝的。</p><pre tabindex=0><code>----- 1. 临时指定镜像源
-$ npm install --registry http://registry.npm.taobao.org express
-
------ 2. 永久设置，并查看是否已经修改
-$ npm config set registry http://registry.npm.taobao.org
-$ npm config get registry
-</code></pre><p>NPM 安装分为本地安装和全局安装两种，区别在于是否使用 <code>-g</code> 参数。</p><pre tabindex=0><code>$ npm info grunt-cli              ← 查看版本、依赖等信息
-
-# npm install -g grunt-cli        ← 全局安装客户端
-$ npm install grunt               ← 安装本项目的目录下
-$ npm install grunt --save        ← 安装本项目的目录下，同时保存在package文件中
-$ npm install grunt --save-dev    ← 安装本项目的目录下，同时保存在package文件中
-# npm uninstall -g &lt;package&gt;      ← 删除全局包
-
-$ npm list grunt                  ← 查看grunt版本信息
-$ npm list --depth=0              ← 仅查看本地直接安装包
-$ npm list --depth=0 -global      ← 仅查看全局直接依赖
-
-$ npm config set prefix &#34;PATH&#34;    ← 设置全局路径
-$ npm config get prefix           ← 获取当前设置的目录，也就是包的安装路径
-</code></pre><p>全局会安装到 <code>/usr/lib/node_modules</code> 目录下，本地则会安装到 <code>node_modules</code> 目录下，而一些二进制文件，例如 <code>lite-server</code> 包，通常同时会在 <code>/usr/bin</code> 目录下安装一个二进制文件。</p><p>不同 OS 发行版本的全局安装路径会有所区别，可以通过 <code>npm config ls</code> 或者 <code>npm config get prefix</code> 命令查看，有些包 (例如 <code>typescript</code>) 会包含可执行文件，就需要在 <code>PATH</code> 环境变量中添加对应 <code>bin</code> 路径。</p><h1 id=packagejson>package.json <a href=#packagejson class=anchor aria-hidden=true>#</a></h1><p>包的定义和 NPM 都围绕着 <code>package.json</code> 文件做文章，用于存放模块的名称、版本、作者、模块入口、依赖项等信息，可以通过 <code>npm help json</code> 查看帮助文档，详细可查看 <a href=https://docs.npmjs.com/files/package.json>docs.npmjs.com</a> 。</p><p>可以通过 <code>npm init</code> 交互式初始化项目，会生成一个 <code>package.json</code> 文件，一个 node package 有两种依赖，分别是：A) dependencies，是正常运行该包时所需要的依赖项；B) devDependencies，开发的时候需要的依赖项，像一些进行单元测试之类的包。</p><pre tabindex=0><code>{
-    &#34;name&#34;: &#34;foobar-demo&#34;,   # 模块名称
-    &#34;version&#34;: &#34;1.0.0&#34;,      # 版本号，通常是Major.Minor.Patch
-    &#34;description&#34;: &#34;Hello World&#34;,
-
-    &#34;scripts&#34;: {
-        &#34;product&#34;: &#34;webpack&#34;,
-        &#34;dev&#34;: &#34;webpack&#34;
-        &#34;start&#34;: &#34;exec-bin ls /&#34;  # 执行命令
-    },
-
-    &#34;dependencies&#34;: {
-        &#34;jquery&#34;: &#34;^3.1.0&#34;
-    },
-    &#34;devDependencies&#34;: {
-        &#34;clean-webpack-plugin&#34;: &#34;^0.1.10&#34;,
-        &#34;copy-webpack-plugin&#34;: &#34;^3.0.1&#34;,
-        &#34;css-loader&#34;: &#34;^0.23.1&#34;,
-        &#34;extract-text-webpack-plugin&#34;: &#34;^1.0.1&#34;,
-        &#34;less&#34;: &#34;^2.7.1&#34;,
-        &#34;less-loader&#34;: &#34;^2.2.3&#34;,
-        &#34;style-loader&#34;: &#34;^0.13.1&#34;,
-        &#34;webpack&#34;: &#34;^1.13.1&#34;,
-        &#34;webpack-merge&#34;: &#34;^0.14.1&#34;
-    }
-}
-</code></pre><p>在定义版本号的时候，有如下的匹配方式：</p><pre tabindex=0><code>1.1.1        精确下载安装1.1.1版本的包
-&gt;,=1.1.1     大于、小于等于、大于等于1.1.1版本的包
-1.0.1-1.1.1  版本范围是包含1.0.1到1.1.1版本的包
-~1.1.1       尽量采用靠近1.1.1版本的包，可用版本1.1.1-0到1.1.x-x
-~1.1         下载安装1.1.x-x版本的包
-~1           下载安装1.x.x-x版本的包
-</code></pre><h4 id=其它>其它 <a href=#%e5%85%b6%e5%ae%83 class=anchor aria-hidden=true>#</a></h4><pre tabindex=0><code>$ npm ls --depth 0         当前项目的依赖模块
-$ npm ls -g --depth 0      全局模块
-
------ 可以通过如下方式分别安装。
-$ npm install --production
-$ npm install --dev
-</code></pre><h2 id=流水线>流水线 <a href=#%e6%b5%81%e6%b0%b4%e7%ba%bf class=anchor aria-hidden=true>#</a></h2><p>随着前端越来越复杂，大部分代码需要转换后再投入生产，通常为如下情况：</p><ul><li>格式转换，将其它语言编译成 JavaScript，例如 CoffeeScript、ES6 等；CSS 转换，通常为 less、sass 等。</li><li>多文件合并，包括了 JS、CSS 等，减少 HTTP 请求次数。</li><li>压缩，减小体积；也包括图片优化，例如雪碧图生成。</li></ul><p>不过这就导致调试起来很麻烦，打包、压缩后会出错时的报错信息与源码位置已经无关，这就是 Source Map 要解决的问题，简单来说，就是该文件保存了转换前的位置信息。</p><p>这里介绍如何通过 npm script 搭建流水线。</p><h3 id=目录结构>目录结构 <a href=#%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84 class=anchor aria-hidden=true>#</a></h3><p>对于 JavaScript 压缩来说，可以通过 uglify-js 压缩，如果是 ES6 就通过 uglify-es 压缩。</p><pre tabindex=0><code>npm install -g uglify-js
-
-
-uglifyjs inet.js -m -o inet.min.js
-
--m 会将变量进一步压缩替换
-</code></pre><p>静态资源通常都放在 CDN 上，或者设置了很长时间的缓存，如果资源更新但没有更新版本号，会导致浏览器拿不到最新的内容，通常的做法是利用文件内容做哈希，以这个哈希值作为版本号。</p><pre><code>hashmark，自动添加版本号；
-replaceinfiles，自动完成引用替换，它需要将版本号过程的输出作为输入；
-</code></pre><pre tabindex=0><code>----- 使用默认参数初始化
-$ npm init -y
-</code></pre></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/topic-language-webs/>【专题】Web 前端编程语言</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>npm 使用详解 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="简单介绍前端开发过程中最常用的包管理工具。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>npm 使用详解</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-12-05</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/web/ role=button>web</a></div></div><hr><div class=content><p>简单介绍前端开发过程中最常用的包管理工具。</p><a class=anchor id=npm></a><h1>NPM <a href=#npm aria-hidden=true>#</a></h1><p>NPM 是 Node 的模块管理和发布工具，类似于 Python 的 <code>setuptools</code>，一些常见工具，如 grunt、bower 等都是通过 NPM 发布的，默认包含在 NodeJS 的安装包中，另外，在 <code>v5.2.0</code> 版本中引入了 <code>npx</code> 命令，所以这里直接安装 NodeJS 包。</p><p>详细可以查看官网 <a href=https://www.npmjs.com/>www.npmjs.com</a>，也可以从 <a href=https://npm.taobao.org/mirrors/npm/>npm.taobao.org</a> 上下载最新安装包，直接下载二进制安装包解压即可。</p><a class=anchor id=安装配置></a><h2>安装配置 <a href=#%e5%ae%89%e8%a3%85%e9%85%8d%e7%bd%ae aria-hidden=true>#</a></h2><p>使用默认的镜像源时，可能会导致不稳定，可以通过如下两种方式指定源，如下是淘宝的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 1. 临时指定镜像源
+</span></span><span class=line><span class=cl>$ npm install --registry http://registry.npm.taobao.org express
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 2. 永久设置，并查看是否已经修改
+</span></span><span class=line><span class=cl>$ npm config set registry http://registry.npm.taobao.org
+</span></span><span class=line><span class=cl>$ npm config get registry
+</span></span></code></pre></div><p>NPM 安装分为本地安装和全局安装两种，区别在于是否使用 <code>-g</code> 参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ npm info grunt-cli              ← 查看版本、依赖等信息
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># npm install -g grunt-cli        ← 全局安装客户端
+</span></span><span class=line><span class=cl>$ npm install grunt               ← 安装/更新本项目的目录下
+</span></span><span class=line><span class=cl>$ npm install grunt@1.2.3         ← 安装指定版本
+</span></span><span class=line><span class=cl>$ npm install grunt --save        ← 安装本项目的目录下，同时保存在package文件中
+</span></span><span class=line><span class=cl>$ npm install grunt --save-dev    ← 安装本项目的目录下，同时保存在package文件中
+</span></span><span class=line><span class=cl># npm uninstall -g &lt;package&gt;      ← 删除全局包
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ npm list grunt                  ← 查看grunt版本信息，也可以使用 ls
+</span></span><span class=line><span class=cl>$ npm list --depth=0              ← 仅查看本地直接安装包
+</span></span><span class=line><span class=cl>$ npm list --depth=0 -global      ← 仅查看全局直接依赖
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ npm config set prefix &#34;PATH&#34;    ← 设置全局路径
+</span></span><span class=line><span class=cl>$ npm config get prefix           ← 获取当前设置的目录，也就是包的安装路径
+</span></span></code></pre></div><p>全局会安装到 <code>/usr/lib/node_modules</code> 目录下，本地则会安装到 <code>node_modules</code> 目录下，而一些二进制文件，例如 <code>lite-server</code> 包，通常同时会在 <code>/usr/bin</code> 目录下安装一个二进制文件。</p><p>不同 OS 发行版本的全局安装路径会有所区别，可以通过 <code>npm config ls</code> 或者 <code>npm config get prefix</code> 命令查看，有些包 (例如 <code>typescript</code>) 会包含可执行文件，就需要在 <code>PATH</code> 环境变量中添加对应 <code>bin</code> 路径。</p><a class=anchor id=packagejson></a><h1>package.json <a href=#packagejson aria-hidden=true>#</a></h1><p>包的定义和 NPM 都围绕着 <code>package.json</code> 文件做文章，用于存放模块的名称、版本、作者、模块入口、依赖项等信息，可以通过 <code>npm help json</code> 查看帮助文档，详细可查看 <a href=https://docs.npmjs.com/files/package.json>docs.npmjs.com</a> 。</p><p>可以通过 <code>npm init</code> 交互式初始化项目，会生成一个 <code>package.json</code> 文件，一个 node package 有两种依赖，分别是：A) dependencies，是正常运行该包时所需要的依赖项；B) devDependencies，开发的时候需要的依赖项，像一些进行单元测试之类的包。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;name&#34;: &#34;foobar-demo&#34;,   # 模块名称
+</span></span><span class=line><span class=cl>    &#34;version&#34;: &#34;1.0.0&#34;,      # 版本号，通常是Major.Minor.Patch
+</span></span><span class=line><span class=cl>    &#34;description&#34;: &#34;Hello World&#34;,
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    &#34;scripts&#34;: {
+</span></span><span class=line><span class=cl>        &#34;product&#34;: &#34;webpack&#34;,
+</span></span><span class=line><span class=cl>        &#34;dev&#34;: &#34;webpack&#34;
+</span></span><span class=line><span class=cl>        &#34;start&#34;: &#34;exec-bin ls /&#34;  # 执行命令
+</span></span><span class=line><span class=cl>    },
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    &#34;dependencies&#34;: {
+</span></span><span class=line><span class=cl>        &#34;jquery&#34;: &#34;^3.1.0&#34;
+</span></span><span class=line><span class=cl>    },
+</span></span><span class=line><span class=cl>    &#34;devDependencies&#34;: {
+</span></span><span class=line><span class=cl>        &#34;clean-webpack-plugin&#34;: &#34;^0.1.10&#34;,
+</span></span><span class=line><span class=cl>        &#34;copy-webpack-plugin&#34;: &#34;^3.0.1&#34;,
+</span></span><span class=line><span class=cl>        &#34;css-loader&#34;: &#34;^0.23.1&#34;,
+</span></span><span class=line><span class=cl>        &#34;extract-text-webpack-plugin&#34;: &#34;^1.0.1&#34;,
+</span></span><span class=line><span class=cl>        &#34;less&#34;: &#34;^2.7.1&#34;,
+</span></span><span class=line><span class=cl>        &#34;less-loader&#34;: &#34;^2.2.3&#34;,
+</span></span><span class=line><span class=cl>        &#34;style-loader&#34;: &#34;^0.13.1&#34;,
+</span></span><span class=line><span class=cl>        &#34;webpack&#34;: &#34;^1.13.1&#34;,
+</span></span><span class=line><span class=cl>        &#34;webpack-merge&#34;: &#34;^0.14.1&#34;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>在定义版本号的时候，有如下的匹配方式：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>1.1.1        精确下载安装1.1.1版本的包
+</span></span><span class=line><span class=cl>&gt;,=1.1.1     大于、小于等于、大于等于1.1.1版本的包
+</span></span><span class=line><span class=cl>1.0.1-1.1.1  版本范围是包含1.0.1到1.1.1版本的包
+</span></span><span class=line><span class=cl>~1.1.1       尽量采用靠近1.1.1版本的包，可用版本1.1.1-0到1.1.x-x
+</span></span><span class=line><span class=cl>~1.1         下载安装1.1.x-x版本的包
+</span></span><span class=line><span class=cl>~1           下载安装1.x.x-x版本的包
+</span></span></code></pre></div><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ npm ls --depth 0         当前项目的依赖模块
+</span></span><span class=line><span class=cl>$ npm ls -g --depth 0      全局模块
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 可以通过如下方式分别安装。
+</span></span><span class=line><span class=cl>$ npm install --production
+</span></span><span class=line><span class=cl>$ npm install --dev
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#npm>NPM</a><ul><li><a href=#安装配置>安装配置</a></li></ul></li><li><a href=#packagejson>package.json</a><ul><li><a href=#其它>其它</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

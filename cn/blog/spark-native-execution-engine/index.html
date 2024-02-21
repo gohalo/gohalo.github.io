@@ -1,0 +1,110 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Spark Native 加速 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Spark Native 加速</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2022-09-19</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/warehouse/ role=button>warehouse</a></div></div><hr><div class=content><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>向量执行最初可追溯到 <a href=https://cs.brown.edu/courses/cs227/archives/2008/Papers/ColumnStores/MonetDB.pdf>MonetDB/X100: Hyper-Pipelining Query Execution</a> 论文，对于传统 <code>Volcano</code> 模型，实现的 <code>next()</code> 接口每次返回一批数据，通过 SIMD 加速执行。</p><p>与向量加速相关的项目常见的有如下几个：</p><ul><li><a href=https://www.databricks.com/product/photon>Photon</a> 由 Databricks 在 2022 年推出商业化产品，一个 Native C++ 的向量化计算引擎，当前闭源。</li><li><a href=https://datafusion.apache.org/comet/>Datafusion Comet</a> 是 2024 年由 Apple 主导的开源 Spark 向量化执行引擎，类似快手的 <a href=https://github.com/kwai/blaze>Blaze</a> 实现。</li><li><a href=https://gluten.apache.org>Gluten</a> 由 Intel、Kyligence 主导的中间框架，提供了通用能力，并通过 <a href=https://substrait.io>Substrait</a> 提供序列化 (Protobuf) 方案。</li></ul><p>另外，<a href=https://github.com/facebookincubator/velox>Velox</a> 是 Meta 公司 2022 年开源的 C++ 高性能计算引擎库，不象 Datafusion 框架，其不含 SQL 解析、优化等模块，而且不只是 Spark 在使用，还有基于 Presto 的 <a href=https://github.com/prestodb/presto/tree/master/presto-native-execution>Prestissimo</a> 执行加速。</p><a class=anchor id=tungsten></a><h1>Tungsten <a href=#tungsten aria-hidden=true>#</a></h1><p>提升 CPU 和内存的使用效率。</p><ul><li>内存管理，在栈中实现自己的高效内存管理，不再依赖 Java GC 之类的实现。</li></ul><a class=anchor id=code-generation></a><h2>Code Generation <a href=#code-generation aria-hidden=true>#</a></h2><p>代码生成包含两部分，一部分是基本表达式的代码生成，另一部分称为 WholeStageCodegen, WSCG 全阶段代码生成，主要是通过开源的 <a href=https://janino.net>Janino</a> 实现，是对 Task 的执行效率进行优化。</p><a class=anchor id=简介-1></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b-1 aria-hidden=true>#</a></h1><p>包含了如下的组件。</p><ul><li><code>Spark Extension</code> Spark 插件，实现 Spark 算子到 Native 算子之间的翻译。</li><li><code>JNI Bridge</code> 实现 Spark Execution 和 Native Engine 之间的相互调用。</li></ul><p>使用时核心的是配置如下两个参数，分别是对 SQL、Shuffle 的扩展。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>spark.sql.extensions org.apache.spark.sql.blaze.BlazeSparkSessionExtension
+</span></span><span class=line><span class=cl>spark.shuffle.manager org.apache.spark.sql.execution.blaze.shuffle.BlazeShuffleManager
+</span></span></code></pre></div><p>实际上在扩展时分为了两类，一个是在初始化或者类加载时候的数据处理，还有就是基于 Spark 的扩展。</p><a class=anchor id=sql></a><h2>SQL <a href=#sql aria-hidden=true>#</a></h2><p>也就是大部分 Spark 扩展的实现，主要是通过 <code>SparkSessionExtensions</code> 进行扩展，同时会在 <code>apply()</code> 函数中会同时设置如下参数，也就是开启 Spark 的 <code>Adaptive Execution Engine</code> 实现。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>spark.sql.adaptive.enabled true
+</span></span><span class=line><span class=cl>spark.sql.adaptive.forceApply true
+</span></span></code></pre></div><p>同时通过 <code>execnsions.injectXXX</code> 注入不同阶段的实现，包括了:</p><ul><li><code>Columnar</code> 替换执行器的列式数据处理。</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>BlazeSparkSessionExtension.apply() 通过 Spark 自身的扩展配置，会调用 injectColumnar() 函数，最终调用如下实现
+</span></span><span class=line><span class=cl>BlazeColumnarOverrides.apply()
+</span></span><span class=line><span class=cl> |-BlazeConvertStrategy.apply() 会设置tag信息
+</span></span><span class=line><span class=cl> | |-BlazeConverters.convertSparkPlan() 根据不同的Exec类型转换，如果失败则回退
+</span></span><span class=line><span class=cl> |   |-BlazeConverters.convertFileSourceScanExec()
+</span></span><span class=line><span class=cl> |   | |-Shims.get.createNativeParquetScanExec() FileSourceScanExec =&gt; NativeParquetScanExec/NativeOrcScanExec
+</span></span><span class=line><span class=cl> |   | | |-ShimsImpl.createNativeParquetScanExec()
+</span></span><span class=line><span class=cl> |   | |   |-NativeParquetScanExec()
+</span></span><span class=line><span class=cl> |   |-BlazeConverters.convertProjectExec()
+</span></span><span class=line><span class=cl> |   | |-Shims.get.createNativeProjectExec()     ProjectExec =&gt; NativeParquetScanExec/NativeOrcScanExec
+</span></span><span class=line><span class=cl> |   |   |-NativeProjectExecProvider.provide()
+</span></span><span class=line><span class=cl> |   |-BlazeConverters.convertLocalLimitExec()
+</span></span><span class=line><span class=cl> |-BlazeConverters.convertSparkPlanRecursively()
+</span></span><span class=line><span class=cl> |-Shims.get.postTransform()
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>SparkPlan
+</span></span><span class=line><span class=cl> |-NativeSupports &lt;trait&gt; 这里封装了 doExecute() 接口，会调用 doExecuteNative() 函数，后续的 Native 都需要实现该函数
+</span></span><span class=line><span class=cl>   |-NativeFileSourceScanBase extends LeafExecNode
+</span></span><span class=line><span class=cl>   | |-NativeParquetScanBase ==&gt; doExecuteNative() extension
+</span></span><span class=line><span class=cl>   | | |-NativeParquetScanExec                     shims
+</span></span><span class=line><span class=cl>   | |-NativeOrcScanBase     ==&gt; doExecuteNative() extension
+</span></span><span class=line><span class=cl>   |   |-NativeOrcScanExec                         shims
+</span></span><span class=line><span class=cl>   |-NativeProjectBase       ==&gt; doExecuteNative() extension
+</span></span><span class=line><span class=cl>     |-NativeProjectExecProvider                   shims
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>BlazeSparkSessionExtension() 构造函数实现
+</span></span><span class=line><span class=cl> |-Shims.get.initExtension() 会调用 ShimsImpl 实现
+</span></span><span class=line><span class=cl>   |-ValidateSparkPlanInjector.inject() 通过 bytebuddy 注入代码，会调用如下代码
+</span></span><span class=line><span class=cl>   |-ForceApplyShuffledHashJoinInjector.inject() 根据参数设置
+</span></span><span class=line><span class=cl>会将 org.apache.spark.sql.execution.adaptive.ValidateSparkPlan 替换为如下实现
+</span></span><span class=line><span class=cl>ValidateSparkPlanApplyInterceptor.intercept()
+</span></span><span class=line><span class=cl> |-InterceptedValidateSparkPlan.validate()
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>NativeParquetScanBase.doExecuteNative() 执行入口，会返回 NativeRDD 封装
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>NativeRDD.compute()
+</span></span><span class=line><span class=cl> |-nativePlan() 不同算子传入的函数，主要是构建 Protobuf 序列化内容
+</span></span><span class=line><span class=cl> |-NativeHelper.executeNativePlan()
+</span></span><span class=line><span class=cl>   |-BlazeCallNativeWrapper() 对 Native 的封装，还是 Scala 的实现
+</span></span><span class=line><span class=cl>   | |-BlazeCallNativeWrapper.initNative()
+</span></span><span class=line><span class=cl>   | | |-BlazeCallNativeWrapper.lazyInitNative()
+</span></span><span class=line><span class=cl>   | |   |-BlazeCallNativeWrapper.loadLibBlaze() 加载Rust实现
+</span></span><span class=line><span class=cl>   | |-JniBridge.callNative() 这里就是调用的 Native 中的实现了
+</span></span><span class=line><span class=cl>   |   |-NativeExecutionRuntime::start() 真正的 Rust 运行态实现
+</span></span><span class=line><span class=cl>   |     |-BlazeCallNativeWrapper.getRawTaskDefinition() 调用 Java 实现，获取任务信息
+</span></span><span class=line><span class=cl>   |-BlazeCallNativeWrapper.getRowIterator() 返回 Iterator
+</span></span><span class=line><span class=cl>     |-CompletionIterator() 调用 Spark 相关实现，对应 rowIterator 中包含 hasNext next 等函数实现
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>详见 jni_bridge.rs 中的实现
+</span></span><span class=line><span class=cl>上述调用对应了 Rust 中如下函数的实现，也就是 Rust/Java 相互调用的实现，详见 Rust 中的 jni 包。
+</span></span><span class=line><span class=cl>Java_org_apache_spark_sql_blaze_JniBridge_callNative()
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>SparkPlan.execute() ==&gt; 物理执行计划
+</span></span><span class=line><span class=cl> |-RDD.doExecute()
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>===================&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Rust
+</span></span><span class=line><span class=cl>ParquetExec
+</span></span><span class=line><span class=cl>会通过 from_proto.rs 转换，在 blaze-serde 库中
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>NativeSupport.doExecute()  ==&gt; 应该是真正的执行
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>toArrowSchema()
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>NativeBroadcastExchangeBase.doExecuteBroadcast()
+</span></span><span class=line><span class=cl>ConvertToNativeBase.doExecuteNative()
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>ArrowFFIExporter
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>WholeStageCodegenExec 用于代码生成
+</span></span></code></pre></div><a class=anchor id=protobuf></a><h2>Protobuf <a href=#protobuf aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>尝试将 protobuf::PhysicalPlanNode 转换为 ExecutionPlan 实现，后者是 Datafusion 的结构体。
+</span></span><span class=line><span class=cl>try_parse_physical_expr()
+</span></span><span class=line><span class=cl>感觉这玩意应该是用于 Driver 和 Executor 之间的数据传递。
+</span></span></code></pre></div><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><p>在 <code>spark-extention</code> 实现中，会出现大量的 <code>Shims.get.XXX()</code> 相关调用，其实现方式介绍如下。在 <code>Shims.scala</code> 中有个相关的实现，该对象 <code>lazy</code> 会加载 <code>ShimsImpl.scala</code> 实现，在 <code>spark-extension-shims</code> 包中。</p><a class=anchor id=byte-buddy></a><h1>Byte Buddy <a href=#byte-buddy aria-hidden=true>#</a></h1><p><a href=https://bytebuddy.net>Byte Buddy</a> 是一个字节码生成和操作库，可以在运行时创建和修改 Java 类，无需编译器支持。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Executor.launchTask()
+</span></span><span class=line><span class=cl> |-Executor.createTaskRunner() 生成 TaskRunner 对象
+</span></span><span class=line><span class=cl>TaskRunner.run()
+</span></span><span class=line><span class=cl> |-TaskRunner.updateDependencies() 下载依赖的文件和 Jar 包
+</span></span><span class=line><span class=cl> |-deserialize() 反序列化任务
+</span></span><span class=line><span class=cl> |-Task.run() 开始执行，分为了 ShuffleMapTask ResultTask 两种
+</span></span><span class=line><span class=cl>   |-TaskContext.runTaskWithListeners()
+</span></span><span class=line><span class=cl>     |&gt;&gt;&gt;Task.runTask()
+</span></span><span class=line><span class=cl>     |===ResultTask.runTask()
+</span></span><span class=line><span class=cl>     |===ShuffleMapTask.runTask()
+</span></span><span class=line><span class=cl>       |-ShuffleWriteProcess.write()
+</span></span><span class=line><span class=cl>       |-RDD.iterator()
+</span></span><span class=line><span class=cl>         |-RDD.getOrCompute() 尝试从 Cache 中读取
+</span></span><span class=line><span class=cl>         |-RDD.computeOrReadCheckpoint() 需要进行计算
+</span></span><span class=line><span class=cl>           |-RDD.compute() 这里就开始调用各种 RDD 实现的 compute 实现了
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#tungsten>Tungsten</a><ul><li><a href=#code-generation>Code Generation</a></li></ul></li><li><a href=#简介-1>简介</a><ul><li><a href=#sql>SQL</a></li><li><a href=#protobuf>Protobuf</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#byte-buddy>Byte Buddy</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,190 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Lua 协程 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="协程是另外一种并发方式，相比多进程或者多线程来说，其上下文的切换成本开销更小，这也意味这协程的执行更加高效。
+Lua 作为一种简单的语言，仍然可以支持闭包、协程等较新的特性，在此介绍一下协程相关的内容。
+简介 # 对于并发任务，通常有两种解决方法：A) 抢占式 (preemptive) 多任务，常见的是通过操作系统决定何时执行哪个任务；B) 协作式 (cooperative) 多任务，有任务自身决定何时放弃任务的执行。
+协程 (coroutine) 是一种程序控制机制，实际上在上世纪 60 年代就已经被提出，用来方便地实现协作式的多任务。在很多主流的程序语言中，如 C/C++、Java 等，很少能看到协程，但现在不少脚本语言，如 Python、Lua 等，都提供了协程或与之相似的机制。
+Lua 实现的是一种非对称式 (asymmetric) 或者称为半对称式 (semi-symmetric) 协程，之所以被称为非对称的，是因为它提供了两种传递程序控制权的操作：A) 利用 resume() (重)调用协程；B) 通过 yield 挂起协程并将程序控制权返回给协程的调用者。这看起来有点像函数的调用过程。
+而 libtask 的实现就更像对称式的协程。
+协程类似于线程，包含了自己的栈、本地变量、指针，但是包括了其它的全局变量是共享的。与线程不同的是，线程可以真正的在多个核上并发执行，而协程在具体的时间只能运行其中的一个。
+常用接口 # 与协程相关的函数包含在 coroutine table 中，其中的 create() 函数用来创建一个协程，该函数会返回一个 thread 类型的变量，用来表示协程。
+co = coroutine.create(function () print(&amp;#34;Hello World&amp;#34;) end) print(co) --&amp;gt; thread: 0x24a0b20 Lua 中的协程包含了四种状态：suspended、running、dead 以及 normal，可以通过 satatus() 查看。
+print(coroutine.status(co)) --&amp;gt; suspended 刚创建的协程处于 suspended 状态，也就是说创建时不会自动运行；可以通过 resume() 函数运行或者重新运行该协程，将状态从 suspended 转换为 running 。如上的函数中，仅仅打印字符串，那么执行完成之后，状态会变为 dead 。"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Lua 协程</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2015-10-06</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/lua/ role=button>lua</a></div></div><hr><div class=content><p>协程是另外一种并发方式，相比多进程或者多线程来说，其上下文的切换成本开销更小，这也意味这协程的执行更加高效。</p><p>Lua 作为一种简单的语言，仍然可以支持闭包、协程等较新的特性，在此介绍一下协程相关的内容。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>对于并发任务，通常有两种解决方法：A) 抢占式 (preemptive) 多任务，常见的是通过操作系统决定何时执行哪个任务；B) 协作式 (cooperative) 多任务，有任务自身决定何时放弃任务的执行。</p><p>协程 (coroutine) 是一种程序控制机制，实际上在上世纪 60 年代就已经被提出，用来方便地实现协作式的多任务。在很多主流的程序语言中，如 C/C++、Java 等，很少能看到协程，但现在不少脚本语言，如 Python、Lua 等，都提供了协程或与之相似的机制。</p><p>Lua 实现的是一种非对称式 (asymmetric) 或者称为半对称式 (semi-symmetric) 协程，之所以被称为非对称的，是因为它提供了两种传递程序控制权的操作：A) 利用 resume() (重)调用协程；B) 通过 yield 挂起协程并将程序控制权返回给协程的调用者。这看起来有点像函数的调用过程。</p><p>而 libtask 的实现就更像对称式的协程。</p><p>协程类似于线程，包含了自己的栈、本地变量、指针，但是包括了其它的全局变量是共享的。与线程不同的是，线程可以真正的在多个核上并发执行，而协程在具体的时间只能运行其中的一个。</p><a class=anchor id=常用接口></a><h2>常用接口 <a href=#%e5%b8%b8%e7%94%a8%e6%8e%a5%e5%8f%a3 aria-hidden=true>#</a></h2><p>与协程相关的函数包含在 coroutine table 中，其中的 create() 函数用来创建一个协程，该函数会返回一个 thread 类型的变量，用来表示协程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=n>co</span> <span class=o>=</span> <span class=n>coroutine.create</span><span class=p>(</span><span class=kr>function</span> <span class=p>()</span> <span class=n>print</span><span class=p>(</span><span class=s2>&#34;Hello World&#34;</span><span class=p>)</span> <span class=kr>end</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>print</span><span class=p>(</span><span class=n>co</span><span class=p>)</span>    <span class=c1>--&gt; thread: 0x24a0b20</span>
+</span></span></code></pre></div><p>Lua 中的协程包含了四种状态：suspended、running、dead 以及 normal，可以通过 satatus() 查看。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=n>print</span><span class=p>(</span><span class=n>coroutine.status</span><span class=p>(</span><span class=n>co</span><span class=p>))</span> <span class=c1>--&gt; suspended</span>
+</span></span></code></pre></div><p>刚创建的协程处于 suspended 状态，也就是说创建时不会自动运行；可以通过 resume() 函数运行或者重新运行该协程，将状态从 suspended 转换为 running 。如上的函数中，仅仅打印字符串，那么执行完成之后，状态会变为 dead 。</p><p>到此为止，协程就像是一个执行起来比较麻烦的函数；不过其真正有用的是 yield() 函数，可以将当前协程转换为 suspended 状态，然后等待协程后续执行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=n>co</span> <span class=o>=</span> <span class=n>coroutine.create</span><span class=p>(</span><span class=kr>function</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=kr>for</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>1</span><span class=p>,</span> <span class=mi>3</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>        <span class=n>print</span><span class=p>(</span><span class=s2>&#34;co&#34;</span><span class=p>,</span> <span class=n>i</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=n>coroutine.yield</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=c1>----- OK，开始执行，直到第一次到达yield</span>
+</span></span><span class=line><span class=cl><span class=n>coroutine.resume</span><span class=p>(</span><span class=n>co</span><span class=p>)</span>        <span class=c1>--&gt; co     1</span>
+</span></span><span class=line><span class=cl><span class=c1>----- 此时状态再次转换为suspended</span>
+</span></span><span class=line><span class=cl><span class=n>print</span><span class=p>(</span><span class=n>coroutine.status</span><span class=p>(</span><span class=n>co</span><span class=p>))</span> <span class=c1>--&gt; suspended</span>
+</span></span><span class=line><span class=cl><span class=c1>----- 再次运行多次</span>
+</span></span><span class=line><span class=cl><span class=n>coroutine.resume</span><span class=p>(</span><span class=n>co</span><span class=p>)</span>        <span class=c1>--&gt; co     2</span>
+</span></span><span class=line><span class=cl><span class=n>coroutine.resume</span><span class=p>(</span><span class=n>co</span><span class=p>)</span>        <span class=c1>--&gt; co     3</span>
+</span></span><span class=line><span class=cl><span class=n>coroutine.resume</span><span class=p>(</span><span class=n>co</span><span class=p>)</span>        <span class=c1>--&gt; prints nothing</span>
+</span></span><span class=line><span class=cl><span class=n>print</span><span class=p>(</span><span class=n>coroutine.resume</span><span class=p>(</span><span class=n>co</span><span class=p>))</span> <span class=c1>--&gt; false  cannot resume dead coroutine</span>
+</span></span></code></pre></div><p>当执行了三次之后，在第四次执行时，协程将结束循环并返回；如果再此尝试执行，则会返回 false 以及相关的错误信息。</p><p>当在协程 A 中 resume() 另外一个协程 B 时，A 的状态不是 suspended，因为我们不能再通过 resume() 调用执行，而且协程 A 也不是 running 状态，协程 B 才是，因此协程 A 处于 normal 状态。</p><a class=anchor id=resume></a><h2>resume() <a href=#resume aria-hidden=true>#</a></h2><p>在调用 resume() 执行时，是处于保护状态的，也就是说如果在协程中有异常时，会返回到 resmue() 调用处。正常来说，yield() 只会返回 true，而实际上还可以通过该函数返回值。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=n>co</span> <span class=o>=</span> <span class=n>coroutine.create</span><span class=p>(</span><span class=kr>function</span> <span class=p>(</span><span class=n>a</span><span class=p>,</span><span class=n>b</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>coroutine.yield</span><span class=p>(</span><span class=n>a</span> <span class=o>+</span> <span class=n>b</span><span class=p>,</span> <span class=n>a</span> <span class=o>-</span> <span class=n>b</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>print</span><span class=p>(</span><span class=n>coroutine.resume</span><span class=p>(</span><span class=n>co</span><span class=p>,</span> <span class=mi>20</span><span class=p>,</span> <span class=mi>10</span><span class=p>))</span> <span class=c1>--&gt; true  30  10</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>co</span> <span class=o>=</span> <span class=n>coroutine.create</span><span class=p>(</span><span class=kr>function</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=kr>return</span> <span class=mi>6</span><span class=p>,</span> <span class=mi>7</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>print</span><span class=p>(</span><span class=n>coroutine.resume</span><span class=p>(</span><span class=n>co</span><span class=p>))</span> <span class=c1>--&gt; true   6   7</span>
+</span></span></code></pre></div><p>如上，通过 return 同样可以返回相应的值。</p><a class=anchor id=示例></a><h1>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h1><p>接下来查看几个经典的示例。</p><a class=anchor id=生产者-消费者></a><h2>生产者-消费者 <a href=#%e7%94%9f%e4%ba%a7%e8%80%85-%e6%b6%88%e8%b4%b9%e8%80%85 aria-hidden=true>#</a></h2><p>这也许是最经典的示例了，其中生产者一直从文件中读取数据，然后将读取的数据传递给消费者，两个程序的执行过程如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=kr>function</span> <span class=nf>producer</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=kr>while</span> <span class=kc>true</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>        <span class=kd>local</span> <span class=n>x</span> <span class=o>=</span> <span class=n>io.read</span><span class=p>()</span>  <span class=c1>-- 从文件中读取新的值</span>
+</span></span><span class=line><span class=cl>        <span class=n>send</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>              <span class=c1>-- 将数据发送给消费者</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>consumer</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=kr>while</span> <span class=kc>true</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>        <span class=kd>local</span> <span class=n>x</span> <span class=o>=</span> <span class=n>receive</span><span class=p>()</span>  <span class=c1>-- 从生产者中接收新的值</span>
+</span></span><span class=line><span class=cl>        <span class=n>io.write</span><span class=p>(</span><span class=n>x</span><span class=p>,</span> <span class=s2>&#34;</span><span class=se>\n</span><span class=s2>&#34;</span><span class=p>)</span>    <span class=c1>-- 消费之</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span></code></pre></div><p>从表面看来，两个程序都有自己的循环，而且每个程序都是可以被调用的，但实际上只能有一个是主循环，而另外一个将成为被调用者。通过 resume-yield 刚好可以实现这种逻辑。</p><p>当协程调用 yield() 后，将会返回到 resume() 调用；同样，调用 resume() 时会返回 yield() 的结果。正好符合上述的场景，receive() 调用生产者生成新的数据，然后 send() 将新的值返回给消费者。当然，上述的模型中，生产者将成为协程。</p><p>如下为完整的示例，生产者将会从 stdin 中读取一行，然后传递给消费者，通过 Ctrl-D 退出。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=kr>function</span> <span class=nf>receive</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=kd>local</span> <span class=n>status</span><span class=p>,</span> <span class=n>value</span> <span class=o>=</span> <span class=n>coroutine.resume</span><span class=p>(</span><span class=n>producer</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kr>return</span> <span class=n>value</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>send</span> <span class=p>(</span><span class=n>x</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>coroutine.yield</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=n>producer</span> <span class=o>=</span> <span class=n>coroutine.create</span><span class=p>(</span><span class=kr>function</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=kr>while</span> <span class=kc>true</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>        <span class=kd>local</span> <span class=n>x</span> <span class=o>=</span> <span class=n>io.read</span><span class=p>()</span>    <span class=c1>-- 从文件中读取新的值</span>
+</span></span><span class=line><span class=cl>        <span class=n>send</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>                <span class=c1>-- 将数据发送给消费者</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>consumer</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=kr>while</span> <span class=kc>true</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>        <span class=kd>local</span> <span class=n>x</span> <span class=o>=</span> <span class=n>receive</span><span class=p>()</span>    <span class=c1>-- 从生产者中接收新的值</span>
+</span></span><span class=line><span class=cl>        <span class=kr>if</span> <span class=n>x</span> <span class=o>==</span> <span class=kc>nil</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>            <span class=kr>return</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>        <span class=kr>else</span>
+</span></span><span class=line><span class=cl>            <span class=n>io.write</span><span class=p>(</span><span class=n>x</span><span class=p>,</span> <span class=s2>&#34;</span><span class=se>\n</span><span class=s2>&#34;</span><span class=p>)</span>  <span class=c1>-- 消费之</span>
+</span></span><span class=line><span class=cl>        <span class=kr>end</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=n>consumer</span><span class=p>()</span>
+</span></span></code></pre></div><p>在上述程序中，当消费者需要数据时将会调用生产者，相当于是消费者驱动的；当然，也可以使用生产者驱动，此时消费者将成为协程。</p><a class=anchor id=生产者-过滤器-消费者></a><h2>生产者-过滤器-消费者 <a href=#%e7%94%9f%e4%ba%a7%e8%80%85-%e8%bf%87%e6%bb%a4%e5%99%a8-%e6%b6%88%e8%b4%b9%e8%80%85 aria-hidden=true>#</a></h2><p>这是上面生产者-消费者模型的扩展，过滤器用来作些数据处理，例如数据转换、过滤等。此时的过滤器同时是生产者也是消费者，将 resume 调用生产者生成数据，将转换后的值 yield 给消费者。</p><p>整个函数的调用过程如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=kr>function</span> <span class=nf>receive</span> <span class=p>(</span><span class=n>prod</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kd>local</span> <span class=n>status</span><span class=p>,</span> <span class=n>value</span> <span class=o>=</span> <span class=n>coroutine.resume</span><span class=p>(</span><span class=n>prod</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kr>return</span> <span class=n>value</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>send</span> <span class=p>(</span><span class=n>x</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>coroutine.yield</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>producer</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=kr>return</span> <span class=n>coroutine.create</span><span class=p>(</span><span class=kr>function</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=kr>while</span> <span class=kc>true</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>            <span class=kd>local</span> <span class=n>x</span> <span class=o>=</span> <span class=n>io.read</span><span class=p>()</span>    <span class=c1>-- 从文件中读取新的值</span>
+</span></span><span class=line><span class=cl>            <span class=n>send</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>                <span class=c1>-- 将数据发送给消费者</span>
+</span></span><span class=line><span class=cl>        <span class=kr>end</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>filter</span> <span class=p>(</span><span class=n>prod</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kr>return</span> <span class=n>coroutine.create</span><span class=p>(</span><span class=kr>function</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=kr>for</span> <span class=n>line</span> <span class=o>=</span> <span class=mi>1</span><span class=p>,</span> <span class=n>math.huge</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>            <span class=kd>local</span> <span class=n>x</span> <span class=o>=</span> <span class=n>receive</span><span class=p>(</span><span class=n>prod</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=kr>if</span> <span class=n>x</span> <span class=o>~=</span> <span class=kc>nil</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>                <span class=n>x</span> <span class=o>=</span> <span class=n>string.format</span><span class=p>(</span><span class=s2>&#34;%5d %s&#34;</span><span class=p>,</span> <span class=n>line</span><span class=p>,</span> <span class=n>x</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=kr>end</span>
+</span></span><span class=line><span class=cl>            <span class=n>send</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=kr>end</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>consumer</span> <span class=p>(</span><span class=n>prod</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kr>while</span> <span class=kc>true</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>        <span class=kd>local</span> <span class=n>x</span> <span class=o>=</span> <span class=n>receive</span><span class=p>(</span><span class=n>prod</span><span class=p>)</span>    <span class=c1>-- 从生产者中接收新的值</span>
+</span></span><span class=line><span class=cl>        <span class=kr>if</span> <span class=n>x</span> <span class=o>==</span> <span class=kc>nil</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>            <span class=kr>return</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>        <span class=kr>else</span>
+</span></span><span class=line><span class=cl>            <span class=n>io.write</span><span class=p>(</span><span class=n>x</span><span class=p>,</span> <span class=s2>&#34;</span><span class=se>\n</span><span class=s2>&#34;</span><span class=p>)</span>      <span class=c1>-- 消费之</span>
+</span></span><span class=line><span class=cl>        <span class=kr>end</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=c1>----- 其调用过程大致如下</span>
+</span></span><span class=line><span class=cl><span class=n>p</span> <span class=o>=</span> <span class=n>producer</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=n>f</span> <span class=o>=</span> <span class=n>filter</span><span class=p>(</span><span class=n>p</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>consumer</span><span class=p>(</span><span class=n>f</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=c1>----- 也可以简单写为</span>
+</span></span><span class=line><span class=cl><span class=c1>--consumer(filter(producer()))</span>
+</span></span></code></pre></div><a class=anchor id=非抢占式的多线程></a><h2>非抢占式的多线程 <a href=#%e9%9d%9e%e6%8a%a2%e5%8d%a0%e5%bc%8f%e7%9a%84%e5%a4%9a%e7%ba%bf%e7%a8%8b aria-hidden=true>#</a></h2><p>实际上协程更类似于非抢占式的多线程，当一个协程运行时，除非主动通过 yield() 让出执行权，否则不能被动的抢占。很多场景下这一模型都能正常运行，但是当任意协程调用阻塞式的操作时，那么整个程序都将会被阻塞。接下来看看如何解决这一问题。</p><p>简单通过下载多个网页作为示例。注意，该示例依赖于 socket 模块，在 CentOS 可以直接通过 yum install lua-socket 进行安装，依赖 EPEL 源。</p><p>如下为简单读取 http://www.baidu.com/ 的内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#!/usr/bin/lua
+</span></span><span class=line><span class=cl>local socket = require(&#34;socket&#34;)
+</span></span><span class=line><span class=cl>local host, file = &#34;www.baidu.com&#34;, &#34;/&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>-- 创建一个TCP连接，连接到HTTP连接的标准80端口上
+</span></span><span class=line><span class=cl>local sock = assert(socket.connect(host, 80))
+</span></span><span class=line><span class=cl>sock:send(&#34;GET &#34; .. file .. &#34; HTTP/1.0\r\n\r\n&#34;)
+</span></span><span class=line><span class=cl>repeat
+</span></span><span class=line><span class=cl>    -- 以1K的字节块来接收数据，并把接收到字节块输出来
+</span></span><span class=line><span class=cl>    local chunk, status, partial = sock:receive(2^10)
+</span></span><span class=line><span class=cl>    io.write(chunk or partial)
+</span></span><span class=line><span class=cl>until status == &#34;closed&#34;
+</span></span><span class=line><span class=cl>-- 关闭 TCP 连接
+</span></span><span class=line><span class=cl>sock:close()
+</span></span></code></pre></div><p>如果采用串行的方式，实际上很大一部分时间都耗费在了等待网络数据上，也就是阻塞在了 receive() 函数调用中。所以，通过并发可以提高读取效率。</p><p>通过协程可以很容易实现并发，当一个协程没有数据时返回给一个 dispatcher，然后调度另外的协程。</p><p>首先需要将上述的程序改写为一个函数，实际上我们对网页的内容并不感兴趣，因此只统计一下网站返回的字节数，而非其内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=kr>function</span> <span class=nf>receive</span> <span class=p>(</span><span class=n>connection</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>connection</span><span class=p>:</span><span class=n>settimeout</span><span class=p>(</span><span class=mi>0</span><span class=p>)</span>    <span class=c1>-- 设置为非阻塞模式</span>
+</span></span><span class=line><span class=cl>    <span class=kd>local</span> <span class=n>s</span><span class=p>,</span> <span class=n>status</span><span class=p>,</span> <span class=n>partial</span> <span class=o>=</span> <span class=n>connection</span><span class=p>:</span><span class=n>receive</span><span class=p>(</span><span class=mi>2</span><span class=o>^</span><span class=mi>10</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kr>if</span> <span class=n>status</span> <span class=o>==</span> <span class=s2>&#34;timeout&#34;</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>        <span class=n>coroutine.yield</span><span class=p>(</span><span class=n>connection</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span>
+</span></span><span class=line><span class=cl>    <span class=kr>return</span> <span class=n>s</span> <span class=ow>or</span> <span class=n>partial</span><span class=p>,</span> <span class=n>status</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>download</span> <span class=p>(</span><span class=n>host</span><span class=p>,</span> <span class=n>file</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kd>local</span> <span class=n>c</span> <span class=o>=</span> <span class=n>assert</span><span class=p>(</span><span class=n>socket.connect</span><span class=p>(</span><span class=n>host</span><span class=p>,</span> <span class=mi>80</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=kd>local</span> <span class=n>count</span> <span class=o>=</span> <span class=mi>0</span>             <span class=c1>-- 用于统计读取的字节数</span>
+</span></span><span class=line><span class=cl>    <span class=n>c</span><span class=p>:</span><span class=n>send</span><span class=p>(</span><span class=s2>&#34;GET &#34;</span> <span class=o>..</span> <span class=n>file</span> <span class=o>..</span> <span class=s2>&#34; HTTP/1.0</span><span class=se>\r\n\r\n</span><span class=s2>&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kr>repeat</span>
+</span></span><span class=line><span class=cl>        <span class=kd>local</span> <span class=n>chunk</span><span class=p>,</span> <span class=n>status</span> <span class=o>=</span> <span class=n>receive</span><span class=p>(</span><span class=n>c</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=n>count</span> <span class=o>=</span> <span class=n>count</span> <span class=o>+</span> <span class=o>#</span><span class=n>chunk</span>
+</span></span><span class=line><span class=cl>    <span class=kr>until</span> <span class=n>status</span> <span class=o>==</span> <span class=s2>&#34;closed&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=n>c</span><span class=p>:</span><span class=n>close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=n>print</span><span class=p>(</span><span class=n>file</span><span class=p>,</span> <span class=n>count</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span></code></pre></div><p>接下来看看 dispatcher 的内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=n>threads</span> <span class=o>=</span> <span class=p>{}</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>get</span> <span class=p>(</span><span class=n>host</span><span class=p>,</span> <span class=n>file</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=c1>-- 创建协程</span>
+</span></span><span class=line><span class=cl>    <span class=kd>local</span> <span class=n>co</span> <span class=o>=</span> <span class=n>coroutine.create</span><span class=p>(</span><span class=kr>function</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=n>download</span><span class=p>(</span><span class=n>host</span><span class=p>,</span> <span class=n>file</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>table.insert</span><span class=p>(</span><span class=n>threads</span><span class=p>,</span> <span class=n>co</span><span class=p>)</span>   <span class=c1>-- 将创建的协程添加到列表中，等待被调用</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>dispatch</span> <span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=kd>local</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>    <span class=kr>while</span> <span class=kc>true</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>        <span class=kr>if</span> <span class=n>threads</span><span class=p>[</span><span class=n>i</span><span class=p>]</span> <span class=o>==</span> <span class=kc>nil</span> <span class=kr>then</span>               <span class=c1>-- 判断是否还有需要执行的线程</span>
+</span></span><span class=line><span class=cl>            <span class=kr>if</span> <span class=n>threads</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span> <span class=o>==</span> <span class=kc>nil</span> <span class=kr>then</span> <span class=kr>break</span> <span class=kr>end</span> <span class=c1>-- 判断是否已经都执行完</span>
+</span></span><span class=line><span class=cl>            <span class=n>i</span> <span class=o>=</span> <span class=mi>1</span>                               <span class=c1>-- 还有，从头开始执行一次</span>
+</span></span><span class=line><span class=cl>        <span class=kr>end</span>
+</span></span><span class=line><span class=cl>        <span class=kd>local</span> <span class=n>status</span><span class=p>,</span> <span class=n>res</span> <span class=o>=</span> <span class=n>coroutine.resume</span><span class=p>(</span><span class=n>threads</span><span class=p>[</span><span class=n>i</span><span class=p>])</span>
+</span></span><span class=line><span class=cl>        <span class=kr>if</span> <span class=ow>not</span> <span class=n>res</span> <span class=kr>then</span>   <span class=c1>-- 返回false表示该协程已经执行完</span>
+</span></span><span class=line><span class=cl>            <span class=n>table.remove</span><span class=p>(</span><span class=n>threads</span><span class=p>,</span> <span class=n>i</span><span class=p>)</span>  <span class=c1>-- 删除之</span>
+</span></span><span class=line><span class=cl>        <span class=kr>else</span>
+</span></span><span class=line><span class=cl>            <span class=n>i</span> <span class=o>=</span> <span class=n>i</span> <span class=o>+</span> <span class=mi>1</span>     <span class=c1>-- 然后执行下一个</span>
+</span></span><span class=line><span class=cl>        <span class=kr>end</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span></code></pre></div><p>其中 threads 保存了正在执行的协程，get() 函数用于添加需要下载的页面。dispatch() 则是主要的任务调度过程，其处理也非常简单，就是不断的遍历整个表，查看是否还有需要执行的任务。</p><p>然后通过如下方式进行调用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=n>host</span> <span class=o>=</span> <span class=s2>&#34;www.w3.org&#34;</span>
+</span></span><span class=line><span class=cl><span class=n>get</span><span class=p>(</span><span class=n>host</span><span class=p>,</span> <span class=s2>&#34;/TR/html401/html40.txt&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>get</span><span class=p>(</span><span class=n>host</span><span class=p>,</span> <span class=s2>&#34;/TR/2002/REC-xhtml1-20020801/xhtml1.pdf&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>get</span><span class=p>(</span><span class=n>host</span><span class=p>,</span> <span class=s2>&#34;/TR/REC-html32.html&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>get</span><span class=p>(</span><span class=n>host</span><span class=p>,</span> <span class=s2>&#34;/TR/2000/REC-DOM-Level-2-Core-20001113/DOM2-Core.txt&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>dispatch</span><span class=p>()</span>
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p><a href=http://www.inf.puc-rio.br/~roberto/docs/corosblp.pdf>Coroutines in Lua</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#常用接口>常用接口</a></li><li><a href=#resume>resume()</a></li></ul></li><li><a href=#示例>示例</a><ul><li><a href=#生产者-消费者>生产者-消费者</a></li><li><a href=#生产者-过滤器-消费者>生产者-过滤器-消费者</a></li><li><a href=#非抢占式的多线程>非抢占式的多线程</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,213 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>基本算法介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="这里简单介绍一下递归、分治算法、动态规划、贪心算法、回溯算法的区别和联系。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>基本算法介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-02-20</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/algorithm/ role=button>algorithm</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/leetcode/ role=button>leetcode</a></div></div><hr><div class=content><p>这里简单介绍一下递归、分治算法、动态规划、贪心算法、回溯算法的区别和联系。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>递归是一种编程技巧，后面的几种算法基本都可以通过递归来实现；分治算法是将原问题不断拆解为更小的子问题处理，一般是二分，例如归并排序；贪心算法是动态规划的一个子集，动态规划可以通过记录结果，以降低对重复子问题的处理，从而提高效率；回溯算法在穷举的基础上增加了剪枝。</p><a class=anchor id=递归-recursion></a><h1>递归 Recursion <a href=#%e9%80%92%e5%bd%92-recursion aria-hidden=true>#</a></h1><p>在描述某个问题的当前状态时，需要用到上个状态 (例如马尔科夫链) 甚至是之前的状态，这种方式成为递归，是一种编程技巧。</p><a class=anchor id=回溯-backtrack></a><h1>回溯 Backtrack <a href=#%e5%9b%9e%e6%ba%af-backtrack aria-hidden=true>#</a></h1><p>从一个问题的某种可能出发，遍历改场景下的所有结果，在遍历完之后回到原点，然后再从另外的一种可能出发继续搜索，这种不断回溯然后再继续寻找的方法就是回溯法。</p><p>解决一个回溯问题，实际上就是一个决策树的遍历过程。</p><ol><li>Result 已经根据具体的条件做出的选择；</li><li>Items 选择的列表，本次可以选择那些元素；</li><li>结束条件，到达了决策树的最后一层，一般使用的是递归方法，作为结束。</li></ol><p>所以，大致的流程就是。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>result = []
+</span></span><span class=line><span class=cl>backtrack(result, items):
+</span></span><span class=line><span class=cl>    if isOver():
+</span></span><span class=line><span class=cl>		dumpInfo()  # 在某个决策树的叶子节点结束
+</span></span><span class=line><span class=cl>        return
+</span></span><span class=line><span class=cl>    for item in items[]:
+</span></span><span class=line><span class=cl>		items.remove(item)  # 选择列表中删除
+</span></span><span class=line><span class=cl>		result.add(item)    # 添加到结果中
+</span></span><span class=line><span class=cl>        backtrack(result, items)
+</span></span><span class=line><span class=cl>		result.remove(item)
+</span></span><span class=line><span class=cl>		items.add(item)
+</span></span></code></pre></div><a class=anchor id=示例></a><h1>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h1><p>如下通过简单的示例进行说明。</p><a class=anchor id=全排列></a><h2>全排列 <a href=#%e5%85%a8%e6%8e%92%e5%88%97 aria-hidden=true>#</a></h2><p>给定一组数字或者字符串，其长度为 <code>n</code>，打印出其全排列，例如，对于字符串 <code>ABC</code> 的全排列有六种：<code>ABC</code> <code>ACB</code> <code>BAC</code> <code>BCA</code> <code>CAB</code> <code>CBA</code> 六种。假设给定 <code>n</code> 个元素的数组，而且已经按照编号从小到大排列。</p><p>如下以递归方式求解，也就是先固定第一个元素，然后求出后 <code>n-1</code> 个元素的全排列；然后依次循环，直到遍历到最后一个元素。</p><p>以上述的 <code>ABC</code> 字符串为例，其全排列为：</p><ol><li><code>A</code> 后面跟 <code>BC</code> 的全排列；</li><li><code>B</code> 后面跟 <code>AC</code> 的全排列；</li><li><code>C</code> 后面跟 <code>AB</code> 的全排列；</li></ol><p>以第一行为例，在递归求解 <code>BC</code> 的全排列即可，代码如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>swap</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=n>a</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=n>b</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=n>t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>t</span> <span class=o>=</span> <span class=o>*</span><span class=n>a</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>a</span> <span class=o>=</span> <span class=o>*</span><span class=n>b</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>b</span> <span class=o>=</span> <span class=n>t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>permute</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=n>array</span><span class=p>,</span> <span class=kt>int</span> <span class=n>begin</span><span class=p>,</span> <span class=kt>int</span> <span class=n>end</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>begin</span> <span class=o>&gt;=</span> <span class=n>end</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;=</span> <span class=n>end</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%c&#34;</span><span class=p>,</span> <span class=n>array</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>puts</span><span class=p>(</span><span class=s>&#34;&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=n>begin</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;=</span> <span class=n>end</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>swap</span><span class=p>(</span><span class=o>&amp;</span><span class=n>array</span><span class=p>[</span><span class=n>begin</span><span class=p>],</span> <span class=o>&amp;</span><span class=n>array</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>permute</span><span class=p>(</span><span class=n>array</span><span class=p>,</span> <span class=n>begin</span> <span class=o>+</span> <span class=mi>1</span><span class=p>,</span> <span class=n>end</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>swap</span><span class=p>(</span><span class=o>&amp;</span><span class=n>array</span><span class=p>[</span><span class=n>begin</span><span class=p>],</span> <span class=o>&amp;</span><span class=n>array</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=n>array</span><span class=p>[]</span> <span class=o>=</span> <span class=s>&#34;ABC&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>permute</span><span class=p>(</span><span class=n>array</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=mi>2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>对上述解法，如果出现了重复字符，例如 <code>ABB</code> ，那么同样会出现六种情况，而且会有重复，所以在交换前先检查之前是否有重复。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>swap</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=n>a</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=n>b</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=n>t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>t</span> <span class=o>=</span> <span class=o>*</span><span class=n>a</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>a</span> <span class=o>=</span> <span class=o>*</span><span class=n>b</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>b</span> <span class=o>=</span> <span class=n>t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/* check [from, to) is same with to */</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>is_repeat</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=n>array</span><span class=p>,</span> <span class=kt>int</span> <span class=n>from</span><span class=p>,</span> <span class=kt>int</span> <span class=n>to</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span><span class=p>(</span><span class=kt>int</span> <span class=n>i</span> <span class=o>=</span> <span class=n>from</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>to</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>array</span><span class=p>[</span><span class=n>to</span><span class=p>]</span> <span class=o>==</span> <span class=n>array</span><span class=p>[</span><span class=n>i</span><span class=p>])</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>permute</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=n>array</span><span class=p>,</span> <span class=kt>int</span> <span class=n>begin</span><span class=p>,</span> <span class=kt>int</span> <span class=n>end</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>begin</span> <span class=o>&gt;=</span> <span class=n>end</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;=</span> <span class=n>end</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%c&#34;</span><span class=p>,</span> <span class=n>array</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>puts</span><span class=p>(</span><span class=s>&#34;&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span><span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=n>begin</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;=</span> <span class=n>end</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=nf>is_repeat</span><span class=p>(</span><span class=n>array</span><span class=p>,</span> <span class=n>begin</span><span class=p>,</span> <span class=n>i</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>            <span class=k>continue</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=nf>swap</span><span class=p>(</span><span class=o>&amp;</span><span class=n>array</span><span class=p>[</span><span class=n>begin</span><span class=p>],</span> <span class=o>&amp;</span><span class=n>array</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>permute</span><span class=p>(</span><span class=n>array</span><span class=p>,</span> <span class=n>begin</span> <span class=o>+</span> <span class=mi>1</span><span class=p>,</span> <span class=n>end</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>swap</span><span class=p>(</span><span class=o>&amp;</span><span class=n>array</span><span class=p>[</span><span class=n>begin</span><span class=p>],</span> <span class=o>&amp;</span><span class=n>array</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=n>array</span><span class=p>[]</span> <span class=o>=</span> <span class=s>&#34;ABB&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>permute</span><span class=p>(</span><span class=n>array</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=mi>2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>因为全排列有 <code>n!</code> 种类型，所以，无论采用什么方法，其对应的时间复杂度都是 <code>O(n!)</code> 。</p><a class=anchor id=n-皇后></a><h2>N 皇后 <a href=#n-%e7%9a%87%e5%90%8e aria-hidden=true>#</a></h2><p>这是经典的问题，也就是在一个 <code>N*N</code> 的棋盘上放置 <code>N</code> 个皇后，保证其不能相互攻击。注意，皇后会攻击同一行、同一列、同一斜线上的皇后，如下列举常见的实现方式。</p><a class=anchor id=回溯算法-backtrack></a><h3>回溯算法 BackTrack <a href=#%e5%9b%9e%e6%ba%af%e7%ae%97%e6%b3%95-backtrack aria-hidden=true>#</a></h3><p>采用的是递归方式，当不满足的时候会返回，然后继续选择下一个节点判断是否满足，依次类推。因为是个二维的棋盘，最直接的想法就是使用一个二维数组，在第 <code>i</code> 行 <code>j</code> 列上放置皇后，依次判断行、列、对角线、斜对角线上是否冲突即可。</p><p>在做递归时，行数依次递进，所以行是不会出现冲突的，那么直接查看列、右上方、左上方是否冲突即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;math.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define QUEEN_MAX  8
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=n>count</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=kt>char</span> <span class=n>board</span><span class=p>[</span><span class=n>QUEEN_MAX</span><span class=p>][</span><span class=n>QUEEN_MAX</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>show</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span><span class=p>,</span> <span class=n>j</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>QUEEN_MAX</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>j</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>j</span> <span class=o>&lt;</span> <span class=n>QUEEN_MAX</span><span class=p>;</span> <span class=n>j</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=nf>printf</span><span class=p>(</span><span class=s>&#34; %c&#34;</span><span class=p>,</span> <span class=n>board</span><span class=p>[</span><span class=n>i</span><span class=p>][</span><span class=n>j</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;---------------- %02d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=o>++</span><span class=n>count</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/* can we put Queen on the (row, col). */</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>is_valid</span><span class=p>(</span><span class=kt>int</span> <span class=n>row</span><span class=p>,</span> <span class=kt>int</span> <span class=n>col</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span><span class=p>,</span> <span class=n>j</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* check the column */</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>QUEEN_MAX</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>board</span><span class=p>[</span><span class=n>i</span><span class=p>][</span><span class=n>col</span><span class=p>]</span> <span class=o>==</span> <span class=sc>&#39;Q&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* check right-up */</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=n>row</span> <span class=o>-</span> <span class=mi>1</span><span class=p>,</span> <span class=n>j</span> <span class=o>=</span> <span class=n>col</span> <span class=o>+</span> <span class=mi>1</span><span class=p>;</span> <span class=n>i</span> <span class=o>&gt;=</span> <span class=mi>0</span> <span class=o>&amp;&amp;</span> <span class=n>j</span> <span class=o>&lt;</span> <span class=n>QUEEN_MAX</span><span class=p>;</span> <span class=n>i</span><span class=o>--</span><span class=p>,</span> <span class=n>j</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>board</span><span class=p>[</span><span class=n>i</span><span class=p>][</span><span class=n>j</span><span class=p>]</span> <span class=o>==</span> <span class=sc>&#39;Q&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* check left-up */</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=n>row</span> <span class=o>-</span> <span class=mi>1</span><span class=p>,</span> <span class=n>j</span> <span class=o>=</span> <span class=n>col</span> <span class=o>-</span> <span class=mi>1</span><span class=p>;</span> <span class=n>i</span> <span class=o>&gt;=</span> <span class=mi>0</span> <span class=o>&amp;&amp;</span> <span class=n>j</span> <span class=o>&gt;=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span><span class=o>--</span><span class=p>,</span> <span class=n>j</span><span class=o>--</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>board</span><span class=p>[</span><span class=n>i</span><span class=p>][</span><span class=n>j</span><span class=p>]</span> <span class=o>==</span> <span class=sc>&#39;Q&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>EightQueen</span><span class=p>(</span><span class=kt>int</span> <span class=n>row</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>col</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>row</span> <span class=o>&gt;=</span> <span class=n>QUEEN_MAX</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>show</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>col</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>col</span> <span class=o>&lt;</span> <span class=n>QUEEN_MAX</span><span class=p>;</span> <span class=n>col</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=nf>is_valid</span><span class=p>(</span><span class=n>row</span><span class=p>,</span> <span class=n>col</span><span class=p>)</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>continue</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>board</span><span class=p>[</span><span class=n>row</span><span class=p>][</span><span class=n>col</span><span class=p>]</span> <span class=o>=</span> <span class=sc>&#39;Q&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=nf>EightQueen</span><span class=p>(</span><span class=n>row</span> <span class=o>+</span> <span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>board</span><span class=p>[</span><span class=n>row</span><span class=p>][</span><span class=n>col</span><span class=p>]</span> <span class=o>=</span> <span class=sc>&#39;.&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span><span class=p>,</span> <span class=n>j</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>QUEEN_MAX</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>j</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>j</span> <span class=o>&lt;</span> <span class=n>QUEEN_MAX</span><span class=p>;</span> <span class=n>j</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=n>board</span><span class=p>[</span><span class=n>i</span><span class=p>][</span><span class=n>j</span><span class=p>]</span> <span class=o>=</span> <span class=sc>&#39;.&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>EightQueen</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>不过这样实现有些复杂，更多的是采用一个一维数组实现。</p><p>把棋盘存储为一个 <code>N</code> 维数组，其中的第 <code>i</code> 个元素值代表第 <code>i</code> 行的皇后的列位置。在判断冲突时，因为每行只有一个皇后，显然行不会冲突，列冲突直接判断之前是否存在元素值与当前的列相等；斜线则是通过比较 <code>|row - i| == |col - a[i]|</code> 是否相同。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;math.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define QUEEN_MAX  8
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=n>queen</span><span class=p>[</span><span class=n>QUEEN_MAX</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>show</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>i</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span><span class=p>(</span><span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;</span> <span class=n>QUEEN_MAX</span><span class=p>;</span> <span class=n>i</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;(%d, %d)  &#34;</span><span class=p>,</span> <span class=n>i</span><span class=p>,</span> <span class=n>queen</span><span class=p>[</span><span class=n>i</span><span class=p>]);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>is_valid</span><span class=p>(</span><span class=kt>int</span> <span class=n>row</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>col</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>col</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>col</span> <span class=o>&lt;</span> <span class=n>row</span><span class=p>;</span> <span class=n>col</span><span class=o>++</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>queen</span><span class=p>[</span><span class=n>col</span><span class=p>]</span> <span class=o>==</span> <span class=n>queen</span><span class=p>[</span><span class=n>row</span><span class=p>]</span> <span class=o>||</span> <span class=nf>abs</span><span class=p>(</span><span class=n>queen</span><span class=p>[</span><span class=n>row</span><span class=p>]</span> <span class=o>-</span> <span class=n>queen</span><span class=p>[</span><span class=n>col</span><span class=p>])</span> <span class=o>==</span> <span class=p>(</span><span class=n>row</span> <span class=o>-</span> <span class=n>col</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>EightQueen</span><span class=p>(</span><span class=kt>int</span> <span class=n>row</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>col</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>row</span> <span class=o>&gt;=</span> <span class=n>QUEEN_MAX</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>show</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>col</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>col</span> <span class=o>&lt;</span> <span class=n>QUEEN_MAX</span><span class=p>;</span> <span class=n>col</span><span class=o>++</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>queen</span><span class=p>[</span><span class=n>row</span><span class=p>]</span> <span class=o>=</span> <span class=n>col</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=nf>is_valid</span><span class=p>(</span><span class=n>row</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>            <span class=nf>EightQueen</span><span class=p>(</span><span class=n>row</span> <span class=o>+</span> <span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>EightQueen</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>回溯算法没有动态规划的重叠子问题，无法通过记录历史值减少计算量，只能在当判断了非法时进行剪枝，如果无法剪枝，那么就成了 <code>O(n!)</code> 级的复杂度了，而且任何方法无法优化。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#递归-recursion>递归 Recursion</a></li><li><a href=#回溯-backtrack>回溯 Backtrack</a></li><li><a href=#示例>示例</a><ul><li><a href=#全排列>全排列</a></li><li><a href=#n-皇后>N 皇后</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,195 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Bash 重定向 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="所谓 IO 重定向简单来说就是一个过程，这个过程捕捉一个文件、命令、程序、脚本、甚至脚本中的代码块的输出，然后把捕捉到的输出，作为输入发送给另外一个文件、命令、程序、或者脚本。
+这里简单介绍常用命令及其实现。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Bash 重定向</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-09-23</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/bash/ role=button>bash</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a></div></div><hr><div class=content><p>所谓 IO 重定向简单来说就是一个过程，这个过程捕捉一个文件、命令、程序、脚本、甚至脚本中的代码块的输出，然后把捕捉到的输出，作为输入发送给另外一个文件、命令、程序、或者脚本。</p><p>这里简单介绍常用命令及其实现。</p><a class=anchor id=重定向></a><h1>重定向 <a href=#%e9%87%8d%e5%ae%9a%e5%90%91 aria-hidden=true>#</a></h1><p>文件描述符 (File Descriptor) 是进程对其所打开文件的索引，形式上是个非负整数。在 Linux 系统中，系统为每一个打开的文件指定一个文件标识符以便系统对文件进行跟踪。</p><p>和 C 语言编程里的文件句柄相似，文件标识符是一个数字，不同数字代表不同的含义，默认情况下，系统占用了 3 个，分别是 0 标准输入 (stdin) ， 1 标准输出 (stdout) ， 2 标准错误 (stderr) ，另外 3-9 是保留的标识符，可以把这些标识符指定成标准输入，输出或者错误作为临时连接。通常这样可以解决很多复杂的重定向请求。</p><a class=anchor id=使用方法></a><h2>使用方法 <a href=#%e4%bd%bf%e7%94%a8%e6%96%b9%e6%b3%95 aria-hidden=true>#</a></h2><p>可以简单地用 <code>&lt;</code> 或 <code>></code> ，默认相当于使用 <code>0&lt;</code> 或 <code>1></code>；管道 (<code>|</code> pipe line)，把上一个命令的 stdout 接到下一个命令的 stdin；<code>tee</code> 命令的作用是在不影响原本 IO 的情况下，将 stdout 复制一份到文件中去，例如 <code>cat file.txt | tee backup</code> 。</p><p>重新定义文件标识符可以用 <code>i>&amp;j</code> 命令，表示把文件标识符 i 重新定向到 j ，你可以把 <code>"&"</code> 理解为 &ldquo;取地址&rdquo; 。</p><a class=anchor id=常见用例></a><h2>常见用例 <a href=#%e5%b8%b8%e8%a7%81%e7%94%a8%e4%be%8b aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>cmd &gt; file
+</span></span></code></pre></div><p>把 cmd 命令的输出重定向到文件 file 中。如果 file 已经存在，则清空原有文件，使用 bash 的 <code>noclobber</code> 选项可以防止覆盖原有文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 阻止文件重定向操作对一个文件的覆盖，或者使用 set -C
+</span></span><span class=line><span class=cl>set -o noclobber
+</span></span><span class=line><span class=cl>----- 恢复文件重定向操作对一个文件的覆盖
+</span></span><span class=line><span class=cl>set +o noclobber
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>cmd &gt;| file
+</span></span></code></pre></div><p>功能同 <code>></code> ，但即便在设置了 <code>noclobber</code> 时也会覆盖 file 文件，注意用的是 <code>|</code> 而非一些资料中说的 <code>!</code> ，目前仅在 csh 中仍沿用 <code>>!</code> 实现这一功能。</p><blockquote><p>exec 是 Shell 的内建命令，通常用于替换 Shell 执行命令。在重定向中，exec 用来操作文件描述符，当不指定命令时，会修改当前 shell 的文件描述符。</p></blockquote><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># ls /dev 1&gt;filename               # 将标准输出重定向到文件中， &#34;1&#34; 和 &#34;&gt;&#34; 中间没有空格
+</span></span><span class=line><span class=cl># ls /dev  &gt;filename               # 与上等价，系统默认是 1 ，因此 1 可以省略
+</span></span><span class=line><span class=cl># ls /dev &gt;&gt;filename               # 追加到文件，而非创建
+</span></span><span class=line><span class=cl># ls -qw /dev 2&gt;filename           # 将标准错误重定向到文件
+</span></span><span class=line><span class=cl># ls /dev &amp;&gt;filename               # 将 stdio/stderr 都输入到文件，&#34;&amp;&#34; 在这里代表 stdio/stderr
+</span></span><span class=line><span class=cl># ls /dev &gt;&amp;filename               # 与上同
+</span></span><span class=line><span class=cl># ls /dev &gt;filename 2&gt;&amp;1           # 与上同
+</span></span><span class=line><span class=cl># ls 2&gt;&amp;1 &gt; filename               # 只有标准输出重定向到 filename
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># exec 5&gt;&amp;1                        # 把文件标识符 5 定向到标准输出，通常用来临时保存标准输入
+</span></span><span class=line><span class=cl># grep word &lt;filename              # 重定向标准输入，与下面相同
+</span></span><span class=line><span class=cl># grep word 0&lt;filename             # 把文件 filename 作为 grep 命令的标准输入，而不是从键盘输入
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># echo 123456789 &gt;file             # 把字符串写到文件 file 中
+</span></span><span class=line><span class=cl># exec 3&lt;&gt;file                     # 把文件 file 打开，并指定文件标识符为 3 ，默认为 0
+</span></span><span class=line><span class=cl># read -n 4 &lt;&amp;3                    # 从文件中读 4 个字符，句柄已经指到第四个字符末尾
+</span></span><span class=line><span class=cl># echo -n . &gt;&amp;3                    # 在第 5 个字符处写一个点，覆盖第 5 个字符， -n 表示不换行
+</span></span><span class=line><span class=cl># exec 3&gt;&amp;-                        # 关闭文件标识符 3
+</span></span><span class=line><span class=cl># cat file                         # file 文件的结果就成了 1234.6789
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># touch filename
+</span></span><span class=line><span class=cl># cat filename
+</span></span><span class=line><span class=cl># set -o noclobber
+</span></span><span class=line><span class=cl># echo 2 &gt;filename
+</span></span><span class=line><span class=cl>bash: filename: cannot overwrite existing file
+</span></span><span class=line><span class=cl># echo 2 &gt;| filename
+</span></span><span class=line><span class=cl># cat filename
+</span></span><span class=line><span class=cl>2
+</span></span><span class=line><span class=cl># set +o noclobber
+</span></span></code></pre></div><a class=anchor id=dup></a><h1>DUP <a href=#dup aria-hidden=true>#</a></h1><p>如下的两个函数均为复制一个现存的文件的描述，通常使用这两个系统调用来重定向一个打开的文件描述符。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>int</span> <span class=nf>dup</span><span class=p>(</span><span class=kt>int</span> <span class=n>fd</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>dup2</span><span class=p>(</span><span class=kt>int</span> <span class=n>fd1</span><span class=p>,</span> <span class=kt>int</span> <span class=n>fd2</span><span class=p>);</span>
+</span></span></code></pre></div><p>由 <code>dup</code> 返回的新文件描述符是当前最小的可用文件描述，用 <code>dup2()</code> 则可以用 <code>fd2</code> 参数指定新的描述符数值，如果 <code>fd2</code> 已经打开，则先关闭，若 <code>fd1=fd2</code>，则 <code>dup2</code> 返回 <code>fd2</code>，而不关闭它。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>flush</span><span class=p>(</span><span class=n>FILE</span> <span class=o>*</span><span class=n>stream</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>int</span> <span class=n>duphandle</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* flush TC&#39;s internal buffer */</span>
+</span></span><span class=line><span class=cl>    <span class=nf>fflush</span><span class=p>(</span><span class=n>stream</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* make a duplicate file handle */</span>
+</span></span><span class=line><span class=cl>    <span class=n>duphandle</span> <span class=o>=</span> <span class=nf>dup</span><span class=p>(</span><span class=nf>fileno</span><span class=p>(</span><span class=n>stream</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* close the duplicate handle to flush the buffer */</span>
+</span></span><span class=line><span class=cl>    <span class=nf>close</span><span class=p>(</span><span class=n>duphandle</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>FILE</span>    <span class=o>*</span><span class=n>fp</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span>    <span class=n>msg</span><span class=p>[]</span> <span class=o>=</span> <span class=s>&#34;This is a test&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>fp</span> <span class=o>=</span> <span class=nf>fopen</span><span class=p>(</span><span class=s>&#34;DUMMY.FIL&#34;</span><span class=p>,</span><span class=s>&#34;w&#34;</span><span class=p>);</span> <span class=cm>/*create a file*/</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/*write some date to the file*/</span>
+</span></span><span class=line><span class=cl>    <span class=nf>fwrite</span><span class=p>(</span><span class=n>msg</span><span class=p>,</span> <span class=nf>strlen</span><span class=p>(</span><span class=n>msg</span><span class=p>),</span> <span class=mi>1</span><span class=p>,</span> <span class=n>fp</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Press any key to flush DUMMY.FIL&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>getchar</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/*flush the data to DUMMY.FIL without closing it*/</span>
+</span></span><span class=line><span class=cl>    <span class=nf>flush</span><span class=p>(</span><span class=n>fp</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;</span><span class=se>\n</span><span class=s> File was flushed, Press any key to quit:&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>getchar</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=使用示例></a><h2>使用示例 <a href=#%e4%bd%bf%e7%94%a8%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>这里简单列举一些常见的方法，将 stdout 定向到文件有 3 种方法：</p><a class=anchor id=1-close-open></a><h4>1. close open <a href=#1-close-open aria-hidden=true>#</a></h4><p>在 open 时操作系统会选择最小的一个文件描述符，所以可以使用类似如下的方法，不过只适用于单个的重定向。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=nf>close</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>       <span class=c1>// stdout/1 成为最小的空闲文件描述符
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>fd</span> <span class=o>=</span> <span class=nf>open</span><span class=p>(</span><span class=s>&#34;/tmp/stdout&#34;</span><span class=p>,</span> <span class=n>O_WRONLY</span> <span class=o>|</span> <span class=n>O_CREAT</span><span class=p>);</span>
+</span></span></code></pre></div><a class=anchor id=2-open-close-dup-close></a><h4>2. open close dup close <a href=#2-open-close-dup-close aria-hidden=true>#</a></h4><p>简单来说操作步骤如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=n>fd</span> <span class=o>=</span> <span class=nf>open</span><span class=p>(</span><span class=s>&#34;/tmp/stdout&#34;</span><span class=p>,</span> <span class=n>O_WRONLY</span> <span class=o>|</span> <span class=n>O_CREAT</span><span class=p>);</span> <span class=c1>// 打开需要重定向的文件
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nf>close</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>   <span class=c1>// 关闭标准输出，1成为最小描述符
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nf>dup</span><span class=p>(</span><span class=n>fd</span><span class=p>);</span>    <span class=c1>// 复制文件描述符fd，复制时会使用最小的文件描述符也就是1
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nf>close</span><span class=p>(</span><span class=n>fd</span><span class=p>);</span>  <span class=c1>// 将原有的文件描述符关闭
+</span></span></span></code></pre></div><p>第一次打开文件获取的描述符非 1 ，因为 1 还在打开着。</p><a class=anchor id=3-open-dup2-close></a><h4>3. open dup2 close <a href=#3-open-dup2-close aria-hidden=true>#</a></h4><p>这里使用到了 <code>dup2()</code> 函数，可以指定复制的目标文件描述符，如下是其声明。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>int</span> <span class=nf>dup2</span><span class=p>(</span><span class=n>oldfd</span><span class=p>,</span> <span class=n>newfd</span><span class=p>);</span>
+</span></span></code></pre></div><p>oldfd 需要复制的文件描述符，newfd 为期望复制 oldfd 后得到的文件描述符，成功则返回 newfd，否则返回 -1 。</p><p>如下是简单将 stdout 重定向到 stdout 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;fcntl.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;errno.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>fd</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>fd</span> <span class=o>=</span> <span class=nf>open</span><span class=p>(</span><span class=s>&#34;stdout&#34;</span><span class=p>,</span> <span class=n>O_RDWR</span> <span class=o>|</span> <span class=n>O_CREAT</span><span class=p>,</span> <span class=mo>0644</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>close</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=nf>dup2</span><span class=p>(</span><span class=n>fd</span><span class=p>,</span> <span class=mi>1</span><span class=p>)</span> <span class=o>!=</span> <span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Failed to dup2(%d, 1), %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=n>fd</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>        <span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Print sth</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Done running</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如下是通过命名管道 FIFO 将子进程的输出重定向到父进程，也可以使用匿名管道 PIPE 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;fcntl.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/stat.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/wait.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define FIFO &#34;stdout_fifo&#34;
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=cm>/* Make a fifo that redirect the data from stdout of child */</span>
+</span></span><span class=line><span class=cl>    <span class=nf>unlink</span><span class=p>(</span><span class=n>FIFO</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mkfifo</span><span class=p>(</span><span class=n>FIFO</span><span class=p>,</span> <span class=mo>0777</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* child process */</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span><span class=p>(</span><span class=nf>fork</span><span class=p>()</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int</span> <span class=n>fd</span> <span class=o>=</span> <span class=nf>open</span><span class=p>(</span><span class=n>FIFO</span><span class=p>,</span> <span class=n>O_WRONLY</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=nf>dup2</span><span class=p>(</span><span class=n>fd</span><span class=p>,</span> <span class=mi>1</span><span class=p>);</span> <span class=cm>/* readirect the stdout */</span>
+</span></span><span class=line><span class=cl>        <span class=nf>execl</span><span class=p>(</span><span class=s>&#34;/bin/ls&#34;</span><span class=p>,</span> <span class=s>&#34;-a&#34;</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span> <span class=cm>/* parent process */</span>
+</span></span><span class=line><span class=cl>        <span class=kt>char</span> <span class=n>child_stdout</span><span class=p>[</span><span class=mi>1024</span><span class=p>]</span> <span class=o>=</span> <span class=p>{</span><span class=mi>0</span><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=cm>/* Read and print the data from stdout of child */</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int</span> <span class=n>fd</span> <span class=o>=</span> <span class=nf>open</span><span class=p>(</span><span class=n>FIFO</span><span class=p>,</span> <span class=n>O_RDONLY</span><span class=p>),</span> <span class=n>rc</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>rc</span> <span class=o>=</span> <span class=nf>read</span><span class=p>(</span><span class=n>fd</span><span class=p>,</span> <span class=n>child_stdout</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>child_stdout</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>        <span class=n>child_stdout</span><span class=p>[</span><span class=n>rc</span><span class=p>]</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Parent: %s</span><span class=se>\n</span><span class=s>Finished</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>child_stdout</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=cm>/* Wait for child process */</span>
+</span></span><span class=line><span class=cl>        <span class=nf>wait</span><span class=p>(</span><span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=单进程></a><h2>单进程 <a href=#%e5%8d%95%e8%bf%9b%e7%a8%8b aria-hidden=true>#</a></h2><p>假设进程 A 拥有一个已打开的文件描述符 fd3，它的状态如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>------------
+</span></span><span class=line><span class=cl>fd0 0   | p0
+</span></span><span class=line><span class=cl>------------
+</span></span><span class=line><span class=cl>fd1 1   | p1 -------&gt; 文件表1 ---------&gt; vnode1
+</span></span><span class=line><span class=cl>------------
+</span></span><span class=line><span class=cl>fd2 2   | p2
+</span></span><span class=line><span class=cl>------------
+</span></span><span class=line><span class=cl>fd3 3   | p3 -------&gt; 文件表2 ---------&gt; vnode2
+</span></span><span class=line><span class=cl>------------
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>------------
+</span></span></code></pre></div><p>经调用 <code>nfd = dup2(fd3, STDOUT_FILENO);</code> 后进程状态如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>------------
+</span></span><span class=line><span class=cl>fd0 0   | p0
+</span></span><span class=line><span class=cl>------------
+</span></span><span class=line><span class=cl>nfd 1   | p1 ------------+
+</span></span><span class=line><span class=cl>------------             |
+</span></span><span class=line><span class=cl>fd2 2   | p2             |
+</span></span><span class=line><span class=cl>------------             V
+</span></span><span class=line><span class=cl>fd3 3   | p3 -------&gt; 文件表2 ---------&gt; vnode2
+</span></span><span class=line><span class=cl>------------
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>------------
+</span></span></code></pre></div><p>如上的函数表示，<code>nfd</code> 与 <code>fd3</code> 共享一个文件表项，它们的文件表指针指向同一个文件表项，<code>nfd</code> 在文件描述符表中的位置为 <code>STDOUT_FILENO</code> 的位置，而原先的 <code>STDOUT_FILENO</code> 所指向的文件表项被关闭，所以会有如下的特点：</p><ol><li>第一个参数必须为已打开的合法 filedes 。</li><li>第二个参数可以是任意合法范围的 filedes 值。</li></ol><a class=anchor id=内核结构></a><h2>内核结构 <a href=#%e5%86%85%e6%a0%b8%e7%bb%93%e6%9e%84 aria-hidden=true>#</a></h2><p>每个进程都对应一个结构体 <code>struct task_struct</code>，里面包含一个数据成员：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>struct</span> <span class=n>task_struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=cm>/* open file information */</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>files_struct</span> <span class=o>*</span><span class=n>files</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>其中，<code>struct files_struct</code> 结构体定义如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cm>/* Open file table structure */</span>
+</span></span><span class=line><span class=cl><span class=k>struct</span> <span class=n>files_struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=cm>/* read mostly part */</span>
+</span></span><span class=line><span class=cl>	<span class=kt>atomic_t</span> <span class=n>count</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>fdtable</span> <span class=n>__rcu</span> <span class=o>*</span><span class=n>fdt</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>fdtable</span> <span class=n>fdtab</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cm>/* written part on a separate cache line in SMP */</span>
+</span></span><span class=line><span class=cl>        <span class=kt>spinlock_t</span> <span class=n>file_lock</span> <span class=n>____cacheline_aligned_in_smp</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int</span> <span class=n>next_fd</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=k>struct</span> <span class=n>embedded_fd_set</span> <span class=n>close_on_exec_init</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=k>struct</span> <span class=n>embedded_fd_set</span> <span class=n>open_fds_init</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=k>struct</span> <span class=n>file</span> <span class=n>__rcu</span> <span class=o>*</span> <span class=n>fd_array</span><span class=p>[</span><span class=n>NR_OPEN_DEFAULT</span><span class=p>];</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></div><p>对于上面的两个句柄 <code>nfd</code> <code>fd3</code> 他们在 <code>files_struct</code> 里面的数组 <code>fd_array</code> 里面对应的数值是相等的。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#重定向>重定向</a><ul><li><a href=#使用方法>使用方法</a></li><li><a href=#常见用例>常见用例</a></li><li><a href=#示例>示例</a></li></ul></li><li><a href=#dup>DUP</a><ul><li><a href=#使用示例>使用示例</a></li><li><a href=#单进程>单进程</a></li><li><a href=#内核结构>内核结构</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

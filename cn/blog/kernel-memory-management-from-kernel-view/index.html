@@ -1,0 +1,193 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 内存-内核空间 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="线性地址到物理地址的映射是通过 page table 完成的，内核会在启动分页机制前完成初始化；而且内核会将 A) 不可用物理地址空间，B) 内核代码以及内核初始数据结构对应的地址空间保留。
+接下来，看看内核中是如何管理内存的。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 内存-内核空间</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2014-10-21</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kernel/ role=button>kernel</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>线性地址到物理地址的映射是通过 page table 完成的，内核会在启动分页机制前完成初始化；而且内核会将 A) 不可用物理地址空间，B) 内核代码以及内核初始数据结构对应的地址空间保留。</p><p>接下来，看看内核中是如何管理内存的。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>系统启动时，BIOS 会自动发现当前物理内存的地址，而 Linux 内核会在启动时 (还在实地址模式) 通过 e820 BIOS 系统调用获取当前系统的物理内存地址，当然还有 IO 的映射地址等；开始内核会初始化部分内存供内核使用，然后调用 Bootmem 系统。</p><p>Linux 将内存分为不同的 Zone 管理，每个 Zone 中通过一个 buddy 系统分配内存，每次分配内存都是以页的 2 指数倍分配，例如内核页大小为 4K(<code>getconf PAGE_SIZE</code>)，那么分配的页为 4K, 8K, 16K, &mldr;, 128K，一般系统最大为 128K 。</p><p>Buddy Allocator 最大的问题就是碎片，所以一般系统不会直接使用，通常其上层还包括了 Page Cache、Slab Allocator 。</p><p><img alt="memory managment overview" src=images/memory-managment-overview.jpg class="mx-auto d-block"></p><a class=anchor id=地址空间></a><h2>地址空间 <a href=#%e5%9c%b0%e5%9d%80%e7%a9%ba%e9%97%b4 aria-hidden=true>#</a></h2><p>虚拟地址空间分成了两部分：A) 用户进程，使用的是地址空间的低地址部分 <code>0~TASK_SIZE</code>；B) 内核空间，地址空间的高地址部分。</p><a class=anchor id=物理内存探测></a><h1>物理内存探测 <a href=#%e7%89%a9%e7%90%86%e5%86%85%e5%ad%98%e6%8e%a2%e6%b5%8b aria-hidden=true>#</a></h1><p>Linux 被 bootloader 加载到内存后，首先执行的是 <code>_start()@arch/x86/boot/header.S/header.S</code>，该函数在做了一些准备工作后会跳转到 boot 目录下的 <code>main()@main.c</code> 函数执行，第一次内存相关的调用是在实模式时，通过调用 <code>detect_memory()</code> 实现。</p><p>如下是该函数的实现。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=nf>detect_memory</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>err</span> <span class=o>=</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=nf>detect_memory_e820</span><span class=p>()</span> <span class=o>&gt;</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=n>err</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=nf>detect_memory_e801</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=n>err</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=nf>detect_memory_88</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=n>err</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>err</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>该函数会依次尝试调用 <code>detect_memory_e820()</code>、<code>detect_memory_e801()</code>、<code>detect_memory_88()</code> 获得系统物理内存布局，这三个函数都在 memory.c 中实现。</p><p>其内部都会以内联汇编的形式调用 bios 中断以取得内存信息，该中断调用形式为 <code>int 0x15</code>，同时调用前分别把 <code>AX</code> 寄存器设置为 <code>E820h</code>、<code>E801h</code>、<code>88h</code>，该功能分别用于获取系统内存布局、获取内存大小、获取扩展内存大小，关于 <code>0x15</code> 号中断详细信息可以去查询相关手册。</p><p>在 x86 中，IO 设备也会映射到内存空间，也就是说系统使用的物理内存空间是不连续的，被分成了很多段，而且每段的属性也不一样。通过 <code>int 0x15</code> 查询物理内存时，每次返回一个内存段的信息，因此要想返回系统中所有的物理内存，必须以迭代的方式去查询。</p><a class=anchor id=内存查询></a><h2>内存查询 <a href=#%e5%86%85%e5%ad%98%e6%9f%a5%e8%af%a2 aria-hidden=true>#</a></h2><p>目前使用较多的是 <code>e820</code> ，可以通过 <code>dmesg</code> 查看内核启动输出，一般有类似 <code>e820: BIOS-provided physical RAM map</code> 的输出，下面以 <code>e820</code> 为例。</p><blockquote><p>e820 是和 BIOS 的 int 0x15 中断相关的，之所以叫 e820 是因为在用这个中断时 AX 必须是 0xe820。</p></blockquote><p>其中，与次相关的结构体如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>struct</span> <span class=n>e820entry</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>__u64</span> <span class=n>addr</span><span class=p>;</span>             <span class=cm>/* start of memory segment */</span>
+</span></span><span class=line><span class=cl>    <span class=n>__u64</span> <span class=n>size</span><span class=p>;</span>             <span class=cm>/* size of memory segment */</span>
+</span></span><span class=line><span class=cl>    <span class=n>__u32</span> <span class=n>type</span><span class=p>;</span>             <span class=cm>/* type of memory segment */</span>
+</span></span><span class=line><span class=cl><span class=p>}</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=n>packed</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>struct</span> <span class=n>e820map</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>__u32</span> <span class=n>nr_map</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>struct</span> <span class=n>e820entry</span> <span class=n>map</span><span class=p>[</span><span class=n>E820_X_MAX</span><span class=p>];</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></div><p>在 <code>detect_memory_e820()</code> 函数中，把 <code>int 0x15</code> 放到一个 do-while 循环里，将每次得到的内存段放到 <code>struct e820entry</code> 里。像其它启动时获得的结果一样，最终都会被放到 <code>boot_params</code> 里，探测到的各个内存段情况被放到了 <code>boot_params.e820_map</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>main()@arch/x86/boot/main.c
+</span></span><span class=line><span class=cl> |-detect_memory()                 ← 探测物理内存
+</span></span><span class=line><span class=cl>   |-detect_memory_e820()
+</span></span><span class=line><span class=cl>   |-detect_memory_e801()
+</span></span><span class=line><span class=cl>   |-detect_memory_88()
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>start_kernel()
+</span></span><span class=line><span class=cl> |-setup_arch()                    ← 完成与体系结构相关的初始化工作
+</span></span><span class=line><span class=cl>   |-setup_memory_map()
+</span></span><span class=line><span class=cl>     |-e820_print_map()
+</span></span></code></pre></div><p>Linux 物理内存管理区会在 <code>start_kernel()</code> 函数中进行初始化，此时启动分配器已经建立，所以可以从bootmem中分配需要的内存。</p><p>在 <code>e820_print_map()</code> 函数中，会打印如下内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[    0.000000] e820: BIOS-provided physical RAM map:
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x0000000000057fff] usable
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x0000000000058000-0x0000000000058fff] reserved
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x0000000000059000-0x000000000009cfff] usable
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x000000000009d000-0x00000000000fffff] reserved
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x00000000cc8e2fff] usable
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000cc8e3000-0x00000000cc8e3fff] ACPI NVS
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000cc8e4000-0x00000000cc90dfff] reserved
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000cc90e000-0x00000000d6202fff] usable
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000d6203000-0x00000000d7f52fff] reserved
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000d7f53000-0x00000000d7fa2fff] ACPI NVS
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000d7fa3000-0x00000000d7ffefff] ACPI data
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000d7fff000-0x00000000d7ffffff] usable
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000d8000000-0x00000000d80fffff] reserved
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000d8200000-0x00000000db7fffff] reserved
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000f80fa000-0x00000000f80fafff] reserved
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000f80fd000-0x00000000f80fdfff] reserved
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x00000000fe000000-0x00000000fe010fff] reserved
+</span></span><span class=line><span class=cl>[    0.000000] BIOS-e820: [mem 0x0000000100000000-0x00000002237fffff] usable
+</span></span></code></pre></div><a class=anchor id=内存初始化></a><h1>内存初始化 <a href=#%e5%86%85%e5%ad%98%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h1><p>通过 BIOS 取得所有的内存布局之后，Linux 会对所获取的内存块做相关的检查并保存对其处理后的区域，也就是内存活动区域，会保存在 <code>struct node_active_region</code> 中。</p><p>另外，在 <code>arch/x86/kernel/x86_init.c</code> 中，维护了一个 <code>x86_init</code> 变量，用于保存常见的初始化函数，如页表的初始化函数 <code>pagetable_init()</code>，实际指向的是 <code>paging_init()</code> 函数。</p><p>接着会对 zones 进行初始化，设置最终的分页机制等；系统的内存信息保存在 <code>/proc/meminfo</code> 中，内核实现可以参考 <code>fs/proc/meminfo.c</code> 。</p><blockquote><p>MTRR (Memory Type Range Register) 用来确定系统内存中一段物理内存的类型，进而可以控制处理器对内存区域的访问，也就是告诉 CPU 在解析或者说操作内存的时候应该用什么手段，常见的有 Write Through(WT)、Write Back(WB)、Write Protected(WP)等。</p><p>系统当前的 mtrr 信息保存在 /proc/mtrr 中。</p></blockquote><p>如下，详细介绍 Linux 中内存的初始化过程，首先需要注意的是，64-bits 没有 HIGH 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>start_kernel()@init/main.c
+</span></span><span class=line><span class=cl> |-setup_arch()                           ← 完成与体系结构相关的初始化工作
+</span></span><span class=line><span class=cl> | |-setup_memory_map()                   ← 建立内存图
+</span></span><span class=line><span class=cl> | | |-x86_init.resources.memory_setup()
+</span></span><span class=line><span class=cl> | | | |-sanitize_e820_map()              ← 消除内存重叠部分
+</span></span><span class=line><span class=cl> | | | |-append_e820_map()                ← 将内存配置从boot_params.e820_map拷贝到e820中
+</span></span><span class=line><span class=cl> | | |   |-e820_add_region()              ← 将内存段的信息保存到e820的map数组中
+</span></span><span class=line><span class=cl> | | |-e820_print_map()                   ← 打印出物理内存的分布
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-e820_end_of_ram_pfn()                ← 找出最大的可用页帧号，后面会找出低端内存的最大页面号
+</span></span><span class=line><span class=cl> | | |-e820_end_pfn()                     ← 会打印last_pfn、max_arch_pfn
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-mtrr_bp_init()                       ← 设置MTRR
+</span></span><span class=line><span class=cl> | |-init_mem_mapping()                   ← 设置最终的内存映射机制
+</span></span><span class=line><span class=cl> | | |-probe_page_size_mask()
+</span></span><span class=line><span class=cl> | | |  |-init_gbpages()
+</span></span><span class=line><span class=cl> | | |-init_memory_mapping()              ← 入参是(0,0x100000)，该函数中会打印一系列的mapping信息
+</span></span><span class=line><span class=cl> | | | |-split_mem_range()
+</span></span><span class=line><span class=cl> | | | |-kernel_physical_mapping_init()   ← 完成虚拟地址到物理地址的映射
+</span></span><span class=line><span class=cl> | | | | |-pgd_populate()
+</span></span><span class=line><span class=cl> | | | | |-__flush_tlb_all()
+</span></span><span class=line><span class=cl> | | | |-add_pfn_range_mapped()
+</span></span><span class=line><span class=cl> | | |-load_cr3()
+</span></span><span class=line><span class=cl> | | |-__flush_tlb_all()
+</span></span><span class=line><span class=cl> | | |-early_memtest()
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-early_trap_pf_init()
+</span></span><span class=line><span class=cl> | |-setup_real_mode()
+</span></span><span class=line><span class=cl> | |-memblock_set_current_limit()
+</span></span><span class=line><span class=cl> | |-reserve_initrd()                     ← 设置RADDISK
+</span></span><span class=line><span class=cl> | |-acpi_boot_table_init()               ← ACPI设置
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-initmem_init()                       ← 初始化内存分配器
+</span></span><span class=line><span class=cl> | |-x86_init.paging.pagetable_init()     ← 建立完整的页表，实际调用paging_init()
+</span></span><span class=line><span class=cl> |   |-sparse_init()
+</span></span><span class=line><span class=cl> |   |-node_clear_state()
+</span></span><span class=line><span class=cl> |   |-zone_sizes_init()                  ← 在此设置各个区，可以查看/proc/meminfo
+</span></span><span class=line><span class=cl> |     |-free_area_init_nodes()           ← 打印Zone ranges信息
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-build_all_zonelists()                  ← 区域链表设置
+</span></span><span class=line><span class=cl> |-page_alloc_init()
+</span></span></code></pre></div><p>在设置内存时，首先会打印出系统的物理内存分布，然后找出最大物理页面帧号 <code>max_pfn</code>，低端内存的最大页面号 <code>max_low_pfn</code> 。</p><a class=anchor id=页表初始化></a><h2>页表初始化 <a href=#%e9%a1%b5%e8%a1%a8%e5%88%9d%e5%a7%8b%e5%8c%96 aria-hidden=true>#</a></h2><p>在 2.6.11 后，Linux 采用四级分页模型：1) 页全局目录 (Page Global Directory, PGD)；2) 页上级目录 (Page Upper Directory, PUD)；3) 页中间目录 (Page Middle Directory, PMD)；4) 页表 (Page Table, PT)。</p><p>对于没有启动 PAE 的 32 位系统，实际上只用到了两级分页，将 PUD、PMD 设置为 0 达到使用两级分页的目的，但为了保证程序能 32 位和 64 系统上都能运行，内核保留了页上级目录和页中间目录在指针序列中的位置。</p><a class=anchor id=内存结构></a><h1>内存结构 <a href=#%e5%86%85%e5%ad%98%e7%bb%93%e6%9e%84 aria-hidden=true>#</a></h1><p><img alt="memory architecture node zone page" src=images/memory-architecture-zone-page.png class="mx-auto d-block"></p><p>为了实现了良好的可伸缩性，Linux 采用了与具体架构不相关的设计模型，由内存节点 node、内存区域 zone 和物理页框 page 三级架构组成。</p><a class=anchor id=node></a><h3>NODE <a href=#node aria-hidden=true>#</a></h3><p>一个总线设备访问位于同一个节点中的任意内存单元所花的代价相同，而访问任意两个不同节点中的内存单元所花的代价不同，也就是对于 UMA 只有一个节点，对于 NUMA 则会有多个节点。</p><p>内核中使用 <code>struct pg_data_t</code> 来表示内存节点 node 。</p><a class=anchor id=zone></a><h3>ZONE <a href=#zone aria-hidden=true>#</a></h3><p>同一个内存节点内，由于各种原因它们的用途和使用方法可能并不一样，如 IA32，由于历史原因使得 ISA 设备只能使用最低 16MB 来进行 DMA 传输。</p><p>一般来说，分为了 <code>ZONE_DMA</code>、<code>ZONE_DMA32</code>、<code>ZONE_NORMAL</code>、<code>ZONE_HIGHMEM</code> 几种，不同的平台会有所区别，例如 64 位中有 <code>ZONE_DMA32</code> ，而没有 <code>ZONE_HIGHMEM</code> 。</p><a class=anchor id=page></a><h3>PAGE <a href=#page aria-hidden=true>#</a></h3><p>内存管理的最小单元是 Page ，这也就意味着在一页内的线性地址和物理地址是连续的。另外，需要注意 page 与 page frame 的区别，后者是物理内存的分割单元；前者包含数据，可能保存在 page frame 中，也可能保存在磁盘上。</p><p>详细参见下面的介绍。</p><p><img alt="memory node zone page layout" src=images/memory-node-zone-page-layout.jpg class="mx-auto d-block"></p><a class=anchor id=页相关操作></a><h1>页相关操作 <a href=#%e9%a1%b5%e7%9b%b8%e5%85%b3%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h1><p>如下，是用户空间和内核空间中创建内存的流程。</p><p><img alt="memory kernel userspace management" src=images/memory-kernel-userspace-management.jpg class="mx-auto d-block"></p><p>不管是内核还是还是用户空间，分配内存时，底层都是以 page 为单位分配内存，这个 page 可以作为：</p><ol><li>页缓存使用 (mapping域指向address_space对象)</li><li>作为私有数据 (由private域指向)</li><li>作为进程页表中的映射</li></ol><p>page 的所有信息通过 <code>struct page</code> 表示，该结构体在 <code>include/linux/mm_types.h</code> 中定义：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>struct</span> <span class=n>page</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>unsigned</span> <span class=kt>long</span> <span class=n>flags</span><span class=p>;</span>                  <span class=c1>// 是否脏、锁定，可以查看page-flags.h
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>union</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>struct</span> <span class=n>address_space</span> <span class=o>*</span><span class=n>mapping</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=kt>void</span> <span class=o>*</span><span class=n>s_mem</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>};</span>
+</span></span><span class=line><span class=cl>    <span class=kt>atomic_t</span> <span class=n>_count</span><span class=p>;</span>                      <span class=c1>// 页引用计数，-1表示未使用
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>atomic_t</span> <span class=n>_mapcount</span><span class=p>;</span>                   <span class=c1>// 页映射计数
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kt>void</span> <span class=o>*</span><span class=n>virtual</span><span class=p>;</span>                        <span class=c1>// 页在虚拟内存中的地址
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p>内核通过 <code>struct page</code> 表示每个物理页，占用 40 个字节，假定系统物理页大小为 4KB 。</p><p>在 <code>include/asm-x86/page.h</code> 中定义了内核中和 page 相关的一些常量：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define PAGE_SHIFT  12
+</span></span></span><span class=line><span class=cl><span class=cp>#define PAGE_SIZE   (_AC(1,UL) &lt;&lt; PAGE_SHIFT)
+</span></span></span><span class=line><span class=cl><span class=cp>#define PAGE_MASK   (~(PAGE_SIZE-1))
+</span></span></span></code></pre></div><p>可以看出一个 page 所对应的物理块的大小 (PAGE_SIZE) 是 4096 ；内核会将所有 <code>struct page*</code> 放到一个全局数组 (mem_map) 中，而内核中常会看到的页帧号 (pfn)，也就是该数组的 index 。</p><p>在 <code>arch/x86/kernel/e820.c</code> 文件中，定义了最大的 pfn 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#ifdef CONFIG_X86_32
+</span></span></span><span class=line><span class=cl><span class=cp># ifdef CONFIG_X86_PAE
+</span></span></span><span class=line><span class=cl><span class=cp>#  define MAX_ARCH_PFN      (1ULL&lt;&lt;(36-PAGE_SHIFT))
+</span></span></span><span class=line><span class=cl><span class=cp># else
+</span></span></span><span class=line><span class=cl><span class=cp>#  define MAX_ARCH_PFN      (1ULL&lt;&lt;(32-PAGE_SHIFT))
+</span></span></span><span class=line><span class=cl><span class=cp># endif
+</span></span></span><span class=line><span class=cl><span class=cp>#else </span><span class=cm>/* CONFIG_X86_32 */</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp># define MAX_ARCH_PFN MAXMEM&gt;&gt;PAGE_SHIFT
+</span></span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span></code></pre></div><p>这里的 <code>MAX_ARCH_PFN</code> 就是系统的最大页帧号，但这个只是理论上的最大值，在 <code>e820_end_pfn()</code> 函数中，会计算最终的 <code>max_pfn</code>，可以通过 <code>dmesg | grep max_arch_pfn</code> 命令查看 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>start_kernel()
+</span></span><span class=line><span class=cl> |-setup_arch()
+</span></span><span class=line><span class=cl>   |-e820_end_of_ram_pfn()
+</span></span><span class=line><span class=cl>     |-e820_end_pfn()
+</span></span></code></pre></div><p>接着看下与 page 结构的相关宏以及函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=c1>// include/asm-generic/memory_model.h
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#define page_to_pfn __page_to_pfn
+</span></span></span><span class=line><span class=cl><span class=cp>#define pfn_to_page __pfn_to_page
+</span></span></span></code></pre></div><p>如上宏定义的作用是将 <code>struct page*</code> 和前面提到的 <code>pfn</code> 页帧号之间相互转换。</p><p>根据在内核编译时的不同参数，那么对应的 <code>__page_to_pfn()</code> 和 <code>__pfn_to_page()</code> 函数也不相同，可以通过如下命令查看当前发行版本所使用的宏定义。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ grep -E &#39;(\&lt;CONFIG_FLATMEM\&gt;|\&lt;CONFIG_DISCONTIGMEM\&gt;|\&lt;CONFIG_SPARSEMEM_VMEMMAP\&gt;|\&lt;CONFIG_SPARSEMEM\&gt;)&#39; \
+</span></span><span class=line><span class=cl>    /boot/config-$(uname -r)
+</span></span><span class=line><span class=cl>CONFIG_SPARSEMEM=y
+</span></span><span class=line><span class=cl>CONFIG_SPARSEMEM_VMEMMAP=y
+</span></span></code></pre></div><a class=anchor id=页分配与释放></a><h2>页分配与释放 <a href=#%e9%a1%b5%e5%88%86%e9%85%8d%e4%b8%8e%e9%87%8a%e6%94%be aria-hidden=true>#</a></h2><p>如果一个模块需要分配大块的内存，最好使用面向页的分配技术，下面列举所有的页为单位进行连续物理内存分配，也称为低级页分配器：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>alloc_pages(gfp_mask, order)
+</span></span><span class=line><span class=cl>    分配2^order个页，返回指向第一页的指针
+</span></span><span class=line><span class=cl>alloc_pages(gfp_mask)
+</span></span><span class=line><span class=cl>    分配一页，返回指向页的指针
+</span></span><span class=line><span class=cl>__get_free_pages(gfp_mask, order)
+</span></span><span class=line><span class=cl>    分配2^order个连续页，返回指向其逻辑地址的指针
+</span></span><span class=line><span class=cl>__get_free_pages(gfp_mask)
+</span></span><span class=line><span class=cl>    分配一页，返回指向其逻辑地址的指针，未清零
+</span></span><span class=line><span class=cl>get_zeroed_page(gfp_mask)
+</span></span><span class=line><span class=cl>    分配一页，并填充内容为0，返回指向其逻辑地址的指针
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>__free_pages(page, order)
+</span></span><span class=line><span class=cl>    从page开始，释放2^order个页
+</span></span><span class=line><span class=cl>free_pages(addr, order)
+</span></span><span class=line><span class=cl>    从地址addr开始，释放2^order个页
+</span></span><span class=line><span class=cl>free_page(addr)
+</span></span><span class=line><span class=cl>    释放addr所在的那一页
+</span></span></code></pre></div><a class=anchor id=字节分配与释放></a><h2>字节分配与释放 <a href=#%e5%ad%97%e8%8a%82%e5%88%86%e9%85%8d%e4%b8%8e%e9%87%8a%e6%94%be aria-hidden=true>#</a></h2><p><code>kmalloc()</code>、<code>vmalloc()</code> 分配都是以字节为单位，所分配到的内存在物理内存中连续且保持原有的数据不清零。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;linux/slab.h&gt;
+</span></span><span class=line><span class=cl>void * kmalloc(size_t size, gfp_t flags);
+</span></span><span class=line><span class=cl>  返回内存块的指针，其内存块大小至少为size，分配内存在物理内存中连续，数据不清零
+</span></span><span class=line><span class=cl>size  : 申请内存大小。
+</span></span><span class=line><span class=cl>flags : 取值说明。
+</span></span><span class=line><span class=cl>  GFP_USER  : 用户空间的分配内存，可能休眠；
+</span></span><span class=line><span class=cl>  GFP_KERNEL: 内核空间的内存分配，当空闲内存较少时可能休眠等待一个页面，休眠时内核会用适当的动作获取空闲页；
+</span></span><span class=line><span class=cl>  GFP_ATOMIC: 原子性的内存分配，内核会预留部分空闲页，不会休眠，如中断处理程序、软中断、tasklet等；
+</span></span><span class=line><span class=cl>  __GFP_DMA : 要求分配可用于DMA的内存。
+</span></span></code></pre></div><p><code>kmalloc()</code> 最终调用 <code>__get_free_pages()</code> 来分配内存，故前缀都是 <code>GFP_</code> 开头，最多只能分配 32 个 page 大小的内存，也就是 <code>32*page=32*4K=128K</code> 大小，其中 16 个字节用来记录页描述结构。</p><p><code>kzalloc()</code> 等价于先用 <code>kmalloc()</code> 申请空间，再初始化，所有申请的元素都被初始化为 0 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=k>static</span> <span class=kr>inline</span> <span class=kt>void</span> <span class=o>*</span><span class=nf>kzalloc</span><span class=p>(</span><span class=kt>size_t</span> <span class=n>size</span><span class=p>,</span> <span class=kt>gfp_t</span> <span class=n>flags</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nf>kmalloc</span><span class=p>(</span><span class=n>size</span><span class=p>,</span> <span class=n>flags</span> <span class=o>|</span> <span class=n>__GFP_ZERO</span><span class=p>);</span>  <span class=c1>// 通过标志位表示初始化元素为0
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span></code></pre></div><p><code>vmalloc()</code> 是一个基本的 Linux 内存分配机制，在虚拟内存空间分配一块连续的内存区，尽管这些页在物理内存中不连续 (使用单独的 <code>alloc_page()</code> 来获得每个页) ，但内核认为它们地址是连续的，也就是说所分配的内存是逻辑上连续的。</p><p>另外，需要注意的是，在内核中，<code>vmalloc()</code> 在大部分情况下不推荐使用，因为在某些体系上留给 <code>vmalloc()</code> 的地址空间相对小，且效率不高，默认是可以休眠。</p><p>简言之，<code>vmalloc()</code> 返回一个指向内存块的指针，其内存块大小至少为 size，函数允许休眠。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>#include &lt;linux/vmalloc.h&gt;
+</span></span><span class=line><span class=cl>void * vmalloc(unsigned long size);
+</span></span><span class=line><span class=cl>void vfree(void * addr);
+</span></span></code></pre></div><p><code>vmalloc()</code> 使用虚拟地址，每次分配都要通过适当地设置页表来建立 (虚拟) 内存区域，其分配范围是 <code>VMALLOC_START~VAMLLOC_END</code> 。</p><a class=anchor id=slab></a><h2>SLAB <a href=#slab aria-hidden=true>#</a></h2><p>内核的驱动程序常常需要反复分配许多相同大小内存块，为此增加了一些特殊的内存池，称为高速缓存。而 Linux 内核的高速缓存也被称为 &ldquo;SLAB 分配器&rdquo;，对应了 <code>kmem_cache_t</code> 类型，相关函数有：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 创建可容纳任意数目内存区域的、大小都相同的高速缓存对象
+</span></span><span class=line><span class=cl>kmem_cache_t *kmem_cache_create(const char *name, size_t size,size_t offset, unsigned long flags,
+</span></span><span class=line><span class=cl>    void (*constructor)(void *, kmem_cache_t *,unsigned long flags),
+</span></span><span class=line><span class=cl>    void (*destructor)(void *, kmem_cache_t *, unsigned long flags));
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 调用如下函数从已创建的后备高速缓存中分配对象，flags和kmalloc的相同
+</span></span><span class=line><span class=cl>void *kmem_cache_alloc(kmem_cache_t *cache, int flags);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 使用如下函数释放一个对象
+</span></span><span class=line><span class=cl>void kmem_cache_free(kmem_cache_t *cache, const void *obj);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 当驱动用完这个高速缓存时，一般在当模块被卸载时释放缓存
+</span></span><span class=line><span class=cl>int kmem_cache_destroy(kmem_cache_t *cache);
+</span></span></code></pre></div><p>slab 分配器的特点有：</p><ul><li>对于频繁地分配和释放的数据结构，会缓存；</li><li>为了避免由于频繁分配和回收导致内存碎片，会通过空闲链表进行缓存；</li><li>部分缓存专属单个处理器，分配和释放操作可以不加 SMP 锁；</li></ul><p>slab 层把不同的对象划分为高速缓存组，每个高速缓存组都存放不同类型的对象，每个对象类型对应一个高速缓存，每个高速缓存都是用 <code>kmem_cache</code> 结构来表示。</p><p>例如在内核初始化时，通过 <code>fork_init()</code> 中会创建一个名为 <code>struct task_struct</code> 的高速缓存，每当进程调用 <code>fork()</code> 时，会通过 <code>dup_task_struct()</code> 创建一个新的进程描述符，并调用 <code>do_fork()</code>，完成从高速缓存中获取对象。</p><a class=anchor id=内存模型></a><h2>内存模型 <a href=#%e5%86%85%e5%ad%98%e6%a8%a1%e5%9e%8b aria-hidden=true>#</a></h2><p>在 Linux 内核中支持 3 种不同的内存模型：Flat Memory Model、Discontiguous Memory Model 和 Sparse Memory Model；所
+谓的 Memory Model 其实就是从 CPU 的角度看，其物理内存的分布情况。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define VMEMMAP_START    _AC(0xffffea0000000000, UL)
+</span></span></span><span class=line><span class=cl><span class=cp>#define vmemmap ((struct page *)VMEMMAP_START)
+</span></span></span><span class=line><span class=cl><span class=cp>#define __pfn_to_page(pfn)  (vmemmap + (pfn))
+</span></span></span><span class=line><span class=cl><span class=cp>#define __page_to_pfn(page) (unsigned long)((page) - vmemmap)
+</span></span></span></code></pre></div><a class=anchor id=kswapd></a><h1>kswapd <a href=#kswapd aria-hidden=true>#</a></h1><p>该内核守护进程，通过 <code>module_init(kswapd_init)@mm/vmscan.c</code> 初始化，然后通过 <code>kthread_run()</code> 启动 <code>kswapd()</code> 。该线程会维护一个 LRU 队列，会将最近没有被访问过的 (PG_referenced) 的页放入到 inactive 队列中；否则放置到 active 队列中。</p><p>当系统中可用内存很少时，内核线程 kswapd 被唤醒，开始回收释放 page，通过 <code>pages_min</code>、<code>pages_low</code>、<code>pages_high</code> 这些阈值确定 Zone 的内存使用压力状态；注意，最新内核中这三个变量变成了 <code>watermark[]</code> 的成员，分别对应于 <code>WMARK_MIN</code>，<code>WMARK_LOW</code> 和 <code>WMARK_HIGH</code>。</p><p><img alt="memory watermark" src=images/memory-watermark.png class="mx-auto d-block"></p><p>各个状态如下：</p><ul><li>page_min：如果空闲页数目小于该值，则该zone非常缺页，页面回收压力很大。</li><li>page_low: 如果空闲页数目小于该值，kswapd线程将被唤醒，并开始释放回收页面。</li><li>page_high: 如果空闲页面的值大于该值，则该zone的状态很完美, kswapd线程将重新休眠。</li></ul><p>内核在计算上述的几个值之前会首先计算一个关键参数 <code>min_free_kbytes</code>，它是为关键性分配保留的内存空间的最小值。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>关于 Linux 内存介绍可以查看 <a href=https://www.halobates.de/memory.pdf>Where is the memory going?</a> 以及 <a href=https://www.halobates.de/memorywaste.pdf>相关 PDF</a> 。</li><li>另外，关于 Linux 内核中内存相关的介绍可以查看 <a href=http://duartes.org/gustavo/blog/post/page-cache-the-affair-between-memory-and-files/>Page Cache, the Affair Between Memory and Files</a> 等一系列的文章。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#地址空间>地址空间</a></li></ul></li><li><a href=#物理内存探测>物理内存探测</a><ul><li><a href=#内存查询>内存查询</a></li></ul></li><li><a href=#内存初始化>内存初始化</a><ul><li><a href=#页表初始化>页表初始化</a></li></ul></li><li><a href=#内存结构>内存结构</a><ul><li></li></ul></li><li><a href=#页相关操作>页相关操作</a><ul><li><a href=#页分配与释放>页分配与释放</a></li><li><a href=#字节分配与释放>字节分配与释放</a></li><li><a href=#slab>SLAB</a></li><li><a href=#内存模型>内存模型</a></li></ul></li><li><a href=#kswapd>kswapd</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

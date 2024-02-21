@@ -1,0 +1,83 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>ETCD 存储模块 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="如前所述，ETCD 中 RAFT 协议的只是实现了其核心的部分，而其中的存储模块需要单独实现。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>ETCD 存储模块</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2017-11-15</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a></div></div><hr><div class=content><p>如前所述，ETCD 中 RAFT 协议的只是实现了其核心的部分，而其中的存储模块需要单独实现。</p><a class=anchor id=storage></a><h1>Storage <a href=#storage aria-hidden=true>#</a></h1><p>应用程序需要实现存储 IO 和网络通讯，其中存储在 RAFT 中通过 <code>type Storage interface</code> 定义，包括了读取 log、执行 Snapshot 等接口。</p><p>其本身实现了基于内存的<code> MemoryStorage[raft/storage.go]</code>，ETCD 将其作为 Cache 使用，每次事务中会先将日志持久化到存储设备上，然后再更新 MemoryStorage 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Storage</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>// 初始化时会返回持久化之后的HardState和ConfState
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nf>InitialState</span><span class=p>()</span> <span class=p>(</span><span class=nx>pb</span><span class=p>.</span><span class=nx>HardState</span><span class=p>,</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>ConfState</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=c1>// 返回范围[lo,hi)内的日志数据
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nf>Entries</span><span class=p>(</span><span class=nx>lo</span><span class=p>,</span> <span class=nx>hi</span><span class=p>,</span> <span class=nx>maxSize</span> <span class=kt>uint64</span><span class=p>)</span> <span class=p>([]</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Entry</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=c1>// 获取entry i的term值
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nf>Term</span><span class=p>(</span><span class=nx>i</span> <span class=kt>uint64</span><span class=p>)</span> <span class=p>(</span><span class=kt>uint64</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=c1>// 日志中最新一条日志的序号
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nf>LastIndex</span><span class=p>()</span> <span class=p>(</span><span class=kt>uint64</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=c1>// 日志中的第一条日志序号，老的日志已经保存到snapshot中
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nf>FirstIndex</span><span class=p>()</span> <span class=p>(</span><span class=kt>uint64</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nf>Snapshot</span><span class=p>()</span> <span class=p>(</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Snapshot</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>MemoryStorage</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>sync</span><span class=p>.</span><span class=nx>Mutex</span>
+</span></span><span class=line><span class=cl>	<span class=nx>hardState</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>HardState</span>
+</span></span><span class=line><span class=cl>	<span class=nx>snapshot</span>  <span class=nx>pb</span><span class=p>.</span><span class=nx>Snapshot</span>
+</span></span><span class=line><span class=cl>	<span class=nx>ents</span> <span class=p>[]</span><span class=nx>pb</span><span class=p>.</span><span class=nx>Entry</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如上是，<code>Storage</code> 接口和 <code>MemoryStorage</code> 结构体的定义。</p><a class=anchor id=etcd-实现></a><h1>ETCD 实现 <a href=#etcd-%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h1><p>实际上是在 <code>etcdserver/storage.go</code> 中的实现，其接口定义名称与上述相同，同样也是 <code>type Storage interface</code>，注意不要将两者混淆。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Storage</span> <span class=kd>interface</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>Save</span><span class=p>(</span><span class=nx>st</span> <span class=nx>raftpb</span><span class=p>.</span><span class=nx>HardState</span><span class=p>,</span> <span class=nx>ents</span> <span class=p>[]</span><span class=nx>raftpb</span><span class=p>.</span><span class=nx>Entry</span><span class=p>)</span> <span class=kt>error</span>
+</span></span><span class=line><span class=cl>	<span class=nf>SaveSnap</span><span class=p>(</span><span class=nx>snap</span> <span class=nx>raftpb</span><span class=p>.</span><span class=nx>Snapshot</span><span class=p>)</span> <span class=kt>error</span>
+</span></span><span class=line><span class=cl>	<span class=nf>Close</span><span class=p>()</span> <span class=kt>error</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>storage</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=o>*</span><span class=nx>wal</span><span class=p>.</span><span class=nx>WAL</span>
+</span></span><span class=line><span class=cl>	<span class=o>*</span><span class=nx>snap</span><span class=p>.</span><span class=nx>Snapshotter</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在上述定义的 <code>type storage struct</code> 结构体中，根据 Go 语言的特性，因为没有声明成员变量的名字，可以直接使用 WAL 和 Snapshotter 定义的方法，也就是该结构体是对后两者的封装。</p><p>这里的 <code>storage</code> 和 <code>MemoryStorage</code> 的结合使用就是在 <code>etcdserver/raft.go</code> 实现，对应了 <code>type raftNode struct</code> 结构体，其中包含的是 <code>type raftNodeConfig struct</code> ，也就是真正的封装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>type raftNodeConfig struct {
+</span></span><span class=line><span class=cl>	isIDRemoved func(id uint64) bool
+</span></span><span class=line><span class=cl>	raft.Node
+</span></span><span class=line><span class=cl>	raftStorage *raft.MemoryStorage
+</span></span><span class=line><span class=cl>	storage     Storage
+</span></span><span class=line><span class=cl>	heartbeat   time.Duration // for logging
+</span></span><span class=line><span class=cl>	transport rafthttp.Transporter
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>如上，其中 <code>raftStorage</code> 是提供给 RAFT 协议层使用的，而 <code>storage</code> 则是 ETCD 实现持久化存贮的核心内容。</p><a class=anchor id=启动流程></a><h1>启动流程 <a href=#%e5%90%af%e5%8a%a8%e6%b5%81%e7%a8%8b aria-hidden=true>#</a></h1><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>NewServer()                   etcdserver/server.go
+</span></span><span class=line><span class=cl> |-store.New() store/store.go 根据入参创建一个初始化的目录
+</span></span><span class=line><span class=cl> | |-newStore() 创建数据存储的目录
+</span></span><span class=line><span class=cl> |-snap.New() snap/snapshotter.go 这里只是初始化一个对象，并未做实际操作
+</span></span><span class=line><span class=cl> |-openBackend() etcdserver/backend.go
+</span></span><span class=line><span class=cl> | |-newBackend() 在新的协程中打开，同时会设置10秒的超时时间
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> | &lt;&lt;&lt;haveWAL&gt;&gt;&gt; 存在WAL日志，也就是非第一次部署
+</span></span><span class=line><span class=cl> |-Snapshotter.Load() snap/snapshotter.go 开始加载snapshot
+</span></span><span class=line><span class=cl> | |-Snapshotter.snapNames() 会遍历snap目录下的文件，并逆序排列返回
+</span></span><span class=line><span class=cl> | |-loadSnap() 依次加载上述返回的snap文件
+</span></span><span class=line><span class=cl> |   |-Read() 读取文件，如果报错那么会添加一个.broken的后缀
+</span></span><span class=line><span class=cl> |     |-ioutil.ReadFile() 调用系统接口读取文件
+</span></span><span class=line><span class=cl> |     |-snappb.Unmarshal() 反序列化
+</span></span><span class=line><span class=cl> |     |-crc32.Update() 更新并校验CRC的值
+</span></span><span class=line><span class=cl> |     |-raftpb.Unmarshal() 再次反序列化获取值
+</span></span><span class=line><span class=cl> |-store.Recovery() store/store.go 从磁盘中恢复数据
+</span></span><span class=line><span class=cl> | |-json.Unmarshal() snap中保存的应该是json体
+</span></span><span class=line><span class=cl> | |-newTtlKeyHeap() 一个TTL的最小栈，用来查看将要过期的数据
+</span></span><span class=line><span class=cl> | |-recoverAndclean() ???没有理清楚具体删除的是什么过期数据
+</span></span><span class=line><span class=cl> |-recoverSnapshotBackend() etcdserver/backend.go 开始恢复snapshot
+</span></span><span class=line><span class=cl> | |-openSnapshotBackend() 这里会将最新的一次的snapshot重命名为DB
+</span></span><span class=line><span class=cl> |   |-openBackend()
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-restartNode() etcdserver/raft.go
+</span></span><span class=line><span class=cl> | |-readWAL()
+</span></span><span class=line><span class=cl> | |-raft.NewMemoryStorage()
+</span></span><span class=line><span class=cl> | |-ApplySnapshot()
+</span></span><span class=line><span class=cl> | |-SetHardState()
+</span></span><span class=line><span class=cl> | |-Append()
+</span></span><span class=line><span class=cl> | |-RestartNode()
+</span></span><span class=line><span class=cl> |-SetStore()
+</span></span><span class=line><span class=cl> |-SetBackend()
+</span></span><span class=line><span class=cl> |-Recover()
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#storage>Storage</a></li><li><a href=#etcd-实现>ETCD 实现</a></li><li><a href=#启动流程>启动流程</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

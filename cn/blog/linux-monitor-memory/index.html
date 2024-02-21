@@ -1,0 +1,222 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 监控之 Memory | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="在 Linux 的内存分配机制中，优先使用物理内存，当物理内存还有空闲时，不会释放其占用内存，就算占用内存的程序已经被关闭了，该程序所占用的内存用来做缓存使用，这样对于开启过的程序、或是读取刚存取过得数据会比较快，可以提高整体 IO 效率。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 监控之 Memory</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2013-04-06</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/kernel/ role=button>kernel</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a></div></div><hr><div class=content><p>在 Linux 的内存分配机制中，优先使用物理内存，当物理内存还有空闲时，不会释放其占用内存，就算占用内存的程序已经被关闭了，该程序所占用的内存用来做缓存使用，这样对于开启过的程序、或是读取刚存取过得数据会比较快，可以提高整体 IO 效率。</p><a class=anchor id=free-命令></a><h1>free 命令 <a href=#free-%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h1><p>内存使用情况可以通过 free 命令查看，在 CentOS 中，是 procps-ng 包中的一个程序，该命令实际是读取 /proc/meminfo 文件，对应内核源码中的 fs/proc/meminfo.c。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ free
+</span></span><span class=line><span class=cl>         total       used       free     shared     buffers      cached
+</span></span><span class=line><span class=cl>Mem:    386024     377116       8908          0       21280      155468
+</span></span><span class=line><span class=cl>-/+ buffers/cache: 200368     185656
+</span></span><span class=line><span class=cl>Swap:    393552        0      393552
+</span></span></code></pre></div><p>最新版本的 free 会将 buffer/cache 展示在一起，可以通过 free -w 分开查看 buffers 以及 cache；默认的单位是 KB 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Mem 表示物理内存统计
+</span></span><span class=line><span class=cl>    total  : 物理内存总大小；
+</span></span><span class=line><span class=cl>    used   : 已经分配的内存总计（含buffers 与cache ），但其中部分可能尚未使用；
+</span></span><span class=line><span class=cl>    free   : 未被分配的内存；
+</span></span><span class=line><span class=cl>    shared : 多个进程共享的内存总额；
+</span></span><span class=line><span class=cl>    buffers: 系统分配但未被使用的 buffers 数量，磁盘buffers数量；
+</span></span><span class=line><span class=cl>    cached: 系统分配但未被使用的 cache 数量，磁盘cache数量；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>-/+ buffers/cached 表示物理内存的缓存统计
+</span></span><span class=line><span class=cl>    used: 实际使用的 buffers 与 cache 总量(used-buffers-cached)，也是实际使用的内存总量；
+</span></span><span class=line><span class=cl>    free: 未被使用的 buffers 与 cache 和未被分配的内存之和(buffers+cached+free)，这就是系统当前实际可用内存；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Swap 表示硬盘上交换分区的使用情况
+</span></span><span class=line><span class=cl>    只有 mem 被当前进程实际占用完，即没有了 buffers 和 cache 时，才会使用到 swap 。
+</span></span></code></pre></div><p>其实第一行可以从操作系统的角度去看，即 OS 认为自己总共有 total 的内存，分配了 used 的内存，还有 free 的内存；其中分配的内存中分别有 buffers 和 cached 的内存还没有使用，也就是说 OS 认为还有空闲的内存，又懒得收回之前分配，但已经分配的不能再使用了。</p><p>第二行可以认为从进程的角度去看，可用的内存包括了空闲的+buffers+cached，total-空闲的就是时用的内存数。</p><p>可以通过如下方式计算：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 实际可用内存大小
+</span></span><span class=line><span class=cl>Free(-/+ buffers/cache) = Free(Mem) + buffers(Mem) + Cached(Mem)
+</span></span><span class=line><span class=cl>                 185656 =      8908 +        21280 +      155468
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 物理内存总大小
+</span></span><span class=line><span class=cl>total(Mem) = used(-/+ buffers/cache) + free(-/+ buffers/cache)
+</span></span><span class=line><span class=cl>    386024 =                  200368 +                  185656
+</span></span><span class=line><span class=cl>           = used(Mem) + free(Mem)
+</span></span><span class=line><span class=cl>           =    377116 +      8908
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 已经分配的内存大小
+</span></span><span class=line><span class=cl>Used(Mem) = Used(-/+ buffers/cache) + buffers(Mem) + Cached(Mem)
+</span></span><span class=line><span class=cl>   377116 =                  200368 +        21280 +     155468
+</span></span></code></pre></div><p>关于内存的其它信息可以参考如下文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>/proc/meminfo                  // 机器的内存使用信息
+</span></span><span class=line><span class=cl>/proc/pid/maps                 // 显示进程 PID 所占用的虚拟地址
+</span></span><span class=line><span class=cl>/proc/pid/statm                // 进程所占用的内存
+</span></span><span class=line><span class=cl>/proc/self/statm               // 当前进程的信息
+</span></span></code></pre></div><a class=anchor id=新版></a><h3>新版 <a href=#%e6%96%b0%e7%89%88 aria-hidden=true>#</a></h3><p>如上所述，新版的命令行输入如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ free -w
+</span></span><span class=line><span class=cl>              total        used        free      shared     buffers       cache   available
+</span></span><span class=line><span class=cl>Mem:        8070604     2928928      495012     1162676      104156     4542508     3624840
+</span></span><span class=line><span class=cl>Swap:       8127484      232388     7895096
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>total     (MemTotal     @ /proc/meminfo)
+</span></span><span class=line><span class=cl>free      (MemFree      @ /proc/meminfo)
+</span></span><span class=line><span class=cl>shared    (Shmem        @ /proc/meminfo)  主要是tmpfs使用
+</span></span><span class=line><span class=cl>buffers   (Buffers      @ /proc/meminfo)
+</span></span><span class=line><span class=cl>cache     (Cached+Slab  @ /proc/meminfo)
+</span></span><span class=line><span class=cl>available (MemAvailable @ /proc/meminfo)
+</span></span><span class=line><span class=cl>used = total - free - buffers - cache     (注意，没有去除shared)
+</span></span></code></pre></div><p>可以通过 <code>free -k -w && cat /proc/meminfo</code> 命令进行测试。</p><a class=anchor id=swap对性能的影响></a><h2>Swap对性能的影响 <a href=#swap%e5%af%b9%e6%80%a7%e8%83%bd%e7%9a%84%e5%bd%b1%e5%93%8d aria-hidden=true>#</a></h2><p>当内存不足的时候把磁盘的部分空间当作虚拟内存来使用，而实际上并非是在内存不足的时候才使用，有个参数叫做 swappiness，是用来控制 swap 分区使用的，可以直接查看 <code>/proc/sys/vm/swappiness</code> 文件。</p><p>默认值是 60，范围是 [0, 100]；为 0 表示会最大限度使用物理内存，然后才是 swap；为 100 时，表示尽量使用 swap 分区，把内存上的数据及时的搬运到 swap 空间里面。</p><p>分配太多的 Swap 空间会浪费磁盘空间，而 Swap 空间太少，则系统有可能会发生错误。当系统的物理内存用光了，系统就会跑得很慢，但仍能运行；但是如果 Swap 空间也用光了，那么系统就会发生错误。</p><p>通常情况下，Swap 空间是物理内存的 2~2.5 倍，最小为 64M；这也根据不同的应用，有不同的配置：如果是桌面系统，则只需要较小的 Swap 空间；而大的服务器则视情况不同需要不同大小的 Swap 空间，一般来说对于 4G 以下的物理内存，配置 2 倍的 swap ，4G 以上配置 1 倍。</p><p>另外， Swap 分区的数量对性能也有很大的影响。因为 Swap 交换的操作是磁盘 IO 的操作，如果有多个 Swap 交换区， Swap 空间的分配会以轮流的方式操作于所有的 Swap ，这样会大大均衡 IO 的负载，加快 Swap 交换的速度。</p><p>实际上，当空闲物理内存不多时，不一定表示系统运行状态很差，因为内存的 cache 及 buffer 部分可以随时被重用。<strong>只有 swap 被频繁调用，才是内存资源是否紧张的依据，可以通过 vmstat 查看</strong>。</p><a class=anchor id=状态查看></a><h3>状态查看 <a href=#%e7%8a%b6%e6%80%81%e6%9f%a5%e7%9c%8b aria-hidden=true>#</a></h3><a class=anchor id=常用命令></a><h1>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h1><p>介绍下与内存相关的命令。</p><a class=anchor id=pmap></a><h2>pmap <a href=#pmap aria-hidden=true>#</a></h2><p>可以根据进程查看进程相关信息占用的内存情况，可以通过 <code>-x</code>、<code>-X</code>、<code>-XX</code> 查看详细信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ pmap -x $(pidof mysqld)
+</span></span><span class=line><span class=cl>Address           Kbytes     RSS   Dirty Mode  Mapping
+</span></span><span class=line><span class=cl>0000000000400000   37116    9120       0 r-x-- mysqld
+</span></span><span class=line><span class=cl>0000000002a3e000     872     192      12 r---- mysqld
+</span></span><span class=line><span class=cl>0000000002b18000     700     300     196 rw--- mysqld
+</span></span><span class=line><span class=cl>0000000002bc7000     772     628     628 rw---   [ anon ]
+</span></span><span class=line><span class=cl>00007f0df23ff000       4       0       0 -----   [ anon ]
+</span></span><span class=line><span class=cl>00007f0df2400000   53248    8472    8472 rw---   [ anon ]
+</span></span><span class=line><span class=cl>00007f0df5bfc000       4       0       0 -----   [ anon ]
+</span></span><span class=line><span class=cl>... ...
+</span></span><span class=line><span class=cl>00007fff995ca000     132      76      76 rw---   [ stack ]
+</span></span><span class=line><span class=cl>00007fff995f2000       8       4       0 r-x--   [ anon ]
+</span></span><span class=line><span class=cl>ffffffffff600000       4       0       0 r-x--   [ anon ]
+</span></span><span class=line><span class=cl>---------------- ------- ------- -------
+</span></span><span class=line><span class=cl>total kB          705216  141876  129408
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>输出值: 显示扩展格式
+</span></span><span class=line><span class=cl>  Address : 虚拟内存开始地址；
+</span></span><span class=line><span class=cl>  Kbytes  : 占用内存的字节数，单位是KB；
+</span></span><span class=line><span class=cl>  RSS     : (Resident Set Size)驻留内存的字节数(KB)；
+</span></span><span class=line><span class=cl>  Dirty   : 脏页的字节数（包括共享和私有的）(KB)；
+</span></span><span class=line><span class=cl>  Mode    : 内存页的权限(r=read, w=write, x=execute, s=shared, p=private)；
+</span></span><span class=line><span class=cl>  Mapping : 占用内存的文件、[anon] (分配的内存)、[stack] (堆栈)；
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ pmap -d $(pidof mysqld)
+</span></span><span class=line><span class=cl>Address           Kbytes Mode  Offset           Device    Mapping
+</span></span><span class=line><span class=cl>0000000000400000   23288 r-x-- 0000000000000000 0ca:00001 mysqld
+</span></span><span class=line><span class=cl>0000000001cbe000     940 r---- 00000000016be000 0ca:00001 mysqld
+</span></span><span class=line><span class=cl>0000000001da9000     680 rw--- 00000000017a9000 0ca:00001 mysqld
+</span></span><span class=line><span class=cl>0000000001e53000     888 rw--- 0000000000000000 000:00000   [ anon ]
+</span></span><span class=line><span class=cl>0000000001f31000   11680 rw--- 0000000000000000 000:00000   [ anon ]
+</span></span><span class=line><span class=cl>00007fd784000000    4248 rw--- 0000000000000000 000:00000   [ anon ]
+</span></span><span class=line><span class=cl>00007fd784426000   61288 ----- 0000000000000000 000:00000   [ anon ]
+</span></span><span class=line><span class=cl>00007fd78c000000     132 rw--- 0000000000000000 000:00000   [ anon ]
+</span></span><span class=line><span class=cl>00007fd78c021000   65404 ----- 0000000000000000 000:00000   [ anon ]
+</span></span><span class=line><span class=cl>00007fd7d2c67000      12 rw-s- 0000000000000000 000:0000a [aio] (deleted)
+</span></span><span class=line><span class=cl>00007fd7d2c6a000      12 rw-s- 0000000000000000 000:0000a [aio] (deleted)
+</span></span><span class=line><span class=cl>00007fd7d2c6d000       4 rw-s- 0000000000000000 000:0000a [aio] (deleted)
+</span></span><span class=line><span class=cl>00007fd7d2c6e000       4 rw--- 0000000000000000 000:00000   [ anon ]
+</span></span><span class=line><span class=cl>00007fd7d2c6f000       4 r---- 000000000001f000 0ca:00001 ld-2.17.so
+</span></span><span class=line><span class=cl>00007fd7d2c70000       4 rw--- 0000000000020000 0ca:00001 ld-2.17.so
+</span></span><span class=line><span class=cl>00007fd7d2c71000       4 rw--- 0000000000000000 000:00000   [ anon ]
+</span></span><span class=line><span class=cl>00007ffc8fef3000     132 rw--- 0000000000000000 000:00000   [ stack ]
+</span></span><span class=line><span class=cl>mapped: 1248492K    writeable/private: 545308K    shared: 128K
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>输出值: 显示设备格式
+</span></span><span class=line><span class=cl>  Offset: 文件偏移
+</span></span><span class=line><span class=cl>  Device: 设备名 (major:minor)
+</span></span><span class=line><span class=cl>最后一行输出:
+</span></span><span class=line><span class=cl>  mapped            : 该进程映射的虚拟地址空间大小，也就是该进程预先分配的虚拟内存大小，即ps出的vsz；
+</span></span><span class=line><span class=cl>  writeable/private : 进程所占用的私有地址空间大小，也就是该进程实际使用的内存大小，不含shared libraries；
+</span></span><span class=line><span class=cl>  shared            : 进程和其他进程共享的内存大小；
+</span></span><span class=line><span class=cl>假设上述结构导出到了/tmp/1文件中，可以通过如下命令计算：
+</span></span><span class=line><span class=cl>  mapped: 所有行Kbytes字段的累加
+</span></span><span class=line><span class=cl>    awk &#39;BEGIN{sum=0};{sum+=$2};END{print sum}&#39; /tmp/1
+</span></span><span class=line><span class=cl>  writeable/private: 模式为w+p，且不是s的内存
+</span></span><span class=line><span class=cl>    awk &#39;BEGIN{sum=0};{if($3~/w/ &amp;&amp; $3!~/s/) {sum+=$2}};END{print sum}&#39; /tmp/1
+</span></span><span class=line><span class=cl>  shared: 共享内存数
+</span></span><span class=line><span class=cl>    awk &#39;BEGIN{sum=0};{if($3~/s/) {sum+=$2}};END{print sum}&#39; /tmp/1
+</span></span></code></pre></div><a class=anchor id=vmstat></a><h2>vmstat <a href=#vmstat aria-hidden=true>#</a></h2><p>vmstat 不会将自己作为一个有效的进程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ vmstat [options] [delay [count]]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>常用选项：
+</span></span><span class=line><span class=cl>  delay: 每多少秒显示一次。
+</span></span><span class=line><span class=cl>  count: 显示多少次，默认为一次。
+</span></span><span class=line><span class=cl>  -a: 显示活跃和非活跃内存。
+</span></span><span class=line><span class=cl>  -f: 显示从系统启动之后 forks 的数量；包括了 fork, vfork, clone 的系统调用，等价于创建的全部任务数。
+</span></span><span class=line><span class=cl>  -m,--slabs: 显示 slabinfo 。
+</span></span><span class=line><span class=cl>  -n,--one-header: 只显示一次，而不是周期性的显示。
+</span></span><span class=line><span class=cl>  -s,--stats: 显示内存统计以及各种活动信息。
+</span></span><span class=line><span class=cl>  -d,--disk: 显示磁盘的相关统计。
+</span></span><span class=line><span class=cl>  -D,--disk-sum: 显示硬盘统计信息的摘要。
+</span></span><span class=line><span class=cl>  -p,--partition device: 显示某个磁盘的统计信息。
+</span></span><span class=line><span class=cl>  -S,--unit char: 显示输出时的单位，1000(k),1024(K),1000*1000(m),1024*1024(M)，默认是 K，不会改变 swap 和 block 。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 每秒刷新一次
+</span></span><span class=line><span class=cl>$ vmstat -S M 1
+</span></span><span class=line><span class=cl>procs -----------memory---------- ---swap-- -----io---- --system-- ----cpu----
+</span></span><span class=line><span class=cl>r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa
+</span></span><span class=line><span class=cl>3  0      0   1963    607   2359    0    0     0     0    0     1 32  0 68  0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>各个段的含义为：
+</span></span><span class=line><span class=cl>  procs 进程
+</span></span><span class=line><span class=cl>    r: 等待运行的进程数，如果运行队列过大，表示CPU很忙，一般会造成CPU使用率很高。
+</span></span><span class=line><span class=cl>    b: 不可中断睡眠(uninterruptible sleep)的进程数，也就是被阻塞的进程，通常为IO。
+</span></span><span class=line><span class=cl>  memory 内存
+</span></span><span class=line><span class=cl>    swpd: 虚拟内存(Virtual Memory)的使用量，应该是交换区。&lt;/li&gt;&lt;li&gt;
+</span></span><span class=line><span class=cl>    free: 空闲内存数，同free命令中的free(Mem)。&lt;/li&gt;&lt;li&gt;
+</span></span><span class=line><span class=cl>    buff: 同free命令，已分配未使用的内存大小。&lt;/li&gt;&lt;li&gt;
+</span></span><span class=line><span class=cl>    cache: 同free命令，已分配未使用的内存大小。&lt;/li&gt;&lt;li&gt;
+</span></span><span class=line><span class=cl>    inact: 非活跃(inactive)内存的大小，使用 -a 选项????。&lt;/li&gt;&lt;li&gt;
+</span></span><span class=line><span class=cl>    active: 活跃(active)内存的大小，使用 -a 选项????。
+</span></span><span class=line><span class=cl>  swap 交换区
+</span></span><span class=line><span class=cl>    si: 每秒从交换区(磁盘)写到内存的大小。
+</span></span><span class=line><span class=cl>    so: 每秒写入交换区(磁盘)的大小。
+</span></span><span class=line><span class=cl>        如果这两个值长期大于0，系统性能会受到影响，即我们平常所说的Thrashing(颠簸)。
+</span></span><span class=line><span class=cl>  IO
+</span></span><span class=line><span class=cl>    bi: 每秒读取的块数(blocks/s)。
+</span></span><span class=line><span class=cl>    bo: 每秒写入的块数(blocks/s)。
+</span></span><span class=line><span class=cl>  system 系统
+</span></span><span class=line><span class=cl>    in: 每秒的中断数，包括时钟中断。
+</span></span><span class=line><span class=cl>    cs: 每秒上线文的交换数。
+</span></span><span class=line><span class=cl>  CPU
+</span></span><span class=line><span class=cl>    us: 用户进程执行时间。
+</span></span><span class=line><span class=cl>    sy: 系统进程执行时间。
+</span></span><span class=line><span class=cl>    id: 空闲进程执行时间，2.5.41 之后含有 IO-wait 的时间。
+</span></span><span class=line><span class=cl>    wa: 等待 IO 的时间，2.5.41 之后含有空闲任务。
+</span></span></code></pre></div><a class=anchor id=vmtouch></a><h2>vmtouch <a href=#vmtouch aria-hidden=true>#</a></h2><p>通过 <a href=http://hoytech.com/vmtouch/>vmtouch offical site</a> 可以查看文件在内存中的占比，可以下载 <a href=/reference/linux/monitor/vmtouch.c>本地源码</a> 。</p><p>使用参数可以直接通过 <code>vmtouch -h</code> 查看，如下是简单的示例：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看/etc目录下有多少在缓存中
+</span></span><span class=line><span class=cl>$ vmtouch /etc/
+</span></span><span class=line><span class=cl>           Files: 2844
+</span></span><span class=line><span class=cl>     Directories: 790
+</span></span><span class=line><span class=cl>  Resident Pages: 274/9971  1M/38M  2.75%
+</span></span><span class=line><span class=cl>         Elapsed: 0.15243 seconds
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看一个大文件在缓存中的比例
+</span></span><span class=line><span class=cl>$ vmtouch -v big-dataset.txt
+</span></span><span class=line><span class=cl>big-dataset.txt
+</span></span><span class=line><span class=cl>[                                                            ] 0/169321
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>           Files: 1
+</span></span><span class=line><span class=cl>     Directories: 0
+</span></span><span class=line><span class=cl>  Resident Pages: 0/169321  0/661M  0%
+</span></span><span class=line><span class=cl>         Elapsed: 0.011822 seconds
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 缓存部分内容到内存中，分别对应了文本和二进制文件
+</span></span><span class=line><span class=cl>$ tail -n 10000 big-dataset.txt &gt; /dev/null
+</span></span><span class=line><span class=cl>$ hexdump -n 102400 big-dataset.txt &gt; /dev/null
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 再次查看缓存的文件，也就是62页在内存中
+</span></span><span class=line><span class=cl>$ vmtouch -v big-dataset.txt
+</span></span><span class=line><span class=cl>big-dataset.txt
+</span></span><span class=line><span class=cl>[o                                                           ] 62/169321
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>           Files: 1
+</span></span><span class=line><span class=cl>     Directories: 0
+</span></span><span class=line><span class=cl>  Resident Pages: 62/169321  248K/661M  0.0366%
+</span></span><span class=line><span class=cl>         Elapsed: 0.003463 seconds
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将文件加载到内存中
+</span></span><span class=line><span class=cl>$ vmtouch -vt big-dataset.txt
+</span></span><span class=line><span class=cl>big-dataset.txt
+</span></span><span class=line><span class=cl>[OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO] 169321/169321
+</span></span><span class=line><span class=cl>           Files: 1
+</span></span><span class=line><span class=cl>     Directories: 0
+</span></span><span class=line><span class=cl>   Touched Pages: 169321 (661M)
+</span></span><span class=line><span class=cl>         Elapsed: 1.7372 seconds
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 手动从内存中删除
+</span></span><span class=line><span class=cl>$ vmtouch -ve big-dataset.txt
+</span></span><span class=line><span class=cl>Evicting big-dataset.txt
+</span></span><span class=line><span class=cl>           Files: 1
+</span></span><span class=line><span class=cl>     Directories: 0
+</span></span><span class=line><span class=cl>   Evicted Pages: 42116 (164M)
+</span></span><span class=line><span class=cl>         Elapsed: 0.076824 seconds
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将目录下的所有文件锁定到内存中
+</span></span><span class=line><span class=cl>$ vmtouch -dl /var/www/htdocs/critical/
+</span></span></code></pre></div><p>在 Linux 中，主要是通过 posix_fadvise() 来清除缓存；通过 mincore() 判断页是否存在于缓存中。</p><a class=anchor id=smem></a><h2>smem <a href=#smem aria-hidden=true>#</a></h2><p>Linux 使用的是虚拟内存 (virtual memory)，因此要准确的计算一个进程实际使用的物理内存就比较麻烦，如下是在计算内存使用率时比较重要的指标：</p><ul><li>RSS (Resident Set Size) 表示进程占用的物理内存大小，可以使用 top 命令查询；不过将各进程的 RSS 值相加，通常会超出整个系统的内存消耗，这是因为 RSS 中包含了各进程间共享的内存。</li><li>PSS (Proportional Set Size) 它将共享内存的大小进行平均后，再分摊到各进程上去，相比来说更准确。</li><li>USS (Unique Set Size) 也就是 PSS 中只属于本进程的部分，只计算了进程独自占用的内存大小，不包含任何共享的部分。</li></ul><p>可以通过 <a href=https://www.selenic.com/smem/>smem</a> 查看，这是一个 Python 写的程序，该程序也可以通过 matplotlib 输出图片；另外，同时提供了一个 smemcap.c 程序，可以打包嵌入式的相关数据，然后通过 <code>-S/--source</code> 指定打包文件。</p><p>在 CentOS 中，可以通过如下命令安装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># yum --enablerepo=epel install smem python-matplotlib
+</span></span></code></pre></div><a class=anchor id=进程内存使用量></a><h2>进程内存使用量 <a href=#%e8%bf%9b%e7%a8%8b%e5%86%85%e5%ad%98%e4%bd%bf%e7%94%a8%e9%87%8f aria-hidden=true>#</a></h2><p>简单介绍下如何查看各个进程的内存使用量。</p><a class=anchor id=top></a><h3>top <a href=#top aria-hidden=true>#</a></h3><p>可以直接使用 top 命令后，查看 <code>%MEM</code> 的内容，表示该进程内容使用比例，可以通过 -u 指定用户，也就是只监控特定的用户。</p><p>常用的命令有。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>P: 按%CPU使用率排行
+</span></span><span class=line><span class=cl>T: 按TIME+排行
+</span></span><span class=line><span class=cl>M: 按%MEM排行
+</span></span></code></pre></div><a class=anchor id=ps></a><h3>ps <a href=#ps aria-hidden=true>#</a></h3><p>如下例所示：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ ps -e -o &#39;pid,comm,args,pcpu,rsz,vsz,stime,user,uid&#39; | sort -nrk5
+</span></span></code></pre></div><p>其中 rsz 为实际内存，上例实现按内存排序，由大到小。</p><a class=anchor id=小结></a><h1>小结 <a href=#%e5%b0%8f%e7%bb%93 aria-hidden=true>#</a></h1><p>可以通过 free 查看整个系统内存的使用情况，free(Mem) 过小不会对系统的性能产生影响，实际剩余的内存数为 free(-/+ buffers/cache)。</p><p>通过 vmstat 1 3 输出的 swap(si/so) 可以查看交换区的切入/出情况，如果长期不为 0，则可能是因为内存不足，此时应该查看那个进程占用内存较多。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><ul><li>关于内存的介绍可以参考 <a href=https://www.akkadia.org/drepper/cpumemory.pdf>What every programmer should know about memory</a>，包括了从硬件到软件的详细介绍，内容非常详细。</li><li>关于 Linux 内存的介绍可以参考 <a href=http://www.linuxatemyram.com/>Linux ate my ram!</a> 。</li><li>关于 Buffer Cache 和 Page Cache 的区别，比较经典的是内核开发者 Robert Love 的相关介绍 <a href=https://www.quora.com/Linux-Kernel/What-is-the-major-difference-between-the-buffer-cache-and-the-page-cache-Why-were-they-separate-entities-in-older-kernels-Why-were-they-merged-later-on>What is the major difference between the buffer cache and the page cache? Why were they separate entities in older kernels? Why were they merged later on?</a>。</li></ul></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#free-命令>free 命令</a><ul><li></li><li><a href=#swap对性能的影响>Swap对性能的影响</a></li></ul></li><li><a href=#常用命令>常用命令</a><ul><li><a href=#pmap>pmap</a></li><li><a href=#vmstat>vmstat</a></li><li><a href=#vmtouch>vmtouch</a></li><li><a href=#smem>smem</a></li><li><a href=#进程内存使用量>进程内存使用量</a></li></ul></li><li><a href=#小结>小结</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

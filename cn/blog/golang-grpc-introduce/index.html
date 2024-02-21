@@ -1,0 +1,406 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>gRPC 基本介绍 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="gRPC 一开始由 google 开发，是一款开源的远程过程调用 (RPC) 系统。
+在 gRPC 里客户端应用可以像调用本地对象一样直接调用另一台不同的机器上服务端应用的方法，能够更容易地创建分布式应用和服务。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>gRPC 基本介绍</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-10-19</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/golang/ role=button>golang</a></div></div><hr><div class=content><p>gRPC 一开始由 google 开发，是一款开源的远程过程调用 (RPC) 系统。</p><p>在 gRPC 里客户端应用可以像调用本地对象一样直接调用另一台不同的机器上服务端应用的方法，能够更容易地创建分布式应用和服务。</p><p><img alt="grpc introduce" src=images/grpc-introduce.png class="mx-auto d-block"></p><a class=anchor id=http2></a><h1>HTTP2 <a href=#http2 aria-hidden=true>#</a></h1><p><img alt="http2 introduce" src=images/http2-introduce.png class="mx-auto d-block"></p><a class=anchor id=http1x></a><h2>HTTP/1.x <a href=#http1x aria-hidden=true>#</a></h2><p><code>HTTP/1.x</code> 协议是一个文本协议，可读性好但是不高效。</p><a class=anchor id=parser></a><h4>Parser <a href=#parser aria-hidden=true>#</a></h4><p>如果要解析一个完整的 HTTP 请求，首先需要能正确的读出 <code>HTTP header</code>；其各个 fields 使用 <code>\r\n</code> 分隔，跟 body 之间使用 <code>\r\n\r\n</code> 分隔；然后从 header 里面的 <code>content-length</code> 拿到 body 的 size，从而读取 body。</p><p>可以参考 <a href=https://github.com/nodejs/http-parser>http-parse</a> 中的实现。</p><a class=anchor id=requestresponse></a><h4>Request/Response <a href=#requestresponse aria-hidden=true>#</a></h4><p>在交互时，每个连接只能一问一答，客户端发送了请求之后必须等待响应之后才能继续发送下一次请求。机制简单但是网络利用率不高，需要大量交互时通常需要保持长连接。</p><a class=anchor id=push></a><h4>Push <a href=#push aria-hidden=true>#</a></h4><p>1.x 没有推送机制，通常使用 <code>long polling</code> 或 <code>Web-Socket</code> 方式，而后者严格意义上来说已经不再属于 HTTP 了。</p><a class=anchor id=http2-1></a><h2>HTTP/2 <a href=#http2-1 aria-hidden=true>#</a></h2><p>这是个二进制协议，这也就意味着它的可读性几乎为 0，但幸运的是，我们还是有很多工具，譬如 Wireshark， 能够将其解析出来。</p><a class=anchor id=grpc-简介></a><h1>gRPC 简介 <a href=#grpc-%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>关于 gRPC 中如何使用的 HTTP2 协议，可以参考 <a href=https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md>gRPC over HTTP2</a> 中的介绍，包括了 Unary 和 Stream 两种模式，前者是最简单的方式，一次请求一次响应。</p><p>当使用流模式时，可以向服务器或者客户端发送批量的数据，服务器和客户端在接收这些数据的时候，不必等接收到全部消息才开始处理，而是接收到第一条消息的时就可以立即处理，显然比类 HTTP 1.1 的方式响应更快。例如，有一批个人的收入记录，发送给服务器计算个人所得税，那么两端都可以以流式发送，从而两端并行计算。</p><p>总计有四种方式：</p><ol><li>简单模式。客户端使用存根发送请求到服务器并等待响应返回，就像平常的函数调用。</li><li>服务端流式。客户端发送请求到服务器，拿到一个流去读取返回的消息序列，此时客户端需要一直读取直到没有任何消息。</li><li>客户端流式。客户端写入一个消息序列并将其发送到服务器，一旦客户端完成写入消息，它等待服务器完成读取返回它的响应。</li><li>双向流式。双方使用读写流去发送一个消息序列，两个流独立操作，客户端和服务器可以以任意喜欢的顺序读写。</li></ol><p>依次对应的声明为。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>rpc GetFeature(Point) returns (Feature) {}
+</span></span><span class=line><span class=cl>rpc ListFeatures(Rectangle) returns (stream Feature) {}
+</span></span><span class=line><span class=cl>rpc RecordRoute(stream Point) returns (RouteSummary) {}
+</span></span><span class=line><span class=cl>rpc RouteChat(stream RouteNote) returns (stream RouteNote) {}
+</span></span></code></pre></div><a class=anchor id=安装-golang-版本-grpc></a><h2>安装 GoLang 版本 gRPC <a href=#%e5%ae%89%e8%a3%85-golang-%e7%89%88%e6%9c%ac-grpc aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看当前golang编译器版本
+</span></span><span class=line><span class=cl>$ go version
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 通过在线方式安装，-u 更新到最新版本，-v 显示详细信息
+</span></span><span class=line><span class=cl>$ go get -u -v  google.golang.org/grpc
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 离线下载解压到如下目录，并安装
+</span></span><span class=line><span class=cl>$ echo $GOPATH/src
+</span></span><span class=line><span class=cl>$ go install google.golang.org/grpc
+</span></span></code></pre></div><p>离线版本可以从 <a href=https://github.com/grpc/grpc-go/releases>GitHub gRPC</a> 上下载，其中会有一堆的依赖，依次安装即可，其中 <code>golang.org/x/net</code> 与 <a href=https://github.com/golang/net>GitHub Net</a> 相同，<code>golang.org/x/text</code> 与 <a href=https://github.com/golang/text/releases>GitHub Text</a> 相同。</p><a class=anchor id=安装-protoc-及其插件></a><h4>安装 protoc 及其插件 <a href=#%e5%ae%89%e8%a3%85-protoc-%e5%8f%8a%e5%85%b6%e6%8f%92%e4%bb%b6 aria-hidden=true>#</a></h4><p>在 CentOS7 中默认安装的是 V2 版本，为此需要确保安装的版本。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看 protoc 是否安装，确保是3.0版本
+</span></span><span class=line><span class=cl>$ which protoc
+</span></span><span class=line><span class=cl>$ protoc --version
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 安装插件
+</span></span><span class=line><span class=cl>$ go install github.com/golang/protobuf/proto
+</span></span><span class=line><span class=cl>$ go install github.com/golang/protobuf/protoc-gen-go
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 测试是否安装成功
+</span></span><span class=line><span class=cl>$ protoc -I helloworld/ helloworld/helloworld.proto --go_out=plugins=grpc:helloworld
+</span></span></code></pre></div><p>如果上述的 protoc 版本有误，可以从 <a href=https://github.com/google/protobuf/releases>GitHub ProtoBuf</a> 上下载，然后添加到 <code>$GOPATH/bin</code> 目录下，为了确保使用的是最新版本，需要确保该路径在 PATH 前面。</p><p>当然，也可以通过 <code>yum remove protobuf-compiler</code> 直接卸载掉。</p><a class=anchor id=依赖></a><h5>依赖 <a href=#%e4%be%9d%e8%b5%96 aria-hidden=true>#</a></h5><p>这里简单列举一些常见的依赖：</p><ul><li><a href=https://github.com/google/go-genproto>google.golang.org/genproto</a></li></ul><a class=anchor id=运行示例></a><h4>运行示例 <a href=#%e8%bf%90%e8%a1%8c%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cd $GOPATH/src/google.golang.org/grpc/examples
+</span></span><span class=line><span class=cl>$ go run greeter_server/main.go
+</span></span><span class=line><span class=cl>$ go run greeter_client/main.go
+</span></span></code></pre></div><a class=anchor id=示例代码></a><h2>示例代码 <a href=#%e7%a4%ba%e4%be%8b%e4%bb%a3%e7%a0%81 aria-hidden=true>#</a></h2><p>有如下的目录结构。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>client.go
+</span></span><span class=line><span class=cl>server.go
+</span></span><span class=line><span class=cl>proto/
+</span></span><span class=line><span class=cl> |-helloworld.proto
+</span></span></code></pre></div><p>通过如下命令生成 go 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ mkdir proto/helloworld
+</span></span><span class=line><span class=cl>$ protoc -I proto proto/helloworld.proto --go_out=plugins=grpc:proto/helloworld
+</span></span></code></pre></div><p>其中 <code>helloworld.proto</code>、<code>client.go</code> 和 <code>server.go</code> 的代码为。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>syntax</span> <span class=p>=</span> <span class=s>&#34;proto3&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>package</span> <span class=nx>helloworld</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// The greeting service definition.
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>service</span> <span class=nx>Greeter</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>// Sends a greeting
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>rpc</span> <span class=nf>SayHello</span> <span class=p>(</span><span class=nx>HelloRequest</span><span class=p>)</span> <span class=nf>returns</span> <span class=p>(</span><span class=nx>HelloReply</span><span class=p>)</span> <span class=p>{}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// The request message containing the user&#39;s name.
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>message</span> <span class=nx>HelloRequest</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>string</span> <span class=nx>name</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// The response message containing the greetings
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>message</span> <span class=nx>HelloReply</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>string</span> <span class=nx>message</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;golang.org/x/net/context&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=nx>pb</span> <span class=s>&#34;./proto/helloworld&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>const</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=nx>address</span>     <span class=p>=</span> <span class=s>&#34;localhost:50051&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=nx>defaultName</span> <span class=p>=</span> <span class=s>&#34;world&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// Set up a connection to the server.
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>conn</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>grpc</span><span class=p>.</span><span class=nf>Dial</span><span class=p>(</span><span class=nx>address</span><span class=p>,</span> <span class=nx>grpc</span><span class=p>.</span><span class=nf>WithInsecure</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;did not connect: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>defer</span> <span class=nx>conn</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>c</span> <span class=o>:=</span> <span class=nx>pb</span><span class=p>.</span><span class=nf>NewGreeterClient</span><span class=p>(</span><span class=nx>conn</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>// Contact the server and print out its response.
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>name</span> <span class=o>:=</span> <span class=nx>defaultName</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nb>len</span><span class=p>(</span><span class=nx>os</span><span class=p>.</span><span class=nx>Args</span><span class=p>)</span> <span class=p>&gt;</span> <span class=mi>1</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>name</span> <span class=p>=</span> <span class=nx>os</span><span class=p>.</span><span class=nx>Args</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>ctx</span><span class=p>,</span> <span class=nx>cancel</span> <span class=o>:=</span> <span class=nx>context</span><span class=p>.</span><span class=nf>WithTimeout</span><span class=p>(</span><span class=nx>context</span><span class=p>.</span><span class=nf>Background</span><span class=p>(),</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>defer</span> <span class=nf>cancel</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>r</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>c</span><span class=p>.</span><span class=nf>SayHello</span><span class=p>(</span><span class=nx>ctx</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>pb</span><span class=p>.</span><span class=nx>HelloRequest</span><span class=p>{</span><span class=nx>Name</span><span class=p>:</span> <span class=nx>name</span><span class=p>})</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;could not greet: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;Greeting: %s&#34;</span><span class=p>,</span> <span class=nx>r</span><span class=p>.</span><span class=nx>Message</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;net&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>pb</span> <span class=s>&#34;./proto/helloworld&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;golang.org/x/net/context&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;google.golang.org/grpc/reflection&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>const</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=nx>addr</span> <span class=p>=</span> <span class=s>&#34;127.0.0.1:50051&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// server is used to implement helloworld.GreeterServer.
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>type</span> <span class=nx>server</span> <span class=kd>struct</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// SayHello implements helloworld.GreeterServer
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>s</span> <span class=o>*</span><span class=nx>server</span><span class=p>)</span> <span class=nf>SayHello</span><span class=p>(</span><span class=nx>ctx</span> <span class=nx>context</span><span class=p>.</span><span class=nx>Context</span><span class=p>,</span> <span class=nx>in</span> <span class=o>*</span><span class=nx>pb</span><span class=p>.</span><span class=nx>HelloRequest</span><span class=p>)</span> <span class=p>(</span><span class=o>*</span><span class=nx>pb</span><span class=p>.</span><span class=nx>HelloReply</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=o>&amp;</span><span class=nx>pb</span><span class=p>.</span><span class=nx>HelloReply</span><span class=p>{</span><span class=nx>Message</span><span class=p>:</span> <span class=s>&#34;Hello &#34;</span> <span class=o>+</span> <span class=nx>in</span><span class=p>.</span><span class=nx>Name</span><span class=p>},</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>lis</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>net</span><span class=p>.</span><span class=nf>Listen</span><span class=p>(</span><span class=s>&#34;tcp&#34;</span><span class=p>,</span> <span class=nx>addr</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;failed to listen: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>s</span> <span class=o>:=</span> <span class=nx>grpc</span><span class=p>.</span><span class=nf>NewServer</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>pb</span><span class=p>.</span><span class=nf>RegisterGreeterServer</span><span class=p>(</span><span class=nx>s</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>server</span><span class=p>{})</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// Register reflection service on gRPC server.
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>reflection</span><span class=p>.</span><span class=nf>Register</span><span class=p>(</span><span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>s</span><span class=p>.</span><span class=nf>Serve</span><span class=p>(</span><span class=nx>lis</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;failed to serve: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如果要简单运行，可以直接执行如下命令(环境变量PWD是内置的)。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ GOPATH=$GOROOT:$PWD go run server.go
+</span></span><span class=line><span class=cl>$ GOPATH=$GOROOT:$PWD go run client.go
+</span></span></code></pre></div><p>或者直接将两个文件进行编译。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go build client.go
+</span></span><span class=line><span class=cl>$ go build server.go
+</span></span></code></pre></div><p>因为前者引入了编译的过程，所以看起来运行的比较慢。</p><p>另外也可以参考 <a href=https://github.com/kelseyhightower/grpc-hello-service>GitHub - gRPC Hello Service</a> 以及 <a href=https://github.com/jergoo/go-grpc-example>GitHub - gRPC Examples</a>，后者提供了一系列的介绍，包括鉴权、拦截器、Trace 等。</p><a class=anchor id=拦截器-interceptor></a><h1>拦截器 Interceptor <a href=#%e6%8b%a6%e6%88%aa%e5%99%a8-interceptor aria-hidden=true>#</a></h1><p>可以在服务端接收到请求后，先对请求中的数据做一些处理后再转交给指定的服务处理并响应，常见的如权限校验、日志、接口调用延迟等，这里简单打印下客户端的 IP 地址。</p><a class=anchor id=获取ip></a><h2>获取IP <a href=#%e8%8e%b7%e5%8f%96ip aria-hidden=true>#</a></h2><p>gRPC 服务和客户端之间是通过 http2 进行交互，其中包含了客户端的地址信息，</p><p>在 gRPC 源码 <code>peer/peer.go</code> 中包含了创建的上下文信息，其中就记录的远端地址；而且在 gRPC 请求中默认都会含有 Context 值，这样就可以通过如下方法获取。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>getClietIP</span><span class=p>(</span><span class=nx>ctx</span> <span class=nx>context</span><span class=p>.</span><span class=nx>Context</span><span class=p>)</span> <span class=p>(</span><span class=kt>string</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>pr</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>peer</span><span class=p>.</span><span class=nf>FromContext</span><span class=p>(</span><span class=nx>ctx</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>!</span><span class=nx>ok</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=s>&#34;&#34;</span><span class=p>,</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Errorf</span><span class=p>(</span><span class=s>&#34;getClinetIP, invoke FromContext() failed&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>pr</span><span class=p>.</span><span class=nx>Addr</span> <span class=o>==</span> <span class=nx>net</span><span class=p>.</span><span class=nf>Addr</span><span class=p>(</span><span class=kc>nil</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=s>&#34;&#34;</span><span class=p>,</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Errorf</span><span class=p>(</span><span class=s>&#34;getClientIP, peer.Addr is nil&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>addSlice</span> <span class=o>:=</span> <span class=nx>strings</span><span class=p>.</span><span class=nf>Split</span><span class=p>(</span><span class=nx>pr</span><span class=p>.</span><span class=nx>Addr</span><span class=p>.</span><span class=nf>String</span><span class=p>(),</span> <span class=s>&#34;:&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nx>addSlice</span><span class=p>[</span><span class=mi>0</span><span class=p>],</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>注意：在使用 stream 方式时 context 值可以直接从 stream 中获取，也就是 <code>stream.Context()</code> 。</p><a class=anchor id=增加拦截器></a><h2>增加拦截器 <a href=#%e5%a2%9e%e5%8a%a0%e6%8b%a6%e6%88%aa%e5%99%a8 aria-hidden=true>#</a></h2><p>将服务端的代码修改为如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;net&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>pb</span> <span class=s>&#34;./proto/helloworld&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;golang.org/x/net/context&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;google.golang.org/grpc/peer&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;google.golang.org/grpc/reflection&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>const</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=nx>port</span> <span class=p>=</span> <span class=s>&#34;:50051&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// server is used to implement helloworld.GreeterServer.
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>type</span> <span class=nx>server</span> <span class=kd>struct</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// SayHello implements helloworld.GreeterServer
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=p>(</span><span class=nx>s</span> <span class=o>*</span><span class=nx>server</span><span class=p>)</span> <span class=nf>SayHello</span><span class=p>(</span><span class=nx>ctx</span> <span class=nx>context</span><span class=p>.</span><span class=nx>Context</span><span class=p>,</span> <span class=nx>in</span> <span class=o>*</span><span class=nx>pb</span><span class=p>.</span><span class=nx>HelloRequest</span><span class=p>)</span> <span class=p>(</span><span class=o>*</span><span class=nx>pb</span><span class=p>.</span><span class=nx>HelloReply</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=o>&amp;</span><span class=nx>pb</span><span class=p>.</span><span class=nx>HelloReply</span><span class=p>{</span><span class=nx>Message</span><span class=p>:</span> <span class=s>&#34;Hello &#34;</span> <span class=o>+</span> <span class=nx>in</span><span class=p>.</span><span class=nx>Name</span><span class=p>},</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>getClietIP</span><span class=p>(</span><span class=nx>ctx</span> <span class=nx>context</span><span class=p>.</span><span class=nx>Context</span><span class=p>)</span> <span class=p>(</span><span class=kt>string</span><span class=p>,</span> <span class=kt>error</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>pr</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>peer</span><span class=p>.</span><span class=nf>FromContext</span><span class=p>(</span><span class=nx>ctx</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>!</span><span class=nx>ok</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=s>&#34;&#34;</span><span class=p>,</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Errorf</span><span class=p>(</span><span class=s>&#34;getClinetIP, invoke FromContext() failed&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>pr</span><span class=p>.</span><span class=nx>Addr</span> <span class=o>==</span> <span class=nx>net</span><span class=p>.</span><span class=nf>Addr</span><span class=p>(</span><span class=kc>nil</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=s>&#34;&#34;</span><span class=p>,</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Errorf</span><span class=p>(</span><span class=s>&#34;getClientIP, peer.Addr is nil&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>pr</span><span class=p>.</span><span class=nx>Addr</span><span class=p>.</span><span class=nf>String</span><span class=p>(),</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>lis</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>net</span><span class=p>.</span><span class=nf>Listen</span><span class=p>(</span><span class=s>&#34;tcp&#34;</span><span class=p>,</span> <span class=nx>port</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;failed to listen: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>opts</span> <span class=p>[]</span><span class=nx>grpc</span><span class=p>.</span><span class=nx>ServerOption</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>// Register interceptor
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=kd>var</span> <span class=nx>interceptor</span> <span class=nx>grpc</span><span class=p>.</span><span class=nx>UnaryServerInterceptor</span>
+</span></span><span class=line><span class=cl>        <span class=nx>interceptor</span> <span class=p>=</span> <span class=kd>func</span><span class=p>(</span><span class=nx>ctx</span> <span class=nx>context</span><span class=p>.</span><span class=nx>Context</span><span class=p>,</span> <span class=nx>req</span> <span class=kd>interface</span><span class=p>{},</span> <span class=nx>info</span> <span class=o>*</span><span class=nx>grpc</span><span class=p>.</span><span class=nx>UnaryServerInfo</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>			<span class=nx>handler</span> <span class=nx>grpc</span><span class=p>.</span><span class=nx>UnaryHandler</span><span class=p>)</span> <span class=p>(</span><span class=nx>resp</span> <span class=kd>interface</span><span class=p>{},</span> <span class=nx>err</span> <span class=kt>error</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>cli</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nf>getClietIP</span><span class=p>(</span><span class=nx>ctx</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Failed to get client address&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Client address is&#34;</span><span class=p>,</span> <span class=nx>cli</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=nf>handler</span><span class=p>(</span><span class=nx>ctx</span><span class=p>,</span> <span class=nx>req</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>opts</span> <span class=p>=</span> <span class=nb>append</span><span class=p>(</span><span class=nx>opts</span><span class=p>,</span> <span class=nx>grpc</span><span class=p>.</span><span class=nf>UnaryInterceptor</span><span class=p>(</span><span class=nx>interceptor</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>s</span> <span class=o>:=</span> <span class=nx>grpc</span><span class=p>.</span><span class=nf>NewServer</span><span class=p>(</span><span class=nx>opts</span><span class=o>...</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>pb</span><span class=p>.</span><span class=nf>RegisterGreeterServer</span><span class=p>(</span><span class=nx>s</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>server</span><span class=p>{})</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// Register reflection service on gRPC server.
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>reflection</span><span class=p>.</span><span class=nf>Register</span><span class=p>(</span><span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>s</span><span class=p>.</span><span class=nf>Serve</span><span class=p>(</span><span class=nx>lis</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;failed to serve: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=stream></a><h1>Stream <a href=#stream aria-hidden=true>#</a></h1><p>普通的 gRPC 是直接返回一个定义的 HelloReply 对象，而流式响应可以通过 Send 方法返回多个 HelloReply 对象，对象流序列化后流式返回。</p><p>目录结构同上。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ mkdir proto/helloworld
+</span></span><span class=line><span class=cl>$ protoc -I proto proto/helloworld.proto --go_out=plugins=grpc:proto/helloworld
+</span></span></code></pre></div><p>其中 <code>helloworld.proto</code>、<code>client.go</code> 和 <code>server.go</code> 的代码为。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>syntax</span> <span class=p>=</span> <span class=s>&#34;proto3&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>package</span> <span class=nx>helloworld</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>service</span> <span class=nx>Math</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>rpc</span> <span class=nf>Max</span> <span class=p>(</span><span class=nx>stream</span> <span class=nx>Request</span><span class=p>)</span> <span class=nf>returns</span> <span class=p>(</span><span class=nx>stream</span> <span class=nx>Response</span><span class=p>)</span> <span class=p>{}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>message</span> <span class=nx>Request</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int32</span> <span class=nx>num</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>message</span> <span class=nx>Response</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>int32</span> <span class=nx>result</span> <span class=p>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;context&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;io&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;math/rand&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>pb</span> <span class=s>&#34;./proto/helloworld&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>rand</span><span class=p>.</span><span class=nf>Seed</span><span class=p>(</span><span class=nx>time</span><span class=p>.</span><span class=nf>Now</span><span class=p>().</span><span class=nf>Unix</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>conn</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>grpc</span><span class=p>.</span><span class=nf>Dial</span><span class=p>(</span><span class=s>&#34;:50005&#34;</span><span class=p>,</span> <span class=nx>grpc</span><span class=p>.</span><span class=nf>WithInsecure</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;can not connect with server %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>// create stream
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=nx>client</span> <span class=o>:=</span> <span class=nx>pb</span><span class=p>.</span><span class=nf>NewMathClient</span><span class=p>(</span><span class=nx>conn</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>stream</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>client</span><span class=p>.</span><span class=nf>Max</span><span class=p>(</span><span class=nx>context</span><span class=p>.</span><span class=nf>Background</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;openn stream error %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>max</span> <span class=kt>int32</span>
+</span></span><span class=line><span class=cl>        <span class=nx>ctx</span> <span class=o>:=</span> <span class=nx>stream</span><span class=p>.</span><span class=nf>Context</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>done</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=kt>bool</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>// first goroutine sends random increasing numbers to stream
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=c1>// and closes it after 10 iterations
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>1</span><span class=p>;</span> <span class=nx>i</span> <span class=o>&lt;=</span> <span class=mi>10</span><span class=p>;</span> <span class=nx>i</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=c1>// generate random nummber and send it to stream
+</span></span></span><span class=line><span class=cl><span class=c1></span>                        <span class=nx>rnd</span> <span class=o>:=</span> <span class=nb>int32</span><span class=p>(</span><span class=nx>rand</span><span class=p>.</span><span class=nf>Intn</span><span class=p>(</span><span class=nx>i</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>req</span> <span class=o>:=</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>Request</span><span class=p>{</span><span class=nx>Num</span><span class=p>:</span> <span class=nx>rnd</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>                        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>stream</span><span class=p>.</span><span class=nf>Send</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>req</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;can not send %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                        <span class=p>}</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;%d sent&#34;</span><span class=p>,</span> <span class=nx>req</span><span class=p>.</span><span class=nx>Num</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>time</span><span class=p>.</span><span class=nf>Sleep</span><span class=p>(</span><span class=nx>time</span><span class=p>.</span><span class=nx>Millisecond</span> <span class=o>*</span> <span class=mi>200</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>stream</span><span class=p>.</span><span class=nf>CloseSend</span><span class=p>();</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>// second goroutine receives data from stream
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=c1>// and saves result in max variable
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=c1>//
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=c1>// if stream is finished it closes done channel
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>resp</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>stream</span><span class=p>.</span><span class=nf>Recv</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>                        <span class=k>if</span> <span class=nx>err</span> <span class=o>==</span> <span class=nx>io</span><span class=p>.</span><span class=nx>EOF</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                                <span class=nb>close</span><span class=p>(</span><span class=nx>done</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                                <span class=k>return</span>
+</span></span><span class=line><span class=cl>                        <span class=p>}</span>
+</span></span><span class=line><span class=cl>                        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;can not receive %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                        <span class=p>}</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>max</span> <span class=p>=</span> <span class=nx>resp</span><span class=p>.</span><span class=nx>Result</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;new max %d received&#34;</span><span class=p>,</span> <span class=nx>max</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>// third goroutine closes done channel if context is done
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=o>&lt;-</span><span class=nx>ctx</span><span class=p>.</span><span class=nf>Done</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>ctx</span><span class=p>.</span><span class=nf>Err</span><span class=p>();</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=nb>close</span><span class=p>(</span><span class=nx>done</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=o>&lt;-</span><span class=nx>done</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;finished with max=%d&#34;</span><span class=p>,</span> <span class=nx>max</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;io&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;net&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>pb</span> <span class=s>&#34;./proto/helloworld&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=s>&#34;google.golang.org/grpc&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>server</span> <span class=kd>struct</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>s</span> <span class=o>*</span><span class=nx>server</span><span class=p>)</span> <span class=nf>Max</span><span class=p>(</span><span class=nx>srv</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>Math_MaxServer</span><span class=p>)</span> <span class=kt>error</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>log</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Start new math server&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=kd>var</span> <span class=nx>max</span> <span class=kt>int32</span>
+</span></span><span class=line><span class=cl>        <span class=nx>ctx</span> <span class=o>:=</span> <span class=nx>srv</span><span class=p>.</span><span class=nf>Context</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=c1>// exit if context is done or continue
+</span></span></span><span class=line><span class=cl><span class=c1></span>                <span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>case</span> <span class=o>&lt;-</span><span class=nx>ctx</span><span class=p>.</span><span class=nf>Done</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>                        <span class=k>return</span> <span class=nx>ctx</span><span class=p>.</span><span class=nf>Err</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>                <span class=k>default</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                <span class=c1>// receive data from stream
+</span></span></span><span class=line><span class=cl><span class=c1></span>                <span class=nx>req</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>srv</span><span class=p>.</span><span class=nf>Recv</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>==</span> <span class=nx>io</span><span class=p>.</span><span class=nx>EOF</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=c1>// return will close stream from server side
+</span></span></span><span class=line><span class=cl><span class=c1></span>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;exit&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                        <span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;receive error %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                        <span class=k>continue</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                <span class=c1>// continue if number reveived from stream less than max
+</span></span></span><span class=line><span class=cl><span class=c1></span>                <span class=k>if</span> <span class=nx>req</span><span class=p>.</span><span class=nx>Num</span> <span class=o>&lt;=</span> <span class=nx>max</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=k>continue</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                <span class=c1>// update max and send it to stream
+</span></span></span><span class=line><span class=cl><span class=c1></span>                <span class=nx>max</span> <span class=p>=</span> <span class=nx>req</span><span class=p>.</span><span class=nx>Num</span>
+</span></span><span class=line><span class=cl>                <span class=nx>resp</span> <span class=o>:=</span> <span class=nx>pb</span><span class=p>.</span><span class=nx>Response</span><span class=p>{</span><span class=nx>Result</span><span class=p>:</span> <span class=nx>max</span><span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>srv</span><span class=p>.</span><span class=nf>Send</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>resp</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                        <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;send error %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=p>}</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;send new max=%d&#34;</span><span class=p>,</span> <span class=nx>max</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>lis</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>net</span><span class=p>.</span><span class=nf>Listen</span><span class=p>(</span><span class=s>&#34;tcp&#34;</span><span class=p>,</span> <span class=s>&#34;:50005&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;failed to listen: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nx>s</span> <span class=o>:=</span> <span class=nx>grpc</span><span class=p>.</span><span class=nf>NewServer</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>pb</span><span class=p>.</span><span class=nf>RegisterMathServer</span><span class=p>(</span><span class=nx>s</span><span class=p>,</span> <span class=o>&amp;</span><span class=nx>server</span><span class=p>{})</span>
+</span></span><span class=line><span class=cl>        <span class=nx>reflection</span><span class=p>.</span><span class=nf>Register</span><span class=p>(</span><span class=nx>s</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>s</span><span class=p>.</span><span class=nf>Serve</span><span class=p>(</span><span class=nx>lis</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;failed to serve: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=负载均衡器></a><h1>负载均衡器 <a href=#%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1%e5%99%a8 aria-hidden=true>#</a></h1><p>这里每次的请求都会进行负载均衡，而非每个连接，也即是说，即使只有一个链接，请求仍然会在服务器间做负载均衡。</p><p>在 <a href=https://github.com/grpc/grpc/blob/master/doc/load-balancing.md>Load Balancing in gRPC</a> 中有关于 LB 的设计理念，以及一个相关的设计方案。</p><a class=anchor id=gateway></a><h1>GateWay <a href=#gateway aria-hidden=true>#</a></h1><p>在使用 gRPC 通讯的同时对外提供 REST-API 接口，其中的一个解决方案就是 <code>gRPC-gateway</code>，这是对 RPC 的扩展，实现 REST 给 RPC 的协议转换。</p><p><img alt="grpc gateway" src=images/grpc-gateway.png class="mx-auto d-block"></p><p>这是 protoc 的一个插件，它读取 gRPC 服务定义，并生成一个反向代理服务器，将 RESTful JSON API 转换为 gRPC，此服务器是根据 gRPC 定义中的自定义选项生成的。</p><a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>直接从 <a href=http://github.com/grpc-ecosystem/grpc-gateway>GitHub gRPC ecosystem</a> 下载代码，然后通过如下方式生成插件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+</span></span><span class=line><span class=cl>$ go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+</span></span></code></pre></div><a class=anchor id=示例></a><h2>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h2><p>同样有如下的目录结构。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>client.go
+</span></span><span class=line><span class=cl>server.go
+</span></span><span class=line><span class=cl>proto/
+</span></span><span class=line><span class=cl> |-helloworld.proto
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 生成proto/helloworld/helloworld.pb.go文件
+</span></span><span class=line><span class=cl>$ protoc -I proto -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+</span></span><span class=line><span class=cl>	--go_out=plugins=grpc:proto/helloworld proto/helloworld.proto
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 生成proto/helloworld/helloworld.pb.gw.go文件
+</span></span><span class=line><span class=cl>$ protoc -I proto -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+</span></span><span class=line><span class=cl>	--grpc-gateway_out=logtostderr=true:proto/helloworld proto/helloworld.proto
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 生成helloworld.swagger.json文件，非必须
+</span></span><span class=line><span class=cl>$ protoc -I proto -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+</span></span><span class=line><span class=cl>	--swagger_out=logtostderr=true:. proto/helloworld.proto
+</span></span></code></pre></div><a class=anchor id=其它></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h1><a class=anchor id=监听地址></a><h2>监听地址 <a href=#%e7%9b%91%e5%90%ac%e5%9c%b0%e5%9d%80 aria-hidden=true>#</a></h2><p>在调用 <code>net.Listen()</code> 时，如果通过 <code>:8080</code> 方式指定端口，那么可能会监听到 IPv6 地址上，如果要使用 IPv4 那么需要显示指定 <code>127.0.0.1:8080</code> 。</p><a class=anchor id=undefined></a><h2>undefined <a href=#undefined aria-hidden=true>#</a></h2><p>例如 <code>undefined: proto.ProtoPackageIsVersion2</code> ，一般是由于版本过低导致。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+</span></span></code></pre></div><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p><a href=https://github.com/grpc-ecosystem/awesome-grpc>Awesome gRPC</a> 一些比较经典的 gRPC 资源。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#http2>HTTP2</a><ul><li><a href=#http1x>HTTP/1.x</a></li><li><a href=#http2-1>HTTP/2</a></li></ul></li><li><a href=#grpc-简介>gRPC 简介</a><ul><li><a href=#安装-golang-版本-grpc>安装 GoLang 版本 gRPC</a></li><li><a href=#示例代码>示例代码</a></li></ul></li><li><a href=#拦截器-interceptor>拦截器 Interceptor</a><ul><li><a href=#获取ip>获取IP</a></li><li><a href=#增加拦截器>增加拦截器</a></li></ul></li><li><a href=#stream>Stream</a></li><li><a href=#负载均衡器>负载均衡器</a></li><li><a href=#gateway>GateWay</a><ul><li><a href=#安装>安装</a></li><li><a href=#示例>示例</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#监听地址>监听地址</a></li><li><a href=#undefined>undefined</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

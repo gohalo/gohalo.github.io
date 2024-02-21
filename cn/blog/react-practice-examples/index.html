@@ -1,0 +1,588 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>React 项目实战 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>React 项目实战</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2020-03-06</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/web/ role=button>web</a></div></div><hr><div class=content><a class=anchor id=准备环境></a><h1>准备环境 <a href=#%e5%87%86%e5%a4%87%e7%8e%af%e5%a2%83 aria-hidden=true>#</a></h1><p>在 React 社区提供了很多脚手架，这里使用官方推荐的 <code>create-react-app</code> 工具。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装脚手架
+</span></span><span class=line><span class=cl># npm install -g create-react-app
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 生成并运行项目
+</span></span><span class=line><span class=cl>$ create-react-app foobar
+</span></span><span class=line><span class=cl>$ cd foobar
+</span></span><span class=line><span class=cl>$ npm start
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 其它常见操作
+</span></span><span class=line><span class=cl>$ npm run build
+</span></span><span class=line><span class=cl>$ npm test
+</span></span><span class=line><span class=cl>$ npm run eject
+</span></span></code></pre></div><p>目录结构如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>pages/  页面
+</span></span></code></pre></div><p>服务端可以采用 <a href=https://www.npmjs.com/package/json-server>JSON Server</a> 模拟，</p><a class=anchor id=创建用户页面></a><h1>创建用户页面 <a href=#%e5%88%9b%e5%bb%ba%e7%94%a8%e6%88%b7%e9%a1%b5%e9%9d%a2 aria-hidden=true>#</a></h1><p>创建一个用来添加用户的页面，保存在 <code>src/pages/UserAdd.js</code> 文件中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>import React from &#39;react&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>class UserAdd extends React.Component {
+</span></span><span class=line><span class=cl>    render() {
+</span></span><span class=line><span class=cl>        return (
+</span></span><span class=line><span class=cl>            &lt;div&gt;User add page.&lt;/div&gt;
+</span></span><span class=line><span class=cl>        );
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>export default UserAdd;
+</span></span></code></pre></div><p>通过 <code>npm install --save-dev react-router-dom</code> 安装路由功能，这里使用的是 5.X 版本，使用其提供的路由组件来控制当前路由下页面应该渲染的组件，详细可以参考 <a href=/post/react-router.html>React Router</a> 中的介绍，修改后的 <code>src/index.js</code> 文件如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>import React from &#34;react&#34;;
+</span></span><span class=line><span class=cl>import ReactDOM from &#39;react-dom&#39;;
+</span></span><span class=line><span class=cl>import {
+</span></span><span class=line><span class=cl>    BrowserRouter as Router,
+</span></span><span class=line><span class=cl>    Switch,
+</span></span><span class=line><span class=cl>    Route,
+</span></span><span class=line><span class=cl>    Link
+</span></span><span class=line><span class=cl>} from &#34;react-router-dom&#34;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>import UserAdd from &#39;./pages/UserAdd&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>function Home() {
+</span></span><span class=line><span class=cl>    return (
+</span></span><span class=line><span class=cl>        &lt;div&gt;
+</span></span><span class=line><span class=cl>            &lt;header&gt;
+</span></span><span class=line><span class=cl>                &lt;h1&gt;Welcome&lt;/h1&gt;
+</span></span><span class=line><span class=cl>            &lt;/header&gt;
+</span></span><span class=line><span class=cl>            &lt;nav&gt;
+</span></span><span class=line><span class=cl>                &lt;ul&gt;
+</span></span><span class=line><span class=cl>                    &lt;li&gt;&lt;Link to=&#34;/user/add&#34;&gt;Add User&lt;/Link&gt;&lt;/li&gt;
+</span></span><span class=line><span class=cl>                &lt;/ul&gt;
+</span></span><span class=line><span class=cl>            &lt;/nav&gt;
+</span></span><span class=line><span class=cl>        &lt;/div&gt;
+</span></span><span class=line><span class=cl>    );
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>ReactDOM.render(
+</span></span><span class=line><span class=cl>    &lt;React.StrictMode&gt;
+</span></span><span class=line><span class=cl>        &lt;Router&gt;
+</span></span><span class=line><span class=cl>            &lt;div&gt;
+</span></span><span class=line><span class=cl>                &lt;Switch&gt;
+</span></span><span class=line><span class=cl>                    &lt;Route path=&#34;/&#34; exact&gt;&lt;Home /&gt;&lt;/Route&gt;
+</span></span><span class=line><span class=cl>                    &lt;Route path=&#34;/user/add&#34;&gt;&lt;UserAdd /&gt;&lt;/Route&gt;
+</span></span><span class=line><span class=cl>                &lt;/Switch&gt;
+</span></span><span class=line><span class=cl>            &lt;/div&gt;
+</span></span><span class=line><span class=cl>        &lt;/Router&gt;
+</span></span><span class=line><span class=cl>    &lt;/React.StrictMode&gt;,
+</span></span><span class=line><span class=cl>    document.getElementById(&#39;root&#39;)
+</span></span><span class=line><span class=cl>);
+</span></span></code></pre></div><p>点击可以直接看到具体的页面跳转。</p><a class=anchor id=发送-post-请求></a><h2>发送 POST 请求 <a href=#%e5%8f%91%e9%80%81-post-%e8%af%b7%e6%b1%82 aria-hidden=true>#</a></h2><p>接着继续修改添加用户界面，也就是向上述搭建的 http://localhost:3000/user 服务端发送 POST 请求。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>import React from &#39;react&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>class UserAdd extends React.Component {
+</span></span><span class=line><span class=cl>    constructor(props) {
+</span></span><span class=line><span class=cl>        super(props);
+</span></span><span class=line><span class=cl>        this.state = {
+</span></span><span class=line><span class=cl>            name: &#39;&#39;,
+</span></span><span class=line><span class=cl>            age: 0,
+</span></span><span class=line><span class=cl>            gender: &#39;male&#39;
+</span></span><span class=line><span class=cl>        };
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    handleValueChange(field, value, type=&#39;string&#39;) {
+</span></span><span class=line><span class=cl>        if(type === &#39;number&#39;){
+</span></span><span class=line><span class=cl>            value = + value;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>        this.setState({
+</span></span><span class=line><span class=cl>            [field]: value
+</span></span><span class=line><span class=cl>        });
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    handleSubmit(e){
+</span></span><span class=line><span class=cl>        e.preventDefault();
+</span></span><span class=line><span class=cl>        console.log(JSON.stringify(this.state));
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        const {name, age, gender} = this.state;
+</span></span><span class=line><span class=cl>        fetch(&#39;http://localhost:4040/user&#39;, {
+</span></span><span class=line><span class=cl>            method: &#39;post&#39;,
+</span></span><span class=line><span class=cl>            body: JSON.stringify({name, age, gender}),
+</span></span><span class=line><span class=cl>            headers: {&#39;Content-Type&#39;: &#39;application/json&#39;}
+</span></span><span class=line><span class=cl>        })
+</span></span><span class=line><span class=cl>        .then((res) =&gt; res.json())
+</span></span><span class=line><span class=cl>        .then((res) =&gt; {
+</span></span><span class=line><span class=cl>            console.log(res);
+</span></span><span class=line><span class=cl>            if (res.id) {
+</span></span><span class=line><span class=cl>                console.log(&#39;Add user successfully.&#39;);
+</span></span><span class=line><span class=cl>                this.setState({name: &#39;&#39;, age: 0, gender: &#39;&#39;});
+</span></span><span class=line><span class=cl>            } else {
+</span></span><span class=line><span class=cl>                console.log(&#39;Add user failed.&#39;);
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>        })
+</span></span><span class=line><span class=cl>        .catch((err) =&gt; console.error(err));
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    render() {
+</span></span><span class=line><span class=cl>        return (
+</span></span><span class=line><span class=cl>            &lt;div&gt;
+</span></span><span class=line><span class=cl>                &lt;header&gt;User add page.&lt;/header&gt;
+</span></span><span class=line><span class=cl>                &lt;main&gt;
+</span></span><span class=line><span class=cl>                    &lt;form onSubmit={(e) =&gt; this.handleSubmit(e)}&gt;
+</span></span><span class=line><span class=cl>                        &lt;label&gt;UserName:&lt;/label&gt;
+</span></span><span class=line><span class=cl>                        &lt;input type=&#34;text&#34; value={this.state.name}
+</span></span><span class=line><span class=cl>                            onChange={(e) =&gt; this.handleValueChange(&#39;name&#39;, e.target.value)} /&gt;
+</span></span><span class=line><span class=cl>                        &lt;br /&gt;
+</span></span><span class=line><span class=cl>                        &lt;label&gt;Age:&lt;/label&gt;
+</span></span><span class=line><span class=cl>                        &lt;input type=&#34;number&#34; value={this.state.age || &#39;&#39;}
+</span></span><span class=line><span class=cl>                            onChange={(e) =&gt; this.handleValueChange(&#39;age&#39;, e.target.value, &#39;number&#39;)} /&gt;
+</span></span><span class=line><span class=cl>                        &lt;br /&gt;
+</span></span><span class=line><span class=cl>                        &lt;label&gt;Gender:&lt;/label&gt;
+</span></span><span class=line><span class=cl>                        &lt;select value={this.state.gender}
+</span></span><span class=line><span class=cl>                            onChange={(e) =&gt; this.handleValueChange(&#39;gender&#39;, e.target.value)}&gt;
+</span></span><span class=line><span class=cl>                            &lt;option value=&#34;&#34;&gt;Choose&lt;/option&gt;
+</span></span><span class=line><span class=cl>                            &lt;option value=&#34;male&#34;&gt;Male&lt;/option&gt;
+</span></span><span class=line><span class=cl>                            &lt;option value=&#34;female&#34;&gt;Female&lt;/option&gt;
+</span></span><span class=line><span class=cl>                        &lt;/select&gt;
+</span></span><span class=line><span class=cl>                        &lt;br /&gt;
+</span></span><span class=line><span class=cl>                        &lt;br /&gt;
+</span></span><span class=line><span class=cl>                        &lt;input type=&#34;submit&#34; value=&#34;Submit&#34; /&gt;
+</span></span><span class=line><span class=cl>                    &lt;/form&gt;
+</span></span><span class=line><span class=cl>                &lt;/main&gt;
+</span></span><span class=line><span class=cl>            &lt;/div&gt;
+</span></span><span class=line><span class=cl>        );
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>export default UserAdd;
+</span></span></code></pre></div><p>创建表单时，因为 React 是单向数据流，对于绑定值就需要通过一个 <code>onChange</code> 方法来更新值。在提交表单时，可以用 ajax、表单提交、fetch 方法，其中，表单提交会导致页面跳转，不建议使用，这里使用较为先进的 fetch 方法。</p><a class=anchor id=表单验证></a><h1>表单验证 <a href=#%e8%a1%a8%e5%8d%95%e9%aa%8c%e8%af%81 aria-hidden=true>#</a></h1><p>也就是验证表单当前字段是否合法，如果有效则显示数据，否则显示错误状态，为了方便管理，修改组件的状态信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>import React from &#39;react&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>class UserAdd extends React.Component {
+</span></span><span class=line><span class=cl>    constructor(props) {
+</span></span><span class=line><span class=cl>        super(props);
+</span></span><span class=line><span class=cl>        this.state = {
+</span></span><span class=line><span class=cl>            form: {
+</span></span><span class=line><span class=cl>                name: {
+</span></span><span class=line><span class=cl>                    valid: false,
+</span></span><span class=line><span class=cl>                    value: &#39;&#39;,
+</span></span><span class=line><span class=cl>                    error: &#39;&#39;
+</span></span><span class=line><span class=cl>                },
+</span></span><span class=line><span class=cl>                age: {
+</span></span><span class=line><span class=cl>                    valid: false,
+</span></span><span class=line><span class=cl>                    value: 0,
+</span></span><span class=line><span class=cl>                    error: &#39;&#39;
+</span></span><span class=line><span class=cl>                },
+</span></span><span class=line><span class=cl>                gender: {
+</span></span><span class=line><span class=cl>                    valid: false,
+</span></span><span class=line><span class=cl>                    value: &#39;&#39;,
+</span></span><span class=line><span class=cl>                    error: &#39;&#39;
+</span></span><span class=line><span class=cl>                }
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>        };
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    handleValueChange(field, value, type=&#39;string&#39;) {
+</span></span><span class=line><span class=cl>        if(type === &#39;number&#39;){
+</span></span><span class=line><span class=cl>            value = + value;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        const {form} = this.state;
+</span></span><span class=line><span class=cl>        const newObj = {value, valid: true, error: &#39;&#39;};
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        switch(field) {
+</span></span><span class=line><span class=cl>            case &#39;name&#39;: {
+</span></span><span class=line><span class=cl>                if (value.length &gt;= 5) {
+</span></span><span class=line><span class=cl>                    newObj.error = &#39;Length of username should less than 4 bytes.&#39;;
+</span></span><span class=line><span class=cl>                    newObj.valid = false;
+</span></span><span class=line><span class=cl>                } else if (value.length === 0) {
+</span></span><span class=line><span class=cl>                    newObj.error = &#39;Please input the username.&#39;;
+</span></span><span class=line><span class=cl>                    newObj.valid = false;
+</span></span><span class=line><span class=cl>                }
+</span></span><span class=line><span class=cl>                break;
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>            case &#39;age&#39;: {
+</span></span><span class=line><span class=cl>                if (value &gt; 100 || value &lt;= 0 || !value) {
+</span></span><span class=line><span class=cl>                    newObj.error = &#39;Age should between 1 and 100.&#39;;
+</span></span><span class=line><span class=cl>                    newObj.valid = false;
+</span></span><span class=line><span class=cl>                }
+</span></span><span class=line><span class=cl>                break;
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>            case &#39;gender&#39;: {
+</span></span><span class=line><span class=cl>                if (!value) {
+</span></span><span class=line><span class=cl>                    newObj.error = &#39;Please choose the gender.&#39;;
+</span></span><span class=line><span class=cl>                    newObj.valid = false;
+</span></span><span class=line><span class=cl>                }
+</span></span><span class=line><span class=cl>                break;
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>            default: {
+</span></span><span class=line><span class=cl>                console.log(&#34;Invalid field&#34;);
+</span></span><span class=line><span class=cl>                return;
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        this.setState({
+</span></span><span class=line><span class=cl>            form: {
+</span></span><span class=line><span class=cl>                ...form,
+</span></span><span class=line><span class=cl>                [field]: newObj
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>        });
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    handleSubmit(e){
+</span></span><span class=line><span class=cl>        e.preventDefault();
+</span></span><span class=line><span class=cl>        console.log(JSON.stringify(this.state));
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        const {form: {name, age, gender}} = this.state;
+</span></span><span class=line><span class=cl>        if (!name.valid || !age.valid || !gender.valid) {
+</span></span><span class=line><span class=cl>            console.log(&#39;Please input the correct message.&#39;);
+</span></span><span class=line><span class=cl>            return;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        fetch(&#39;http://localhost:4040/user&#39;, {
+</span></span><span class=line><span class=cl>            method: &#39;post&#39;,
+</span></span><span class=line><span class=cl>            body: JSON.stringify({
+</span></span><span class=line><span class=cl>                name: name.value,
+</span></span><span class=line><span class=cl>                age: age.value,
+</span></span><span class=line><span class=cl>                gender: gender.value
+</span></span><span class=line><span class=cl>            }),
+</span></span><span class=line><span class=cl>            headers: {&#39;Content-Type&#39;: &#39;application/json&#39;}
+</span></span><span class=line><span class=cl>        })
+</span></span><span class=line><span class=cl>        .then((res) =&gt; res.json())
+</span></span><span class=line><span class=cl>        .then((res) =&gt; {
+</span></span><span class=line><span class=cl>            console.log(res);
+</span></span><span class=line><span class=cl>            if (res.id) {
+</span></span><span class=line><span class=cl>                console.log(&#39;Add user successfully.&#39;);
+</span></span><span class=line><span class=cl>                this.setState({name: &#39;&#39;, age: 0, gender: &#39;&#39;});
+</span></span><span class=line><span class=cl>            } else {
+</span></span><span class=line><span class=cl>                console.log(&#39;Add user failed.&#39;);
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>        })
+</span></span><span class=line><span class=cl>        .catch((err) =&gt; console.error(err));
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    render() {
+</span></span><span class=line><span class=cl>        const {form: {name, age, gender}} = this.state;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        return (
+</span></span><span class=line><span class=cl>            &lt;div&gt;
+</span></span><span class=line><span class=cl>                &lt;header&gt;User add page.&lt;/header&gt;
+</span></span><span class=line><span class=cl>                &lt;main&gt;
+</span></span><span class=line><span class=cl>                     &lt;form onSubmit={(e) =&gt; this.handleSubmit(e)}&gt;
+</span></span><span class=line><span class=cl>                         &lt;label&gt;UserName:&lt;/label&gt;
+</span></span><span class=line><span class=cl>                         &lt;input type=&#34;text&#34; value={name.value}
+</span></span><span class=line><span class=cl>                             onChange={(e) =&gt; this.handleValueChange(&#39;name&#39;, e.target.value)} /&gt;
+</span></span><span class=line><span class=cl>                         {!name.valid &amp;&amp; &lt;span&gt;{name.error}&lt;/span&gt;}
+</span></span><span class=line><span class=cl>                         &lt;br /&gt;
+</span></span><span class=line><span class=cl>                         &lt;label&gt;Age:&lt;/label&gt;
+</span></span><span class=line><span class=cl>                         &lt;input type=&#34;number&#34; value={age.value || &#39;&#39;}
+</span></span><span class=line><span class=cl>                             onChange={(e) =&gt; this.handleValueChange(&#39;age&#39;, e.target.value, &#39;number&#39;)} /&gt;
+</span></span><span class=line><span class=cl>                         {!age.valid &amp;&amp; &lt;span&gt;{age.error}&lt;/span&gt;}
+</span></span><span class=line><span class=cl>                         &lt;br /&gt;
+</span></span><span class=line><span class=cl>                         &lt;label&gt;Gender:&lt;/label&gt;
+</span></span><span class=line><span class=cl>                         &lt;select value={gender.value}
+</span></span><span class=line><span class=cl>                             onChange={(e) =&gt; this.handleValueChange(&#39;gender&#39;, e.target.value)}&gt;
+</span></span><span class=line><span class=cl>                             &lt;option value=&#34;&#34;&gt;Choose&lt;/option&gt;
+</span></span><span class=line><span class=cl>                             &lt;option value=&#34;male&#34;&gt;Male&lt;/option&gt;
+</span></span><span class=line><span class=cl>                             &lt;option value=&#34;female&#34;&gt;Female&lt;/option&gt;
+</span></span><span class=line><span class=cl>                         &lt;/select&gt;
+</span></span><span class=line><span class=cl>                         {!gender.valid &amp;&amp; &lt;span&gt;{gender.error}&lt;/span&gt;}
+</span></span><span class=line><span class=cl>                         &lt;br /&gt;
+</span></span><span class=line><span class=cl>                         &lt;br /&gt;
+</span></span><span class=line><span class=cl>                         &lt;input type=&#34;submit&#34; value=&#34;Submit&#34; /&gt;
+</span></span><span class=line><span class=cl>                     &lt;/form&gt;
+</span></span><span class=line><span class=cl>                &lt;/main&gt;
+</span></span><span class=line><span class=cl>            &lt;/div&gt;
+</span></span><span class=line><span class=cl>        );
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>export default UserAdd;
+</span></span></code></pre></div><a class=anchor id=高级组件></a><h1>高级组件 <a href=#%e9%ab%98%e7%ba%a7%e7%bb%84%e4%bb%b6 aria-hidden=true>#</a></h1><p>所谓的高阶组件就是以一个组件作为入参，并返回组件的函数，例如，表单提交无非就是默认值、校验规则、错误信息，那么就可以将其封装为一个通用的组件。</p><p>创建一个 <code>src/utils/formProvider.js</code> 文件，作为高级组件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>import React from &#39;react&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>function formProvider (fields) {
+</span></span><span class=line><span class=cl>    return function(Comp) {
+</span></span><span class=line><span class=cl>        const initialFormState = {};
+</span></span><span class=line><span class=cl>        for(const key in fields){
+</span></span><span class=line><span class=cl>            initialFormState[key] = {
+</span></span><span class=line><span class=cl>                value: fields[key].defaultValue,
+</span></span><span class=line><span class=cl>                error: &#39;&#39;
+</span></span><span class=line><span class=cl>            };
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>        class FormComponent extends React.Component {
+</span></span><span class=line><span class=cl>            constructor(props) {
+</span></span><span class=line><span class=cl>                super(props);
+</span></span><span class=line><span class=cl>                this.state = {
+</span></span><span class=line><span class=cl>                     form: initialFormState,
+</span></span><span class=line><span class=cl>                     formValid: false
+</span></span><span class=line><span class=cl>                };
+</span></span><span class=line><span class=cl>                this.handleValueChange = this.handleValueChange.bind(this);
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>            
+</span></span><span class=line><span class=cl>            handleValueChange(fieldName, value){
+</span></span><span class=line><span class=cl>                const { form } = this.state;
+</span></span><span class=line><span class=cl>                const newFieldState = {value, valid: true, error: &#39;&#39;};
+</span></span><span class=line><span class=cl>                const fieldRules = fields[fieldName].rules;
+</span></span><span class=line><span class=cl>                
+</span></span><span class=line><span class=cl>                for(let i = 0; i &lt; fieldRules.length; i++){
+</span></span><span class=line><span class=cl>                    const {pattern, error} = fieldRules[i];
+</span></span><span class=line><span class=cl>                    let valid = false;
+</span></span><span class=line><span class=cl>                    if(typeof pattern === &#39;function&#39;) {
+</span></span><span class=line><span class=cl>                        valid = pattern(value);
+</span></span><span class=line><span class=cl>                    } else {
+</span></span><span class=line><span class=cl>                        valid = pattern.test(value);
+</span></span><span class=line><span class=cl>                    }
+</span></span><span class=line><span class=cl>            
+</span></span><span class=line><span class=cl>                    if(!valid){
+</span></span><span class=line><span class=cl>                        newFieldState.valid = false;
+</span></span><span class=line><span class=cl>                        newFieldState.error = error;
+</span></span><span class=line><span class=cl>                        break;
+</span></span><span class=line><span class=cl>                    }
+</span></span><span class=line><span class=cl>                }
+</span></span><span class=line><span class=cl>            
+</span></span><span class=line><span class=cl>                const newForm = {...form, [fieldName]: newFieldState};
+</span></span><span class=line><span class=cl>                const formValid = Object.values(newForm).every(f =&gt; f.valid);
+</span></span><span class=line><span class=cl>                this.setState({
+</span></span><span class=line><span class=cl>                    form: newForm,
+</span></span><span class=line><span class=cl>                    formValid
+</span></span><span class=line><span class=cl>                });
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>            
+</span></span><span class=line><span class=cl>            render(){
+</span></span><span class=line><span class=cl>                const { form, formValid } = this.state;
+</span></span><span class=line><span class=cl>                return (
+</span></span><span class=line><span class=cl>                    &lt;Comp
+</span></span><span class=line><span class=cl>                        {...this.props}
+</span></span><span class=line><span class=cl>                        form={form}
+</span></span><span class=line><span class=cl>                        formValid={formValid}
+</span></span><span class=line><span class=cl>                        onFormChange={this.handleValueChange}
+</span></span><span class=line><span class=cl>                    /&gt;
+</span></span><span class=line><span class=cl>                );
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>        return FormComponent;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>export default formProvider;
+</span></span></code></pre></div><p>对应的 <code>src/pages/UserAdd.js</code> 文件也要作相应的修改。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>import React from &#39;react&#39;;
+</span></span><span class=line><span class=cl>import formProvider from &#39;../utils/formProvider&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>class UserAdd extends React.Component {
+</span></span><span class=line><span class=cl>    handleSubmit(e){
+</span></span><span class=line><span class=cl>        e.preventDefault();
+</span></span><span class=line><span class=cl>        const { form: { name, age, gender }, formValid} = this.props;
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>        if (!formValid) {
+</span></span><span class=line><span class=cl>            console.log(&#39;Please input the correct message.&#39;);
+</span></span><span class=line><span class=cl>            return;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>        fetch(&#39;http://localhost:4040/user&#39;, {
+</span></span><span class=line><span class=cl>            method: &#39;post&#39;,
+</span></span><span class=line><span class=cl>            body: JSON.stringify({
+</span></span><span class=line><span class=cl>                name: name.value,
+</span></span><span class=line><span class=cl>                age: age.value,
+</span></span><span class=line><span class=cl>                gender: gender.value
+</span></span><span class=line><span class=cl>            }),
+</span></span><span class=line><span class=cl>            headers: {&#39;Content-Type&#39;: &#39;application/json&#39;}
+</span></span><span class=line><span class=cl>        })
+</span></span><span class=line><span class=cl>        .then((res) =&gt; res.json())
+</span></span><span class=line><span class=cl>        .then((res) =&gt; {
+</span></span><span class=line><span class=cl>            console.log(res);
+</span></span><span class=line><span class=cl>            if (res.id) {
+</span></span><span class=line><span class=cl>                console.log(&#39;Add user successfully.&#39;);
+</span></span><span class=line><span class=cl>                this.setState({name: &#39;&#39;, age: 0, gender: &#39;&#39;});
+</span></span><span class=line><span class=cl>            } else {
+</span></span><span class=line><span class=cl>                console.log(&#39;Add user failed.&#39;);
+</span></span><span class=line><span class=cl>            }
+</span></span><span class=line><span class=cl>        })
+</span></span><span class=line><span class=cl>        .catch((err) =&gt; console.error(err));
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    render() {
+</span></span><span class=line><span class=cl>        const {form: {name, age, gender}, onFormChange} = this.props;
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>        return (
+</span></span><span class=line><span class=cl>            &lt;div&gt;
+</span></span><span class=line><span class=cl>                &lt;header&gt;User add page.&lt;/header&gt;
+</span></span><span class=line><span class=cl>                &lt;main&gt;
+</span></span><span class=line><span class=cl>                &lt;form onSubmit={(e) =&gt; this.handleSubmit(e)}&gt;
+</span></span><span class=line><span class=cl>                    &lt;label&gt;UserName:&lt;/label&gt;
+</span></span><span class=line><span class=cl>                    &lt;input type=&#34;text&#34; value={name.value}
+</span></span><span class=line><span class=cl>                            onChange={(e) =&gt; onFormChange(&#39;name&#39;, e.target.value)} /&gt;
+</span></span><span class=line><span class=cl>                    {!name.valid &amp;&amp; &lt;span&gt;{name.error}&lt;/span&gt;}
+</span></span><span class=line><span class=cl>                    &lt;br /&gt;
+</span></span><span class=line><span class=cl>                    &lt;label&gt;Age:&lt;/label&gt;
+</span></span><span class=line><span class=cl>                    &lt;input type=&#34;number&#34; value={age.value || &#39;&#39;}
+</span></span><span class=line><span class=cl>                            onChange={(e) =&gt; onFormChange(&#39;age&#39;, e.target.value, &#39;number&#39;)} /&gt;
+</span></span><span class=line><span class=cl>                    {!age.valid &amp;&amp; &lt;span&gt;{age.error}&lt;/span&gt;}
+</span></span><span class=line><span class=cl>                    &lt;br /&gt;
+</span></span><span class=line><span class=cl>                    &lt;label&gt;Gender:&lt;/label&gt;
+</span></span><span class=line><span class=cl>                    &lt;select value={gender.value}
+</span></span><span class=line><span class=cl>                            onChange={(e) =&gt; onFormChange(&#39;gender&#39;, e.target.value)}&gt;
+</span></span><span class=line><span class=cl>                        &lt;option value=&#34;&#34;&gt;Choose&lt;/option&gt;
+</span></span><span class=line><span class=cl>                        &lt;option value=&#34;male&#34;&gt;Male&lt;/option&gt;
+</span></span><span class=line><span class=cl>                        &lt;option value=&#34;female&#34;&gt;Female&lt;/option&gt;
+</span></span><span class=line><span class=cl>                    &lt;/select&gt;
+</span></span><span class=line><span class=cl>                    {!gender.valid &amp;&amp; &lt;span&gt;{gender.error}&lt;/span&gt;}
+</span></span><span class=line><span class=cl>                    &lt;br /&gt;
+</span></span><span class=line><span class=cl>                    &lt;br /&gt;
+</span></span><span class=line><span class=cl>                    &lt;input type=&#34;submit&#34; value=&#34;Submit&#34; /&gt;
+</span></span><span class=line><span class=cl>                &lt;/form&gt;
+</span></span><span class=line><span class=cl>                &lt;/main&gt;
+</span></span><span class=line><span class=cl>            &lt;/div&gt;
+</span></span><span class=line><span class=cl>        );
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>UserAdd = formProvider({
+</span></span><span class=line><span class=cl>    name: {
+</span></span><span class=line><span class=cl>        defaultValue: &#39;&#39;,
+</span></span><span class=line><span class=cl>        rules: [{
+</span></span><span class=line><span class=cl>            pattern: function(value) {
+</span></span><span class=line><span class=cl>                return value.length &gt; 0;
+</span></span><span class=line><span class=cl>            },
+</span></span><span class=line><span class=cl>            error: &#39;Please input username&#39;
+</span></span><span class=line><span class=cl>        }, {
+</span></span><span class=line><span class=cl>            pattern: /^.{1,4}$/,
+</span></span><span class=line><span class=cl>            error: &#39;Length of username should less than 4 bytes.&#39;
+</span></span><span class=line><span class=cl>        }]
+</span></span><span class=line><span class=cl>    },
+</span></span><span class=line><span class=cl>    age: {
+</span></span><span class=line><span class=cl>        defaultValue: 0,
+</span></span><span class=line><span class=cl>        rules: [{
+</span></span><span class=line><span class=cl>            pattern: function(value) {
+</span></span><span class=line><span class=cl>                return value &gt;= 1 &amp;&amp; value &lt;= 100;
+</span></span><span class=line><span class=cl>            },
+</span></span><span class=line><span class=cl>            error: &#39;Age should between 1 and 100.&#39;
+</span></span><span class=line><span class=cl>        }]
+</span></span><span class=line><span class=cl>    },
+</span></span><span class=line><span class=cl>    gender: {
+</span></span><span class=line><span class=cl>        defaultValue: &#39;&#39;,
+</span></span><span class=line><span class=cl>        rules: [{
+</span></span><span class=line><span class=cl>            pattern: function(value) {
+</span></span><span class=line><span class=cl>                return !!value;
+</span></span><span class=line><span class=cl>            },
+</span></span><span class=line><span class=cl>            error: &#39;Please choose the gender.&#39;
+</span></span><span class=line><span class=cl>        }]
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>})(UserAdd)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>export default UserAdd;
+</span></span></code></pre></div><a class=anchor id=表单控件组件></a><h2>表单控件组件 <a href=#%e8%a1%a8%e5%8d%95%e6%8e%a7%e4%bb%b6%e7%bb%84%e4%bb%b6 aria-hidden=true>#</a></h2><p>在 <code>UserAdd.js</code> 的 <code>render()</code> 函数中有很多的重复代码，每个表单控件都包含 label、控件元素、控制显示的 span 元素。所以，可以封装一个 <code>FormItem</code> 组件，新建 <code>src/components/FormItem.js</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>import React from &#39;react&#39;;
+</span></span><span class=line><span class=cl> 
+</span></span><span class=line><span class=cl>class FormItem extends React.Component {
+</span></span><span class=line><span class=cl>    render () {
+</span></span><span class=line><span class=cl>        const {label, children, valid, error} = this.props;
+</span></span><span class=line><span class=cl>        return (
+</span></span><span class=line><span class=cl>            &lt;div&gt;
+</span></span><span class=line><span class=cl>                &lt;label&gt;{label}&lt;/label&gt;
+</span></span><span class=line><span class=cl>                {children}
+</span></span><span class=line><span class=cl>                {!valid &amp;&amp; &lt;span&gt;{error}&lt;/span&gt;}
+</span></span><span class=line><span class=cl>            &lt;/div&gt;
+</span></span><span class=line><span class=cl>        );
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>export default FormItem;
+</span></span></code></pre></div><p>对应的表单渲染修改为如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&lt;form onSubmit={(e) =&gt; this.handleSubmit(e)}&gt;
+</span></span><span class=line><span class=cl>    &lt;FormItem label=&#34;UserName:&#34; valid={name.valid} error={name.error}&gt;
+</span></span><span class=line><span class=cl>        &lt;input type=&#34;text&#34; value={name.value}
+</span></span><span class=line><span class=cl>            onChange={(e) =&gt; onFormChange(&#39;name&#39;, e.target.value)} /&gt;
+</span></span><span class=line><span class=cl>    &lt;/FormItem&gt;
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    &lt;FormItem label=&#34;Age:&#34; valid={age.valid} error={age.error}&gt;
+</span></span><span class=line><span class=cl>        &lt;input type=&#34;number&#34; value={age.value || &#39;&#39;}
+</span></span><span class=line><span class=cl>            onChange={(e) =&gt; onFormChange(&#39;age&#39;, e.target.value, &#39;number&#39;)} /&gt;
+</span></span><span class=line><span class=cl>    &lt;/FormItem&gt;
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    &lt;FormItem label=&#34;Gender:&#34; valid={age.valid} error={age.error}&gt;
+</span></span><span class=line><span class=cl>        &lt;select value={gender.value}
+</span></span><span class=line><span class=cl>            onChange={(e) =&gt; onFormChange(&#39;gender&#39;, e.target.value)}&gt;
+</span></span><span class=line><span class=cl>            &lt;option value=&#34;&#34;&gt;Choose&lt;/option&gt;
+</span></span><span class=line><span class=cl>            &lt;option value=&#34;male&#34;&gt;Male&lt;/option&gt;
+</span></span><span class=line><span class=cl>            &lt;option value=&#34;female&#34;&gt;Female&lt;/option&gt;
+</span></span><span class=line><span class=cl>        &lt;/select&gt;
+</span></span><span class=line><span class=cl>    &lt;/FormItem&gt;
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    &lt;br /&gt;
+</span></span><span class=line><span class=cl>    &lt;input type=&#34;submit&#34; value=&#34;Submit&#34; /&gt;
+</span></span><span class=line><span class=cl>&lt;/form&gt;
+</span></span></code></pre></div><a class=anchor id=用户列表></a><h1>用户列表 <a href=#%e7%94%a8%e6%88%b7%e5%88%97%e8%a1%a8 aria-hidden=true>#</a></h1><p>新建 <code>src/pages/UserList.js</code> 文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>import React from &#39;react&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>class UserList extends React.Component {
+</span></span><span class=line><span class=cl>    constructor (props) {
+</span></span><span class=line><span class=cl>        super(props);
+</span></span><span class=line><span class=cl>        this.state = {
+</span></span><span class=line><span class=cl>            userList: []
+</span></span><span class=line><span class=cl>        };
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    componentDidMount() {
+</span></span><span class=line><span class=cl>        fetch(&#39;http://localhost:4040/user&#39;)
+</span></span><span class=line><span class=cl>        .then(res =&gt; res.json())
+</span></span><span class=line><span class=cl>        .then(res =&gt; {
+</span></span><span class=line><span class=cl>            this.setState({
+</span></span><span class=line><span class=cl>                userList: res
+</span></span><span class=line><span class=cl>            });
+</span></span><span class=line><span class=cl>        });
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    render() {
+</span></span><span class=line><span class=cl>        const { userList } = this.state;
+</span></span><span class=line><span class=cl>        return (
+</span></span><span class=line><span class=cl>            &lt;div&gt;
+</span></span><span class=line><span class=cl>                &lt;header&gt;&lt;h1&gt;User List&lt;/h1&gt;&lt;/header&gt;
+</span></span><span class=line><span class=cl>                &lt;main&gt;
+</span></span><span class=line><span class=cl>                    &lt;table&gt;
+</span></span><span class=line><span class=cl>                        &lt;thead&gt;
+</span></span><span class=line><span class=cl>                            &lt;tr&gt;
+</span></span><span class=line><span class=cl>                            &lt;th&gt;UID&lt;/th&gt;
+</span></span><span class=line><span class=cl>                            &lt;th&gt;UserName&lt;/th&gt;
+</span></span><span class=line><span class=cl>                            &lt;th&gt;Gender&lt;/th&gt;
+</span></span><span class=line><span class=cl>                            &lt;th&gt;Age&lt;/th&gt;
+</span></span><span class=line><span class=cl>                            &lt;/tr&gt;
+</span></span><span class=line><span class=cl>                        &lt;/thead&gt;
+</span></span><span class=line><span class=cl>                    &lt;tbody&gt;
+</span></span><span class=line><span class=cl>                    {
+</span></span><span class=line><span class=cl>                        userList.map((user) =&gt; {
+</span></span><span class=line><span class=cl>                            return (
+</span></span><span class=line><span class=cl>                                &lt;tr key={user.id}&gt;
+</span></span><span class=line><span class=cl>                                    &lt;td&gt;{user.id}&lt;/td&gt;
+</span></span><span class=line><span class=cl>                                    &lt;td&gt;{user.name}&lt;/td&gt;
+</span></span><span class=line><span class=cl>                                    &lt;td&gt;{user.gender}&lt;/td&gt;
+</span></span><span class=line><span class=cl>                                    &lt;td&gt;{user.age}&lt;/td&gt;
+</span></span><span class=line><span class=cl>                                &lt;/tr&gt;
+</span></span><span class=line><span class=cl>                            );
+</span></span><span class=line><span class=cl>                        })
+</span></span><span class=line><span class=cl>                    }
+</span></span><span class=line><span class=cl>                    &lt;/tbody&gt;
+</span></span><span class=line><span class=cl>                    &lt;/table&gt;
+</span></span><span class=line><span class=cl>                &lt;/main&gt;
+</span></span><span class=line><span class=cl>            &lt;/div&gt;
+</span></span><span class=line><span class=cl>        );
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>export default UserList;
+</span></span></code></pre></div><p>如果在添加完用户之后跳转到列表，可以通过 <code>this.context.router.push('/user/list');</code> 执行。</p><a class=anchor id=布局组件></a><h1>布局组件 <a href=#%e5%b8%83%e5%b1%80%e7%bb%84%e4%bb%b6 aria-hidden=true>#</a></h1><p>目前页面大部分都是有相同的 Header 以及 Footer ，只是中间部分不同，所以，完全可以用组件化来解决，新建 <code>src/layouts/HomeLayout.js</code> 文件如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>import React from &#39;react&#39;;
+</span></span><span class=line><span class=cl> 
+</span></span><span class=line><span class=cl>class HomeLayout extends React.Component {
+</span></span><span class=line><span class=cl>    render() {
+</span></span><span class=line><span class=cl>        const { title, children } = this.props;
+</span></span><span class=line><span class=cl>        return (
+</span></span><span class=line><span class=cl>            &lt;div&gt;
+</span></span><span class=line><span class=cl>                &lt;header&gt;
+</span></span><span class=line><span class=cl>                    &lt;h1&gt;
+</span></span><span class=line><span class=cl>                        {title}
+</span></span><span class=line><span class=cl>                    &lt;/h1&gt;
+</span></span><span class=line><span class=cl>                &lt;/header&gt;
+</span></span><span class=line><span class=cl>                &lt;main&gt;
+</span></span><span class=line><span class=cl>                    {children}
+</span></span><span class=line><span class=cl>                &lt;/main&gt;
+</span></span><span class=line><span class=cl>            &lt;/div&gt;
+</span></span><span class=line><span class=cl>        );
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>export default HomeLayout;
+</span></span></code></pre></div><p>然后可以类似如下方式使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&lt;HomeLayout title=&#34;Welcome&#34;&gt;
+</span></span><span class=line><span class=cl>    &lt;div&gt;... ...&lt;/div&gt;
+</span></span><span class=line><span class=cl>&lt;/HomeLayout&gt;
+</span></span></code></pre></div><p>其中的 <code>&lt;div>... ...&lt;/div></code> 内容就会作为 <code>props.children</code> 传入到布局组件中，然后可以修改主页面、用户添加页面、用户列表页面。</p><a class=anchor id=添加-antd></a><h1>添加 Antd <a href=#%e6%b7%bb%e5%8a%a0-antd aria-hidden=true>#</a></h1><p>通过 <code>npm install antd --save</code> 安装核心，并通过 <code>npm install --save @ant-design/icons</code> 安装 Icon 库，如果要打包整个项目会非常大，所以，通过 <code>npm install babel-plugin-import --develop</code> 安装，做到按需加载。最后，在根目录下创建 <code>.roadhogrc</code> 文件，配置文件修改如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  &#34;extraBabelPlugins&#34;: [
+</span></span><span class=line><span class=cl>    [&#34;import&#34;, {
+</span></span><span class=line><span class=cl>      &#34;libraryName&#34;: &#34;antd&#34;,
+</span></span><span class=line><span class=cl>      &#34;libraryDirectory&#34;: &#34;lib&#34;,
+</span></span><span class=line><span class=cl>      &#34;style&#34;: &#34;css&#34;
+</span></span><span class=line><span class=cl>    }]
+</span></span><span class=line><span class=cl>  ]
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#准备环境>准备环境</a></li><li><a href=#创建用户页面>创建用户页面</a><ul><li><a href=#发送-post-请求>发送 POST 请求</a></li></ul></li><li><a href=#表单验证>表单验证</a></li><li><a href=#高级组件>高级组件</a><ul><li><a href=#表单控件组件>表单控件组件</a></li></ul></li><li><a href=#用户列表>用户列表</a></li><li><a href=#布局组件>布局组件</a></li><li><a href=#添加-antd>添加 Antd</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

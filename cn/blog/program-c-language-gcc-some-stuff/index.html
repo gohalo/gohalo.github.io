@@ -1,0 +1,193 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>GCC 常用技巧 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Clang 是一个 C++ 编写，基于 LLVM 的 C/C++、Objective-C 语言的轻量级编译器，在 2013.04 开始，已经全面支持 C++11 标准。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>GCC 常用技巧</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2018-06-13</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/language/ role=button>language</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/c/cpp/ role=button>c/cpp</a></div></div><hr><div class=content><p>Clang 是一个 C++ 编写，基于 LLVM 的 C/C++、Objective-C 语言的轻量级编译器，在 2013.04 开始，已经全面支持 C++11 标准。</p><p><img alt="clang logo" src=images/clang_logo.png class="mx-auto d-block"></p><a class=anchor id=pragma></a><h1>pragma <a href=#pragma aria-hidden=true>#</a></h1><p><code>#pragma</code> 宏定义在本质上是声明，常用的功能就是注释，尤其是给 Code 分段注释；另外，还支持处理编译器警告。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#pragma clang diagnostic push
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=c1>//----- 方法弃用告警
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#pragma clang diagnostic ignored &#34;-Wdeprecated-declarations&#34;
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=c1>//----- 不兼容指针类型
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#pragma clang diagnostic ignored &#34;-Wincompatible-pointer-types&#34;
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=c1>//----- 未使用变量
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#pragma clang diagnostic ignored &#34;-Wunused-variable&#34;
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=c1>//----- 无返回值
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#pragma clang diagnostic ignored &#34;-Wmissing-noreturn&#34;
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=c1>//... ...
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl><span class=cp>#pragma clang diagnostic pop
+</span></span></span></code></pre></div><a class=anchor id=attribute></a><h1>attribute <a href=#attribute aria-hidden=true>#</a></h1><p>gcc 会通过 <code>__attribute__((XXX))</code> 做一些特殊的检查，这里简单介绍一些常见的使用方法。</p><a class=anchor id=format></a><h2>format <a href=#format aria-hidden=true>#</a></h2><p><code>__attribute__((format))</code> 该属性用于自实现的字符串格式化参数添加类似 <code>printf()</code> 的格式化参数的校验，判断需要格式化的参数与入参是否相同。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>format (archetype, string-index, first-to-check)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>__attribute__((format(printf,m,n)))
+</span></span><span class=line><span class=cl>__attribute__((format(scanf,m,n)))
+</span></span><span class=line><span class=cl>  m : 第m个参数为格式化字符串(从1开始)；
+</span></span><span class=line><span class=cl>  n : 变长参数(也即&#34;...&#34;)的第一个参数排在总参数的第几个；
+</span></span></code></pre></div><p>如下是使用示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>void myprint(const char *format,...) __attribute__((format(printf,1,2)));
+</span></span><span class=line><span class=cl>void myprint(int l，const char *format,...) __attribute__((format(printf,2,3)));
+</span></span></code></pre></div><p>如下是一个简单的使用示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>extern</span> <span class=kt>void</span> <span class=nf>myprint</span><span class=p>(</span><span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>format</span><span class=p>,...)</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=nf>format</span><span class=p>(</span><span class=n>printf</span><span class=p>,</span><span class=mi>1</span><span class=p>,</span><span class=mi>2</span><span class=p>)));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>myprint</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=n>fmt</span><span class=p>,</span> <span class=p>...)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>int</span> <span class=n>result</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>va_list</span> <span class=n>args</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>fputs</span><span class=p>(</span><span class=s>&#34;foobar: &#34;</span><span class=p>,</span> <span class=n>stderr</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>va_start</span><span class=p>(</span><span class=n>args</span><span class=p>,</span> <span class=n>fmt</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=n>result</span> <span class=o>=</span> <span class=nf>vfprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=n>fmt</span><span class=p>,</span> <span class=n>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>va_end</span><span class=p>(</span><span class=n>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>result</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=kt>char</span> <span class=o>**</span><span class=n>argv</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>myprint</span><span class=p>(</span><span class=s>&#34;i=%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span><span class=mi>6</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>myprint</span><span class=p>(</span><span class=s>&#34;i=%s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span><span class=mi>6</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>myprint</span><span class=p>(</span><span class=s>&#34;i=%s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span><span class=s>&#34;abc&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>myprint</span><span class=p>(</span><span class=s>&#34;%s,%d,%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span><span class=mi>1</span><span class=p>,</span><span class=mi>2</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>编译时添加 <code>-Wall</code> 就会打印 Warning 信息，如果去除，实际上不会显示任何信息，通常可以提前发现常见的问题。</p><a class=anchor id=constructordestructor></a><h2>constructor/destructor <a href=#constructordestructor aria-hidden=true>#</a></h2><p>可以设置程序在开始执行或停止时调用指定的函数。</p><p><code>__attribute__((constructor))</code> 在 <code>main()</code> 之前执行，<code>__attribute__((destructor))</code> 在 <code>main()</code> 执行结束之后执行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=n>constructor</span><span class=p>))</span> <span class=kt>void</span> <span class=nf>before</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Hello World</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=n>destructor</span><span class=p>))</span> <span class=kt>void</span> <span class=nf>after</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Bye World!</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>args</span><span class=p>,</span><span class=kt>char</span> <span class=o>**</span> <span class=n>argv</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Live...</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>EXIT_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如果有多个函数，可以指定优先级，其中 0~100 (含100)系统保留。在 main 之前顺序为有小到大，退出时顺序为由大到小。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=nf>constructor</span><span class=p>(</span><span class=mi>102</span><span class=p>)))</span> <span class=kt>void</span> <span class=nf>before102</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Hello World 102</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=nf>destructor</span><span class=p>(</span><span class=mi>102</span><span class=p>)))</span> <span class=kt>void</span> <span class=nf>after102</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Bye World! 102</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=nf>constructor</span><span class=p>(</span><span class=mi>101</span><span class=p>)))</span> <span class=kt>void</span> <span class=nf>before101</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Hello World 101</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span>  <span class=nf>__attribute__</span><span class=p>((</span><span class=nf>destructor</span><span class=p>(</span><span class=mi>101</span><span class=p>)))</span> <span class=kt>void</span> <span class=nf>after101</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Bye World! 101</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>args</span><span class=p>,</span><span class=kt>char</span> <span class=o>**</span> <span class=n>argv</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Live...</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>EXIT_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在使用时也可以先声明然再定义</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>before</span><span class=p>()</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=n>constructor</span><span class=p>));</span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>after</span><span class=p>()</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=n>destructor</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>before</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Hello World</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>after</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Bye World!</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>args</span><span class=p>,</span><span class=kt>char</span> <span class=o>**</span> <span class=n>argv</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Live...</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>EXIT_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=hotcold></a><h2>hot/cold <a href=#hotcold aria-hidden=true>#</a></h2><p>也就是 <code>__attribute__((hot))</code> <code>__attribute__((cold))</code> 用于分支预测的一些处理。</p><p>其中 hot 表示该函数会被经常调用到，在编译链接时要对其优化，或说是将它和其它同样热 (hot) 的函数放到一块，这样有利于缓存的存取。</p><p>而 cold 表示该函数比较冷门，这样在分支预测机制里就不会对该函数进行预取，或说是将它和其它同样冷门 (cold) 的函数放到一块，这样它就很可能不会被放到缓存中来，而让更热门的指令放到缓存中。</p><a class=anchor id=__attribute__visibility></a><h2>__attribute__((visibility)) <a href=#__attribute__visibility aria-hidden=true>#</a></h2><p>程序调用某个函数 A，而 A 函数存在于两个动态链接库 liba.so 和 libb.so 中，并且程序执行需要链接这两个库，此时程序调用的 A 函数到底是来自于 a 还是 b 呢？</p><p>这取决于链接时的顺序，首先链接的库会更新符号表，比如先链接 liba.so，这时候通过 liba.so 的导出符号表就可以找到函数 A 的定义，并加入到符号表中，而不会再查找 libb.so 。</p><p>也就是说，这里的调用严重的依赖于链接库加载的顺序，可能会导致混乱。</p><p>gcc 的扩展中有如下属性 <code>__attribute__ ((visibility("hidden")))</code> 可以用于抑制将一个函数的名称被导出，对连接该库的程序文件来说，该函数是不可见的，使用的方法如下：</p><a class=anchor id=1-创建一个c源文件></a><h4>1. 创建一个c源文件 <a href=#1-%e5%88%9b%e5%bb%ba%e4%b8%80%e4%b8%aac%e6%ba%90%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span><span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span><span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=nf>__attribute</span> <span class=p>((</span><span class=nf>visibility</span><span class=p>(</span><span class=s>&#34;default&#34;</span><span class=p>)))</span> <span class=kt>void</span> <span class=nf>not_hidden</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;exported symbol</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>is_hidden</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;hidden one</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>想要做的是，第一个函数符号可以被导出，第二个被隐藏。</p><a class=anchor id=2-生成动态库></a><h4>2. 生成动态库 <a href=#2-%e7%94%9f%e6%88%90%e5%8a%a8%e6%80%81%e5%ba%93 aria-hidden=true>#</a></h4><p>先编译成一个动态库，使用到属性 <code>-fvisibility</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 编译
+</span></span><span class=line><span class=cl>$ gcc -shared -o libvis.so -fvisibility=hidden foobar.c
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看符号链接
+</span></span><span class=line><span class=cl># readelf -s libvis.so |grep hidden
+</span></span><span class=line><span class=cl> 7: 0000040c 20 FUNC GLOBAL DEFAULT 11 not_hidden
+</span></span><span class=line><span class=cl>48: 00000420 20 FUNC LOCAL  HIDDEN  11 is_hidden
+</span></span><span class=line><span class=cl>51: 0000040c 20 FUNC GLOBAL DEFAULT 11 not_hidden
+</span></span></code></pre></div><p>可以看到，属性确实有作用了。</p><a class=anchor id=3-编译链接></a><h4>3. 编译链接 <a href=#3-%e7%bc%96%e8%af%91%e9%93%be%e6%8e%a5 aria-hidden=true>#</a></h4><p>现在试图链接程序。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>not_hidden</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=nf>is_hidden</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>试图编译成一个可执行文件，链接到刚才生成的动态库。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ gcc -o exe main.c -L ./ -lvis
+</span></span><span class=line><span class=cl>/tmp/cckYTHcl.o: In function `main&#39;:
+</span></span><span class=line><span class=cl>main.c:(.text+0x17): undefined reference to `is_hidden&#39;
+</span></span></code></pre></div><p>说明了 hidden 确实起到作用了。</p><a class=anchor id=__attribute__sentinel></a><h2>__attribute__((sentinel)) <a href=#__attribute__sentinel aria-hidden=true>#</a></h2><p>该属性表示，此可变参数函数需要一个 <code>NULL</code> 作为最后一个参数，这个 <code>NULL</code> 参数一般被叫做 &ldquo;哨兵参数&rdquo;。例如，有如下程序：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdarg.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;malloc.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>foo</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=n>first</span><span class=p>,</span> <span class=p>...)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>char</span> <span class=o>*</span><span class=n>p</span> <span class=o>=</span> <span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=p>)</span><span class=nf>malloc</span><span class=p>(</span><span class=mi>100</span><span class=p>),</span> <span class=o>*</span><span class=n>q</span> <span class=o>=</span> <span class=n>first</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>va_list</span> <span class=n>args</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>va_start</span><span class=p>(</span><span class=n>args</span><span class=p>,</span> <span class=n>first</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>while</span> <span class=p>(</span><span class=n>q</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nf>strcat</span><span class=p>(</span><span class=n>p</span><span class=p>,</span> <span class=n>q</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>q</span> <span class=o>=</span> <span class=nf>va_arg</span><span class=p>(</span><span class=n>args</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=nf>va_end</span><span class=p>(</span><span class=n>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>p</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>free</span><span class=p>(</span><span class=n>p</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>foo</span><span class=p>(</span><span class=s>&#34;Hello&#34;</span><span class=p>,</span> <span class=s>&#34;World&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>当通过 <code>gcc main.c -Wall</code> 进行编译时，会发现没有任何警告，不过很显然，调用 <code>foo()</code> 时最后一个参数应该是个 <code>NULL</code> 以表明 &ldquo;可变参数就这么多&rdquo;。</p><p>编译完成后，如果尝试运行则会打印一些乱码，显然是有问题的。</p><p>正常来说，应该通过如下方式调用 <code>foo("Hello", "World", NULL);</code>，为此，就需要用到了上述的属性，用于表示最后一个参数需要为 <code>NULL</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>void</span> <span class=nf>foo</span><span class=p>(</span><span class=kt>char</span> <span class=o>*</span><span class=n>first</span><span class=p>,</span> <span class=p>...)</span> <span class=nf>__attribute__</span><span class=p>((</span><span class=n>sentinel</span><span class=p>));</span>
+</span></span></code></pre></div><p>这样再不写哨兵参数，在编译时编译器就会发出警告了。</p><p>但是，对于同样使用可变参数的 <code>printf()</code> 来说，为什么就不需要哨兵属性，实际上，通过第一个参数就可以确定需要多少个参数，如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cm>/*
+</span></span></span><span class=line><span class=cl><span class=cm> * 第一个参数中规定了有两个待打印项，所以打印时会取 &#34;string&#34; 和 1，多写的 &#34;another_string&#34; 会被忽略。
+</span></span></span><span class=line><span class=cl><span class=cm> * printf()在被调用时明确知道此次调用需要多少个参数，所以也就无需哨兵参数的帮忙。
+</span></span></span><span class=line><span class=cl><span class=cm> */</span>
+</span></span><span class=line><span class=cl><span class=nf>printf</span><span class=p>(</span><span class=s>&#34;%s %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=s>&#34;string&#34;</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=s>&#34;another_string&#34;</span><span class=p>);</span>
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#pragma>pragma</a></li><li><a href=#attribute>attribute</a><ul><li><a href=#format>format</a></li><li><a href=#constructordestructor>constructor/destructor</a></li><li><a href=#hotcold>hot/cold</a></li><li><a href=#__attribute__visibility>__attribute__((visibility))</a></li><li><a href=#__attribute__sentinel>__attribute__((sentinel))</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

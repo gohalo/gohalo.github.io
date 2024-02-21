@@ -1,0 +1,107 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux 用户管理的最佳实践 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="在 Linux 中，权限管理包括了用户、主用户组、从用户组，通过这三者的组织可以方便对权限的管理，尤其是对于文件的权限管理。这里假设一个运维中的使用场景，通过创建一系列的用户以及用户组，然后查看其权限管理的方案。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Linux 用户管理的最佳实践</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2020-02-25</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/devops/ role=button>devops</a></div></div><hr><div class=content><p>在 Linux 中，权限管理包括了用户、主用户组、从用户组，通过这三者的组织可以方便对权限的管理，尤其是对于文件的权限管理。这里假设一个运维中的使用场景，通过创建一系列的用户以及用户组，然后查看其权限管理的方案。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>这是在运维时经常使用到的场景，在设计 DevOps 系统时，需要通过各种各样 Agent 采集数据、执行任务等，这些账号不需要登陆，只需要作权限控制即可，常见的如：</p><ol><li><code>BasicAgent</code> 作为命令通道，用来执行命令，修改配置等基础操作。</li><li><code>MonitorAgent</code> 采集 OS、进程、业务、MySQL 等监控数据。</li><li><code>LogAgent</code> 采集日志信息，也可以转换成监控指标。</li></ol><p>其它的可能还有安全、文件传输等类型的 Agent，这里仅列举最常见的这三个，对应了 <code>basic</code>、<code>monitor</code>、<code>log</code> 三个用户，并通过 <code>devops</code> 用户组进行管理。</p><p>另外，为了方便对各个 Agent 同时可以控制自己的属组，会同时创建与用户名相同的用户组，而 <code>devops</code> 作为次要用户组。</p><p>注意，这里使用的是系统用户，也就意味着只能从 root 切换过去，而且，如果要使用 Shell 执行一些命令测试，可以在通过 <code>su</code> 命令切换时添加 <code>-s /bin/bash</code> 覆盖默认的 Shell 。</p><a class=anchor id=用户规划></a><h2>用户规划 <a href=#%e7%94%a8%e6%88%b7%e8%a7%84%e5%88%92 aria-hidden=true>#</a></h2><p>如上所述，这里分别创建三个用户 <code>basic</code>、<code>monitor</code>、<code>log</code> 以及同名的主用户组，同时会创建一个 <code>devops</code> 次用户组，各个用户的 UID 以及 GID 对应如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>devops             GID:60
+</span></span><span class=line><span class=cl>basic       UID:63 GID:63
+</span></span><span class=line><span class=cl>monitor     UID:66 GID:66
+</span></span><span class=line><span class=cl>log         UID:69 GID:69
+</span></span></code></pre></div><p>实际上，完全可以将所有用户以 devops 作为主用户组，因为目前还没有想到具体那些场景需要通过独立的用户组，所以，这里其实还有就是为了测试。</p><a class=anchor id=创建用户用户组></a><h1>创建用户/用户组 <a href=#%e5%88%9b%e5%bb%ba%e7%94%a8%e6%88%b7%e7%94%a8%e6%88%b7%e7%bb%84 aria-hidden=true>#</a></h1><p>这里以 <code>monitor</code> 用户为例，其它用户的创建可以将相关参数替换即可，如下是一个简单的创建用户的脚本。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=cp>#! /bin/sh
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=c1># NOTE: Command &#39;id -g monitor&#39; will failed on some platform.</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> ! <span class=o>(</span>grep -E <span class=s1>&#39;^monitor\&gt;:&#39;</span> /etc/group &gt;/dev/null 2&gt;<span class=p>&amp;</span>1<span class=o>)</span> <span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>	<span class=nb>echo</span> <span class=s2>&#34;Group &#39;monitor&#39; does not exist, try to create one&#34;</span>
+</span></span><span class=line><span class=cl>	/usr/sbin/groupadd -g <span class=m>66</span> -o -r monitor &gt;/dev/null 2&gt;<span class=p>&amp;</span><span class=m>1</span> <span class=o>||</span> :
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl>	<span class=nb>echo</span> <span class=s2>&#34;Group &#39;monitor&#39; already exists&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=c1>#	gid=`id -g monitor`</span>
+</span></span><span class=line><span class=cl><span class=c1>#	if [ &#34;x${gid}&#34; != &#34;x66&#34; ]; then</span>
+</span></span><span class=line><span class=cl><span class=c1>#		echo &#34;Change group id(${gid}) to 66&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1>#		/usr/sbin/groupmod -g 66 monitor</span>
+</span></span><span class=line><span class=cl><span class=c1>#	fi</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>if</span> ! <span class=o>(</span>grep -E <span class=s1>&#39;^monitor\&gt;:&#39;</span> /etc/passwd &gt;/dev/null 2&gt;<span class=p>&amp;</span>1<span class=o>)</span> <span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>	<span class=nb>echo</span> <span class=s2>&#34;User &#39;monitor&#39; does not exist, try to create one&#34;</span>
+</span></span><span class=line><span class=cl>	/usr/sbin/useradd -M -g monitor -o -r -d /your/home/path -s /sbin/nologin <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>		-c <span class=s2>&#34;Monitor Agent&#34;</span> -u <span class=m>66</span> monitor &gt;/dev/null 2&gt;<span class=p>&amp;</span><span class=m>1</span> <span class=o>||</span> :
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl>	<span class=nb>echo</span> <span class=s2>&#34;User &#39;monitor&#39; already exists&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nb>exit</span> <span class=m>2</span>
+</span></span><span class=line><span class=cl><span class=c1>#	uid=`id -u monitor`</span>
+</span></span><span class=line><span class=cl><span class=c1>#	if [ &#34;x${uid}&#34; != &#34;x66&#34; ]; then</span>
+</span></span><span class=line><span class=cl><span class=c1>#		echo &#34;Change user id(${uid}) to 66&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1>#		/usr/sbin/usermod -u 66 monitor</span>
+</span></span><span class=line><span class=cl><span class=c1>#	fi</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span></code></pre></div><p>其中的注释为，当 UID 不满足时，直接通过命令进行修改，强制修改可能会导致一些已经创建的文件异常，其对应的属主因为查询不到用户，只会显示源 UID ，所以不建议修改，当然，可以根据自己的需求决定是否进行修改。</p><p>另外，注意使用的两个参数：A) <code>-o</code> 不再限制 UID/GID 唯一，可以出现用户名/组名不同，但是对应 UID/GID 相同；B) <code>-r</code> 创建系统用户，不允许登陆。</p><a class=anchor id=常用命令></a><h2>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h2><p>如上所述，因为添加的是系统用户，而且没有设置有效的 Shell ，如果要执行一些常见的命令，可以使用类似如下的方式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># su - monitor -s /bin/bash -c &#34;ls -alh /&#34;
+</span></span></code></pre></div><p>注意，执行时使用的是系统用户。</p><p>如果想登陆 Shell 执行交互命令，可以使用如下命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># su - monitor -s /bin/bash
+</span></span><span class=line><span class=cl>$ id
+</span></span><span class=line><span class=cl>uid=66(monitor) gid=66(monitor) groups=66(monitor)
+</span></span></code></pre></div><p>如上的命令只是创建了 <code>monitor</code> 用户，创建 <code>devops</code> 用户组的方式类似，创建完之后可以通过如下命令添加附加组。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># usermod -G devops monitor
+</span></span><span class=line><span class=cl># grep -re devops /etc/group
+</span></span><span class=line><span class=cl>devops:x:60:monitor
+</span></span><span class=line><span class=cl># su - monitor -s /bin/bash
+</span></span><span class=line><span class=cl>$ id
+</span></span><span class=line><span class=cl>uid=66(monitor) gid=66(monitor) groups=66(monitor),60(devops)
+</span></span></code></pre></div><p>可以看到，切换之后具有了两个用户组，包括了主用户组 <code>monitor</code> 以及辅助用户组 <code>devops</code> 。</p><a class=anchor id=测试命令整理></a><h2>测试命令整理 <a href=#%e6%b5%8b%e8%af%95%e5%91%bd%e4%bb%a4%e6%95%b4%e7%90%86 aria-hidden=true>#</a></h2><p>如下将创建上述用户以及用户组的命令简单整理，可以直接复制执行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 创建用户
+</span></span><span class=line><span class=cl>groupadd -g 60 -o -r devops
+</span></span><span class=line><span class=cl>useradd -M -g devops -o -r -d /tmp -s /sbin/nologin -c &#34;DevOps Group&#34; -u 60 devops
+</span></span><span class=line><span class=cl>groupadd -g 63 -o -r basic
+</span></span><span class=line><span class=cl>useradd -M -g basic -o -r -d /tmp -s /sbin/nologin -c &#34;Basic Agent&#34; -u 63 basic
+</span></span><span class=line><span class=cl>groupadd -g 66 -o -r monitor
+</span></span><span class=line><span class=cl>useradd -M -g monitor -o -r -d /tmp -s /sbin/nologin -c &#34;Monitor Agent&#34; -u 66 monitor
+</span></span><span class=line><span class=cl>groupadd -g 69 -o -r log
+</span></span><span class=line><span class=cl>useradd -M -g log -o -r -d /tmp -s /sbin/nologin -c &#34;Log Agent&#34; -u 69 log
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除用户
+</span></span><span class=line><span class=cl>userdel devops
+</span></span><span class=line><span class=cl>groupdel devops
+</span></span><span class=line><span class=cl>userdel basic
+</span></span><span class=line><span class=cl>groupdel basic
+</span></span><span class=line><span class=cl>userdel monitor
+</span></span><span class=line><span class=cl>groupdel monitor
+</span></span><span class=line><span class=cl>userdel log
+</span></span><span class=line><span class=cl>groupdel log
+</span></span></code></pre></div><a class=anchor id=常见场景></a><h1>常见场景 <a href=#%e5%b8%b8%e8%a7%81%e5%9c%ba%e6%99%af aria-hidden=true>#</a></h1><p>虽然上面创建了三个用户，实际测试的时候只需要 <code>monitor</code> 和 <code>devops</code> 即可。</p><a class=anchor id=统一设置-devops-组权限></a><h2>统一设置 devops 组权限 <a href=#%e7%bb%9f%e4%b8%80%e8%ae%be%e7%bd%ae-devops-%e7%bb%84%e6%9d%83%e9%99%90 aria-hidden=true>#</a></h2><p>对应的场景为，为了方便管理，所有 Agent 相关的配置文件保存在固定的目录下，而且所有 Agent 都可以读取固定配置文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># su -s /bin/bash devops -c &#34;echo &#39;config&#39; &gt; /tmp/host.cnf&#34;
+</span></span><span class=line><span class=cl># ls -l /tmp/host.cnf
+</span></span><span class=line><span class=cl>-rw------- 1 devops devops 7 Oct 18 16:43 /tmp/host.cnf
+</span></span><span class=line><span class=cl># chmod 664 /tmp/host.cnf -l
+</span></span><span class=line><span class=cl># ls -l /tmp/host.cnf
+</span></span><span class=line><span class=cl>-rw-rw-r-- 1 devops devops 7 Oct 18 16:43 /tmp/host.cnf
+</span></span></code></pre></div><p>通过如上命令创建了一个 <code>/tmp/host.cnf</code> 配置文件，然后可以通过如下命令进行测试。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># su - -s /bin/bash monitor
+</span></span><span class=line><span class=cl>$ id                                  当前没有添加到devops辅助组
+</span></span><span class=line><span class=cl>uid=66(monitor) gid=66(monitor) groups=66(monitor)
+</span></span><span class=line><span class=cl>$ cat /etc/host.cnf                   文件允许其它用户读取
+</span></span><span class=line><span class=cl>config
+</span></span><span class=line><span class=cl>$ echo &#34;new config&#34; &gt; /tmp/host.cnf   但是不允许写入
+</span></span><span class=line><span class=cl>-bash: /tmp/host.cnf: Permission denied
+</span></span></code></pre></div><p>接下来，通过 <code>usermod -G devops monitor</code> 命令将 <code>monitor</code> 用户添加到 <code>devops</code> 辅助组中。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># su - -s /bin/bash monitor
+</span></span><span class=line><span class=cl>$ id                                  确认已经添加到devops辅助组
+</span></span><span class=line><span class=cl>uid=66(monitor) gid=66(monitor) groups=66(monitor),60(devops)
+</span></span><span class=line><span class=cl># ls -l /tmp/host.cnf                 确保辅助组有权限
+</span></span><span class=line><span class=cl>-rw-rw-r-- 1 devops devops 7 Oct 18 16:43 /tmp/host.cnf
+</span></span><span class=line><span class=cl>$ echo &#34;new config&#34; &gt; /tmp/host.cnf   现在可以写入成功了
+</span></span><span class=line><span class=cl>$ cat /etc/host.cnf
+</span></span><span class=line><span class=cl>new config
+</span></span></code></pre></div><p>也就是说，主用户组和辅助用户组的组权限是相同的，前提是文件允许组进行访问。</p><a class=anchor id=读取其它用户信息></a><h2>读取其它用户信息 <a href=#%e8%af%bb%e5%8f%96%e5%85%b6%e5%ae%83%e7%94%a8%e6%88%b7%e4%bf%a1%e6%81%af aria-hidden=true>#</a></h2><p>对于监控来说，需要采集 MySQL 的监控指标，在本地就需要通过 Unix Domain Socket 进行连接，那么可以通过如下方式查看是否有权限。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看是否有访问权限
+</span></span><span class=line><span class=cl># su - monitor -s /bin/bash -c &#34;ls -alh /var/lib/mysql/mysql.sock&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看是否有写权限
+</span></span><span class=line><span class=cl># su - monitor -s /bin/bash -c &#34;touch /var/lib/mysql/mysql.sock&#34;
+</span></span></code></pre></div><p>访问其它用户的文件时需要保证：A) 保证文件对其它用户是可读写的；B) 整个路径目录对其它用户是可执行的。</p><p>如果在通过上述的方式检查时发现没有权限，那么需要通过如下命令修改 monitor 用户的属组，同时要保证 相关的文件以及目录有该属组的访问权限 。</p><p>如下示例仍以 MySQL 用户为例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 设置monitor用户的辅助属组
+</span></span><span class=line><span class=cl># usermod -G mysql monitor
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 检查是否修改成功，注意后面的属组
+</span></span><span class=line><span class=cl>$ id monitor
+</span></span><span class=line><span class=cl>uid=66(monitor) gid=66(monitor) groups=66(monitor),60(devops)
+</span></span></code></pre></div><p>这样设置完之后，在切换用户的时候需要同时切换到主用户组和辅助用户组。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#用户规划>用户规划</a></li></ul></li><li><a href=#创建用户用户组>创建用户/用户组</a><ul><li><a href=#常用命令>常用命令</a></li><li><a href=#测试命令整理>测试命令整理</a></li></ul></li><li><a href=#常见场景>常见场景</a><ul><li><a href=#统一设置-devops-组权限>统一设置 devops 组权限</a></li><li><a href=#读取其它用户信息>读取其它用户信息</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

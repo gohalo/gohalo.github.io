@@ -1,0 +1,519 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Collectd 源码解析 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="接下来介绍下 Collectd 中源码的实现。
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Collectd 源码解析</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-08-26</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/monitor/ role=button>monitor</a></div></div><hr><div class=content><p>接下来介绍下 Collectd 中源码的实现。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>在编译源码前，需要先安装部分依赖库。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># yum install libtool-ltdl-devel flex bison
+</span></span></code></pre></div><p>接着介绍下源码编译时常用的命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 如果修改了configure.ac
+</span></span><span class=line><span class=cl>$ autoreconf -ivf
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改Makefile.am
+</span></span><span class=line><span class=cl>$ automake --add-missing --copy
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 编译测试##默认关闭所有插件，指定需要编译的插件
+</span></span><span class=line><span class=cl>$ mkdir build &amp;&amp; cd build
+</span></span><span class=line><span class=cl>$ ../configure --enable-debug --enable-all-plugins=no \
+</span></span><span class=line><span class=cl>    --enable-logfile --enable-unixsock --enable-write-log \
+</span></span><span class=line><span class=cl>    --enable-cpu --enable-load --enable-contextswitch \
+</span></span><span class=line><span class=cl>    --enable-memory
+</span></span><span class=line><span class=cl>$ make
+</span></span><span class=line><span class=cl>$ make distclean
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 单元测试##
+</span></span><span class=line><span class=cl>$ make check
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 压测工具，会随机生成host、plugin、values，尽量模拟正常的采集流量
+</span></span><span class=line><span class=cl>$ collectd-tg
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 源码发布打包
+</span></span><span class=line><span class=cl>$ make distcheck
+</span></span></code></pre></div><p>与测试相关的宏定义在 testing.h 文件中，执行 <code>make check</code> 需要定义 TESTS 变量，可以指定多个，如果返回非零则表示失败，详细可以查看 <a href=https://www.gnu.org/software/automake/manual/html_node/Tests.html>Support for test suites</a> 。</p><p>对于 man 文档，通过 man_MANS 变量定义，然后会根据后缀名自动安装到相应的系统目录。</p><p>打包时可以通过 EXTRA_DIST 变量指定比较特殊的一些文件。</p><a class=anchor id=常用概念></a><h1>常用概念 <a href=#%e5%b8%b8%e7%94%a8%e6%a6%82%e5%bf%b5 aria-hidden=true>#</a></h1><p>在介绍源码的实现前，首先看下一些常见的概念。</p><p>插件采集的数据保存在 value_list_t 中，这个对应了 types.db 中的一行记录，types.db 中一行可能会包含了多个采集结构，例如 load 指标，那么与之对应 value_list_t 也可能会包含了多个采集值。</p><a class=anchor id=标示符-identifier></a><h2>标示符 (Identifier) <a href=#%e6%a0%87%e7%a4%ba%e7%ac%a6-identifier aria-hidden=true>#</a></h2><p>value_list_t 中还包含了用于构建标示符 (Identifier) 的值，包括了: host、plugin、plugin instance (optional)、type、type instance (optional) 五部分，其中两个是可选的，其含义如下：</p><ul><li>host 主机名称，可以再插件中设置，否则直接获取配置文件中的主机名；</li><li>plugin 一般是插件名称；</li><li>plugin instance 可选，例如 CPU 在多核的场景；</li><li>type 很多还是和插件相同，感觉有些冲突；</li><li>type instance 可选，监控的不同类型，例如 CPU 的指标有 idle、usage 等。</li></ul><p>其中每项命名的最大值为 64，建议不要使用 <code>'/'</code> 和 <code>'-'</code>，格式化时通过 <code>format_name()</code> 实现，串行化的格式为：<code>host "/" plugin ["-" plugin instance] "/" type ["-" type instance]</code> 。</p><p>如下，是几个常见的示例：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>localhost/cpu-0/cpu-idle
+</span></span><span class=line><span class=cl>localhost/memory/memory-used
+</span></span><span class=line><span class=cl>wanda/disk-hdc1/disk_octets
+</span></span><span class=line><span class=cl>leeloo/load/load
+</span></span></code></pre></div><p>常见的在 global cache 中会使用，用于保存最近保存的一次数据，与 notification 相关的参数。</p><p>个人建议使用 Plugin + Plugin Instance + types.db 这种方式定义 Identifier 。</p><a class=anchor id=采集值类型></a><h2>采集值类型 <a href=#%e9%87%87%e9%9b%86%e5%80%bc%e7%b1%bb%e5%9e%8b aria-hidden=true>#</a></h2><p>Collectd 中总共有四种类型，简单介绍如下。</p><ul><li>GAUSE: 直接使用采样值，通常为温度、内存使用率等参数值；</li><li>DERIVE: 计算采样的速率，计算公式为 <code>rate=(value_new-value_old)/(time_new-time_old)</code> ，需要注意，如果值非递增，那么可能产生负值；</li><li>COUNTER: 与 DERIVE 相同，只是当 <code>value_new&lt;value_old</code> 时则认为是 &ldquo;wrapped around&rdquo; 。</li><li>ABSOULUTE: 与 GAUSE 比较相似，只是该值是无符号整数，且会除以当前时间与上次采样时间的差值；</li></ul><p>需要注意的是，COUNTER 值采集的三种特殊情况：1) 计数器达到最大值，导致回环；2) 监控服务维护(重启或者手动计数器清零)；3) 监控 agent 重启，导致上次计数丢失。这三种情况可能会导致采集指标异常，通常只有一个采集点，一般可以过滤或者忽略掉。</p><a class=anchor id=源码实现></a><h3>源码实现 <a href=#%e6%ba%90%e7%a0%81%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h3><p>相关的代码内容如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#define DS_TYPE_COUNTER 0
+</span></span></span><span class=line><span class=cl><span class=cp>#define DS_TYPE_GAUGE 1
+</span></span></span><span class=line><span class=cl><span class=cp>#define DS_TYPE_DERIVE 2
+</span></span></span><span class=line><span class=cl><span class=cp>#define DS_TYPE_ABSOLUTE 3
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span> <span class=kt>unsigned</span> <span class=kt>long</span> <span class=kt>long</span> <span class=kt>counter_t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span> <span class=kt>double</span> <span class=kt>gauge_t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span> <span class=kt>int64_t</span> <span class=kt>derive_t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span> <span class=kt>uint64_t</span> <span class=kt>absolute_t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>union</span> <span class=n>value_u</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kt>counter_t</span> <span class=n>counter</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kt>gauge_t</span> <span class=n>gauge</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kt>derive_t</span> <span class=n>derive</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kt>absolute_t</span> <span class=n>absolute</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span> <span class=k>union</span> <span class=n>value_u</span> <span class=kt>value_t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>value_to_rate</span><span class=p>(</span><span class=kt>gauge_t</span> <span class=o>*</span><span class=n>ret_rate</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                  <span class=kt>value_t</span> <span class=n>value</span><span class=p>,</span> <span class=kt>int</span> <span class=n>ds_type</span><span class=p>,</span> <span class=kt>cdtime_t</span> <span class=n>t</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                  <span class=kt>value_to_rate_state_t</span> <span class=o>*</span><span class=n>state</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kt>gauge_t</span> <span class=n>interval</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=cm>/* Another invalid state: The time is not increasing. */</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>t</span> <span class=o>&lt;=</span> <span class=n>state</span><span class=o>-&gt;</span><span class=n>last_time</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>memset</span><span class=p>(</span><span class=n>state</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=o>*</span><span class=n>state</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=p>(</span><span class=n>EINVAL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=n>interval</span> <span class=o>=</span> <span class=nf>CDTIME_T_TO_DOUBLE</span><span class=p>(</span><span class=n>t</span> <span class=o>-</span> <span class=n>state</span><span class=o>-&gt;</span><span class=n>last_time</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=cm>/* Previous value is invalid. */</span>
+</span></span><span class=line><span class=cl>  <span class=k>if</span> <span class=p>(</span><span class=n>state</span><span class=o>-&gt;</span><span class=n>last_time</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>state</span><span class=o>-&gt;</span><span class=n>last_value</span> <span class=o>=</span> <span class=n>value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>state</span><span class=o>-&gt;</span><span class=n>last_time</span> <span class=o>=</span> <span class=n>t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=p>(</span><span class=n>EAGAIN</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>switch</span> <span class=p>(</span><span class=n>ds_type</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nl>DS_TYPE_DERIVE</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>derive_t</span> <span class=n>diff</span> <span class=o>=</span> <span class=n>value</span><span class=p>.</span><span class=n>derive</span> <span class=o>-</span> <span class=n>state</span><span class=o>-&gt;</span><span class=n>last_value</span><span class=p>.</span><span class=n>derive</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>ret_rate</span> <span class=o>=</span> <span class=p>((</span><span class=kt>gauge_t</span><span class=p>)</span><span class=n>diff</span><span class=p>)</span> <span class=o>/</span> <span class=p>((</span><span class=kt>gauge_t</span><span class=p>)</span><span class=n>interval</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nl>DS_TYPE_GAUGE</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>ret_rate</span> <span class=o>=</span> <span class=n>value</span><span class=p>.</span><span class=n>gauge</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nl>DS_TYPE_COUNTER</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>counter_t</span> <span class=n>diff</span> <span class=o>=</span> <span class=nf>counter_diff</span><span class=p>(</span><span class=n>state</span><span class=o>-&gt;</span><span class=n>last_value</span><span class=p>.</span><span class=n>counter</span><span class=p>,</span> <span class=n>value</span><span class=p>.</span><span class=n>counter</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>ret_rate</span> <span class=o>=</span> <span class=p>((</span><span class=kt>gauge_t</span><span class=p>)</span><span class=n>diff</span><span class=p>)</span> <span class=o>/</span> <span class=p>((</span><span class=kt>gauge_t</span><span class=p>)</span><span class=n>interval</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=k>case</span> <span class=nl>DS_TYPE_ABSOLUTE</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kt>absolute_t</span> <span class=n>diff</span> <span class=o>=</span> <span class=n>value</span><span class=p>.</span><span class=n>absolute</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>ret_rate</span> <span class=o>=</span> <span class=p>((</span><span class=kt>gauge_t</span><span class=p>)</span><span class=n>diff</span><span class=p>)</span> <span class=o>/</span> <span class=p>((</span><span class=kt>gauge_t</span><span class=p>)</span><span class=n>interval</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>break</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=k>default</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>EINVAL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=n>state</span><span class=o>-&gt;</span><span class=n>last_value</span> <span class=o>=</span> <span class=n>value</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=n>state</span><span class=o>-&gt;</span><span class=n>last_time</span> <span class=o>=</span> <span class=n>t</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><a class=anchor id=插件实现></a><h1>插件实现 <a href=#%e6%8f%92%e4%bb%b6%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h1><p>首先，简单说下插件是如何加载的。</p><p>有个配置项 <code>AutoLoadPlugin false</code> 用于控制是否会自动加载插件，默认需要先通过 LoadPlugin 指令加载插件，然后再在 <code>&lt;Plugin XXX></code> 中进行配置，否则会报错；当然也可以将该参数修改为 true ，然后在遇到 <code>&lt;Plugin XXX></code> 时自动加载。</p><p>源码中有一个示例插件，可查看 <code>contrib/examples</code> 目录下的文件；当然，也可以参考 <a href=https://collectd.org/wiki/index.php/Plugin_architecture>官方文档</a> 。</p><p>插件的实现实际上主要是通过将回调函数注册到链表上。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>int plugin_register_init()&lt;&lt;&lt;1&gt;&gt;&gt;
+</span></span><span class=line><span class=cl>注册初始化函数，正式创建读写线程之前执行。
+</span></span><span class=line><span class=cl>使用链表: list_init
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int plugin_register_config()&lt;&lt;&lt;2&gt;&gt;&gt;
+</span></span><span class=line><span class=cl>简单的配置处理，只含有配置项以及回调函数。
+</span></span><span class=line><span class=cl>使用链表: first_callback
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int plugin_register_complex_config()&lt;&lt;&lt;2&gt;&gt;&gt;
+</span></span><span class=line><span class=cl>通过一个注册的回调函数进行配置解析，在链表末尾写入；该函数会对配置项进行检测，包括了一些复杂的逻辑处理。
+</span></span><span class=line><span class=cl>使用链表: complex_callback_head
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int plugin_register_flush()&lt;&lt;&lt;3&gt;&gt;&gt;
+</span></span><span class=line><span class=cl>有部分插件会缓存数据，例如network、rrdtool等，通过函数注册到链表，在执行 flush 命令时会调用链表上的各个函数。
+</span></span><span class=line><span class=cl>使用链表: list_flush，通过plugin_flush()函数调用
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int plugin_register_read()&lt;&lt;&lt;3&gt;&gt;&gt;
+</span></span><span class=line><span class=cl>int plugin_register_complex_read()
+</span></span><span class=line><span class=cl>两个函数的区别在于回调函数中是否需要传入参数，详见plugin_read_thread()中的调用。
+</span></span><span class=line><span class=cl>使用链表：read_list
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int plugin_register_write()&lt;&lt;&lt;3&gt;&gt;&gt;
+</span></span><span class=line><span class=cl>写入插件的回调函数注册。
+</span></span><span class=line><span class=cl>使用链表：list_write
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int plugin_register_missing()&lt;&lt;&lt;3&gt;&gt;&gt;
+</span></span><span class=line><span class=cl>会在每次的时间间隔检查是否有数据丢失，当发现有数据丢失时会调用注册的函数。
+</span></span><span class=line><span class=cl>使用链表：list_missing
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>int plugin_register_shutdown()&lt;&lt;&lt;4&gt;&gt;&gt;
+</span></span><span class=line><span class=cl>通过plugin_shutdown_all()函数调用。
+</span></span><span class=line><span class=cl>使用链表：list_shutdown
+</span></span></code></pre></div><a class=anchor id=新增插件></a><h2>新增插件 <a href=#%e6%96%b0%e5%a2%9e%e6%8f%92%e4%bb%b6 aria-hidden=true>#</a></h2><p>首先，新增 autoconf 的配置。</p><p>需要通过自定义的宏 <code>AC_PLUGIN()</code> 添加插件编译，其中第一个参数为 <code>--enable-XXX</code> 使用，第二个表示是否需要编译 (例如是否依赖的库存在，如果出了C99/POSIX不依赖其它则设置为 &ldquo;yes&rdquo; 即可)，第三个参数为注释，用于 <code>./configure --help</code> 。</p><p>如下是简单的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>AC_PLUGIN([name],                $with_dependency,          [description])
+</span></span><span class=line><span class=cl>AC_PLUGIN([xencpu],              [$plugin_xencpu],          [Xen Host CPU usage])
+</span></span><span class=line><span class=cl>AC_PLUGIN([xmms],                [$with_libxmms],           [XMMS statistics])
+</span></span><span class=line><span class=cl>AC_PLUGIN([zookeeper],           [yes],                     [Zookeeper statistics])
+</span></span></code></pre></div><p>添加上述的宏之后，会增加如下功能：</p><ul><li>使用 configure 命令配置时，可以通过 <code>--enable-XXX</code> <code>--disable-XXX</code> 或者 <code>--enable-XXX=force</code> 参数配置是否需要编译</li><li>在 Makefile.am 中可以通过 <code>if BUILD_PLUGIN_XXX</code> 判断是否需要编译生成动态库；</li><li>最终生成的配置头文件 src/config.h 中含有 <code>HAVE_PLUGIN_XXX</code> 定义宏。</li></ul><p>接着增加 automake 配置。</p><p>在如上的 <code>AC_PLUGIN()</code> 宏中，会通过 <code>AM_CONDITIONAL()</code> 定义一个 <code>BUILD_PLUGIN_XXX</code>，不同的目录下都有相应的 Makefile.am 文件；例如，要增加一个插件，可以使用类似如下配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-v data-lang=v><span class=line><span class=cl><span class=k>if</span> <span class=nc>BUILD_PLUGIN_FOOBAR</span>
+</span></span><span class=line><span class=cl>    <span class=nv>pkglib_LTLIBRARIES</span> <span class=o>+=</span> <span class=nv>foobar</span><span class=p>.</span><span class=nv>la</span>
+</span></span><span class=line><span class=cl>    <span class=nv>foobar_la_SOURCES</span> <span class=o>=</span> <span class=nv>foobar</span><span class=p>.</span><span class=nv>c</span>
+</span></span><span class=line><span class=cl>    <span class=nv>foobar_la_LDFLAGS</span> <span class=o>=</span> <span class=o>-</span><span class=kn>module</span> <span class=o>-</span><span class=nv>avoid</span><span class=o>-</span><span class=nv>version</span>
+</span></span><span class=line><span class=cl>    <span class=nv>collectd_LDADD</span> <span class=o>+=</span> <span class=s2>&#34;-dlopen&#34;</span> <span class=nv>foobar</span><span class=p>.</span><span class=nv>la</span>
+</span></span><span class=line><span class=cl>    <span class=nv>collectd_DEPENDENCIES</span> <span class=o>+=</span> <span class=nv>foobar</span><span class=p>.</span><span class=nv>la</span>
+</span></span><span class=line><span class=cl><span class=nv>endif</span>
+</span></span></code></pre></div><p>然后就可以通过 autoreconf + automake 重新生成。</p><a class=anchor id=源码详解></a><h1>源码详解 <a href=#%e6%ba%90%e7%a0%81%e8%af%a6%e8%a7%a3 aria-hidden=true>#</a></h1><p>介绍下调用流程。</p><a class=anchor id=内存管理></a><h2>内存管理 <a href=#%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h2><p>这里以 load 插件为例。</p><ol><li>通过 <code>plugin_register_read()</code> 函数注册到链表中，调用回调函数采集指标；</li><li>回调函数，load 通过 <code>VALUE_LIST_INIT</code> 宏初始化，也就是初始化一个本地的临时变量，然后通过 <code>plugin_dispatch_values()</code> 函数发送给 collectd 核心；</li><li>在 <code>plugin_write_enqueue()</code> 函数中主要的内存分配函数，包括了 <code>malloc(sizeof(write_queue_t)) + malloc(sizeof(value_list_t)) + calloc(len,sizeof(values)) + calloc(1,sizeof(meta_data_t))</code>，如果中间有内存分配失败则释放；</li><li>而写线程插件会阻塞在 <code>plugin_write_dequeue()</code> 中，该函数会释放 <code>sfree(write_queue_t)</code> ，然后返回 <code>value_list_t</code> 指针；</li><li>线程的主循环 <code>plugin_write_thread()</code> 函数中，在执行完分发后会调用 <code>plugin_value_list_free()</code> 释放之前申请的主要内存。</li></ol><p>calloc() 会将申请的缓存初始化为 0 ，而 malloc() 不会初始化内存。</p><a class=anchor id=调用流程></a><h2>调用流程 <a href=#%e8%b0%83%e7%94%a8%e6%b5%81%e7%a8%8b aria-hidden=true>#</a></h2><p>首先看下整个软件调用流程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>main()
+</span></span><span class=line><span class=cl> | &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;========= 读取配置文件
+</span></span><span class=line><span class=cl> |-plugin_init_ctx()                            &lt;ctx&gt;
+</span></span><span class=line><span class=cl> |-cf_read()                                  ← 读取配置文件
+</span></span><span class=line><span class=cl> | |-cf_read_generic()                        ← 判断文件是否存在
+</span></span><span class=line><span class=cl> | | |-wordexp()                              ← 文件扩展，确保文件存在
+</span></span><span class=line><span class=cl> | | |-stat()                                 ← 判断是文件夹还是文件
+</span></span><span class=line><span class=cl> | | |-cf_read_file()                         ← 读取配置文件内容
+</span></span><span class=line><span class=cl> | | | |-oconfig_parse_file()                 ← 解析配置项
+</span></span><span class=line><span class=cl> | | | | |-fopen()
+</span></span><span class=line><span class=cl> | | | | |-oconfig_parse_fh()
+</span></span><span class=line><span class=cl> | | | | | |-yyset_in()                       ← 入参是FILE*类型
+</span></span><span class=line><span class=cl> | | | | | |-yyparse()                        ← 使用LEX+YACC进行词法+语法解析
+</span></span><span class=line><span class=cl> | | | | | |-yyset_in()                       ← 处理完成，修改为NULL值
+</span></span><span class=line><span class=cl> | | | | |-fclose()
+</span></span><span class=line><span class=cl> | | | |-cf_include_all()                     ← 在解析完上述配置文件后查看是否有Include选项
+</span></span><span class=line><span class=cl> | | |-cf_read_dir()                          ← 如果是目录，会递归调用cf_read_generic()
+</span></span><span class=line><span class=cl> | | |-cf_ci_append_children()                ← 添加到root中
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-dispatch_value()                         ← 没有子配置项，一般为全局配置
+</span></span><span class=line><span class=cl> | | |-dispatch_global_option()               ← 全局配置，也就是cf_global_options变量中的定义
+</span></span><span class=line><span class=cl> | | | |-global_option_set()                  ← 设置全局变量
+</span></span><span class=line><span class=cl> | | |-dispatch_value_typesdb()               ← 对于cf_value_map中的定义，例如Typesdb，解析types.db
+</span></span><span class=line><span class=cl> | |   |-read_types_list()                    ← 读取一个配置文件，可以通过TypesDB指定多个配置文件
+</span></span><span class=line><span class=cl> | |     |-fopen()
+</span></span><span class=line><span class=cl> | |     |-parse_file()
+</span></span><span class=line><span class=cl> | |     | |-fgets()
+</span></span><span class=line><span class=cl> | |     | |-parse_line()
+</span></span><span class=line><span class=cl> | |     |   |-plugin_register_data_set()     ← 注册data_set_t类型，通过avl保存在data_sets全局变量中
+</span></span><span class=line><span class=cl> | |     |-fclose()
+</span></span><span class=line><span class=cl> | |
+</span></span><span class=line><span class=cl> | |-dispatch_block()                         ← 有子配置项时，也就是配置块
+</span></span><span class=line><span class=cl> | | |-dispatch_loadplugin()                  ← LoadPlugin，会调用plugin_load()
+</span></span><span class=line><span class=cl> | | | |-plugin_set_ctx()                    &lt;ctx&gt;获取插件上下文
+</span></span><span class=line><span class=cl> | | | |-plugin_load()
+</span></span><span class=line><span class=cl> | | |   |-strcasecmp()                       ← 对于python、perl插件，需要做部分初始化操作
+</span></span><span class=line><span class=cl> | | |   |-plugin_load_file()
+</span></span><span class=line><span class=cl> | | |     |-lt_dlsym()                       ← 调用各个插件的module_register()函数
+</span></span><span class=line><span class=cl> | | |       |-plugin_register_complex_read() ← 会生成read_func_t对象
+</span></span><span class=line><span class=cl> | | |         |-plugin_insert_read()         ← 写入到list以及heap
+</span></span><span class=line><span class=cl> | | | |-plugin_set_ctx()                    获取插件上下文
+</span></span><span class=line><span class=cl> | | |
+</span></span><span class=line><span class=cl> | | |-dispatch_block_plugin()                ← Plugin，会调用plugin_load()
+</span></span><span class=line><span class=cl> | | | |-plugin_load()                        ← 需要配置AutoLoadPlugin(true)参数
+</span></span><span class=line><span class=cl> | | | | ### 调用complex_callback_head链表
+</span></span><span class=line><span class=cl> | | | |-dispatch_value_plugin()
+</span></span><span class=line><span class=cl> | | |   |-cf_dispatch()
+</span></span><span class=line><span class=cl> | | |     |-cf_search()                      ← 查找first_callback链表中的回调函数
+</span></span><span class=line><span class=cl> | | |
+</span></span><span class=line><span class=cl> | | |-fc_configure()                         ← Chain，模块
+</span></span><span class=line><span class=cl> | |   |-fc_init_once()
+</span></span><span class=line><span class=cl> | |   |-fc_config_add_chain()
+</span></span><span class=line><span class=cl> | |-oconfig_free()                           ← 释放配置项
+</span></span><span class=line><span class=cl> | | |-oconfig_free_all()                     ← 释放配置，会递归调用
+</span></span><span class=line><span class=cl> | |-read_types_list()                        ← 如果配置文件中没有指定types.db，则加载默认
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> | &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;========= 系统初始化
+</span></span><span class=line><span class=cl> |-change_basedir()                           ← 如果设置了basedir，则尝试切换
+</span></span><span class=line><span class=cl> | |-chdir()                                  ← 切换到指定目录下
+</span></span><span class=line><span class=cl> |-init_global_variables()                    ← 初始化全局变量，如interval_g、timeout_g、hostname
+</span></span><span class=line><span class=cl> | |-cf_get_default_interval()                ← 设置全局的时间间隔
+</span></span><span class=line><span class=cl> | |-init_hostname()                          ← 获取主机名
+</span></span><span class=line><span class=cl> | | |-global_option_get()                    ← 尝试从配置文件中通过Hostname选项获取主机名
+</span></span><span class=line><span class=cl> | | |-gethostname()                          ← 没有配置则尝试通过该系统调用获取
+</span></span><span class=line><span class=cl> | | |-global_option_get()                    ← 通过FQDNLookup确认是否需要查找主机名
+</span></span><span class=line><span class=cl> | | |-getaddrinfo()                          ← 如果上述配置为true
+</span></span><span class=line><span class=cl> | |-return()                                 ← 如果使用了-t参数
+</span></span><span class=line><span class=cl> | |-fork()                                   ← daemonize
+</span></span><span class=line><span class=cl> |-sigaction()                                ← 注册信号处理函数，包括了SIGINT、SIGTERM、SIGUSR1
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> | &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;========= 创建工作线程
+</span></span><span class=line><span class=cl> |-do_init()
+</span></span><span class=line><span class=cl> | |-plugin_init_all()                        ← 会设置缓存队列的大小
+</span></span><span class=line><span class=cl> |   |-uc_init()                              ← 初始化全局变量cache_tree(平衡二叉树)
+</span></span><span class=line><span class=cl> |   | ###BEGIN读取所需要的配置参数
+</span></span><span class=line><span class=cl> |   |-plugin_register_read()                 ← 如果已经配置CollectInternalStats，则注册一个读取插件
+</span></span><span class=line><span class=cl> |   |-fc_chain_get_by_name()                 ← 读取PreCacheChain、PostCacheChain配置参数
+</span></span><span class=line><span class=cl> |   |
+</span></span><span class=line><span class=cl> |   |-cf_callback()                          ← &lt;&lt;&lt;1&gt;&gt;&gt;调用list_init链表中回调函数，检测插件是否正常
+</span></span><span class=line><span class=cl> |   |
+</span></span><span class=line><span class=cl> |   |-start_write_threads()                  ← 开启写线程
+</span></span><span class=line><span class=cl> |   | |-plugin_write_thread()                ← 启动写线程，真正的线程执行函数
+</span></span><span class=line><span class=cl> |   | | | ###BEGIN###while循环调用，判断write_loop是否可用
+</span></span><span class=line><span class=cl> |   | | |-plugin_write_dequeue()             ← 从write_queue链表的首部获取一个对象，队列递减
+</span></span><span class=line><span class=cl> |   | | | |-pthread_cond_wait()              ← 等待write_cond条件变量，使用write_lock锁
+</span></span><span class=line><span class=cl> |   | | |-plugin_dispatch_values_internal()  ← 入参是value_list_t类型
+</span></span><span class=line><span class=cl> |   | | | |-c_avl_get()                      ← 从data_sets中获取对应的数据类型，也就是types.db中
+</span></span><span class=line><span class=cl> |   | | | |-escape_slashes()                 ← 处理host、plugin、type中可能的转移字符
+</span></span><span class=line><span class=cl> |   | | | |-fc_process_chain()               ← 如果pre_cache_chain不为空，则调用该函数
+</span></span><span class=line><span class=cl> |   | | | |-uc_update()                      ← 更新缓存cache_tree，入参为data_set_t和value_list_t
+</span></span><span class=line><span class=cl> |   | | | | |-FORMAT_VL()                    ← 实际上是调用format_name()将vl中的值生成标示符
+</span></span><span class=line><span class=cl> |   | | | | |-c_avl_get()                    ← 利用上述标示符获取cache_entry_t，在此会缓存最近的一次采集数据
+</span></span><span class=line><span class=cl> |   | | | | |... ...                         ← 会根据不同的类型进行处理，例如DS_TYPE_GAUGE
+</span></span><span class=line><span class=cl> |   | | | | |-uc_check_range()               ← 检查是否在指定的范围内
+</span></span><span class=line><span class=cl> |   | | | |-fc_process_chain()  ##OR1##      ← 如果有post_cache_chain则调用
+</span></span><span class=line><span class=cl> |   | | | |-fc_default_action() ##OR1##      ← 调用写入插件写入
+</span></span><span class=line><span class=cl> |   | | |   |-fc_bit_write_invoke()
+</span></span><span class=line><span class=cl> |   | | |     |-plugin_write()               ← 通过list_write链表调用各个组件写入
+</span></span><span class=line><span class=cl> |   | | |       |                            ← 当所有插件都写入失败时返回-1，否则返回0
+</span></span><span class=line><span class=cl> |   | | |       |-cf_callback()
+</span></span><span class=line><span class=cl> |   | | | ###END###while
+</span></span><span class=line><span class=cl> |   | | |-plugin_value_list_free()           ← TODODO:是否使用缓存池
+</span></span><span class=line><span class=cl> |   | |-set_thread_name()                    ← 设置线程名称writerN
+</span></span><span class=line><span class=cl> |   |
+</span></span><span class=line><span class=cl> |   |-start_read_threads()                   ← 创建多个读线程，需要保证read_heap!=NULL
+</span></span><span class=line><span class=cl> |     |-plugin_read_thread()                 ← 线程实际入口，在一个死循环中执行，详细见后面的解析
+</span></span><span class=line><span class=cl> |     | | ###BEGIN###while循环调用，判断read_loop是否可用
+</span></span><span class=line><span class=cl> |     | |-pthread_cond_wait()                ← 等待read_cond条件变量，使用read_lock锁
+</span></span><span class=line><span class=cl> |     | |-c_heap_get_root()
+</span></span><span class=line><span class=cl> |     | | ###END###
+</span></span><span class=line><span class=cl> |     |-set_thread_name()                    ← 设置线程名称writerN
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-test_readall()                             ← 如果使用参数-T，则调用插件读取一行
+</span></span><span class=line><span class=cl> | |-plugin_read_all_once()                   ← 调用各个插件的读取函数，测试是否有误
+</span></span><span class=line><span class=cl> |   |-c_heap_get_root()
+</span></span><span class=line><span class=cl> |   |-rf_callback()                          ← 调用各个插件的读取函数
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-do_loop()                                  ← 在此包括了时间间隔
+</span></span><span class=line><span class=cl> | |-cf_get_default_interval()                ← 获取默认的时间间隔
+</span></span><span class=line><span class=cl> | |-cdtime()
+</span></span><span class=line><span class=cl> | | ###BEGIN###while循环调用，判断loop是否可用
+</span></span><span class=line><span class=cl> | |-plugin_read_all()
+</span></span><span class=line><span class=cl> |   |-uc_check_timeout()                     ← 主线程检查是否有插件超时
+</span></span><span class=line><span class=cl> |     |-plugin_dispatch_missing()            ← 如果有超时，则调用注册的回调函数
+</span></span><span class=line><span class=cl> |
+</span></span><span class=line><span class=cl> |-do_shutdown()                              ← 通过INT、TERM信号用于关闭
+</span></span><span class=line><span class=cl>   |-plugin_shutdown_all()                    ← 调用链表上回调函数
+</span></span><span class=line><span class=cl>     |-destroy_all_callbacks()
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 注册简单读取插件
+</span></span><span class=line><span class=cl>plugin_register_read()                        ← 新建read_func_t对象
+</span></span><span class=line><span class=cl> |-plugin_insert_read()
+</span></span><span class=line><span class=cl>   |-llist_create()                           ← 如果第一次调用，则生成read_list
+</span></span><span class=line><span class=cl>   |-c_heap_create()                          ← 如果第一次调用，则生成read_heap
+</span></span><span class=line><span class=cl>   |-llist_search()                           ← 是否重复注册，直接返回
+</span></span><span class=line><span class=cl>   |-c_heap_insert()                          ← 写入read_heap，通过rf_next_read排序，也即下次要读取时间
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 各个插件在采集完数据之后用于保存数据
+</span></span><span class=line><span class=cl>plugin_dispatch_values()
+</span></span><span class=line><span class=cl> |-check_drop_value()                         ← 检查是否会丢弃数据
+</span></span><span class=line><span class=cl> | |-get_drop_probability()                   ← 用于计算是否丢弃
+</span></span><span class=line><span class=cl> |-plugin_write_enqueue()                     ← 直接写入到write_queue链表的末尾
+</span></span><span class=line><span class=cl>   |-plugin_value_list_clone()                ← 复制一份，会自动填充主机名、采集时间、采样频率
+</span></span><span class=line><span class=cl>   | |-malloc()
+</span></span><span class=line><span class=cl>   | |-meta_data_clone()
+</span></span><span class=line><span class=cl>   |-plugin_get_ctx()                        保存读插件的上下文信息
+</span></span><span class=line><span class=cl>   |-pthread_mutex_lock()                    对write_lock加锁
+</span></span><span class=line><span class=cl>   |-pthread_cond_signal()                   向write_cond发送信号
+</span></span><span class=line><span class=cl>   |-pthread_cond_signal()                    ← 添加到write_queue链表中，并发送write_cond
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 注册简单写回调函数，保存到list_write链表中
+</span></span><span class=line><span class=cl>plugin_register_write()
+</span></span><span class=line><span class=cl> |-create_register_callback()
+</span></span><span class=line><span class=cl>   |-calloc()                                 ← 分配插件需要空间
+</span></span><span class=line><span class=cl>   |-register_callback()                      ← 添加到list_write链表中
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 注册到链表中，部分需要插件需要执行刷新，如rrdtool、network会注册该函数
+</span></span><span class=line><span class=cl>plugin_register_flush()
+</span></span><span class=line><span class=cl> |-create_register_callback()                 ← 添加到list_flush链表中
+</span></span><span class=line><span class=cl> |-plugin_register_complex_read()             ← 如果刷新时间间隔不为0，则调用该插件注册
+</span></span><span class=line><span class=cl>                                              ← 回调函数plugin_flush_timeout_callback()
+</span></span></code></pre></div><a class=anchor id=读线程></a><h2>读线程 <a href=#%e8%af%bb%e7%ba%bf%e7%a8%8b aria-hidden=true>#</a></h2><p>在通过 <code>plugin_register_read()</code> 函数进行注册时，会生成 read_list 和 read_heap 两个全局变量，其中 read_list 只是用来维护注册的读插件，实际用途不大；而 read_heap 类似于堆排序，用于获取最近需要进行读取的插件，也就是说，下个时间点调用那个函数，通过 heap 进行排序。</p><p>如果调用插件读取失败，则会采用 double 的退避措施，也就是将下次采集时间乘以 2，直到 max_read_interval 值；读取成功时则会直接恢复原有的采集时间。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>static void *plugin_read_thread(void __attribute__((unused)) * args) {
+</span></span><span class=line><span class=cl>  while (read_loop != 0) {
+</span></span><span class=line><span class=cl>    // 从read_heap中读取排序在前的对象，一般只是由于多线程之间竞争导致阻塞
+</span></span><span class=line><span class=cl>    // 不过，还有可能会存在线程数大于插件数的情况，此时就会进入条件等待
+</span></span><span class=line><span class=cl>    pthread_mutex_lock(&amp;read_lock);
+</span></span><span class=line><span class=cl>    rf = c_heap_get_root(read_heap);
+</span></span><span class=line><span class=cl>    if (rf == NULL) {
+</span></span><span class=line><span class=cl>      pthread_cond_wait(&amp;read_cond, &amp;read_lock);
+</span></span><span class=line><span class=cl>      pthread_mutex_unlock(&amp;read_lock);
+</span></span><span class=line><span class=cl>      continue;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    pthread_mutex_unlock(&amp;read_lock);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // 也就是监控的时间间隔，正常会在插件加载的时候已经配置
+</span></span><span class=line><span class=cl>    // 默认是采用全局的配置，不过也可以在插件配置中设置自己的参数
+</span></span><span class=line><span class=cl>    if (rf-&gt;rf_interval == 0) {
+</span></span><span class=line><span class=cl>      rf-&gt;rf_interval = plugin_get_interval();
+</span></span><span class=line><span class=cl>      rf-&gt;rf_effective_interval = rf-&gt;rf_interval;
+</span></span><span class=line><span class=cl>      rf-&gt;rf_next_read = cdtime();
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // 正常来说我们可以在此执行nsleep()做等待，但是在关闭读线程时，仍使用read_cond
+</span></span><span class=line><span class=cl>    pthread_mutex_lock(&amp;read_lock);
+</span></span><span class=line><span class=cl>    // 对于Linux来说，不会有惊群现象，但是对于NetBSD而且CPU&gt;1时会存在问题
+</span></span><span class=line><span class=cl>    rc = 0;
+</span></span><span class=line><span class=cl>    while ((read_loop != 0) &amp;&amp; (cdtime() &lt; rf-&gt;rf_next_read) &amp;&amp; rc == 0) {
+</span></span><span class=line><span class=cl>      rc = pthread_cond_timedwait(&amp;read_cond, &amp;read_lock,
+</span></span><span class=line><span class=cl>                                  &amp;CDTIME_T_TO_TIMESPEC(rf-&gt;rf_next_read));
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    rf_type = rf-&gt;rf_type;          // 需要持有read_lock读取
+</span></span><span class=line><span class=cl>    pthread_mutex_unlock(&amp;read_lock);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // 如上所述，此时可能是需要退出的，在此检查下
+</span></span><span class=line><span class=cl>    if (read_loop == 0) {
+</span></span><span class=line><span class=cl>      c_heap_insert(read_heap, rf); // 为了可以正常free，需要将rf重新插入到read_heap中
+</span></span><span class=line><span class=cl>      break;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // 在plugin_unregister_read()函数中，已经将该插件删除，此时只需要删除即可
+</span></span><span class=line><span class=cl>    if (rf_type == RF_REMOVE) {
+</span></span><span class=line><span class=cl>      DEBUG(&#34;plugin_read_thread: Destroying the `%s&#39; callback.&#34;, rf-&gt;rf_name);
+</span></span><span class=line><span class=cl>      sfree(rf-&gt;rf_name);
+</span></span><span class=line><span class=cl>      destroy_callback((callback_func_t *)rf);
+</span></span><span class=line><span class=cl>      rf = NULL;
+</span></span><span class=line><span class=cl>      continue;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // OK，开始正式调用插件读取数据了
+</span></span><span class=line><span class=cl>    DEBUG(&#34;plugin_read_thread: Handling `%s&#39;.&#34;, rf-&gt;rf_name);
+</span></span><span class=line><span class=cl>    start = cdtime();
+</span></span><span class=line><span class=cl>    old_ctx = plugin_set_ctx(rf-&gt;rf_ctx);
+</span></span><span class=line><span class=cl>    if (rf_type == RF_SIMPLE) {
+</span></span><span class=line><span class=cl>      int (*callback)(void);
+</span></span><span class=line><span class=cl>      callback = rf-&gt;rf_callback;
+</span></span><span class=line><span class=cl>      status = (*callback)();
+</span></span><span class=line><span class=cl>    } else {
+</span></span><span class=line><span class=cl>      plugin_read_cb callback;
+</span></span><span class=line><span class=cl>      assert(rf_type == RF_COMPLEX);
+</span></span><span class=line><span class=cl>      callback = rf-&gt;rf_callback;
+</span></span><span class=line><span class=cl>      status = (*callback)(&amp;rf-&gt;rf_udata);
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    plugin_set_ctx(old_ctx);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // 如果失败则会将下次采集的时间间隔double，当然是有上限的；成功时则会恢复原有的采集时间间隔
+</span></span><span class=line><span class=cl>    if (status != 0) {
+</span></span><span class=line><span class=cl>      rf-&gt;rf_effective_interval *= 2;
+</span></span><span class=line><span class=cl>      if (rf-&gt;rf_effective_interval &gt; max_read_interval)
+</span></span><span class=line><span class=cl>        rf-&gt;rf_effective_interval = max_read_interval;
+</span></span><span class=line><span class=cl>    } else {
+</span></span><span class=line><span class=cl>      rf-&gt;rf_effective_interval = rf-&gt;rf_interval;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>    now = cdtime();
+</span></span><span class=line><span class=cl>    elapsed = (now - start);  // 计算本次花费的时间
+</span></span><span class=line><span class=cl>    if (elapsed &gt; rf-&gt;rf_effective_interval)
+</span></span><span class=line><span class=cl>      WARNING(... ...);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // 计算下次需要调用插件的时间
+</span></span><span class=line><span class=cl>    rf-&gt;rf_next_read += rf-&gt;rf_effective_interval;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // 如果采集时间超过了时间间隔，则立即重新采集
+</span></span><span class=line><span class=cl>    if (rf-&gt;rf_next_read &lt; now) {
+</span></span><span class=line><span class=cl>      rf-&gt;rf_next_read = now;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    // 重新写入到read_heap中，到此插件调用结束
+</span></span><span class=line><span class=cl>    c_heap_insert(read_heap, rf);
+</span></span><span class=line><span class=cl>  } /* while (read_loop) */
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  pthread_exit(NULL);
+</span></span><span class=line><span class=cl>  return ((void *)0);
+</span></span><span class=line><span class=cl>} /* void *plugin_read_thread */
+</span></span></code></pre></div><p>从上述的函数调用可知，collectd 框架不会负责数据采集写入，需要由各个插件负责。</p><a class=anchor id=插件采集数据></a><h2>插件采集数据 <a href=#%e6%8f%92%e4%bb%b6%e9%87%87%e9%9b%86%e6%95%b0%e6%8d%ae aria-hidden=true>#</a></h2><p>实际上，在 contrib/examples 目录下有个插件的示例程序；在此选一个比较简单的插件 load，一般最终会通过 <code>plugin_dispatch_values()</code> 函数提交。该函数主要是将数据添加到 write_queue_head 列表中，并发送 write_cond。</p><a class=anchor id=插件实现-1></a><h1>插件实现 <a href=#%e6%8f%92%e4%bb%b6%e5%ae%9e%e7%8e%b0-1 aria-hidden=true>#</a></h1><a class=anchor id=exec></a><h2>exec <a href=#exec aria-hidden=true>#</a></h2><p>这是一个通用的插件，不过每次执行时都需要 fork 一个进程，如果需要多次采集那么其性能会变的很差，所以对于一些特定的插件，如 Python 建议不要使用该插件。</p><p>如下是一个 exec 插件的配置示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Loadplugin exec
+</span></span><span class=line><span class=cl>&lt;Plugin exec&gt;
+</span></span><span class=line><span class=cl>  Exec &#34;user:group&#34; &#34;program&#34;
+</span></span><span class=line><span class=cl>  Exec &#34;some-user&#34; &#34;/path/to/another/binary&#34; &#34;arg0&#34; &#34;arg1&#34;
+</span></span><span class=line><span class=cl>  NotificationExec &#34;user&#34; &#34;/path/to/handle_notification&#34;
+</span></span><span class=line><span class=cl>&lt;/Plugin&gt;
+</span></span></code></pre></div><p>以 bash 插件为例，直接通过 <a href=https://collectd.org/wiki/index.php/Plain_text_protocol>Plain text protocol</a> 方式向 Collectd 发送数据。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=cp>#!/bin/bash
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=nv>HOSTNAME</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>COLLECTD_HOSTNAME</span><span class=k>:-</span><span class=sb>`</span>hostname -f<span class=sb>`</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>INTERVAL</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>COLLECTD_INTERVAL</span><span class=k>:-</span><span class=nv>10</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>PORT</span><span class=o>=</span><span class=m>6379</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>while</span> sleep <span class=s2>&#34;</span><span class=nv>$INTERVAL</span><span class=s2>&#34;</span><span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>    <span class=nv>info</span><span class=o>=</span><span class=k>$(</span><span class=nb>echo</span> info<span class=p>|</span>nc -w <span class=m>1</span> 127.0.0.1 <span class=nv>$PORT</span><span class=k>)</span>
+</span></span><span class=line><span class=cl>    <span class=nv>connected_clients</span><span class=o>=</span><span class=k>$(</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$info</span><span class=s2>&#34;</span><span class=p>|</span>awk -F : <span class=s1>&#39;$1 == &#34;connected_clients&#34; {print $2}&#39;</span><span class=k>)</span>
+</span></span><span class=line><span class=cl>    <span class=nv>connected_slaves</span><span class=o>=</span><span class=k>$(</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$info</span><span class=s2>&#34;</span><span class=p>|</span>awk -F : <span class=s1>&#39;$1 == &#34;connected_slaves&#34; {print $2}&#39;</span><span class=k>)</span>
+</span></span><span class=line><span class=cl>    <span class=nv>uptime</span><span class=o>=</span><span class=k>$(</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$info</span><span class=s2>&#34;</span><span class=p>|</span>awk -F : <span class=s1>&#39;$1 == &#34;uptime_in_seconds&#34; {print $2}&#39;</span><span class=k>)</span>
+</span></span><span class=line><span class=cl>    <span class=nv>used_memory</span><span class=o>=</span><span class=k>$(</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$info</span><span class=s2>&#34;</span><span class=p>|</span>awk -F <span class=s2>&#34;:&#34;</span> <span class=s1>&#39;$1 == &#34;used_memory&#34; {print $2}&#39;</span><span class=p>|</span>sed -e <span class=s1>&#39;s/\r//&#39;</span><span class=k>)</span>
+</span></span><span class=line><span class=cl>    <span class=nv>changes_since_last_save</span><span class=o>=</span><span class=k>$(</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$info</span><span class=s2>&#34;</span><span class=p>|</span>awk -F : <span class=s1>&#39;$1 == &#34;changes_since_last_save&#34; {print $2}&#39;</span><span class=k>)</span>
+</span></span><span class=line><span class=cl>    <span class=nv>total_commands_processed</span><span class=o>=</span><span class=k>$(</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$info</span><span class=s2>&#34;</span><span class=p>|</span>awk -F : <span class=s1>&#39;$1 == &#34;total_commands_processed&#34; {print $2}&#39;</span><span class=k>)</span>
+</span></span><span class=line><span class=cl>    <span class=nv>keys</span><span class=o>=</span><span class=k>$(</span><span class=nb>echo</span> <span class=s2>&#34;</span><span class=nv>$info</span><span class=s2>&#34;</span><span class=p>|</span>egrep -e <span class=s2>&#34;^db0&#34;</span><span class=p>|</span>sed -e <span class=s1>&#39;s/^.\+:keys=//&#39;</span><span class=p>|</span>sed -e <span class=s1>&#39;s/,.\+//&#39;</span><span class=k>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nb>echo</span> <span class=s2>&#34;PUTVAL </span><span class=nv>$HOSTNAME</span><span class=s2>/redis-</span><span class=nv>$PORT</span><span class=s2>/memcached_connections-clients interval=</span><span class=nv>$INTERVAL</span><span class=s2> N:</span><span class=nv>$connected_clients</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nb>echo</span> <span class=s2>&#34;PUTVAL </span><span class=nv>$HOSTNAME</span><span class=s2>/redis-</span><span class=nv>$PORT</span><span class=s2>/memcached_connections-slaves interval=</span><span class=nv>$INTERVAL</span><span class=s2> N:</span><span class=nv>$connected_slaves</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nb>echo</span> <span class=s2>&#34;PUTVAL </span><span class=nv>$HOSTNAME</span><span class=s2>/redis-</span><span class=nv>$PORT</span><span class=s2>/uptime interval=</span><span class=nv>$INTERVAL</span><span class=s2> N:</span><span class=nv>$uptime</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nb>echo</span> <span class=s2>&#34;PUTVAL </span><span class=nv>$HOSTNAME</span><span class=s2>/redis-</span><span class=nv>$PORT</span><span class=s2>/df-memory interval=</span><span class=nv>$INTERVAL</span><span class=s2> N:</span><span class=nv>$used_memory</span><span class=s2>:U&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nb>echo</span> <span class=s2>&#34;PUTVAL </span><span class=nv>$HOSTNAME</span><span class=s2>/redis-</span><span class=nv>$PORT</span><span class=s2>/files-unsaved_changes interval=</span><span class=nv>$INTERVAL</span><span class=s2> N:</span><span class=nv>$changes_since_last_save</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nb>echo</span> <span class=s2>&#34;PUTVAL </span><span class=nv>$HOSTNAME</span><span class=s2>/redis-</span><span class=nv>$PORT</span><span class=s2>/memcached_command-total interval=</span><span class=nv>$INTERVAL</span><span class=s2> N:</span><span class=nv>$total_commands_processed</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nb>echo</span> <span class=s2>&#34;PUTVAL </span><span class=nv>$HOSTNAME</span><span class=s2>/redis-</span><span class=nv>$PORT</span><span class=s2>/memcached_items-db0 interval=</span><span class=nv>$INTERVAL</span><span class=s2> N:</span><span class=nv>$keys</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>done</span>
+</span></span></code></pre></div><p>在配置文件中添加如下内容即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&lt;Plugin exec&gt;
+</span></span><span class=line><span class=cl>    Exec nobody &#34;/etc/collectd/redis.sh&#34;
+</span></span><span class=line><span class=cl>&lt;/Plugin&gt;
+</span></span></code></pre></div><a class=anchor id=python></a><h2>python <a href=#python aria-hidden=true>#</a></h2><p>Python 中有很多不错的库，例如可以通过 <a href=https://pypi.python.org/pypi/collectd>pypi/collectd</a> 库，可以向 collectd 的服务端发送数据。而 collectd 的 Python 插件实现，实际上是在插件中以 C 语言的形式实现了一个 collectd 插件。</p><a class=anchor id=示例></a><h3>示例 <a href=#%e7%a4%ba%e4%be%8b aria-hidden=true>#</a></h3><p>Collectd 的插件回调函数同样可以在 Python 中调用，也即 <code>config</code>、<code>init</code>、<code>read</code>、<code>write</code>、<code>log</code>、<code>flush</code>、<code>shutdown</code> 等接口，当然需要在其前添加 <code>register_*</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>import</span> <span class=nn>collectd</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>PATH</span> <span class=o>=</span> <span class=s1>&#39;/proc/uptime&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>config_func</span><span class=p>(</span><span class=n>config</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>    <span class=n>path_set</span> <span class=o>=</span> <span class=kc>False</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=n>node</span> <span class=ow>in</span> <span class=n>config</span><span class=o>.</span><span class=n>children</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=n>key</span> <span class=o>=</span> <span class=n>node</span><span class=o>.</span><span class=n>key</span><span class=o>.</span><span class=n>lower</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=n>val</span> <span class=o>=</span> <span class=n>node</span><span class=o>.</span><span class=n>values</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=n>key</span> <span class=o>==</span> <span class=s1>&#39;path&#39;</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>            <span class=k>global</span> <span class=n>PATH</span>
+</span></span><span class=line><span class=cl>            <span class=n>PATH</span> <span class=o>=</span> <span class=n>val</span>
+</span></span><span class=line><span class=cl>            <span class=n>path_set</span> <span class=o>=</span> <span class=kc>True</span>
+</span></span><span class=line><span class=cl>        <span class=k>else</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>            <span class=n>collectd</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s1>&#39;cpu_temp plugin: Unknown config key &#34;</span><span class=si>%s</span><span class=s1>&#34;&#39;</span> <span class=o>%</span> <span class=n>key</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=n>path_set</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=n>collectd</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s1>&#39;cpu_temp plugin: Using overridden path </span><span class=si>%s</span><span class=s1>&#39;</span> <span class=o>%</span> <span class=n>PATH</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>else</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=n>collectd</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s1>&#39;cpu_temp plugin: Using default path </span><span class=si>%s</span><span class=s1>&#39;</span> <span class=o>%</span> <span class=n>PATH</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>def</span> <span class=nf>read_func</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>    <span class=c1># Read raw value</span>
+</span></span><span class=line><span class=cl>    <span class=k>with</span> <span class=nb>open</span><span class=p>(</span><span class=n>PATH</span><span class=p>,</span> <span class=s1>&#39;rb&#39;</span><span class=p>)</span> <span class=k>as</span> <span class=n>f</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=n>temp</span> <span class=o>=</span> <span class=n>f</span><span class=o>.</span><span class=n>read</span><span class=p>()</span><span class=o>.</span><span class=n>strip</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1># Convert to degrees celsius</span>
+</span></span><span class=line><span class=cl>    <span class=n>deg</span> <span class=o>=</span> <span class=nb>float</span><span class=p>(</span><span class=nb>int</span><span class=p>(</span><span class=n>temp</span><span class=p>))</span> <span class=o>/</span> <span class=mi>1000</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1># Dispatch value to collectd</span>
+</span></span><span class=line><span class=cl>    <span class=n>val</span> <span class=o>=</span> <span class=n>collectd</span><span class=o>.</span><span class=n>Values</span><span class=p>(</span><span class=nb>type</span><span class=o>=</span><span class=s1>&#39;temperature&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>val</span><span class=o>.</span><span class=n>plugin</span> <span class=o>=</span> <span class=s1>&#39;cpu_temp&#39;</span>
+</span></span><span class=line><span class=cl>    <span class=n>val</span><span class=o>.</span><span class=n>dispatch</span><span class=p>(</span><span class=n>values</span><span class=o>=</span><span class=p>[</span><span class=n>deg</span><span class=p>])</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>collectd</span><span class=o>.</span><span class=n>register_config</span><span class=p>(</span><span class=n>config_func</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>collectd</span><span class=o>.</span><span class=n>register_read</span><span class=p>(</span><span class=n>read_func</span><span class=p>)</span>
+</span></span></code></pre></div><p>然后在配置文件中添加如下内容即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>LoadPlugin python
+</span></span><span class=line><span class=cl>&lt;Plugin python&gt;
+</span></span><span class=line><span class=cl>    ModulePath &#34;/opt/collectd_plugins&#34;
+</span></span><span class=line><span class=cl>    Import &#34;cpu_temp&#34;
+</span></span><span class=line><span class=cl>    &lt;Module cpu_temp&gt;
+</span></span><span class=line><span class=cl>        Path &#34;/sys/class/thermal/thermal_zone0/temp&#34;
+</span></span><span class=line><span class=cl>    &lt;/Module&gt;
+</span></span><span class=line><span class=cl>&lt;/Plugin&gt;
+</span></span></code></pre></div><a class=anchor id=java></a><h2>java <a href=#java aria-hidden=true>#</a></h2><p>与 Python 相似，同样是内嵌了 JVM，将 API 暴露给 JAVA 程序，这样就不需要每次重新调用生成新的进程以及启动 JVM 。</p><p>在 CentOS 中，编译前需要安装开发包，如 <code>java-1.8.0-openjdk-devel</code>，在通过 <code>configure</code> 命令进行配置时需要添加 <code>--enable-java --with-java=$JAVA_HOME</code> 参数；除了上述两个参数外，还可以通过命令行指定 JAVA 相关的参数，示例如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ ./configure --with-java=$JAVA_HOME JAVA_CFLAGS=&#34;-I$JAVA_HOME/include -I$JAVA_HOME/include/linux&#34; \
+</span></span><span class=line><span class=cl>    JAVA_CPPFLAGS=&#34;-I$JAVA_HOME/include -I$JAVA_HOME/include/linux&#34;                                \
+</span></span><span class=line><span class=cl>    JAVA_LDFLAGS=&#34;-I$JAVA_HOME/include -I$JAVA_HOME/include/linux&#34;                                 \
+</span></span><span class=line><span class=cl>    JAVA_LIBS=&#34;-I$JAVA_HOME/include&#34; JAR=&#34;/path/to/jar&#34; JAVAC=&#34;/path/to/javac&#34;                     \
+</span></span><span class=line><span class=cl>    --enable-java=force
+</span></span></code></pre></div><p>编译完成后，会生成 <code>bindings/java/.libs/{collectd-api.jar,generic-jmx.jar}</code> 两个 jar 包；当通过 RPM 包安装时，默认会安装到 <code>/usr/share/collectd/java/</code> 目录下。</p><p>如下是一个 java 配置内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&lt;Plugin &#34;java&#34;&gt;
+</span></span><span class=line><span class=cl>  JVMArg &#34;-verbose:jni&#34;
+</span></span><span class=line><span class=cl>  JVMArg &#34;-Djava.class.path=/lib/collectd/bindings/java&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  LoadPlugin &#34;org.collectd.java.Foobar&#34;
+</span></span><span class=line><span class=cl>  &lt;Plugin &#34;org.collectd.java.Foobar&#34;&gt;
+</span></span><span class=line><span class=cl>    # To be parsed by the plugin
+</span></span><span class=line><span class=cl>  &lt;/Plugin&gt;
+</span></span><span class=line><span class=cl>&lt;/Plugin&gt;
+</span></span></code></pre></div><p>以及采集程序示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kn>import</span> <span class=nn>org.collectd.api.Collectd</span><span class=o>;</span>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=nn>org.collectd.api.ValueList</span><span class=o>;</span>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=nn>org.collectd.api.CollectdReadInterface</span><span class=o>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=kd>class</span> <span class=nc>Foobar</span> <span class=kd>implements</span> <span class=n>CollectdReadInterface</span>
+</span></span><span class=line><span class=cl><span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=kd>public</span> <span class=nf>Foobar</span> <span class=o>()</span>
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>Collectd</span><span class=o>.</span><span class=na>registerRead</span> <span class=o>(</span><span class=s>&#34;Foobar&#34;</span><span class=o>,</span> <span class=k>this</span><span class=o>);</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kd>public</span> <span class=kt>int</span> <span class=nf>read</span> <span class=o>()</span>
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>ValueList</span> <span class=n>vl</span><span class=o>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* Do something... */</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>Collectd</span><span class=o>.</span><span class=na>dispatchValues</span> <span class=o>(</span><span class=n>vl</span><span class=o>);</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></div><a class=anchor id=杂项></a><h1>杂项 <a href=#%e6%9d%82%e9%a1%b9 aria-hidden=true>#</a></h1><a class=anchor id=libtoolize></a><h2>libtoolize <a href=#libtoolize aria-hidden=true>#</a></h2><p>如果报 <code>libtoolize: 'COPYING.LIB' not found in '/usr/share/libtool/libltdl'</code> 错误。</p><p>依赖 <code>libtool-ltdl-devel</code> 库，一个 GUN 提供的库，类似于 POSIX 的 <code>dlopen()</code> ，不过据说更简单且强大；详细可以参考官方文档 <a href=https://www.gnu.org/software/libtool/manual/html_node/Using-libltdl.html>Using libltdl</a> 。</p><p>另外，需要注意的是，该库并不能保证线程安全。</p><a class=anchor id=bug-fix></a><h1>BUG-FIX <a href=#bug-fix aria-hidden=true>#</a></h1><a class=anchor id=日志输出></a><h2>日志输出 <a href=#%e6%97%a5%e5%bf%97%e8%be%93%e5%87%ba aria-hidden=true>#</a></h2><p>如果将日志输出到文件时，可能会报如下的错误。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>collectd -C collectd.conf -t
+</span></span><span class=line><span class=cl>logfile plugin: fopen (/opt/collectd/var/log/collectd.log) failed: No such file or directory
+</span></span></code></pre></div><p>修改 logfile.c 中的默认文件，设置为标准错误输出 <code>STDERR</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>//#define DEFAULT_LOGFILE LOCALSTATEDIR &#34;/log/collectd.log&#34;
+</span></span><span class=line><span class=cl>#define DEFAULT_LOGFILE &#34;stderr&#34;
+</span></span></code></pre></div><a class=anchor id=faq></a><h1>FAQ <a href=#faq aria-hidden=true>#</a></h1><a class=anchor id=meta-data-的作用是></a><h5>meta data 的作用是？ <a href=#meta-data-%e7%9a%84%e4%bd%9c%e7%94%a8%e6%98%af aria-hidden=true>#</a></h5><p>meta data (meta_data_t) 用于将一些数据附加到已经存在的结构体上，如 values_list_t，对应的是 KV 结构，其中一个使用场景是 network 插件，用于标示从哪个插件采集来的，防止出现循环，也用于该插件的 Forward 选项。</p><a class=anchor id=参考></a><h1>参考 <a href=#%e5%8f%82%e8%80%83 aria-hidden=true>#</a></h1><p>一些与 collectd 相关的工具，可以参考 <a href=http://collectd.org/related.shtml>Related sites</a> 。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a></li><li><a href=#常用概念>常用概念</a><ul><li><a href=#标示符-identifier>标示符 (Identifier)</a></li><li><a href=#采集值类型>采集值类型</a></li></ul></li><li><a href=#插件实现>插件实现</a><ul><li><a href=#新增插件>新增插件</a></li></ul></li><li><a href=#源码详解>源码详解</a><ul><li><a href=#内存管理>内存管理</a></li><li><a href=#调用流程>调用流程</a></li><li><a href=#读线程>读线程</a></li><li><a href=#插件采集数据>插件采集数据</a></li></ul></li><li><a href=#插件实现-1>插件实现</a><ul><li><a href=#exec>exec</a></li><li><a href=#python>python</a></li><li><a href=#java>java</a></li></ul></li><li><a href=#杂项>杂项</a><ul><li><a href=#libtoolize>libtoolize</a></li></ul></li><li><a href=#bug-fix>BUG-FIX</a><ul><li><a href=#日志输出>日志输出</a></li></ul></li><li><a href=#faq>FAQ</a><ul><li></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

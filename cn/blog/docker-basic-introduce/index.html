@@ -1,214 +1,237 @@
-<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Docker 使用简介 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="从 Docker 1.11 开始，Docker 容器运行已经不是简单的通过 Docker Daemon 启动，而是集成了 containerd、runC 等多个组件，在 Docker 服务启动之后，可以看到系统上启动了 dockerd、containerd 等进程。
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Docker 使用简介 | GoHalo</title><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="从 Docker 1.11 开始，Docker 容器运行已经不是简单的通过 Docker Daemon 启动，而是集成了 containerd、runC 等多个组件，在 Docker 服务启动之后，可以看到系统上启动了 dockerd、containerd 等进程。
 这里简单介绍一些与 Docker 相关的基本概念。
-"><link rel=canonical href=https://gohalo.github.io/cn/blog/docker-basic-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/docker-basic-introduce/","url":"https://gohalo.github.io/cn/blog/docker-basic-introduce/","name":"Docker 使用简介","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2021-09-20T23:10:15CET","dateModified":"2021-09-20T23:10:15CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/docker-basic-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/docker-basic-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/docker-basic-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/docker-basic-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/docker-basic-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"Docker 使用简介","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/docker-basic-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/docker-basic-introduce/"},"datePublished":"2021-09-20T23:10:15CET","dateModified":"2021-09-20T23:10:15CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/docker-basic-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/docker-basic-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"Docker 使用简介"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
-<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
-<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
-<span>页面目录</span>
-<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li><li><a href=#镜像地址>镜像地址</a></li></ul></li><li><a href=#配置使用>配置使用</a><ul><li><a href=#仓库地址>仓库地址</a></li><li><a href=#修改存储目录>修改存储目录</a></li><li><a href=#启动参数>启动参数</a></li></ul></li><li><a href=#常用命令>常用命令</a><ul><li><a href=#端口映射>端口映射</a></li><li><a href=#资源清理>资源清理</a></li><li><a href=#dangling-images>dangling images</a></li></ul></li><li><a href=#镜像介绍>镜像介绍</a><ul><li><a href=#目录结构>目录结构</a></li><li><a href=#存储驱动>存储驱动</a></li></ul></li><li><a href=#镜像管理>镜像管理</a><ul><li><a href=#常用镜像>常用镜像</a></li><li><a href=#私有镜像>私有镜像</a></li></ul></li><li><a href=#常见问题>常见问题</a><ul><li><a href=#容器已经在运行>容器已经在运行</a></li><li><a href=#证书验证报错>证书验证报错</a></li><li><a href=#拉取镜像报错>拉取镜像报错</a></li></ul></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li><li><a href=#镜像地址>镜像地址</a></li></ul></li><li><a href=#配置使用>配置使用</a><ul><li><a href=#仓库地址>仓库地址</a></li><li><a href=#修改存储目录>修改存储目录</a></li><li><a href=#启动参数>启动参数</a></li></ul></li><li><a href=#常用命令>常用命令</a><ul><li><a href=#端口映射>端口映射</a></li><li><a href=#资源清理>资源清理</a></li><li><a href=#dangling-images>dangling images</a></li></ul></li><li><a href=#镜像介绍>镜像介绍</a><ul><li><a href=#目录结构>目录结构</a></li><li><a href=#存储驱动>存储驱动</a></li></ul></li><li><a href=#镜像管理>镜像管理</a><ul><li><a href=#常用镜像>常用镜像</a></li><li><a href=#私有镜像>私有镜像</a></li></ul></li><li><a href=#常见问题>常见问题</a><ul><li><a href=#容器已经在运行>容器已经在运行</a></li><li><a href=#证书验证报错>证书验证报错</a></li><li><a href=#拉取镜像报错>拉取镜像报错</a></li></ul></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>Docker 使用简介</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2021-09-20</span>
-<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/container/ role=button>container</a>
-<a class="btn btn-light" href=https://gohalo.github.io/tags/docker/ role=button>docker</a></div></div><hr><div class=content-body><p>从 Docker 1.11 开始，Docker 容器运行已经不是简单的通过 Docker Daemon 启动，而是集成了 containerd、runC 等多个组件，在 Docker 服务启动之后，可以看到系统上启动了 dockerd、containerd 等进程。</p><p>这里简单介绍一些与 Docker 相关的基本概念。</p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>在安装了 Docker 之后，比较重要的组件主要有如下几种：</p><ul><li><code>docker</code> 一个客户端工具，用来把用户的请求发送给 dockerd；</li><li><code>dockerd</code> 一般也会被称为 docker engine，在后台运行；</li><li><code>docker-containerd</code> 管理 Docker 的核心组件；</li><li><code>docker-containerd-shim</code> 容器的运行时载体；</li><li><code>runc</code> 真正运行的容器。</li></ul><p>各个模块的组件如下。</p><img src=images/docker-runc-arch.png alt="docker runc" width=70%><h2 id=安装>安装 <a href=#%e5%ae%89%e8%a3%85 class=anchor aria-hidden=true>#</a></h2><p>这里包含了 CentOS、Debain 原生的安装，以及直接通过二进制包安装。</p><h3 id=centos>CentOS <a href=#centos class=anchor aria-hidden=true>#</a></h3><p>可以通过安装 YUM 安装。</p><pre tabindex=0><code>----- 如有需要，删除老版本
-# yum remove docker docker-client docker-client-latest docker-common docker-latest \
-	docker-latest-logrotate docker-logrotate docker-engine
-
------ 配置阿里云的源
-# yum install -y yum-utils device-mapper-persistent-data lvm2
-# yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-
------ 安装包
-# yum install docker-ce docker-ce-cli containerd.io
-</code></pre><p>在 CentOS 8 中，如果使用 <code>yum-config-manager</code> 需要安装 <code>dnf-utils</code> 包。</p><h3 id=debain>Debain <a href=#debain class=anchor aria-hidden=true>#</a></h3><p>通过 apt 进行安装，使用的是网易的镜像源。</p><pre tabindex=0><code>----- 添加源
-# curl -fsSL http://mirrors.163.com/docker-ce/linux/debian/gpg | sudo apt-key add -
-# add-apt-repository &#34;deb http://mirrors.163.com/linux/debian $(lsb_release -cs) stable&#34;
-
------ 更新源数据并安装
-# apt update
-# apt install docker-ce
-</code></pre><h3 id=二进制>二进制 <a href=#%e4%ba%8c%e8%bf%9b%e5%88%b6 class=anchor aria-hidden=true>#</a></h3><p>或者下载 <a href=https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/>静态二进制文件</a>，直接复制到 <code>/usr/bin</code> 目录下，并将 <a href=reference/docker.service>docker.service</a> <a href=reference/docker.socket>docker.socket</a> <a href=reference/containerd.service>containerd.service</a> 几个服务添加到 <code>/usr/lib/systemd/system/</code> 目录下。</p><p>正常来说，可以将二进制文件放到 <code>/opt/docker</code> 目录下，但是在执行 <code>run</code> 命令的时候会报 <code>shim</code> 命令在 <code>PATH</code> 中不存在，应该是查找路径没有配置好，暂时没有仔细研究怎么配置。</p><h2 id=镜像地址>镜像地址 <a href=#%e9%95%9c%e5%83%8f%e5%9c%b0%e5%9d%80 class=anchor aria-hidden=true>#</a></h2><p>默认 Docker 会使用 <code>index.docker.io</code> 作为镜像源，国内使用会比较慢，可以使用一些国内镜像替换，直接修改 <code>/etc/docker/daemon.json</code> 配置文件。</p><pre tabindex=0><code>{
-    &#34;registry-mirrors&#34;: [
-        &#34;https://registry.hub.docker.com&#34;,
-        &#34;http://hub-mirror.c.163.com&#34;,
-        &#34;https://docker.mirrors.ustc.edu.cn&#34;,
-        &#34;https://registry.docker-cn.com&#34;
-    ]
-}
-</code></pre><p>修改后重启，然后通过 <code>docker info</code> 查看 <code>Registry Mirrors</code> 配置项即可。</p><h1 id=配置使用>配置使用 <a href=#%e9%85%8d%e7%bd%ae%e4%bd%bf%e7%94%a8 class=anchor aria-hidden=true>#</a></h1><p>安装完后可以通过 <code>systemctl start docker</code> 启动，通过 <code>docker run hello-world</code> 进行测试。</p><h2 id=仓库地址>仓库地址 <a href=#%e4%bb%93%e5%ba%93%e5%9c%b0%e5%9d%80 class=anchor aria-hidden=true>#</a></h2><p>可以通过 <code>docker info</code> 中的 Registry 字段查看当前使用的仓库地址，如果没有则使用的是默认 <code>https://hub.docker.com/</code> 地址，在国内的仓库 <code>registry.docker-cn.com</code> 中包含了流行的公有镜像，私有镜像仍需要从 Docker Hub 镜像库中拉取。</p><pre tabindex=0><code>----- 通过命令行拉取
-$ docker pull registry.docker-cn.com/library/ubuntu:16.04
-</code></pre><p>也可以在启动的时候通过 <code>--registry-mirror</code> 参数指定，然后直接使用 <code>library/ubuntu</code> 获取。还可以在配置文件 <code>/etc/docker/daemon.json</code> 文件并添加上 <code>registry-mirrors</code> 配置。</p><pre tabindex=0><code>{
-    &#34;registry-mirrors&#34;: [&#34;https://registry.docker-cn.com&#34;]
-}
-</code></pre><h2 id=修改存储目录>修改存储目录 <a href=#%e4%bf%ae%e6%94%b9%e5%ad%98%e5%82%a8%e7%9b%ae%e5%bd%95 class=anchor aria-hidden=true>#</a></h2><p>容器的镜像等数据会保存在 Docker 的根目录下，可以通过 <code>docker info | grep 'Docker Root Dir'</code> 查看当前的配置，默认保存在 <code>/var/lib/docker</code> 目录下，可以通过如下方式修改。</p><pre tabindex=0><code># vim /etc/docker/daemon.json
-{
-	&#34;data-root&#34;: &#34;/opt/docker&#34;
-}
-</code></pre><p>然后重启 docker 服务即可，另外，在 19 版本之前可以使用 <code>graph</code> 参数，不过其之后建议使用 <code>data-root</code> 参数。</p><h2 id=启动参数>启动参数 <a href=#%e5%90%af%e5%8a%a8%e5%8f%82%e6%95%b0 class=anchor aria-hidden=true>#</a></h2><p>可以在启动时通过参数定制，例如.</p><ul><li><code>--storage-driver=overlay2</code> 使用存储驱动；</li><li><code>--registry-mirror=https://foobar.com</code> 镜像地址；</li><li><code>--insecure-registry=http://foobar.com</code> 指定非安全的镜像仓库地址。</li></ul><h1 id=常用命令>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 class=anchor aria-hidden=true>#</a></h1><p>在通过 <code>run</code> 命令启动时，常用的参数如下。</p><pre tabindex=0><code>-i, --interactive=true|false   保持STDIN打开，也就是交互方式
--t, --tty=true|false           是否分配一个tty终端
--d, --detach=true|false        在后台运行
--p, --publish=[]               端口映射，可以查看帮助
--v, --volume=[]                文件映射，可以查看帮助
---name                         指定运行时的容器名称
-</code></pre><p>详细可通过 <code>man docker</code> 查看帮助，利用 <code>man docker-run</code> 查看子命令帮助文档。</p><pre tabindex=0><code>----- 查找镜像
-# docker search centos
-
------ 下载镜像，可以通过 :NAME.TAG 指定版本号以及Tag信息
-# docker pull docker.io/hello-world
-# docker pull docker.io/centos
-
------ 查看镜像，及其详细信息，也可以查看DIGEST
-# docker images --digests
-REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-docker.io/centos    latest              67fa590cfc1c        4 weeks ago         202 MB
-# docker inspect 67fa590cfc1c
-
------ 镜像的构建信息，包括了含有几层，可以通过 --no-trunc 查看完整命令
-# docker history busybox
-
------ 删除镜像，可以通过REPO或者ID指定
-# docker image rm 67fa590cfc1c
-
------ 重命名镜像，通过ID指定，同样可以删除Tag
-# docker tag 67fa590cfc1c centos
-# docker rmi centos:7.7.1908
-
------ 运行容器，指定名称为REPOSITORY:TAG
-# docker run hello-world
-# docker run -it docker.io/centos /bin/bash
-
------ 后台运行，并attach到后台容器
-# docker run -itd --name centos centos /bin/bash
-# docker exec -it centos /bin/bash
-
------ 查看正在运行的容器，可以通过-a参数查看所有
-# docker ps
-
------- 可以从容器和本地之间相互复制文件
-# docker cp YourContainerID:/opt/file.txt /opt/file.txt
-# docker cp /opt/file.txt YourContainerID:/opt/file.txt
-
------ 链接到运行的容器，需要指定CONTAINER ID
-# docker start 5328dfa90416
-# docker stop 5328dfa90416
-# docker attach 5328dfa90416
-# docker container rm 5328dfa90416
-
------ 如果要推送镜像是需要登录的，默认会明文保存在~/.docker/config.json文件中，也可以logout
-# docker login registry.example.com
-
------ 重命名镜像，通过ID指定，也可以增加自己的仓库地址，然后直接推送的自己的仓库中
-# docker tag 67fa590cfc1c centos:7.9.2009
-# docker tag 67fa590cfc1c registry.example.com/centos:latest
-# docker push registry.example.com/centos:latest
-
------ 将正在运行的镜像保存
-# docker commit -a &#34;AuthorName&#34; -m &#34;SomeCommitMessage&#34; RunningContainerID Name:Tag
-
------ 将已有的镜像保存，然后本地加载镜像
-$ docker save -o busybox.tar busybox:latest
-$ docker load -i busybox.tar
-
------ 清理已经停止的容器
-# docker ps -a | grep &#34;Exited&#34; | awk &#39;{print $1 }&#39; | xargs docker rm
-</code></pre><p>注意，在拉取镜像时还可以指定指纹信息，例如如下命令。</p><pre tabindex=0><code># docker pull kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cb
-# docker images --digests
-</code></pre><p>其中指纹信息可以保存在 <code>/var/lib/docker/image/overlay2/repositories.json</code> 文件中。</p><h2 id=端口映射>端口映射 <a href=#%e7%ab%af%e5%8f%a3%e6%98%a0%e5%b0%84 class=anchor aria-hidden=true>#</a></h2><p>容器在启动的时候如果不指定端口映射参数，在容器外部是无法通过网络来访问容器内的应用的，可以在 <code>Dockerfile</code> 中通过 <code>EXPOSE 80</code> 类似的指令将其导出，或者启动时通过参数指定。</p><p>参数格式如下。</p><pre tabindex=0><code>ip:hostport:containerport   # 全部指定
-ip::containerport           # 主机Port随机
-hostport:containerport      # 未指定ip、指定宿主机port、指定容器port
-</code></pre><p>如下是常见的示例。</p><pre tabindex=0><code>----- 容器所有端口都随机映射到宿主机上
-# docker run -P -it ubuntu /bin/bash
-
------ 将容器的80端口随机映射到宿主机的一个端口上
-# docker run -p 80 -it ubuntu /bin/bash
-
------ 容器的80端口映射到8000端口上
-# docker run -p 8000:80 -it ubuntu /bin/bash
-
------ 容器的192.168.0.100和80端口随机映射到宿主机的一个端口上
-# docker run -p 192.168.0.100::80 -it ubuntu /bin/bash
-
------ 容器的192.168.0.100和80端口映射到宿主机的8000端口上
-# docker run -p 192.168.0.100:8000:80 -it ubuntu /bin/bash
-</code></pre><p>然后可以通过 <code>docker port CONTAINER-ID</code> 命令查看。</p><h2 id=资源清理>资源清理 <a href=#%e8%b5%84%e6%ba%90%e6%b8%85%e7%90%86 class=anchor aria-hidden=true>#</a></h2><p>随着 Docker 的运行，会占用越来越多的资源，比较常见的是磁盘资源，对于一些无用的镜像、容器、网络、数据卷实际可以直接删除，可以通过如下命令查看当前使用的资源。</p><pre tabindex=0><code>----- 所有的容器信息，不带-a参数之列举出运行的容器
-# docker container ls -a
-
------ 镜像信息，通过-a会列举出中间的镜像层
-# docker image ls -a
-
------ 列出数据卷、网络信息、系统信息
-# docker volume ls
-# docker network ls
-# docker info
-</code></pre><p>默认提供了 <code>docker system prune</code> 命令来删除已经停止的容器、dangling 镜像、为被容器引用的 network 以及构建过程中的 cache 。</p><p>注意，为了安全，默认不会删除未被任何容器引用的数据卷，如果需要则应该显示指定 <code>--volumes</code> 参数。</p><pre tabindex=0><code># docker system prune --all --force --volumes
-</code></pre><h2 id=dangling-images>dangling images <a href=#dangling-images class=anchor aria-hidden=true>#</a></h2><p>所谓的 dangling images ，可以被理解为未被任何镜像引用的镜像，当通过 <code>docker image ls</code> 查看时，会在 <code>TAG</code> 中显示 <code>&lt;none></code>，例如，重新构建镜像之后，之前依赖的镜像就变成了 dangling images 。</p><p>另外，还有 <code>REPOSITOY</code> 和 <code>TAG</code> 都是 <code>&lt;none></code> 的镜像，一般是其它镜像的依赖层。</p><h1 id=镜像介绍>镜像介绍 <a href=#%e9%95%9c%e5%83%8f%e4%bb%8b%e7%bb%8d class=anchor aria-hidden=true>#</a></h1><p>Docker 镜像由多个只读文件系统叠加而成，起始于一个基础镜像层，在修改后就会在当前镜像层之上创建新的镜像层，而且是只读的，例如如下。</p><img src=images/docker-image-layers.png alt="docker images layer" width=50%><p>启动容器后，会在顶层增加一个读写层，容器修改存在文件时，实际是将只读层文件复制到读写层，然后进行修改，原文件则会被隐藏，这也是 Union File System 的作用，在重启之后则原文件保持不变，也就是对应的数据会丢失。</p><h2 id=目录结构>目录结构 <a href=#%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84 class=anchor aria-hidden=true>#</a></h2><p>这种镜像采用的分层设计，每层被可以称之为 layer，其中 Docker 的镜像默认会保存在 <code>/var/lib/docker</code> 目录下，当前环境可以通过 <code>docker info | grep 'Docker Root Dir'</code> 查看，各个目录的含义介绍如下。</p><p>另外 <code>podman</code> 默认会保存在 <code>/var/lib/containers/storage/overlay</code> 目录下，这里仍然以 Docker 为例。</p><pre tabindex=0><code>builder/
-buildkit/
-containers/
-image/                   存储镜像管理数据的目录
-  |-overlay2/            子目录对应了存储驱动
-    |-distribution/      远端拉到本地的镜像相关元数据
-    |-imagedb/           镜像数据库
-    | |-content/
-    |   |-sha256/        镜像的ID信息，images命令的前12字节来自这里
-    |-leveldb/           镜像每个Layer的元数据
-    | |-sha256/          Layer的ChainID
-    |-repositories.json  通过JSON保存的相关元数据
-network/
-overlay2/
-plugins/
-runtimes/
-swarm/
-tmp/
-trust/
-volumes/
-</code></pre><p>其中 image 由多个 layer 组合而成的，那么有可能多个 image 会指向同一个 layer ，一个 image 指向了那些 layer 可以通过 imagedb 查看。</p><h2 id=存储驱动>存储驱动 <a href=#%e5%ad%98%e5%82%a8%e9%a9%b1%e5%8a%a8 class=anchor aria-hidden=true>#</a></h2><p>也就是 GraphDriver ，默认支持多种，包括了 VFS、DeviceMapper、aufs、Overlay 等，开始最常用的是 aufs ，不过随着 Linux 3.18 将 Overlay 纳入内核，默认的驱动一般就是 Overlay 。</p><p>当前的驱动可以通过 <code>docker info | grep 'Storage Driver'</code> 查看，最新的一般是 <code>overlay2</code> ，这里只需要关心 root 目录下的 image 和 overlay2 目录即可。</p><p>OverlayFS 是一种堆叠文件系统，不会直接操作磁盘，而是建立在其它的文件系统之上，仅仅将原来底层文件系统中不同的目录进行合并。在 Linux 内核中包含了 overlay 和 overlay2 ，后者是一种改进，相比前者 inode 使用率更加高效。</p><h3 id=overlay2>Overlay2 <a href=#overlay2 class=anchor aria-hidden=true>#</a></h3><p>Overlay 也是一种 Union FS，不过只有两层：A) Upper 文件系统；B) Lower 文件系统；分别代表 Docker 的镜像层和容器层，当需要修改一个文件时，使用 CoW 将文件从只读的 Lower 复制到可写的 Upper 进行修改，结果也保存在 Upper 层。</p><p><img src=images/docker-overlayfs.png alt="docker overlayfs" title="docker overlayfs"></p><p>在挂载完成之后，可以通过 <code>mount | grep overlay</code> 查看其挂载的参数，如下是一个简单的示例。</p><pre tabindex=0><code>mkdir -p /tmp/test/{lower1,lower2,upper,worker,merged}
-echo &#34;from lower 1&#34; &gt; /tmp/test/lower1/data.txt
-echo &#34;hello world&#34; &gt; /tmp/test/lower1/hi.txt
-echo &#34;from lower 2&#34; &gt; /tmp/test/lower2/data.txt
-echo &#34;from upper&#34; &gt; /tmp/test/upper/data.txt
-echo &#34;from worker&#34; &gt; /tmp/test/worker/data.txt
-mount -t overlay overlay -o lowerdir=lower1:lower2,upperdir=upper,workdir=worker merged
-cat /tmp/test/merged/hi.txt
-cat /tmp/test/merged/data.txt
-</code></pre><p>挂载时包含了三个目录：</p><ul><li>Lower 可以是多个，一般对应了磁盘镜像，通常只读；</li><li>Upper 通常只有一个，作为容器运行操作目录；</li><li>Worker 基础目录，挂在后会被清空，使用时对用户不可见。</li></ul><p>最后会统一呈现的视图在 merged 目录。</p><h1 id=镜像管理>镜像管理 <a href=#%e9%95%9c%e5%83%8f%e7%ae%a1%e7%90%86 class=anchor aria-hidden=true>#</a></h1><p>所有镜像最终以 <code>tar.gz</code> 方式静态存储在服务器端，这种存储适用于对象存储而不是块存储。</p><h2 id=常用镜像>常用镜像 <a href=#%e5%b8%b8%e7%94%a8%e9%95%9c%e5%83%8f class=anchor aria-hidden=true>#</a></h2><p>Docker 提供了一个 Hello-World 镜像可以用来测试基本环境安装是否成功，另外，还要一些常用的较小镜像，例如 BusyBox(1M+)、Alpine Linux (使用 musl libc 和 busybox 减小体积，只有 5M+ ) 。</p><h3 id=alpine>Alpine <a href=#alpine class=anchor aria-hidden=true>#</a></h3><p>一个面向安全的轻型 Linux 发行版，采用了 musl libc 和 busybox 以减小系统的体积和运行时资源消耗，但功能上比 busybox 又完善的多，通过 apk 管理包，也可以从 <a href=https://pkgs.alpinelinux.org/packages>pkgs</a> 上查看。</p><p>可以通过 <code>docker run alpine echo '123'</code> 或者 <code>docker run -it alpine sh</code> 简单运行。</p><h2 id=私有镜像>私有镜像 <a href=#%e7%a7%81%e6%9c%89%e9%95%9c%e5%83%8f class=anchor aria-hidden=true>#</a></h2><p>默认的私有镜像通过可以通过 <code>docker-registry</code> 包进行安装，详细的安装步骤可以参考 <a href=https://docs.docker.com/registry/deploying/>Deploy a registry server</a> 中的详细介绍。</p><pre tabindex=0><code>----- 下载仓库镜像
-# docker pull registry
-
------ 运行镜像，并将本机的/opt/docker/registry映射到容器中
-# docker run -d -p 5000:5000 --restart=always --name=registry \
-    -v /opt/docker/registry:/var/lib/registry registry
-
------ 验证是否创建成功，正常应该返回{}
-# curl http://127.0.0.1:5000/v2/
-</code></pre><p>Docker 在与 Docker Registry 进行交互时默认使用 https，但是当前的镜像仓库仅提供了 http ，需要将本地仓库添加为不安全仓库。</p><pre tabindex=0><code># cat /etc/docker/daemon.json
-{
-	&#34;registry-mirrors&#34;: [
-		&#34;https://registry.docker-cn.com&#34;
-	],
-	&#34;insecure-registries&#34;: [
-		&#34;127.0.0.1:5000&#34;
-	]
-}
-</code></pre><p>然后将本地的 busybox 添加到新搭建的仓库。</p><pre tabindex=0><code>----- 查看当前的镜像
-# docker images
-
------ 修改某个镜像的tag，例如busybox，并将其添加到本地
-# docker tag busybox:latest 127.0.0.1:5000/busybox:latest
-# docker push 127.0.0.1:5000/busybox:latest
-</code></pre><p>然后调用 REST API 查看镜像信息。</p><pre tabindex=0><code>----- 查询私有仓库镜像列表
-# curl http://127.0.0.1:5000/v2/_catalog
-
------ 查询busybox镜像的标签列表
-# curl http://127.0.0.1:5000/v2/busybox/tags/list
-
------ 从私有仓库拉取镜像
-# docker pull 127.0.0.1:5000/busybox:latest
-</code></pre><h1 id=常见问题>常见问题 <a href=#%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98 class=anchor aria-hidden=true>#</a></h1><h2 id=容器已经在运行>容器已经在运行 <a href=#%e5%ae%b9%e5%99%a8%e5%b7%b2%e7%bb%8f%e5%9c%a8%e8%bf%90%e8%a1%8c class=anchor aria-hidden=true>#</a></h2><p>详细报错为 <code>The container name "XXX" is already in use by container</code> 。</p><pre tabindex=0><code>----- 查看所有的容器信息，并根据ID删除
-# docker ps -a
-# docker rm 36bceeae4b22
-</code></pre><h2 id=证书验证报错>证书验证报错 <a href=#%e8%af%81%e4%b9%a6%e9%aa%8c%e8%af%81%e6%8a%a5%e9%94%99 class=anchor aria-hidden=true>#</a></h2><p>详细报错为 <code>Error response from daemon: Get "https://registry.exmaple.com/v2/": tls: failed to verify certificate: x509: certificate relies on legacy Common Name field, use SANs instead</code> 。</p><p>从 <code>Go 1.15</code> 版本开始废弃 <a href=https://go.dev/doc/go1.15#commonname>X.509 CommonName</a> 推荐使用 SAN 证书，也可以将其添加到非安全的仓库配置中，此时将不再检查证书，常见有如下两种方式。</p><pre tabindex=0><code>----- 通过systemd管理docker服务进程，可以通过如下方式增加启动选项
-# vim /etc/sysconfig/docker
-OPTIONS=&#39;--insecure-registry registry.example.com&#39;
-
------ 或者修改如下的配置项
-# vim /etc/docker/daemon.json
-{
-    &#34;insecure-registries&#34; : [&#34;registry.example.com&#34;]
-}
-</code></pre><p>然后通过 <code>systemctl restart docker</code> 命令重启服务。</p><h2 id=拉取镜像报错>拉取镜像报错 <a href=#%e6%8b%89%e5%8f%96%e9%95%9c%e5%83%8f%e6%8a%a5%e9%94%99 class=anchor aria-hidden=true>#</a></h2><p>详细报错为 <code>Error response from daemon: manifest for your/image:latest not found: manifest unknown: manifest unknown</code> 。</p><p>通常是因为没有这个镜像，多数原因是 tag 错误或者是默认没有设置 latest，可以从对应的 repository 中搜索或者，可以通过如下命令查看当前支持的 tag 信息。</p><pre tabindex=0><code>$ curl -XGET http://hub-mirror.c.163.com/v2/your/image/tags/list
-</code></pre><p>这里使用的是网易的镜像进行测试。</p></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/docker-image-layers-analyze/>Docker 镜像分析工具 Dive 简介</a></li><li><a class=text-body href=/cn/blog/docker-example-sshd/>Docker 示例 Alpine + OpenSSH</a></li><li><a class=text-body href=/cn/blog/docker-dockerfile/>Dockerfile 简介</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
+"><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.c4814ac9dc5fab259f313a787ded4f8e.css integrity="md5-xIFKydxfqyWfMTp4fe1Pjg==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Docker 使用简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2021-09-20</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/container/ role=button>container</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/docker/ role=button>docker</a></div></div><hr><div class=content><p>从 Docker 1.11 开始，Docker 容器运行已经不是简单的通过 Docker Daemon 启动，而是集成了 containerd、runC 等多个组件，在 Docker 服务启动之后，可以看到系统上启动了 dockerd、containerd 等进程。</p><p>这里简单介绍一些与 Docker 相关的基本概念。</p><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>在安装了 Docker 之后，比较重要的组件主要有如下几种：</p><ul><li><code>docker</code> 一个客户端工具，用来把用户的请求发送给 dockerd；</li><li><code>dockerd</code> 一般也会被称为 docker engine，在后台运行；</li><li><code>docker-containerd</code> 管理 Docker 的核心组件；</li><li><code>docker-containerd-shim</code> 容器的运行时载体；</li><li><code>runc</code> 真正运行的容器。</li></ul><p>各个模块的组件如下。</p><img src=images/docker-runc-arch.png alt="docker runc" width=70%>
+<a class=anchor id=安装></a><h2>安装 <a href=#%e5%ae%89%e8%a3%85 aria-hidden=true>#</a></h2><p>这里包含了 CentOS、Debain 原生的安装，以及直接通过二进制包安装。</p><a class=anchor id=centos></a><h3>CentOS <a href=#centos aria-hidden=true>#</a></h3><p>可以通过安装 YUM 安装。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 如有需要，删除老版本
+</span></span><span class=line><span class=cl># yum remove docker docker-client docker-client-latest docker-common docker-latest \
+</span></span><span class=line><span class=cl>	docker-latest-logrotate docker-logrotate docker-engine
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 配置阿里云的源
+</span></span><span class=line><span class=cl># yum install -y yum-utils device-mapper-persistent-data lvm2
+</span></span><span class=line><span class=cl># yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 安装包
+</span></span><span class=line><span class=cl># yum install docker-ce docker-ce-cli containerd.io
+</span></span></code></pre></div><p>在 CentOS 8 中，如果使用 <code>yum-config-manager</code> 需要安装 <code>dnf-utils</code> 包。</p><a class=anchor id=debain></a><h3>Debain <a href=#debain aria-hidden=true>#</a></h3><p>通过 apt 进行安装，使用的是网易的镜像源。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 添加源
+</span></span><span class=line><span class=cl># curl -fsSL http://mirrors.163.com/docker-ce/linux/debian/gpg | sudo apt-key add -
+</span></span><span class=line><span class=cl># add-apt-repository &#34;deb http://mirrors.163.com/linux/debian $(lsb_release -cs) stable&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 更新源数据并安装
+</span></span><span class=line><span class=cl># apt update
+</span></span><span class=line><span class=cl># apt install docker-ce
+</span></span></code></pre></div><a class=anchor id=二进制></a><h3>二进制 <a href=#%e4%ba%8c%e8%bf%9b%e5%88%b6 aria-hidden=true>#</a></h3><p>或者下载 <a href=https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/>静态二进制文件</a>，直接复制到 <code>/usr/bin</code> 目录下，并将 <a href=reference/docker.service>docker.service</a> <a href=reference/docker.socket>docker.socket</a> <a href=reference/containerd.service>containerd.service</a> 几个服务添加到 <code>/usr/lib/systemd/system/</code> 目录下。</p><p>正常来说，可以将二进制文件放到 <code>/opt/docker</code> 目录下，但是在执行 <code>run</code> 命令的时候会报 <code>shim</code> 命令在 <code>PATH</code> 中不存在，应该是查找路径没有配置好，暂时没有仔细研究怎么配置。</p><a class=anchor id=镜像地址></a><h2>镜像地址 <a href=#%e9%95%9c%e5%83%8f%e5%9c%b0%e5%9d%80 aria-hidden=true>#</a></h2><p>默认 Docker 会使用 <code>index.docker.io</code> 作为镜像源，国内使用会比较慢，可以使用一些国内镜像替换，直接修改 <code>/etc/docker/daemon.json</code> 配置文件。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;registry-mirrors&#34;: [
+</span></span><span class=line><span class=cl>        &#34;https://docker.mirrors.ustc.edu.cn&#34;,
+</span></span><span class=line><span class=cl>    ]
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>修改后重启，然后通过 <code>docker info</code> 查看 <code>Registry Mirrors</code> 配置项即可，最新的可用镜像地址可以参考 <a href=https://xuanyuan.me/blog/archives/1154>xuanyuan.me</a> 中的内容。</p><a class=anchor id=配置使用></a><h1>配置使用 <a href=#%e9%85%8d%e7%bd%ae%e4%bd%bf%e7%94%a8 aria-hidden=true>#</a></h1><p>安装完后可以通过 <code>systemctl start docker</code> 启动，通过 <code>docker run hello-world</code> 进行测试。</p><a class=anchor id=仓库地址></a><h2>仓库地址 <a href=#%e4%bb%93%e5%ba%93%e5%9c%b0%e5%9d%80 aria-hidden=true>#</a></h2><p>可以通过 <code>docker info</code> 中的 Registry 字段查看当前使用的仓库地址，如果没有则使用的是默认 <code>https://hub.docker.com/</code> 地址，在国内的仓库 <code>registry.docker-cn.com</code> 中包含了流行的公有镜像，私有镜像仍需要从 Docker Hub 镜像库中拉取。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 通过命令行拉取
+</span></span><span class=line><span class=cl>$ docker pull docker.m.daocloud.io/library/ubuntu:16.04
+</span></span></code></pre></div><p>也可以在启动的时候通过 <code>--registry-mirror</code> 参数指定，然后直接使用 <code>library/ubuntu</code> 获取。还可以在配置文件 <code>/etc/docker/daemon.json</code> 文件并添加上 <code>registry-mirrors</code> 配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;registry-mirrors&#34;: [&#34;https://registry.docker-cn.com&#34;]
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=修改存储目录></a><h2>修改存储目录 <a href=#%e4%bf%ae%e6%94%b9%e5%ad%98%e5%82%a8%e7%9b%ae%e5%bd%95 aria-hidden=true>#</a></h2><p>容器的镜像等数据会保存在 Docker 的根目录下，可以通过 <code>docker info | grep 'Docker Root Dir'</code> 查看当前的配置，默认保存在 <code>/var/lib/docker</code> 目录下，可以通过如下方式修改。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># vim /etc/docker/daemon.json
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	&#34;data-root&#34;: &#34;/opt/docker&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>然后重启 docker 服务即可，另外，在 19 版本之前可以使用 <code>graph</code> 参数，不过其之后建议使用 <code>data-root</code> 参数。</p><a class=anchor id=启动参数></a><h2>启动参数 <a href=#%e5%90%af%e5%8a%a8%e5%8f%82%e6%95%b0 aria-hidden=true>#</a></h2><p>可以在启动时通过参数定制，例如.</p><ul><li><code>--storage-driver=overlay2</code> 使用存储驱动；</li><li><code>--registry-mirror=https://foobar.com</code> 镜像地址；</li><li><code>--insecure-registry=http://foobar.com</code> 指定非安全的镜像仓库地址。</li></ul><a class=anchor id=常用命令></a><h1>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 aria-hidden=true>#</a></h1><p>在通过 <code>run</code> 命令启动时，常用的参数如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>-i, --interactive=true|false   保持STDIN打开，也就是交互方式
+</span></span><span class=line><span class=cl>-t, --tty=true|false           是否分配一个tty终端
+</span></span><span class=line><span class=cl>-d, --detach=true|false        在后台运行
+</span></span><span class=line><span class=cl>-p, --publish=[]               端口映射，可以查看帮助
+</span></span><span class=line><span class=cl>-v, --volume=[]                文件映射，可以查看帮助
+</span></span><span class=line><span class=cl>--name                         指定运行时的容器名称
+</span></span></code></pre></div><p>详细可通过 <code>man docker</code> 查看帮助，利用 <code>man docker-run</code> 查看子命令帮助文档。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>----- 查找镜像
+</span></span><span class=line><span class=cl># docker search centos
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 下载镜像，可以通过 :NAME.TAG 指定版本号以及Tag信息
+</span></span><span class=line><span class=cl># docker pull docker.io/hello-world
+</span></span><span class=line><span class=cl># docker pull docker.io/centos
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看镜像，及其详细信息，也可以查看DIGEST
+</span></span><span class=line><span class=cl># docker images --digests
+</span></span><span class=line><span class=cl>REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+</span></span><span class=line><span class=cl>docker.io/centos    latest              67fa590cfc1c        4 weeks ago         202 MB
+</span></span><span class=line><span class=cl># docker inspect 67fa590cfc1c
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 镜像的构建信息，包括了含有几层，可以通过 --no-trunc 查看完整命令
+</span></span><span class=line><span class=cl># docker history busybox
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 删除镜像，可以通过REPO或者ID指定
+</span></span><span class=line><span class=cl># docker image rm 67fa590cfc1c
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 重命名镜像，通过ID指定，同样可以删除Tag
+</span></span><span class=line><span class=cl># docker tag 67fa590cfc1c centos
+</span></span><span class=line><span class=cl># docker rmi centos:7.7.1908
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 运行容器，镜像名为REPOSITORY:TAG，可以指定文件、端口映射
+</span></span><span class=line><span class=cl># docker run hello-world
+</span></span><span class=line><span class=cl># docker run -it docker.io/centos /bin/bash
+</span></span><span class=line><span class=cl># docker run -it -v /local:/docker:rw -p 33006:3306 docker.io/centos /bin/bash
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 后台运行，并attach到后台容器
+</span></span><span class=line><span class=cl># docker run -itd --name centos centos /bin/bash
+</span></span><span class=line><span class=cl># docker exec -it centos /bin/bash
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看正在运行的容器，可以通过-a参数查看所有
+</span></span><span class=line><span class=cl># docker ps
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>------ 可以从容器和本地之间相互复制文件
+</span></span><span class=line><span class=cl># docker cp YourContainerID:/opt/file.txt /opt/file.txt
+</span></span><span class=line><span class=cl># docker cp /opt/file.txt YourContainerID:/opt/file.txt
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 链接到运行的容器，需要指定CONTAINER ID
+</span></span><span class=line><span class=cl># docker start 5328dfa90416
+</span></span><span class=line><span class=cl># docker stop 5328dfa90416
+</span></span><span class=line><span class=cl># docker attach 5328dfa90416
+</span></span><span class=line><span class=cl># docker container rm 5328dfa90416
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 如果要推送镜像是需要登录的，默认会明文保存在~/.docker/config.json文件中，也可以logout
+</span></span><span class=line><span class=cl># docker login registry.example.com
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 重命名镜像，通过ID指定，也可以增加自己的仓库地址，然后直接推送的自己的仓库中
+</span></span><span class=line><span class=cl># docker tag 67fa590cfc1c centos:7.9.2009
+</span></span><span class=line><span class=cl># docker tag 67fa590cfc1c registry.example.com/centos:latest
+</span></span><span class=line><span class=cl># docker push registry.example.com/centos:latest
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将正在运行的镜像保存
+</span></span><span class=line><span class=cl># docker commit -a &#34;AuthorName&#34; -m &#34;SomeCommitMessage&#34; RunningContainerID Name:Tag
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将已有的镜像保存，然后本地加载镜像
+</span></span><span class=line><span class=cl>$ docker save -o busybox.tar busybox:latest
+</span></span><span class=line><span class=cl>$ docker load -i busybox.tar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 清理已经停止的容器
+</span></span><span class=line><span class=cl># docker ps -a | grep &#34;Exited&#34; | awk &#39;{print $1 }&#39; | xargs docker rm
+</span></span></code></pre></div><p>注意，在拉取镜像时还可以指定指纹信息，例如如下命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># docker pull kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cb
+</span></span><span class=line><span class=cl># docker images --digests
+</span></span></code></pre></div><p>其中指纹信息可以保存在 <code>/var/lib/docker/image/overlay2/repositories.json</code> 文件中。</p><a class=anchor id=端口映射></a><h2>端口映射 <a href=#%e7%ab%af%e5%8f%a3%e6%98%a0%e5%b0%84 aria-hidden=true>#</a></h2><p>容器在启动的时候如果不指定端口映射参数，在容器外部是无法通过网络来访问容器内的应用的，可以在 <code>Dockerfile</code> 中通过 <code>EXPOSE 80</code> 类似的指令将其导出，或者启动时通过参数指定。</p><p>参数格式如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>ip:hostport:containerport   # 全部指定
+</span></span><span class=line><span class=cl>ip::containerport           # 主机Port随机
+</span></span><span class=line><span class=cl>hostport:containerport      # 未指定ip、指定宿主机port、指定容器port
+</span></span></code></pre></div><p>如下是常见的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 容器所有端口都随机映射到宿主机上
+</span></span><span class=line><span class=cl># docker run -P -it ubuntu /bin/bash
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 将容器的80端口随机映射到宿主机的一个端口上
+</span></span><span class=line><span class=cl># docker run -p 80 -it ubuntu /bin/bash
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 容器的80端口映射到8000端口上
+</span></span><span class=line><span class=cl># docker run -p 8000:80 -it ubuntu /bin/bash
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 容器的192.168.0.100和80端口随机映射到宿主机的一个端口上
+</span></span><span class=line><span class=cl># docker run -p 192.168.0.100::80 -it ubuntu /bin/bash
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 容器的192.168.0.100和80端口映射到宿主机的8000端口上
+</span></span><span class=line><span class=cl># docker run -p 192.168.0.100:8000:80 -it ubuntu /bin/bash
+</span></span></code></pre></div><p>然后可以通过 <code>docker port CONTAINER-ID</code> 命令查看。</p><a class=anchor id=资源清理></a><h2>资源清理 <a href=#%e8%b5%84%e6%ba%90%e6%b8%85%e7%90%86 aria-hidden=true>#</a></h2><p>随着 Docker 的运行，会占用越来越多的资源，比较常见的是磁盘资源，对于一些无用的镜像、容器、网络、数据卷实际可以直接删除，可以通过如下命令查看当前使用的资源。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 所有的容器信息，不带-a参数之列举出运行的容器
+</span></span><span class=line><span class=cl># docker container ls -a
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 镜像信息，通过-a会列举出中间的镜像层
+</span></span><span class=line><span class=cl># docker image ls -a
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 列出数据卷、网络信息、系统信息
+</span></span><span class=line><span class=cl># docker volume ls
+</span></span><span class=line><span class=cl># docker network ls
+</span></span><span class=line><span class=cl># docker info
+</span></span></code></pre></div><p>默认提供了 <code>docker system prune</code> 命令来删除已经停止的容器、dangling 镜像、为被容器引用的 network 以及构建过程中的 cache 。</p><p>注意，为了安全，默认不会删除未被任何容器引用的数据卷，如果需要则应该显示指定 <code>--volumes</code> 参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># docker system prune --all --force --volumes
+</span></span></code></pre></div><a class=anchor id=dangling-images></a><h2>dangling images <a href=#dangling-images aria-hidden=true>#</a></h2><p>所谓的 dangling images ，可以被理解为未被任何镜像引用的镜像，当通过 <code>docker image ls</code> 查看时，会在 <code>TAG</code> 中显示 <code>&lt;none></code>，例如，重新构建镜像之后，之前依赖的镜像就变成了 dangling images 。</p><p>另外，还有 <code>REPOSITOY</code> 和 <code>TAG</code> 都是 <code>&lt;none></code> 的镜像，一般是其它镜像的依赖层。</p><a class=anchor id=镜像介绍></a><h1>镜像介绍 <a href=#%e9%95%9c%e5%83%8f%e4%bb%8b%e7%bb%8d aria-hidden=true>#</a></h1><p>Docker 镜像由多个只读文件系统叠加而成，起始于一个基础镜像层，在修改后就会在当前镜像层之上创建新的镜像层，而且是只读的，例如如下。</p><img src=images/docker-image-layers.png alt="docker images layer" width=50%><p>启动容器后，会在顶层增加一个读写层，容器修改存在文件时，实际是将只读层文件复制到读写层，然后进行修改，原文件则会被隐藏，这也是 Union File System 的作用，在重启之后则原文件保持不变，也就是对应的数据会丢失。</p><a class=anchor id=目录结构></a><h2>目录结构 <a href=#%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84 aria-hidden=true>#</a></h2><p>这种镜像采用的分层设计，每层被可以称之为 layer，其中 Docker 的镜像默认会保存在 <code>/var/lib/docker</code> 目录下，当前环境可以通过 <code>docker info | grep 'Docker Root Dir'</code> 查看，各个目录的含义介绍如下。</p><p>另外 <code>podman</code> 默认会保存在 <code>/var/lib/containers/storage/overlay</code> 目录下，这里仍然以 Docker 为例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>builder/
+</span></span><span class=line><span class=cl>buildkit/
+</span></span><span class=line><span class=cl>containers/
+</span></span><span class=line><span class=cl>image/                   存储镜像管理数据的目录
+</span></span><span class=line><span class=cl>  |-overlay2/            子目录对应了存储驱动
+</span></span><span class=line><span class=cl>    |-distribution/      远端拉到本地的镜像相关元数据
+</span></span><span class=line><span class=cl>    |-imagedb/           镜像数据库
+</span></span><span class=line><span class=cl>    | |-content/
+</span></span><span class=line><span class=cl>    |   |-sha256/        镜像的ID信息，images命令的前12字节来自这里
+</span></span><span class=line><span class=cl>    |-leveldb/           镜像每个Layer的元数据
+</span></span><span class=line><span class=cl>    | |-sha256/          Layer的ChainID
+</span></span><span class=line><span class=cl>    |-repositories.json  通过JSON保存的相关元数据
+</span></span><span class=line><span class=cl>network/
+</span></span><span class=line><span class=cl>overlay2/
+</span></span><span class=line><span class=cl>plugins/
+</span></span><span class=line><span class=cl>runtimes/
+</span></span><span class=line><span class=cl>swarm/
+</span></span><span class=line><span class=cl>tmp/
+</span></span><span class=line><span class=cl>trust/
+</span></span><span class=line><span class=cl>volumes/
+</span></span></code></pre></div><p>其中 image 由多个 layer 组合而成的，那么有可能多个 image 会指向同一个 layer ，一个 image 指向了那些 layer 可以通过 imagedb 查看。</p><a class=anchor id=存储驱动></a><h2>存储驱动 <a href=#%e5%ad%98%e5%82%a8%e9%a9%b1%e5%8a%a8 aria-hidden=true>#</a></h2><p>也就是 GraphDriver ，默认支持多种，包括了 VFS、DeviceMapper、aufs、Overlay 等，开始最常用的是 aufs ，不过随着 Linux 3.18 将 Overlay 纳入内核，默认的驱动一般就是 Overlay 。</p><p>当前的驱动可以通过 <code>docker info | grep 'Storage Driver'</code> 查看，最新的一般是 <code>overlay2</code> ，这里只需要关心 root 目录下的 image 和 overlay2 目录即可。</p><p>OverlayFS 是一种堆叠文件系统，不会直接操作磁盘，而是建立在其它的文件系统之上，仅仅将原来底层文件系统中不同的目录进行合并。在 Linux 内核中包含了 overlay 和 overlay2 ，后者是一种改进，相比前者 inode 使用率更加高效。</p><a class=anchor id=overlay2></a><h3>Overlay2 <a href=#overlay2 aria-hidden=true>#</a></h3><p>Overlay 也是一种 Union FS，不过只有两层：A) Upper 文件系统；B) Lower 文件系统；分别代表 Docker 的镜像层和容器层，当需要修改一个文件时，使用 CoW 将文件从只读的 Lower 复制到可写的 Upper 进行修改，结果也保存在 Upper 层。</p><p><img alt="docker overlayfs" src=images/docker-overlayfs.png class="mx-auto d-block"></p><p>在挂载完成之后，可以通过 <code>mount | grep overlay</code> 查看其挂载的参数，如下是一个简单的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mkdir -p /tmp/test/{lower1,lower2,upper,worker,merged}
+</span></span><span class=line><span class=cl>echo &#34;from lower 1&#34; &gt; /tmp/test/lower1/data.txt
+</span></span><span class=line><span class=cl>echo &#34;hello world&#34; &gt; /tmp/test/lower1/hi.txt
+</span></span><span class=line><span class=cl>echo &#34;from lower 2&#34; &gt; /tmp/test/lower2/data.txt
+</span></span><span class=line><span class=cl>echo &#34;from upper&#34; &gt; /tmp/test/upper/data.txt
+</span></span><span class=line><span class=cl>echo &#34;from worker&#34; &gt; /tmp/test/worker/data.txt
+</span></span><span class=line><span class=cl>mount -t overlay overlay -o lowerdir=lower1:lower2,upperdir=upper,workdir=worker merged
+</span></span><span class=line><span class=cl>cat /tmp/test/merged/hi.txt
+</span></span><span class=line><span class=cl>cat /tmp/test/merged/data.txt
+</span></span></code></pre></div><p>挂载时包含了三个目录：</p><ul><li>Lower 可以是多个，一般对应了磁盘镜像，通常只读；</li><li>Upper 通常只有一个，作为容器运行操作目录；</li><li>Worker 基础目录，挂在后会被清空，使用时对用户不可见。</li></ul><p>最后会统一呈现的视图在 merged 目录。</p><a class=anchor id=镜像管理></a><h1>镜像管理 <a href=#%e9%95%9c%e5%83%8f%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h1><p>所有镜像最终以 <code>tar.gz</code> 方式静态存储在服务器端，这种存储适用于对象存储而不是块存储。</p><a class=anchor id=常用镜像></a><h2>常用镜像 <a href=#%e5%b8%b8%e7%94%a8%e9%95%9c%e5%83%8f aria-hidden=true>#</a></h2><p>Docker 提供了一个 Hello-World 镜像可以用来测试基本环境安装是否成功，另外，还要一些常用的较小镜像，例如 BusyBox(1M+)、Alpine Linux (使用 musl libc 和 busybox 减小体积，只有 5M+ ) 。</p><a class=anchor id=alpine></a><h3>Alpine <a href=#alpine aria-hidden=true>#</a></h3><p>一个面向安全的轻型 Linux 发行版，采用了 musl libc 和 busybox 以减小系统的体积和运行时资源消耗，但功能上比 busybox 又完善的多，通过 apk 管理包，也可以从 <a href=https://pkgs.alpinelinux.org/packages>pkgs</a> 上查看。</p><p>可以通过 <code>docker run alpine echo '123'</code> 或者 <code>docker run -it alpine sh</code> 简单运行。</p><a class=anchor id=私有镜像></a><h2>私有镜像 <a href=#%e7%a7%81%e6%9c%89%e9%95%9c%e5%83%8f aria-hidden=true>#</a></h2><p>默认的私有镜像通过可以通过 <code>docker-registry</code> 包进行安装，详细的安装步骤可以参考 <a href=https://docs.docker.com/registry/deploying/>Deploy a registry server</a> 中的详细介绍。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 下载仓库镜像
+</span></span><span class=line><span class=cl># docker pull registry
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 运行镜像，并将本机的/opt/docker/registry映射到容器中
+</span></span><span class=line><span class=cl># docker run -d -p 5000:5000 --restart=always --name=registry \
+</span></span><span class=line><span class=cl>    -v /opt/docker/registry:/var/lib/registry registry
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 验证是否创建成功，正常应该返回{}
+</span></span><span class=line><span class=cl># curl http://127.0.0.1:5000/v2/
+</span></span></code></pre></div><p>Docker 在与 Docker Registry 进行交互时默认使用 https，但是当前的镜像仓库仅提供了 http ，需要将本地仓库添加为不安全仓库。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># cat /etc/docker/daemon.json
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	&#34;registry-mirrors&#34;: [
+</span></span><span class=line><span class=cl>		&#34;https://registry.docker-cn.com&#34;
+</span></span><span class=line><span class=cl>	],
+</span></span><span class=line><span class=cl>	&#34;insecure-registries&#34;: [
+</span></span><span class=line><span class=cl>		&#34;127.0.0.1:5000&#34;
+</span></span><span class=line><span class=cl>	]
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>然后将本地的 busybox 添加到新搭建的仓库。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看当前的镜像
+</span></span><span class=line><span class=cl># docker images
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 修改某个镜像的tag，例如busybox，并将其添加到本地
+</span></span><span class=line><span class=cl># docker tag busybox:latest 127.0.0.1:5000/busybox:latest
+</span></span><span class=line><span class=cl># docker push 127.0.0.1:5000/busybox:latest
+</span></span></code></pre></div><p>然后调用 REST API 查看镜像信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查询私有仓库镜像列表
+</span></span><span class=line><span class=cl># curl http://127.0.0.1:5000/v2/_catalog
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查询busybox镜像的标签列表
+</span></span><span class=line><span class=cl># curl http://127.0.0.1:5000/v2/busybox/tags/list
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 从私有仓库拉取镜像
+</span></span><span class=line><span class=cl># docker pull 127.0.0.1:5000/busybox:latest
+</span></span></code></pre></div><a class=anchor id=常见问题></a><h1>常见问题 <a href=#%e5%b8%b8%e8%a7%81%e9%97%ae%e9%a2%98 aria-hidden=true>#</a></h1><a class=anchor id=容器已经在运行></a><h2>容器已经在运行 <a href=#%e5%ae%b9%e5%99%a8%e5%b7%b2%e7%bb%8f%e5%9c%a8%e8%bf%90%e8%a1%8c aria-hidden=true>#</a></h2><p>详细报错为 <code>The container name "XXX" is already in use by container</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 查看所有的容器信息，并根据ID删除
+</span></span><span class=line><span class=cl># docker ps -a
+</span></span><span class=line><span class=cl># docker rm 36bceeae4b22
+</span></span></code></pre></div><a class=anchor id=证书验证报错></a><h2>证书验证报错 <a href=#%e8%af%81%e4%b9%a6%e9%aa%8c%e8%af%81%e6%8a%a5%e9%94%99 aria-hidden=true>#</a></h2><p>详细报错为 <code>Error response from daemon: Get "https://registry.exmaple.com/v2/": tls: failed to verify certificate: x509: certificate relies on legacy Common Name field, use SANs instead</code> 。</p><p>从 <code>Go 1.15</code> 版本开始废弃 <a href=https://go.dev/doc/go1.15#commonname>X.509 CommonName</a> 推荐使用 SAN 证书，也可以将其添加到非安全的仓库配置中，此时将不再检查证书，常见有如下两种方式。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 通过systemd管理docker服务进程，可以通过如下方式增加启动选项
+</span></span><span class=line><span class=cl># vim /etc/sysconfig/docker
+</span></span><span class=line><span class=cl>OPTIONS=&#39;--insecure-registry registry.example.com&#39;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 或者修改如下的配置项
+</span></span><span class=line><span class=cl># vim /etc/docker/daemon.json
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;insecure-registries&#34; : [&#34;registry.example.com&#34;]
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>然后通过 <code>systemctl restart docker</code> 命令重启服务。</p><a class=anchor id=拉取镜像报错></a><h2>拉取镜像报错 <a href=#%e6%8b%89%e5%8f%96%e9%95%9c%e5%83%8f%e6%8a%a5%e9%94%99 aria-hidden=true>#</a></h2><p>详细报错为 <code>Error response from daemon: manifest for your/image:latest not found: manifest unknown: manifest unknown</code> 。</p><p>通常是因为没有这个镜像，多数原因是 tag 错误或者是默认没有设置 latest，可以从对应的 repository 中搜索或者，可以通过如下命令查看当前支持的 tag 信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ curl -XGET http://hub-mirror.c.163.com/v2/your/image/tags/list
+</span></span></code></pre></div><p>这里使用的是网易的镜像进行测试。</p><a class=anchor id=下载-arm-镜像></a><h2>下载 ARM 镜像 <a href=#%e4%b8%8b%e8%bd%bd-arm-%e9%95%9c%e5%83%8f aria-hidden=true>#</a></h2><p>有时需要在 x86 平台上下载 arm 镜像，例如，在 x86 机器上只是做下载，然后在其它平台上运行，可以通过如下方式修改。</p><p>依赖 manifest 特性，需要同时配置服务端和客户端。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 开启服务端配置，然后重启
+</span></span><span class=line><span class=cl># vim /etc/docker/daemon.json
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	&#34;experimental&#34;: true
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl># systemctl restart docker
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 配置客户端，可以设置环境变量或者修改配置文件
+</span></span><span class=line><span class=cl># export DOCKER_CLI_EXPERIMENTAL=enabled
+</span></span><span class=line><span class=cl># vim ~/.docker/config.json
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>	&#34;experimental&#34;: &#34;enabled&#34;
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 下载时指定平台
+</span></span><span class=line><span class=cl># docker pull docker.io/hello-world --platform=linux/arm64
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 查看某个镜像的当前架构信息
+</span></span><span class=line><span class=cl>$ docker inspect 638e1285665f | grep -Ew &#39;Architecture|Os&#39;
+</span></span></code></pre></div><a class=anchor id=yum-stuck></a><h2>Yum Stuck <a href=#yum-stuck aria-hidden=true>#</a></h2><p>在 CentOS7 中通过 <code>yum update glibc</code> 升级版本时会遇到 <code>Bad file scriptor</code> 问题，主要是因为 RPM 的 bug 导致，可以参考 <a href=https://stackoverflow.com/questions/74345206/centos-7-docker-yum-installation-gets-stuck>StackOverflow</a> 中的介绍，就是添加 <code>ulimit -n 1024 && yum update glibc</code> 规避。</p></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li><li><a href=#镜像地址>镜像地址</a></li></ul></li><li><a href=#配置使用>配置使用</a><ul><li><a href=#仓库地址>仓库地址</a></li><li><a href=#修改存储目录>修改存储目录</a></li><li><a href=#启动参数>启动参数</a></li></ul></li><li><a href=#常用命令>常用命令</a><ul><li><a href=#端口映射>端口映射</a></li><li><a href=#资源清理>资源清理</a></li><li><a href=#dangling-images>dangling images</a></li></ul></li><li><a href=#镜像介绍>镜像介绍</a><ul><li><a href=#目录结构>目录结构</a></li><li><a href=#存储驱动>存储驱动</a></li></ul></li><li><a href=#镜像管理>镜像管理</a><ul><li><a href=#常用镜像>常用镜像</a></li><li><a href=#私有镜像>私有镜像</a></li></ul></li><li><a href=#常见问题>常见问题</a><ul><li><a href=#容器已经在运行>容器已经在运行</a></li><li><a href=#证书验证报错>证书验证报错</a></li><li><a href=#拉取镜像报错>拉取镜像报错</a></li><li><a href=#下载-arm-镜像>下载 ARM 镜像</a></li><li><a href=#yum-stuck>Yum Stuck</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2025 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script>
+<script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>
