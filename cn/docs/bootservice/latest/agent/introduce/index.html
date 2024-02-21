@@ -1,0 +1,403 @@
+<!doctype html><html lang=en-US><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>简介 | GoHalo</title>
+<link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.a44a20e27bcf33ab22e9f9c349f9a8cd.css integrity="md5-pEog4nvPM6si6fnDSfmozQ==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo
+</a><button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-versions data-bs-toggle=dropdown aria-expanded=false data-bs-display=static aria-label="Toggle version menu">
+latest</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 rounded border-0" aria-labelledby=header-versions><li><a class=dropdown-item href=/cn/docs/bootservice/Boot%20Service%20Docs>Boot Service Docs</a></li></ul></div><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="docs row flex-xl-nowrap"><div class=col-xl-2><div class="menubar align-items-center position-fixed"><ul><li><a href=/cn/docs/bootservice/latest/introduce/>简介</a></li><li><a class="submenu collapsed active" data-bs-toggle=collapse data-bs-target=#section-bfa7d0ccd2b35afc0f6f57733abae9de aria-expanded=true>Agent <i class="fa fa-angle-right" aria-hidden=true></i></a><div class="collapse show" id=section-bfa7d0ccd2b35afc0f6f57733abae9de><ul class="ps-3 small"><li><a class=active href=/cn/docs/bootservice/latest/agent/introduce/>简介</a></li></ul></div></li></ul></div></div><div class=col-xl-8><div class=content><p>当管理的机器达到上万甚至是百万的数量级时，即使 Agent 的部署成功率能达到 99% 那也会导致有几百台的机器离线，如果 Agent 频繁变更可能会导致离线机器更多。</p><p>BootAgent 就是为了管理各个 Agent ，同时为了保证机制简单，可以使功能快速稳定；该 Agent 会在装机时安装，用来负责安装、升级、监控、重启其它 Agent 。</p><a class=anchor id=1-简介></a><h1>1. 简介 <a href=#1-%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>主要目的是用来管理最基础的 Agent (例如 BasicAgent、MonitorAgent 等等)，提供基本的管理、监控等功能。简单来说，尽量保证 BootAgent 功能的简单稳定，这也同时意味着，很多的功能无法保证其时效性。</p><p>运行时有几种状态：</p><ul><li><code>Init</code> 启动状态，第一次启动，需要与服务端完成握手，作一些基本的初始化动作。</li><li><code>Normal</code> 正常运行状态，基本功能介绍如下。</li><li><code>Standby</code> 不再管理 Agent ，仅与服务端建立链接。</li><li><code>Silence</code> 主动停止 Agent ，通常用在怀疑各个子 Agent 异常，导致服务异常。</li><li><code>Quit</code> 会主动退出，如果恢复需要手动操作。</li></ul><p>如下介绍常见的功能。</p><a class=anchor id=11-基本功能></a><h2>1.1 基本功能 <a href=#11-%e5%9f%ba%e6%9c%ac%e5%8a%9f%e8%83%bd aria-hidden=true>#</a></h2><p>工作时有几种模式，这里介绍的是正常模式下的基本功能。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>1. BootAgent 包括配置、自身监控等
+</span></span><span class=line><span class=cl>   1.1 修改配置，这里只包含了有限配置信息，包括了 AgentSN、Tags、ServerList 。
+</span></span><span class=line><span class=cl>   1.2 任务信息统计，接收到的任务数、执行成功数、执行失败数、忽略执行数(任务已经存在)。
+</span></span><span class=line><span class=cl>   1.3 进程状态，包括 CPU、内存、句柄、磁盘 IO、网络。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2. 子进程管理。
+</span></span><span class=line><span class=cl>   2.1 任务接口，包括了子Agent的安装、卸载、启动、停止。
+</span></span><span class=line><span class=cl>   2.2 状态管理。
+</span></span><span class=line><span class=cl>       自动拉起，可以配置是否在启动时拉起进程。
+</span></span><span class=line><span class=cl>       状态检查、资源限制。
+</span></span><span class=line><span class=cl>   2.3 事件上报，例如重启。
+</span></span></code></pre></div><p>如上所述，在实现时尽量做到简化，所以必然会带来很多的限制，简单列举如下：</p><ul><li>配置保存，只通过简单的文件保存，原子操作基于文件系统的移动。</li><li>地址信息，不使用域名而是只有 IP 地址，这样不会依赖 DNS 服务。</li></ul><p>另外，在实现时，同样尽量保持简单：</p><ol><li>与服务端通讯的发送、接收缓存默认是 64K 大小，通过 <code>CLI_SNDBUF_SIZE</code> <code>CLI_RCVBUF_SIZE</code> 设置。</li><li>客户端会周期将状态上报到服务端，默认 10min (可配 1min~60min )，通过 <code>PROJECT_CLIENT_INTERVAL</code> 设置。</li><li>如果在一个周期内数据上报失败，那么会减少到 3min (可配 1min~60min) 重试上报，可通过 <code>PROJECT_RETRY_DELAY</code> 设置。</li></ol><p>注意，客户端上报周期并非严格设置，可能会在连接服务端失败时导致延迟。</p><a class=anchor id=12-源码介绍></a><h3>1.2 源码介绍 <a href=#12-%e6%ba%90%e7%a0%81%e4%bb%8b%e7%bb%8d aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>daemon             实际源码目录
+</span></span><span class=line><span class=cl>daemon/config/     配置相关的实现
+</span></span><span class=line><span class=cl>daemon/server.c    接收本地请求
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>agent        与子Agent相关的管理
+</span></span><span class=line><span class=cl>cgroup       用来配置CGroup，包括了自身还有子Agent
+</span></span><span class=line><span class=cl>client       与服务端通讯，包括了地址管理等
+</span></span><span class=line><span class=cl>config       配置相关内容
+</span></span><span class=line><span class=cl>json         序列化、反序列化 JSON 格式的相关内容，例如请求
+</span></span></code></pre></div><a class=anchor id=13-安装路径></a><h3>1.3 安装路径 <a href=#13-%e5%ae%89%e8%a3%85%e8%b7%af%e5%be%84 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-gdscript3 data-lang=gdscript3><span class=line><span class=cl><span class=o>-----</span> <span class=err>配置文件</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>etc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>.</span><span class=n>conf</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>etc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>state</span><span class=o>/</span><span class=n>agents</span>      <span class=c1># 保存Agent相关的期望状态</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>etc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>state</span><span class=o>/</span><span class=n>mode</span>        <span class=c1># BootAgent的运行模式</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>etc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>items</span><span class=o>/</span><span class=n>AgentSN</span>     <span class=c1># 可通过服务端主动配置</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>etc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>items</span><span class=o>/</span><span class=n>Tags</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>etc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>items</span><span class=o>/</span><span class=n>ServerList</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>-----</span> <span class=err>二进制程序</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>sbin</span><span class=o>/</span><span class=n>BootAgent</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>sbin</span><span class=o>/</span><span class=n>BootAgentCtrl</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>-----</span> <span class=err>基目录以及临时目录，常见如保存下载文件</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>local</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>local</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>tmp</span>         <span class=c1># 临时目录，会有任务定期清理</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>local</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>tmp</span><span class=o>/</span><span class=n>MiniAgent</span><span class=o>-</span><span class=mf>1.2</span><span class=o>.</span><span class=mf>1.</span><span class=n>tar</span><span class=o>.</span><span class=n>gz</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>-----</span> <span class=err>日志以及</span><span class=n>PID文件</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=k>var</span><span class=o>/</span><span class=nb>log</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>.</span><span class=n>log</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=k>var</span><span class=o>/</span><span class=n>run</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>.</span><span class=n>pid</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=k>var</span><span class=o>/</span><span class=n>run</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>.</span><span class=n>sock</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>-----</span> <span class=err>文档以及特定的配置文件等</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>share</span><span class=o>/</span><span class=n>cargo</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>share</span><span class=o>/</span><span class=n>doc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>AUTHORS</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>share</span><span class=o>/</span><span class=n>doc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>COPYING</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>share</span><span class=o>/</span><span class=n>doc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>ChangeLog</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>share</span><span class=o>/</span><span class=n>doc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>README</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>share</span><span class=o>/</span><span class=n>doc</span><span class=o>/</span><span class=n>cargo</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>/</span><span class=n>TODO</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>share</span><span class=o>/</span><span class=n>man</span><span class=o>/</span><span class=n>man1</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>.</span><span class=mf>1.</span><span class=n>xz</span>
+</span></span><span class=line><span class=cl><span class=o>/</span><span class=n>usr</span><span class=o>/</span><span class=n>share</span><span class=o>/</span><span class=n>man</span><span class=o>/</span><span class=n>man5</span><span class=o>/</span><span class=n>BootAgentCtrl</span><span class=o>.</span><span class=mf>5.</span><span class=n>xz</span>
+</span></span></code></pre></div><a class=anchor id=1-配置管理></a><h2>1 配置管理 <a href=#1-%e9%85%8d%e7%bd%ae%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h2><p>在启动时可以通过命令行和配置文件修改默认配置，绝大部分都可以通过命令行配置，而且命令行的优先级更高。</p><p>目前所有的配置保存在 <code>daemon/config/config.c</code> 文件中的全局变量中，包含了用户的配置以及默认配置，只有有限几个参数是可以通过服务端动态修改的，大部分只允许启动时通过命令行或者配置文件配置。</p><p>因为 BootAgent 可以动态修改的配置项是通过文件保存，为了保证配置修改的原子性，提供了配置的 2PC 操作 (没有默认值)，实现时是通过文件系统的原子移动完成的。</p><a class=anchor id=141-配置文件></a><h4>1.4.1 配置文件 <a href=#141-%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6 aria-hidden=true>#</a></h4><p>也就是 <code>BootAgent.conf</code> 配置文件，该文件只读，也就意味着在安装时已经配置好，其中，部分参数可以编译阶段通过宏定义，括号中的值是默认值，注意，是生产环境的值，测试阶段一般是相对路径。</p><table><thead><tr><th>配置项</th><th>命令行</th><th>默认值(现网)</th><th>默认值(测试)</th><th>备注</th></tr></thead><tbody><tr><td>global.umask</td><td></td><td>027</td><td>027</td><td>进程 umask 设置</td></tr><tr><td>global.daemonize</td><td>-f</td><td>true</td><td>true</td><td>是否后台运行</td></tr><tr><td>global.log.file</td><td>-L arg</td><td>/var/log/cargo/BootAgent.log</td><td>BootAgent/BootAgent.log</td><td>日志文件路径</td></tr><tr><td>global.log.level</td><td>-l arg</td><td>info</td><td>trace</td><td>日志级别</td></tr><tr><td>global.config.dir</td><td>-O arg</td><td></td><td></td><td>配置文件所在根目录</td></tr><tr><td>global.cleanup.interval</td><td>-d arg</td><td></td><td></td><td>脏文件目录扫描间隔</td></tr><tr><td>global.client.interval</td><td>-i arg</td><td></td><td></td><td>状态数据上报间隔</td></tr></tbody></table><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>global.base.dir             运行时通过chdir切换目录 BASE_DIR(/usr/local/cargo/BootAgent)
+</span></span><span class=line><span class=cl>global.agent.sock.path
+</span></span><span class=line><span class=cl>global.sock.path
+</span></span><span class=line><span class=cl>global.pidfile
+</span></span><span class=line><span class=cl>global.program.interval
+</span></span><span class=line><span class=cl>global.heartbeat.interval
+</span></span><span class=line><span class=cl>global.cleanup.interval
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>global.retry.delay
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>cgroup.supervise
+</span></span><span class=line><span class=cl>cgroup.name&#34;,                NULL, PROJECT_CGROUP_NAME,        0},
+</span></span><span class=line><span class=cl>cgroup.cpu&#34;,                 NULL, PROJECT_CGRP_CPU,           0},
+</span></span><span class=line><span class=cl>cgroup.memory&#34;,              NULL, PROJECT_CGRP_MEM,           0},
+</span></span><span class=line><span class=cl>cgroup.cpuset&#34;,              NULL, PROJECT_CGRP_CPUSET,        0},
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	{&#34;global.config.dir&#34;,          NULL, PROJECT_CONFIG_DIR,         0},
+</span></span><span class=line><span class=cl>	{&#34;global.agent.sock.path&#34;,     NULL, PROJECT_AGENT_SOCKPATH,     0},
+</span></span><span class=line><span class=cl>	{&#34;global.sock.path&#34;,           NULL, PROJECT_SOCK_PATH,          0},
+</span></span><span class=line><span class=cl>	{&#34;global.pidfile&#34;,             NULL, PROJECT_PID_FILE,           0},
+</span></span><span class=line><span class=cl>	{&#34;global.program.interval&#34;,    NULL, PROJECT_PROGRAM_INTERVAL,   0},
+</span></span><span class=line><span class=cl>	{&#34;global.heartbeat.interval&#34;,  NULL, PROJECT_HEARTBEAT_INTERVAL, 0},
+</span></span><span class=line><span class=cl>	{&#34;global.cleanup.interval&#34;,    NULL, PROJECT_CLEANUP_INTERVAL,   0},
+</span></span><span class=line><span class=cl>	{&#34;global.client.interval&#34;,     NULL, PROJECT_CLIENT_INTERVAL,    0},
+</span></span><span class=line><span class=cl>	{&#34;global.retry.delay&#34;,         NULL, PROJECT_RETRY_DELAY,        0},
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	{&#34;cgroup.supervise&#34;,           NULL, &#34;false&#34;,                    0},
+</span></span><span class=line><span class=cl>	{&#34;cgroup.name&#34;,                NULL, PROJECT_CGROUP_NAME,        0},
+</span></span><span class=line><span class=cl>	{&#34;cgroup.cpu&#34;,                 NULL, PROJECT_CGRP_CPU,           0},
+</span></span><span class=line><span class=cl>	{&#34;cgroup.memory&#34;,              NULL, PROJECT_CGRP_MEM,           0},
+</span></span><span class=line><span class=cl>	{&#34;cgroup.cpuset&#34;,              NULL, PROJECT_CGRP_CPUSET,        0},
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	{&#34;AgentSN&#34;,                    NULL, NULL,              CONF_F_2PC},
+</span></span><span class=line><span class=cl>	{&#34;Tags&#34;,                       NULL, NULL,              CONF_F_2PC},
+</span></span><span class=line><span class=cl>	{&#34;ServerList&#34;,                 NULL, NULL,              CONF_F_2PC},
+</span></span><span class=line><span class=cl>	{&#34;Repository&#34;,                 NULL, NULL,              CONF_F_2PC},
+</span></span></code></pre></div><a class=anchor id=12-原子操作></a><h3>1.2 原子操作 <a href=#12-%e5%8e%9f%e5%ad%90%e6%93%8d%e4%bd%9c aria-hidden=true>#</a></h3><p>主要是通过文件系统的原子移动来实现，如果已经存在，那么就需要先备份才可以，当更新失败，就可以直接回滚。而在读取时，如果发现文件不存在，那么还需要检查备份的文件是否存在，如果存在，那么就需要直接读取。</p><a class=anchor id=15-命令行参数></a><h3>1.5 命令行参数 <a href=#15-%e5%91%bd%e4%bb%a4%e8%a1%8c%e5%8f%82%e6%95%b0 aria-hidden=true>#</a></h3><a class=anchor id=151-bootagent></a><h4>1.5.1 BootAgent <a href=#151-bootagent aria-hidden=true>#</a></h4><p>这个是主要的进程，一部分常用的参数可以通过命令行配置。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>-f
+</span></span><span class=line><span class=cl>    前台运行，默认是后台运行。
+</span></span><span class=line><span class=cl>-l &lt;level&gt;
+</span></span><span class=line><span class=cl>    日志级别，可以
+</span></span><span class=line><span class=cl>-L &lt;path&gt;
+</span></span><span class=line><span class=cl>    日志保存路径。
+</span></span><span class=line><span class=cl>-P &lt;path&gt;
+</span></span><span class=line><span class=cl>    PIDFile 保存路径。
+</span></span><span class=line><span class=cl>-S &lt;list&gt;
+</span></span><span class=line><span class=cl>    服务器地址。
+</span></span><span class=line><span class=cl>-C &lt;name&gt;
+</span></span><span class=line><span class=cl>    cgroup 组名称。
+</span></span><span class=line><span class=cl>-T
+</span></span><span class=line><span class=cl>    用于测试当前的配置，而非真正运行，为了防止覆盖老日志，可以同时使用 -L 参数。
+</span></span></code></pre></div><a class=anchor id=152-bootagentctrl></a><h4>1.5.2 BootAgentCtrl <a href=#152-bootagentctrl aria-hidden=true>#</a></h4><p>一般用来调试、检查状态等使用，可以通过 <code>BOOTAGENT_TRACE</code> 环境变量来查看 <code>bootctl</code> 与 <code>bootagent</code> 的命令交互过程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-gdscript3 data-lang=gdscript3><span class=line><span class=cl><span class=o>-----</span> <span class=err>设置日志级别</span>
+</span></span><span class=line><span class=cl><span class=k>export</span> <span class=n>BOOTAGENT_TARCE</span><span class=o>=</span><span class=mi>1</span><span class=p>;</span> <span class=n>daemon</span><span class=o>/</span><span class=n>BootAgentCtrl</span> <span class=n>config</span> <span class=n>setlog</span> <span class=n>trace</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>-----</span> <span class=err>检查文件</span> <span class=n>SHA256</span>
+</span></span><span class=line><span class=cl><span class=n>daemon</span><span class=o>/</span><span class=n>BootAgentCtrl</span> <span class=n>sha256</span> <span class=o>&lt;</span><span class=n>YourFile</span><span class=o>&gt;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>-----</span> <span class=err>下载文件</span>
+</span></span><span class=line><span class=cl><span class=n>daemon</span><span class=o>/</span><span class=n>BootAgentCtrl</span> <span class=n>download</span> <span class=o>&lt;</span><span class=n>FilePath</span><span class=o>&gt;</span>
+</span></span></code></pre></div><a class=anchor id=153-systemd></a><h4>1.5.3 Systemd <a href=#153-systemd aria-hidden=true>#</a></h4><p>在 CentOS 中也就是通过 systemd 管理进程，其中相关的 service 文件可以参考 <code>contrib/BootAgent.service</code> 中的配置内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-gdscript3 data-lang=gdscript3><span class=line><span class=cl><span class=o>-----</span> <span class=err>更新配置</span>
+</span></span><span class=line><span class=cl><span class=c1># cp BootAgent.service /usr/lib/systemd/system/BootAgent.service</span>
+</span></span><span class=line><span class=cl><span class=c1># systemctl daemon-reload</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>-----</span> <span class=err>查看状态以及重启</span>
+</span></span><span class=line><span class=cl><span class=c1># systemctl status BootAgent</span>
+</span></span><span class=line><span class=cl><span class=c1># systemctl restart BootAgent</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>-----</span> <span class=err>配置后的</span><span class=n>cgroup会添加到如下目录</span>
+</span></span><span class=line><span class=cl><span class=o>$</span> <span class=n>ls</span> <span class=o>/</span><span class=n>sys</span><span class=o>/</span><span class=n>fs</span><span class=o>/</span><span class=n>cgroup</span><span class=o>/</span><span class=n>cpu</span><span class=o>/</span><span class=n>system</span><span class=o>.</span><span class=n>slice</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>.</span><span class=n>service</span>
+</span></span><span class=line><span class=cl><span class=o>$</span> <span class=n>ls</span> <span class=o>/</span><span class=n>sys</span><span class=o>/</span><span class=n>fs</span><span class=o>/</span><span class=n>cgroup</span><span class=o>/</span><span class=n>memory</span><span class=o>/</span><span class=n>system</span><span class=o>.</span><span class=n>slice</span><span class=o>/</span><span class=n>BootAgent</span><span class=o>.</span><span class=n>service</span>
+</span></span></code></pre></div><a class=anchor id=2-通讯方式></a><h2>2. 通讯方式 <a href=#2-%e9%80%9a%e8%ae%af%e6%96%b9%e5%bc%8f aria-hidden=true>#</a></h2><p>这里采用两种方式，用户可以根据需求进行选择：A) 长链接 WebSocket ；B) 短链接 HTTP1.0 。</p><p>其中长链接的消息处理会更加及时，事件、状态等信息在发生改变时会立即上报，而且用户的请求也会立即下发。</p><a class=anchor id=21-websoket></a><h3>2.1 Websoket <a href=#21-websoket aria-hidden=true>#</a></h3><p>通过该协议支持长连接，采用二进制协议，因为是长连接，为了提高效率支持不同的命令。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>   32      32       32        32    |
+</span></span><span class=line><span class=cl>+------+--------+--------+----------+-------------
+</span></span><span class=line><span class=cl>| BTV1 |  Code  | Length | Reserved | Message ....
+</span></span><span class=line><span class=cl>+------+--------+--------+----------+-------------
+</span></span></code></pre></div><a class=anchor id=22-通讯协议></a><h3>2.2 通讯协议 <a href=#22-%e9%80%9a%e8%ae%af%e5%8d%8f%e8%ae%ae aria-hidden=true>#</a></h3><p>主要介绍 BootAgent 如何与 BootServer 进行通讯，这里是处理之后的 JSON 结构体，发送请求后，对端会返回结果示例如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;Status&#34;: 2,                            # 必选，0表示正常，非0则表示异常，一般是统一错误码
+</span></span><span class=line><span class=cl>    &#34;Message&#34;: &#34;common error type&#34;,         # 可选，通常是一类通用的错误类型
+</span></span><span class=line><span class=cl>    &#34;Cause&#34;: &#34;unmarshal body failed&#34;        # 可选，具体的错误信息
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>这里简单介绍常见的接口，任务相关的后续介绍。</p><a class=anchor id=221-启动注册接口></a><h4>2.2.1 启动注册接口 <a href=#221-%e5%90%af%e5%8a%a8%e6%b3%a8%e5%86%8c%e6%8e%a5%e5%8f%a3 aria-hidden=true>#</a></h4><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- WebSocket 0x0001 0000
+</span></span><span class=line><span class=cl>----- HTTP1 POST /api/v1/agent/register
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;Hostname&#34;: &#34;127.0.0.1&#34;,                            # 可以通过hostname命令查看
+</span></span><span class=line><span class=cl>    &#34;IPAddress&#34;: &#34;127.0.0.1&#34;,                           # 在发送注册信息时与服务端建立连接的IP
+</span></span><span class=line><span class=cl>    &#34;AgentSN&#34;: &#34;bfdcc18c-b6b9-4725-9c47-37fd93dba5b6&#34;   # 本地生成的UUID用来唯一标识一台主机
+</span></span><span class=line><span class=cl>    &#34;Version&#34;: &#34;1.2.4-x86_64&#34;,                          # BootAgent的版本号
+</span></span><span class=line><span class=cl>    &#34;Feature&#34;: 7,                                       # 支持特性 0: cgroup
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 返回信息，如果如下信息保存失败，则会一直重试
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;Status&#34;: 0,
+</span></span><span class=line><span class=cl>    &#34;Agentsn&#34;: &#34;dcb886e9-04ed-41bb-9c12-4d2de12cd59b&#34;,  # 如果上层判断有冲突，则返回合法的AgentSN
+</span></span><span class=line><span class=cl>    &#34;Tags&#34;: &#34;svc=ecs,cmpt=DB&#34;,
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>当第一次启动时 (MetaFile不存在) 会向服务端注册，此时服务端可以根据配置返回一些配置信息，Agent 会尝试持久化到 MetaFile 文件中。如果 Agent 因为某些原因失败，会尝试下次重试，此时上报的 AgentSN 可能会被修改，因此，只有当上报收到状态信息之后，才会被认为是合法的。</p><a class=anchor id=222-状态上报接口></a><h4>2.2.2 状态上报接口 <a href=#222-%e7%8a%b6%e6%80%81%e4%b8%8a%e6%8a%a5%e6%8e%a5%e5%8f%a3 aria-hidden=true>#</a></h4><p>上报当前 Agent 状态，也包括了管理的 Agent 状态。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 基本状态上报
+</span></span><span class=line><span class=cl>----- WebSocket 0x0003 0000
+</span></span><span class=line><span class=cl>----- POST /api/v1/agent/status
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;Uptime&#34;: 1234,                # 进程已经启动时间，单位秒
+</span></span><span class=line><span class=cl>    &#34;Timestamp&#34;: 1232,             # 上报时的时间戳
+</span></span><span class=line><span class=cl>    &#34;Step&#34;: 600,                   # 上报的时间间隔，可以做修改，默认10min
+</span></span><span class=line><span class=cl>    &#34;Stats&#34;: {                     # 当前BootAgent的状态统计信息
+</span></span><span class=line><span class=cl>        &#34;Task&#34;: [1, 2, 3, 4],      # 任务执行统计信息，分别为tasknum taskrun taskfail taskpass
+</span></span><span class=line><span class=cl>    },
+</span></span><span class=line><span class=cl>    &#34;Agents&#34;: [{                   # 当前主机Agent信息
+</span></span><span class=line><span class=cl>        &#34;Name&#34;: &#34;BasicAgent&#34;,      # Agent名称，需要保证唯一
+</span></span><span class=line><span class=cl>        &#34;Version&#34;: &#34;1.2.3&#34;,        # Agent当前版本号
+</span></span><span class=line><span class=cl>        &#34;Status&#34;: &#34;stoped&#34;,        # Agent的状态
+</span></span><span class=line><span class=cl>        &#34;Uptime&#34;: 123,             # 已经运行时间
+</span></span><span class=line><span class=cl>        &#34;Resource&#34;: {
+</span></span><span class=line><span class=cl>            &#34;CPU&#34;: 10,             # % CPU使用率
+</span></span><span class=line><span class=cl>            &#34;RSS&#34;: 100,            # KB 内存使用
+</span></span><span class=line><span class=cl>            &#34;FDS&#34;: 10,             # 文件句柄数
+</span></span><span class=line><span class=cl>        },
+</span></span><span class=line><span class=cl>        &#34;Cgroup&#34;: {                # 如果配置的cgroup组
+</span></span><span class=line><span class=cl>            &#34;CPU&#34;: 10,             # % cgroup的CPU使用率
+</span></span><span class=line><span class=cl>            &#34;RSS&#34;: 100,            # B内存使用
+</span></span><span class=line><span class=cl>        },
+</span></span><span class=line><span class=cl>    }],
+</span></span><span class=line><span class=cl>    &#34;Tasks&#34;: [{                    # 任务执行状态，长链接不包含，详见如下介绍
+</span></span><span class=line><span class=cl>	... ...
+</span></span><span class=line><span class=cl>    }],
+</span></span><span class=line><span class=cl>    &#34;Events&#34;: [{                   # 本地发生的事件信息，长链接不包含，详见如下介绍
+</span></span><span class=line><span class=cl>	... ...
+</span></span><span class=line><span class=cl>    }],
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 任务执行结果
+</span></span><span class=line><span class=cl>----- WebSocket 0x0003 0003
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,   # 任务ID
+</span></span><span class=line><span class=cl>    &#34;Errcode&#34;: 0,                                   # 统一错误码信息
+</span></span><span class=line><span class=cl>    &#34;Message&#34;: &#34;success&#34;                            # 返回信息
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 事件触发
+</span></span><span class=line><span class=cl>----- WebSocket 0x0003 0009
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;Timestamp&#34;: 123456789,                         # 发生的事件点
+</span></span><span class=line><span class=cl>    &#34;Category&#34;: &#34;agent&#34;                             # 分类信息
+</span></span><span class=line><span class=cl>    &#34;Message&#34;: &#34;resource overflow, CPU(10%)&#34;        # 详细日志信息，例如资源超过限制
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>注意，这里的状态上报返回的结果里，如果是长链接只会返回状态，一般不会包含任务，而短链接则需要通过这里的返回处理请求。</p><a class=anchor id=3-任务管理></a><h2>3. 任务管理 <a href=#3-%e4%bb%bb%e5%8a%a1%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h2><p>任务目前仅允许在多个子 Agent 中并发，如果某个子 Agent 正在执行任务，同时又对同一个子 Agent 下发的了任务，那么就会报错。</p><p>关于 BootAgent 的任务主要包含两类：A) BootAgent 自身的配置管理；B) 子 Agent 的相关操作，包括了安装、升级、重启等等。其中前者会立即执行，而后者会在如下的队列中依次执行。</p><p><strong>注意</strong> BootAgent 不会持久化任务信息，因此实现的各种任务需要保证任务的可重入性，也就是可以重复执行多次不会带来逻辑上的问题。这也就意味着，每次可以检查上次执行结果，对于已经执行步骤无需执行，或者，操作尽量简单。</p><a class=anchor id=31-并发控制></a><h3>3.1 并发控制 <a href=#31-%e5%b9%b6%e5%8f%91%e6%8e%a7%e5%88%b6 aria-hidden=true>#</a></h3><p>包括了异步任务和同步任务，同步任务在下发解析时会立即开始执行(实现时一般为异步)，而异步任务则会串行执行，例如对于下载任务来说，主要是为了防止带宽不可控。</p><p><strong>注意</strong> 任务必须确保 <code>id</code> <code>action</code> <code>name</code> <code>version</code> 字段存在，如果 <code>id</code> 和 <code>action</code> 不存在，则会直接忽略任务；其中 <code>name</code> 和 <code>version</code> 用来确定操作的对象 (如果是全局配置不需要)。</p><p>对于 BootAgent 的任务都是可以立即执行完的，只有子 Agent 相关的任务</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装，异步，用于第一次安装 注意，如果已经安装则尝试升级
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,  # 必选，任务ID信息，由服务端指定，客户端上报执行结果时会带上
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: &#34;install&#34;,                           # 必选，指定任务操作
+</span></span><span class=line><span class=cl>    &#34;Name&#34;: &#34;BasicAgent&#34;,                          # 必选，需要操作的子Agent名称
+</span></span><span class=line><span class=cl>    &#34;Version&#34;: &#34;0.1.0&#34;,                            # 必选，操作子Agent的版本号
+</span></span><span class=line><span class=cl>    &#34;Parameters&#34;: {                                # 进程相关的参数，详见&lt;子进程管理&gt;中的配置参数
+</span></span><span class=line><span class=cl>         &#34;Package&#34;: {
+</span></span><span class=line><span class=cl>             &#34;Speed&#34;: 100,                         # 可选，下载限速，默认是100，单位是KB/s
+</span></span><span class=line><span class=cl>             &#34;URL&#34;: &#34;ftp://server:port/BasicAgent/BasicAgent-0.1.0-0.x86_64.rpm&#34;,
+</span></span><span class=line><span class=cl>             &#34;Checksum&#34;: &#34;SHA256:4a34b8d7d3009bb9ef9475fbf33e7bbe4a1e8db003aefc578a241c2f51c2c2f2&#34;,
+</span></span><span class=line><span class=cl>         },
+</span></span><span class=line><span class=cl>         &#34;Envs&#34;: {
+</span></span><span class=line><span class=cl>             &#34;PATH&#34;: &#34;/usr/bin;/usr/local/bin&#34;
+</span></span><span class=line><span class=cl>         }
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 升级，异步
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: &#34;upgrade&#34;,
+</span></span><span class=line><span class=cl>    &#34;Name&#34;: &#34;BasicAgent&#34;,                         # 必选，需要操作的子Agent名称
+</span></span><span class=line><span class=cl>    &#34;Version&#34;: &#34;1.2.3&#34;,                           # 必选，及其版本号
+</span></span><span class=line><span class=cl>    &#34;Parameters&#34;: {
+</span></span><span class=line><span class=cl>        &#34;URL&#34;: &#34;ftp://server:port/BasicAgent/BasicAgent-0.1.0-0.x86_64.rpm&#34;,
+</span></span><span class=line><span class=cl>        &#34;Checksum&#34;: &#34;SHA256:4a34b8d7d3009bb9ef9475fbf33e7bbe4a1e8db003aefc578a241c2f51c2c2f2&#34;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 卸载，异步
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: &#34;uninstall&#34;,
+</span></span><span class=line><span class=cl>    &#34;Name&#34;: &#34;BasicAgent&#34;,                          # 必选，需要操作的子Agent名称
+</span></span><span class=line><span class=cl>    &#34;Version&#34;: &#34;0.1.0&#34;,                            # 可选，操作子Agent的版本号
+</span></span><span class=line><span class=cl>    &#34;Parameters&#34;: {
+</span></span><span class=line><span class=cl>	&#34;Force&#34;: true,                             # 可选，是否尝试强制卸载
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 进程操作，同步，需要确保进程已经安装，否则会报错
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: &#34;agent&#34;,
+</span></span><span class=line><span class=cl>    &#34;Name&#34;: &#34;BasicAgent&#34;,                         # 必选，需要操作的子Agent名称
+</span></span><span class=line><span class=cl>    &#34;Version&#34;: &#34;1.2.3&#34;,                           # 可选，及其版本号
+</span></span><span class=line><span class=cl>    &#34;Parameters&#34;: {
+</span></span><span class=line><span class=cl>        &#34;Operation&#34;: &#34;restart&#34;                    # 必选，对子进程的操作，包括了start、restart、stop
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 配置相关，同步，这里是针对的是BootAgent，并非子Agent，目前暂不支持子Agent配置
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: &#34;config&#34;,
+</span></span><span class=line><span class=cl>    &#34;Parameters&#34;: {
+</span></span><span class=line><span class=cl>        &#34;ServerList&#34;: &#34;192.168.9.1:1234&#34;,   # 全局配置，服务端列表，不会修改默认的列表
+</span></span><span class=line><span class=cl>        &#34;Step&#34;: 1200,                       # 全局配置，状态上报时间间隔，单位是秒，其范围为[60, 3600]
+</span></span><span class=line><span class=cl>        &#34;Tags&#34;: &#34;svc=ECS,region=north&#34;      # 全局配置，本机标签信息，通过逗号分割
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=32-其它></a><h3>3.2 其它 <a href=#32-%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h3><ul><li>为了防止因为异常导致任务数太多，所以，会对任务总数进行限制。</li></ul><a class=anchor id=4-子进程管理></a><h2>4. 子进程管理 <a href=#4-%e5%ad%90%e8%bf%9b%e7%a8%8b%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h2><p>默认会在配置目录下保存相关的配置，配置文件的后缀需要确保是 <code>*.json</code>，默认配置目录可以通过 <code>BootAgent -h</code> 查看。在管理进程时，会将配置的名称作为唯一标示，如果有重复则会忽略后面的配置。</p><p>另外，配置文件的名称一般要求与文件中 <code>name</code> 字段的名称保持一致(非强制)，其中名字允许 <code>[A-Za-z0-9_-]</code> ，不能出现 <code>.</code> ，长度不能超过 <code>50</code> 字节(<code>AGT_NAME_LEN_MAX</code>)。</p><p>其中的配置文件示例如下，文件名为 <code>BasicAgent.json</code> ，文件最大为 16K(<code>AGT_CONFIG_MAXSIZE</code>)。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-gdscript3 data-lang=gdscript3><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Name&#34;</span><span class=p>:</span> <span class=s2>&#34;BasicAgent&#34;</span><span class=p>,</span>                      <span class=c1># 必选，子Agent的名称</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Version&#34;</span><span class=p>:</span> <span class=s2>&#34;1.2.3&#34;</span><span class=p>,</span>                        <span class=c1># 必选，子Agent的版本号</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Exec&#34;</span><span class=p>:</span> <span class=s2>&#34;/bin/bash /usr/bin/gearman&#34;</span><span class=p>,</span>      <span class=c1># 必选，注意，命令行必须是绝对路径，用来匹配进程，最长为255</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Type&#34;</span><span class=p>:</span> <span class=s2>&#34;simple&#34;</span><span class=p>,</span>                          <span class=c1># 可选，以不同的方式启动 (默认是simple)</span>
+</span></span><span class=line><span class=cl>                                               <span class=c1>#       simple 以fork+exec方式运行，作为子进程</span>
+</span></span><span class=line><span class=cl>                                               <span class=c1>#       daemon 子进程会fork子进程，也就是常驻进程</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;PIDFile&#34;</span><span class=p>:</span> <span class=s2>&#34;/var/run/cargo/gearman.pid&#34;</span><span class=p>,</span>   <span class=c1># 对于fork必选，每行一条记录，不过只会检查第一行</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;User&#34;</span><span class=p>:</span> <span class=s2>&#34;root&#34;</span><span class=p>,</span>                            <span class=c1># 可选，默认是root</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Group&#34;</span><span class=p>:</span> <span class=s2>&#34;root&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Envs&#34;</span><span class=p>:</span> <span class=p>{</span>                                  <span class=c1># 可选</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;PATH&#34;</span><span class=p>:</span> <span class=s2>&#34;/usr/bin:/usr/local/bin&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;LANG&#34;</span><span class=p>:</span> <span class=s2>&#34;en_US.UTF-8&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;StartSecs&#34;</span><span class=p>:</span> <span class=mi>60</span><span class=p>,</span>                           <span class=c1># 可选，启动多久之后认为正常，其中fork默认为60</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;AutoStart&#34;</span><span class=p>:</span> <span class=bp>false</span><span class=p>,</span>                        <span class=c1># 可选，是否在安装或者启动BootAgent时自动拉起该进程，默认false</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Single&#34;</span><span class=p>:</span> <span class=bp>true</span><span class=p>,</span>                            <span class=c1># 可选，在启动前是否允许有多个进程存在 (默认是true)</span>
+</span></span><span class=line><span class=cl>                                               <span class=c1>#       true 每次启动检查进程是否已经启动</span>
+</span></span><span class=line><span class=cl>                                               <span class=c1>#       false 启动时直接拉起，如果需要单实例则由子进程自己控制</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;StopSecs&#34;</span><span class=p>:</span> <span class=mi>60</span><span class=p>,</span>                            <span class=c1># 可选，超过多久之后直接向进程发送SIGKILL</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;StopIt&#34;</span><span class=p>:</span> <span class=bp>false</span><span class=p>,</span>                           <span class=c1># 可选，进程退出是否杀死进程，默认是false</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;StopAsGroup&#34;</span><span class=p>:</span> <span class=bp>true</span><span class=p>,</span>                       <span class=c1># 可选，在kill进程时以组方式</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;StopSignal&#34;</span><span class=p>:</span> <span class=s2>&#34;SIGTERM&#34;</span>                    <span class=c1># 可选，在退出时向进程发送的信号，默认为SIGTERM</span>
+</span></span><span class=line><span class=cl>                                               <span class=c1>#       支持信号TERM HUP INT QUIT KILL USR1 USR2</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;RestartSecs&#34;</span><span class=p>:</span> <span class=mi>20</span><span class=p>,</span>                         <span class=c1># 可选，失败之后启动前sleep时间</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Retries&#34;</span><span class=p>:</span> <span class=mi>3</span><span class=p>,</span>                              <span class=c1># 可选，重试次数，包括了启动、异常退出等状态时的重试</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;ExitCodes&#34;</span><span class=p>:</span> <span class=s2>&#34;0,9&#34;</span><span class=p>,</span>                        <span class=c1># 可选，认为正常的退出码，不会再重启，只支持正值，范围是0~255</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;AutoRestart&#34;</span><span class=p>:</span> <span class=s2>&#34;yes&#34;</span><span class=p>,</span>                      <span class=c1># 可选，失败之后的启动方式，默认或者非法是yes</span>
+</span></span><span class=line><span class=cl>                                               <span class=c1>#       no 不再重启，无论退出的状态是什么</span>
+</span></span><span class=line><span class=cl>                                               <span class=c1>#       yes 一直尝试重启，同样无论退出的状态是什么</span>
+</span></span><span class=line><span class=cl>                                               <span class=c1>#       unexpect 只有退出码不在exitcode中时才会重启</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;CGroup&#34;</span><span class=p>:</span> <span class=p>{</span>                                <span class=c1># 可选，会通过cgroup进行资源限制</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;CPU&#34;</span><span class=p>:</span> <span class=mi>20</span><span class=p>,</span>                             <span class=c1># CPU资源限制，单位是%</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;MEM&#34;</span><span class=p>:</span> <span class=mi>3000</span>                            <span class=c1># 内存限制，单位是KB</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Limits&#34;</span><span class=p>:</span> <span class=p>{</span>                                <span class=c1># 可选，BA会周期性的检查，超过资源限制后kill进程</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;Interval&#34;</span><span class=p>:</span><span class=mi>60</span><span class=p>,</span>                         <span class=c1># 检查间隔</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;Enable&#34;</span><span class=p>:</span><span class=bp>true</span><span class=p>,</span>                         <span class=c1># 启动检查，可以判断进程是否存在</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;CPU&#34;</span><span class=p>:</span><span class=mi>30</span><span class=p>,</span>                              <span class=c1># CPU使用率，单位%</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;MEM&#34;</span><span class=p>:</span><span class=mi>102400</span><span class=p>,</span>                          <span class=c1># RSS内存，单位KB</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;FDS&#34;</span><span class=p>:</span><span class=mi>1000</span>                             <span class=c1># 文件描述符</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Check&#34;</span><span class=p>:</span> <span class=p>{</span>                                 <span class=c1># 可选，健康检查，由BA向子Agent发送请求，超时时间是70%*interval</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;Interval&#34;</span><span class=p>:</span><span class=mi>60</span><span class=p>,</span>                         <span class=c1># 检查间隔</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;Path&#34;</span><span class=p>:</span><span class=s2>&#34;/usr/run/BootAgent.sock&#34;</span><span class=p>,</span>      <span class=c1># 目前只支持Unix Domain Socket</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;Match&#34;</span><span class=p>:</span><span class=s2>&#34;regex:success&#34;</span>                <span class=c1># 对返回信息进行检查，可以使用正则(regex)或字符串(string)</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Heartbeat&#34;</span><span class=p>:</span> <span class=p>{</span>                             <span class=c1># 可选，心跳检查，由子Agent向BA发送请求</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;Interval&#34;</span><span class=p>:</span><span class=mi>60</span><span class=p>,</span>                         <span class=c1># 心跳间隔，默认是1分钟</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;Match&#34;</span><span class=p>:</span><span class=s2>&#34;regex:success&#34;</span>                <span class=c1># 对上报报文的&#34;message&#34;字段进行匹配</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;CheckAll&#34;</span><span class=p>:</span> <span class=bp>true</span><span class=p>,</span>                          <span class=c1># 可选，当所有都失败时才认为异常</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;Checks&#34;</span><span class=p>:</span> <span class=mi>3</span><span class=p>,</span>                               <span class=c1># 可选，如上的检查超过这里的设置次数后认为异常</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;CheckSecs&#34;</span><span class=p>:</span> <span class=mi>20</span><span class=p>,</span>                           <span class=c1># 可选，健康检查默认时间</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>注意，在匹配时会检查 <code>/proc/&lt;PID>/exe</code> 中的二进制文件路径，需要保证与配置文件 <code>exec</code> 中的第一个参数相同。</p><a class=anchor id=41-基本概念></a><h3>4.1 基本概念 <a href=#41-%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5 aria-hidden=true>#</a></h3><a class=anchor id=411-启动></a><h4>4.1.1 启动 <a href=#411-%e5%90%af%e5%8a%a8 aria-hidden=true>#</a></h4><p>每次 BootAgent 启动时，会根据 <code>AutoStart</code> 确认是否启动子进程，如果 <code>Mode</code> 是 <code>Single</code> 那么会根据 <code>/proc/&lt;PID>/exec</code> 检查进程是否已经启动，如果已经启动，则会更新状态。</p><a class=anchor id=412-进程类型></a><h4>4.1.2 进程类型 <a href=#412-%e8%bf%9b%e7%a8%8b%e7%b1%bb%e5%9e%8b aria-hidden=true>#</a></h4><p>进程分为了 <code>simple</code> 和 <code>fork</code> 两种方式，使用方式如下。</p><a class=anchor id=simple></a><h5>Simple <a href=#simple aria-hidden=true>#</a></h5><p>作为 BootAgent 的子进程存在，此时在父进程退出时，子进程同样会退出。这也就意味着，如果子进程退出那么就认为进程异常。</p><a class=anchor id=fork></a><h5>Fork <a href=#fork aria-hidden=true>#</a></h5><p>BootAgent 在调用子 Agent 之后，子 Agent 会作为 Daemon 进程存在，所以启动流程会比较复杂。</p><ol><li>调用子进程后，一般子进程会再次执行 fork ，也就是真正执行业务逻辑的进程，所以会忽略子进程退出；</li><li>在 <code>StartSecs</code> 之后检查并刷新进程信息，主要是 PID；</li></ol><p>注意，如果进程的启动时间超过了 <code>StartSecs</code> 设置，那么会在该进程退出后再次刷新。</p><a class=anchor id=413-常见场景></a><h4>4.1.3 常见场景 <a href=#413-%e5%b8%b8%e8%a7%81%e5%9c%ba%e6%99%af aria-hidden=true>#</a></h4><p>简单列举一些常见的使用场景。</p><a class=anchor id=一直尝试拉起></a><h5>一直尝试拉起 <a href=#%e4%b8%80%e7%9b%b4%e5%b0%9d%e8%af%95%e6%8b%89%e8%b5%b7 aria-hidden=true>#</a></h5><p>直接忽略退出状态，一直尝试重新拉起，参数设置包括 <code>"autorestart": "yes"</code>、<code>"restartsecs": 20</code>，其中后者主要是为了防止重复拉起导致异常，例如由于 cgroup OOM 。</p><a class=anchor id=注意事项></a><h5>注意事项 <a href=#%e6%b3%a8%e6%84%8f%e4%ba%8b%e9%a1%b9 aria-hidden=true>#</a></h5><p>子进程需要处理好部分状态，其中部分场景列举如下：</p><a class=anchor id=退出异常></a><h5>退出异常 <a href=#%e9%80%80%e5%87%ba%e5%bc%82%e5%b8%b8 aria-hidden=true>#</a></h5><p>如果 BootAgent 接收到了停止命令，并向子进程发送了退出信号，而子进程还没有退出；此时，如果 BootAgent 又收到启动命令，那么会立即再启动一个进程。</p><p>所以，子进程需要处理好该场景，例如可以只保留一个进程。同时，也就意味着需要注意 <code>startsecs</code> 参数的设置。</p><a class=anchor id=42-健康检查></a><h3>4.2 健康检查 <a href=#42-%e5%81%a5%e5%ba%b7%e6%a3%80%e6%9f%a5 aria-hidden=true>#</a></h3><p>用来检查子进程是否正常，总共有三种方式，可以选择其中一种，如果配置了多种检查方式，可以选择是都失败时认为异常，还是只要当单个检查失败就认为异常。</p><a class=anchor id=421-资源检查></a><h4>4.2.1 资源检查 <a href=#421-%e8%b5%84%e6%ba%90%e6%a3%80%e6%9f%a5 aria-hidden=true>#</a></h4><p>主要是检查子进程的 CPU、内存、句柄等信息，也可以检查进程是否存在。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&#34;Limits&#34;: {
+</span></span><span class=line><span class=cl>    &#34;Interval&#34;:60,
+</span></span><span class=line><span class=cl>    &#34;Enable&#34;:true,
+</span></span><span class=line><span class=cl>    &#34;CPU&#34;:30,
+</span></span><span class=line><span class=cl>    &#34;MEM&#34;:102400,
+</span></span><span class=line><span class=cl>    &#34;FDS&#34;:1000
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=422-健康度></a><h4>4.2.2 健康度 <a href=#422-%e5%81%a5%e5%ba%b7%e5%ba%a6 aria-hidden=true>#</a></h4><p>通过配置的健康检查端口判断，目前只支持 Unix Domain Socket，使用简单的换行进行分割。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&#34;Check&#34;: {
+</span></span><span class=line><span class=cl>    &#34;Interval&#34;:60,
+</span></span><span class=line><span class=cl>    &#34;Path&#34;:&#34;/usr/run/BootAgent.sock&#34;,
+</span></span><span class=line><span class=cl>    &#34;Match&#34;:&#34;regex:success&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>会发送如下内容的报文，并以 <code>\r\n</code> 结束，同时，返回的结果会读取到 <code>\r\n</code> 处为止，目前最大长度为 1023 字节。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;Gardian&#34;:&#34;BootAgent&#34;,
+</span></span><span class=line><span class=cl>    &#34;Method&#34;:&#34;health&#34;,
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=423-心跳></a><h4>4.2.3 心跳 <a href=#423-%e5%bf%83%e8%b7%b3 aria-hidden=true>#</a></h4><p>由子 Agent 周期性的向 BootAgent 发送固定格式的心跳报文，报文同样需要以 <code>\r\n</code> 格式结束。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&#34;Heartbeat&#34;: {
+</span></span><span class=line><span class=cl>    &#34;Interval&#34;:60,
+</span></span><span class=line><span class=cl>    &#34;Match&#34;:&#34;regex:success&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>上报的示例报文如下，其中 <code>agent</code> 标识了被管理 Agent 的名称以及版本信息，版本信息暂未使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;Agent&#34;: {
+</span></span><span class=line><span class=cl>        &#34;Name&#34;: &#34;MiniAgent&#34;,      // 必选
+</span></span><span class=line><span class=cl>        &#34;Version&#34;: &#34;1.2.3&#34;        // 可选
+</span></span><span class=line><span class=cl>    },
+</span></span><span class=line><span class=cl>    &#34;Message&#34;: &#34;Success&#34;              // 必选
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><p>可以通过 <code>BOOTSOCK</code> 环境变量向该 Unix Domain Socket 发送心跳信息。</p><a class=anchor id=5-开发调试></a><h2>5. 开发调试 <a href=#5-%e5%bc%80%e5%8f%91%e8%b0%83%e8%af%95 aria-hidden=true>#</a></h2><a class=anchor id=51-编译打包></a><h3>5.1 编译打包 <a href=#51-%e7%bc%96%e8%af%91%e6%89%93%e5%8c%85 aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOT_SERVER_ADDR=&#34;booter.cargo.com:8180,192.168.9.1:9090&#34;
+</span></span></code></pre></div><p>在源码目录下可以直接通过如下命令进行打包，其中入参是版本号。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$ ./contrib/package.sh BootAgent 1.2.1-1
+</span></span></code></pre></div><a class=anchor id=52-测试用例></a><h3>5.2 测试用例 <a href=#52-%e6%b5%8b%e8%af%95%e7%94%a8%e4%be%8b aria-hidden=true>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>1. 服务器地址配置
+</span></span><span class=line><span class=cl>   1. 域名解析错误。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>1. 进程管理
+</span></span><span class=line><span class=cl>   1.1 DONE 配置文件中有多个 Name 相同的配置文件(最大为8K)。后续的配置文件解析时会报错，注意，读取时不保证顺序。
+</span></span><span class=line><span class=cl>   1.2 执行用户相关(主进程需要以ROOT运行)。
+</span></span><span class=line><span class=cl>       1.2.0 用户存在。以指定用户执行。
+</span></span><span class=line><span class=cl>       1.2.1 用户不存在。直接报错退出。
+</span></span><span class=line><span class=cl>       1.2.2 用户没有指定。默认通过root执行。
+</span></span><span class=line><span class=cl>       1.2.3 属组非默认。指定属组执行。
+</span></span><span class=line><span class=cl>   1.3 进程资源使用检查。
+</span></span><span class=line><span class=cl>`
+</span></span><span class=line><span class=cl>2. 通讯管道异常
+</span></span><span class=line><span class=cl>   2.1 服务端未开启，链接失败。
+</span></span><span class=line><span class=cl>       2.1.1 本地子网段(127.0.0.1~20)，路由正常，访问IP无监听服务，此时TCP交互时会返回RST，也就是立即返回 Connection refused.
+</span></span><span class=line><span class=cl>       2.1.2 非本地子网(192.168.9.1~20)，此时会由于路由不通导致异常，发送SYN报文之后无响应，对于Linux来说2min报错 Connection timed out.
+</span></span><span class=line><span class=cl>       2.1.3 网络不可达(227.0.0.1~20)，一般是由于路由不可达，此时报错 Network is unreachable.
+</span></span><span class=line><span class=cl>   2.2 建立链接成功，数据发送，但是服务端无响应，客户端超时后重联。CLI_READ_TIMEOUT
+</span></span><span class=line><span class=cl>   2.3 从服务端读取的数据格式异常，关闭重试。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>   2.2 服务端返回的报文格式异常。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>3. cgroup 资源隔离
+</span></span><span class=line><span class=cl>   3.1 DONE 如果有 CPU MEM 不存在会修复两者所在目录。
+</span></span><span class=line><span class=cl>   3.2 DONE 首先会解析任务的配置文件，启动时如果任务不存在则会删除。
+</span></span><span class=line><span class=cl>   3.2 CPU MEM 资源限制。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>4. 任务管理
+</span></span><span class=line><span class=cl>   4.1 配置任务。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>域名解析失败
+</span></span></code></pre></div><a class=anchor id=6-其它></a><h2>6. 其它 <a href=#6-%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><a class=anchor id=61-cgroup-管理></a><h3>6.1 CGroup 管理 <a href=#61-cgroup-%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h3><p>这里只针对 CPU、内存进行限制，简单来说，会新建一个管理所有 DEVOPS Agent 相关的分组，默认使用的是 <code>devops</code> ，也可以在启动的时候通过 <code>-C</code> 参数指定。</p><p>对于子 Agent 来说，如果使用了 cgroup 机制，则对应的 Agent 会存放到所对应分组目录下，分组名为 Agent 的名称，如果没有配置则会添加到 cgroup 的根目录下，也就是资源不做限制。</p><p>注意，此时各个子 Agent 指定的 CPU 使用率实际上是相对于总体而言，也就是说设置的是 <code>cpu.shares</code> 参数对应的值。</p><a class=anchor id=611-分组></a><h4>6.1.1 分组 <a href=#611-%e5%88%86%e7%bb%84 aria-hidden=true>#</a></h4><p>默认 BootAgent 会使用 systemd 配置的 cgroup 组，而其它的 DevOps 工具则使用一个统一的 cgroup 组，这样可以将两者分开。</p><p>可以在启动的时候通过 <code>-G</code> 参数指定，也就是将 BootAgent 同样添加到 DevOps 组中。</p><a class=anchor id=612-实现></a><h4>6.1.2 实现 <a href=#612-%e5%ae%9e%e7%8e%b0 aria-hidden=true>#</a></h4><p>在实现时使用的是 libcgroup 库，启动顺序如下：</p><ol><li>在 cgroup 的根目录下创建对应的分组，并将 BootAgent 添加到分组中，默认不会限制资源使用。</li></ol><a class=anchor id=62-文件下载></a><h3>6.2 文件下载 <a href=#62-%e6%96%87%e4%bb%b6%e4%b8%8b%e8%bd%bd aria-hidden=true>#</a></h3><p>实际只支持 FTP 以及 HTTP 下载，只是，为了方便调试，增加了 FILE 方式，也就是直接使用本地文件，此时直接会复制一份，后面的步骤则相同了。</p><p>目前只支持单连接下载，而且只支持单进程，当然，也可以通过 yum 仓库实现安装，不过前者可以实现断点续传、限流等操作。</p><a class=anchor id=621-ftp-协议></a><h4>6.2.1 FTP 协议 <a href=#621-ftp-%e5%8d%8f%e8%ae%ae aria-hidden=true>#</a></h4><p>支持 FTP 协议下载，关于详细的服务器配置方式可以查看 [FTP 服务简介]({{ site.production_url }}/post/network-service-ftp.html) 中的相关介绍，这里简单介绍其实现流程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>1. 建立TCP链接，也就是命令管道。
+</span></span><span class=line><span class=cl>2. USER + PASS 登陆。
+</span></span><span class=line><span class=cl>3. TYPE I 使用二进制模式。
+</span></span><span class=line><span class=cl>4. CWD dir 切换到目标目录下。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>FTP 第一个链接
+</span></span><span class=line><span class=cl>1. REST 1 测试是否支持分段下载。
+</span></span><span class=line><span class=cl>2. SIZE filename.txt 获取文件的大小。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>FTP 分组链接，可以并发下载
+</span></span><span class=line><span class=cl>1. 同建立链接过程。
+</span></span><span class=line><span class=cl>2. PASV 建立被动链接。
+</span></span><span class=line><span class=cl>3. REST offset 发送本链接的文件偏移。
+</span></span><span class=line><span class=cl>4. RETR filename.txt 开始下载。
+</span></span><span class=line><span class=cl>5. 命令链接等待处理完成。
+</span></span></code></pre></div><a class=anchor id=63-文件清理></a><h3>6.3 文件清理 <a href=#63-%e6%96%87%e4%bb%b6%e6%b8%85%e7%90%86 aria-hidden=true>#</a></h3><p>因为实现的原因，在一些极端异常场景下 (例如强制 kill、异常退出等) 可能会出现垃圾文件，所以，会通过一些规则定期扫描、清理，规则包括了修改时间、命名规则如下。</p><ul><li>文件修改时间超过指定参数后删除。</li><li>配置文件，包括了 <code>items</code> 和 <code>agents</code> 目录下的。</li></ul><a class=anchor id=7-faq></a><h2>7. FAQ <a href=#7-faq aria-hidden=true>#</a></h2><a class=anchor id=agent-重启策略></a><h4>Agent 重启策略 <a href=#agent-%e9%87%8d%e5%90%af%e7%ad%96%e7%95%a5 aria-hidden=true>#</a></h4><p>每隔 60s 检查一次，如果进程异常退出在 3min 内不会重启，如果在 15min 内异常则标记一次异常事件，当连续异常超过 3 次后则认为程序异常，不再尝试重启。</p><a class=anchor id=临时目录></a><h4>临时目录 <a href=#%e4%b8%b4%e6%97%b6%e7%9b%ae%e5%bd%95 aria-hidden=true>#</a></h4><p>主要有两个用途：A) 文件原子操作；B) 临时目录，例如下载文件等。</p><p>为了保证配置文件的完整性，会先将文件写入到临时目录下的临时文件，然后通过 rename 操作保证原子性。注意，在编译时，需要 <strong>保证配置文件的目录与临时目录在同一个挂载点</strong>，否则会报 <code>Invalid cross-device link</code> 的错误。</p><p>另外，为了防止临时目录中出现脏数据，会每隔 15min 扫描一次目录 (注意，不扫描子目录以及隐藏文件)，对于修改时间超过 24 小时的文件会自动删除。</p></div></div><div class="sidebar col-xl-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#1-简介>1. 简介</a><ul><li><a href=#11-基本功能>1.1 基本功能</a></li><li><a href=#1-配置管理>1 配置管理</a></li><li><a href=#2-通讯方式>2. 通讯方式</a></li><li><a href=#3-任务管理>3. 任务管理</a></li><li><a href=#4-子进程管理>4. 子进程管理</a></li><li><a href=#5-开发调试>5. 开发调试</a></li><li><a href=#6-其它>6. 其它</a></li><li><a href=#7-faq>7. FAQ</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script><script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script><a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

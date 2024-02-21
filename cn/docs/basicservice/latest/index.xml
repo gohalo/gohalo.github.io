@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>latest on</title><link>https://gohalo.github.io/cn/docs/basicservice/latest/</link><description>Recent content in latest on</description><generator>Hugo -- gohugo.io</generator><language>cn</language><lastBuildDate>Tue, 06 Oct 2020 08:49:31 +0000</lastBuildDate><atom:link href="https://gohalo.github.io/cn/docs/basicservice/latest/index.xml" rel="self" type="application/rss+xml"/><item><title>基础服务</title><link>https://gohalo.github.io/cn/docs/basicservice/latest/basic/</link><pubDate>Tue, 06 Oct 2020 08:49:31 +0000</pubDate><guid>https://gohalo.github.io/cn/docs/basicservice/latest/basic/</guid><description>0. 系统配置 # 0.1 主机名 # 为了方便使用，可以设置 /etc/hosts 增加如下的配置。
+# 静态文件 127.0.0.1 files.cargo.com 0.2 目录结构 # 其中主要是 Agent 的发布路径，相对于根目录，默认使用 /opt/repos 目录，静态文件以及 YUM 库都会使用该。
+repos/CentOS/7/local/x86_64/RPMS # 支持CentOS 7的RPM包 repos/CentOS/7/debuginfo/x86_64/RPMS # 对应的debuginfo包 repos/CentOS/7/src/x86_64/RPMS # 对应的源码包 1. Nginx # 作为一个 HTTP 服务器，提供了很多功能：
+fileserver.conf 静态文件，目前主要包含安装包。 1.1 系统配置 # 正常使用 /etc/nginx/nginx.conf 默认配置文件，不过，为了方便管理，这里在 /etc/nginx/conf.d 目录下添加配置。
+通过 nginx -t 检查语法是否正确，通过 systemctl start nginx 启动服务，如果已经启动可以直接通过 nginx -s reload 命令重新加载配置。
+其中 Nginx 的日志保存在 /var/log/nginx/{access.log,error.log}，可以详细查看。
+1.2 安装包仓库 # 在 /etc/nginx/conf.</description></item></channel></rss>

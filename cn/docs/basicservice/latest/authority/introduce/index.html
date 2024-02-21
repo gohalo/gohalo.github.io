@@ -1,0 +1,237 @@
+<!doctype html><html lang=en-US><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>功能介绍 | GoHalo</title>
+<link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.a44a20e27bcf33ab22e9f9c349f9a8cd.css integrity="md5-pEog4nvPM6si6fnDSfmozQ==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo
+</a><button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-versions data-bs-toggle=dropdown aria-expanded=false data-bs-display=static aria-label="Toggle version menu">
+latest</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 rounded border-0" aria-labelledby=header-versions><li><a class=dropdown-item href=/cn/docs/basicservice/0.1.3>0.1.3</a></li></ul></div><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="docs row flex-xl-nowrap"><div class=col-xl-2><div class="menubar align-items-center position-fixed"><ul><li><a href=/cn/docs/basicservice/latest/basic/>基础服务</a></li><li><a class="submenu collapsed active" data-bs-toggle=collapse data-bs-target=#section-b2cd881d7466986a8664dc8144ecd0cf aria-expanded=true>用户权限管理 <i class="fa fa-angle-right" aria-hidden=true></i></a><div class="collapse show" id=section-b2cd881d7466986a8664dc8144ecd0cf><ul class="ps-3 small"><li><a class=active href=/cn/docs/basicservice/latest/authority/introduce/>功能介绍</a></li><li><a href=/cn/docs/basicservice/latest/authority/api/>REST API</a></li></ul></div></li><li><a class="submenu collapsed" data-bs-toggle=collapse data-bs-target=#section-4f1a9ac6ba736fcf1bfc234ccb04bcf8 aria-expanded=false>功能模块 <i class="fa fa-angle-right" aria-hidden=true></i></a><div class=collapse id=section-4f1a9ac6ba736fcf1bfc234ccb04bcf8><ul class="ps-3 small"><li><a href=/cn/docs/basicservice/latest/modules/introduce/>基本介绍</a></li><li><a href=/cn/docs/basicservice/latest/modules/hello/>示例模块</a></li><li><a href=/cn/docs/basicservice/latest/modules/certification/>证书管理</a></li></ul></div></li></ul></div></div><div class=col-xl-8><div class=content><a class=anchor id=简介></a><h1>简介 <a href=#%e7%ae%80%e4%bb%8b aria-hidden=true>#</a></h1><p>DevOps 工具的单点登陆与用户管理系统，这里包含了两部分相关内容：</p><ul><li>用户权限管理，通过分组方式可以设置某个用户所属的用户组，正常只允许一个用户属于一个用户组，但是允许设置多个；而权限的分配则是针对用户组设置的。</li><li>细粒度鉴权，也就是某个用户组所允许的操作，同时用户组不同角色的权限也不相同，而且不同用户组只能访问该用户组的资源。</li></ul><p>通过上述的方式基本可以实现分权分域的策略，同时可以保证一定的灵活性。其实核心的部分主要是身份标识 (你是谁)、认证 (怎么证明)、授权 (能做什么)、审计 (做过什么)。</p><a class=anchor id=核心特性></a><h2>核心特性 <a href=#%e6%a0%b8%e5%bf%83%e7%89%b9%e6%80%a7 aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>-----&gt; 用户管理
+</span></span><span class=line><span class=cl>1. 注册(允许不同登录方式)、注销(可配置是否真正删除)、修改。
+</span></span><span class=line><span class=cl>2. 获取当前用户详情。
+</span></span><span class=line><span class=cl>3. 分页获取用户列表。
+</span></span><span class=line><span class=cl>4. 账号锁定。
+</span></span><span class=line><span class=cl>5. 用户组管理，由超级管理员进行分配。
+</span></span><span class=line><span class=cl>6. 不同鉴权方式，例如人机、机机等。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>-----&gt; 权限管理
+</span></span><span class=line><span class=cl>1.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>-----&gt; 公共功能
+</span></span><span class=line><span class=cl>1. 操作审计。
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>-----&gt; 高级特性(云平台)
+</span></span><span class=line><span class=cl>1. 权限委托，某个用户需要操作某个资源，资源管理者临时对改用户进行授权；或者有三方平台管理其它用户资源。
+</span></span><span class=line><span class=cl>2. 计费场景，不同服务对某个用户会收取不同的费用，而上层的 Pass 会依赖底层 Iass 的资源。
+</span></span></code></pre></div><p>一个初始用户具有只读权限，此时不会赋值任何权限，不同平台决定如何对该用户进行处理。</p><a class=anchor id=基本概念></a><h2>基本概念 <a href=#%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5 aria-hidden=true>#</a></h2><p>权限管理有几个基础的概念：</p><ul><li>主体 Subject，一般对应了真实登录的用户，在一些机机鉴权场景中也可能是某个服务。</li><li>客体 Object，被访问的资源，也可能与操作有关，例如可以查看但是不能修改。</li><li>规则 Policy，这就与具体策略有关了，可以是 ACL、RBAC 等等。</li></ul><a class=anchor id=平台系统></a><h1>平台系统 <a href=#%e5%b9%b3%e5%8f%b0%e7%b3%bb%e7%bb%9f aria-hidden=true>#</a></h1><p>其中比较关键的是用户和角色，为了方便进行管理可以对其进行分组，在管理和实现上，相比来说可以减少成本。</p><p>一个用户权限系统可以划分成四大模块：</p><ul><li>登陆系统，包括了单点登陆。</li><li>用户管理，会按照行政部门或者业务线划分，相同部门会有相似的权限。</li><li>角色管理，与业务相关而预先设定的角色，在业务上线预先设定，通常不会修改，有点类似用户的标签。</li><li>权限管理，相比来说更加复杂，包含了目标、操作。</li></ul><p>权限划分越细意味着管理成本越高。</p><a class=anchor id=登陆系统></a><h2>登陆系统 <a href=#%e7%99%bb%e9%99%86%e7%b3%bb%e7%bb%9f aria-hidden=true>#</a></h2><p>涉及到登录用户名以及密码管理，用户名通常有工号、手机号、邮箱、自定义用户名等几种方式。</p><a class=anchor id=用户管理></a><h2>用户管理 <a href=#%e7%94%a8%e6%88%b7%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h2><p>基本功能</p><ul><li>管理员账号，该账号用于用来初始配置，权限最大，而且不会被删除，通常来说只有一个。</li><li>账号禁用、停用，禁用意味着临时停用，通常因为多次输入密码错误、账号盗用、强制修改密码等；停用一般是因为员工离职。</li><li>离职流程，一般会涉及到权限交接。</li></ul><p>具体实现</p><ul><li>用户信息，密码加固策略。</li><li>安全加固，防暴力破解、</li><li>账号状态，通过整型表示不同原因，包括密码错误、盗用、强制修改密码等。</li></ul><p>还有一个就是临时用户，最常见的是访客。</p><a class=anchor id=角色管理></a><h2>角色管理 <a href=#%e8%a7%92%e8%89%b2%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h2><p>通常一个系统中用 super、admin、reader、guest 基本已经足够，而且 guest 可以完全忽略；如果需要更精细化的管理，那么角色最好也通过层级进行管理。</p><p>另外，如果出现了层级，那么有些权限需要继承；而有些权限可能是互斥的。</p><a class=anchor id=权限管理></a><h2>权限管理 <a href=#%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86 aria-hidden=true>#</a></h2><ul><li>自动赋权，在加入到某个部门后自动赋予该部门所具有的基础权限，实现时需要考虑后续会新增业务，该业务可能也会配置给某个部门。</li></ul><a class=anchor id=密文保存></a><h2>密文保存 <a href=#%e5%af%86%e6%96%87%e4%bf%9d%e5%ad%98 aria-hidden=true>#</a></h2><a class=anchor id=其它></a><h2>其它 <a href=#%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h2><p>人机帐号和机机帐号实际上是两种不同的场景：</p><ul><li>人机帐号，自然人进行登录，登录需要鉴权，允许自动登出、帐号锁定等操作，后台需要维护 Session 信息，而用户的登录了信息可以通过 JWT、Cookies 等方式保存。</li><li>机机帐号，一般通过 AppCode/Secret 或者 AK/SK 方式登录，没有登出、锁定的限制，但是需要定期轮转，可以通过 Token 实现。</li></ul><p>那么这就涉及到了上述所说的两种登录信息维持方式了。</p><ul><li>Session 常用于人机帐号，通过用户名密码登录，通过后台保存会话信息，依赖共享存储，可以立即登出。</li><li>Token 两者都可以，常用于机机帐号，不依赖其它组件，但是包含鉴权信息有限。</li></ul><a class=anchor id=发展历史></a><h1>发展历史 <a href=#%e5%8f%91%e5%b1%95%e5%8e%86%e5%8f%b2 aria-hidden=true>#</a></h1><p>从最早期的自主访问控制 (Discretionary Access Control, DAC) 和强制访问控制 (Mandatory Access Control, MAC)，再到中期基于角色的访问控制 (Role-Based Access Control, RBAC)，以及在一些复杂场景下使用的。</p><p>现在基本在讨论的是 Zero-Trust 以及细力度鉴权。</p><a class=anchor id=策略></a><h2>策略 <a href=#%e7%ad%96%e7%95%a5 aria-hidden=true>#</a></h2><p>XACML 是一个比较成熟的鉴权方案，只是其表达式看起来实在是有些繁琐，相比于 AWS IAM 的 Policy 来说要简单很多，但是一些常见的概念可以参考。</p><a class=anchor id=基于策略></a><h2>基于策略 <a href=#%e5%9f%ba%e4%ba%8e%e7%ad%96%e7%95%a5 aria-hidden=true>#</a></h2><p>很多的云厂商会采用基于策略的方式，如下是常见的示例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>// github.com/ory/ladon
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  &#34;description&#34;: &#34;One policy to rule them all.&#34;,
+</span></span><span class=line><span class=cl>  &#34;subjects&#34;: [&#34;users:&lt;peter|ken&gt;&#34;, &#34;users:maria&#34;, &#34;groups:admins&#34;],
+</span></span><span class=line><span class=cl>  &#34;actions&#34; : [&#34;delete&#34;, &#34;&lt;create|update&gt;&#34;],
+</span></span><span class=line><span class=cl>  &#34;effect&#34;: &#34;allow&#34;,
+</span></span><span class=line><span class=cl>  &#34;resources&#34;: [
+</span></span><span class=line><span class=cl>    &#34;resources:articles:&lt;.*&gt;&#34;,
+</span></span><span class=line><span class=cl>    &#34;resources:printer&#34;
+</span></span><span class=line><span class=cl>  ],
+</span></span><span class=line><span class=cl>  &#34;conditions&#34;: {
+</span></span><span class=line><span class=cl>    &#34;remoteIP&#34;: {
+</span></span><span class=line><span class=cl>      &#34;type&#34;: &#34;CIDRCondition&#34;,
+</span></span><span class=line><span class=cl>      &#34;options&#34;: {
+</span></span><span class=line><span class=cl>        &#34;cidr&#34;: &#34;192.168.0.1/16&#34;
+</span></span><span class=line><span class=cl>      }
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>  }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>// goteleport 权限控制
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  &#34;Version&#34;: &#34;2012-10-17&#34;,
+</span></span><span class=line><span class=cl>  &#34;Statement&#34;: [{
+</span></span><span class=line><span class=cl>    &#34;Effect&#34;: &#34;Allow&#34;,
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: [
+</span></span><span class=line><span class=cl>      &#34;rds:connect&#34;
+</span></span><span class=line><span class=cl>    ],
+</span></span><span class=line><span class=cl>    &#34;Resource&#34;: [
+</span></span><span class=line><span class=cl>      &#34;arn:aws:rds-db:&lt;region&gt;:&lt;account-id&gt;:dbuser:&lt;resource-id&gt;/*&#34;
+</span></span><span class=line><span class=cl>    ]
+</span></span><span class=line><span class=cl>  }]
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>// 云
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  &#34;display&#34;: &#34;Test_PAP_0713&#34;,
+</span></span><span class=line><span class=cl>  &#34;description&#34;: &#34;example&#34;,
+</span></span><span class=line><span class=cl>  &#34;policy&#34;: {
+</span></span><span class=line><span class=cl>    &#34;Version&#34;: &#34;1.1&#34;,
+</span></span><span class=line><span class=cl>    &#34;Statement&#34;: [{
+</span></span><span class=line><span class=cl>      &#34;Effect&#34;: &#34;Allow&#34;,
+</span></span><span class=line><span class=cl>      &#34;Action&#34;: [
+</span></span><span class=line><span class=cl>        &#34;obs:bucket:create&#34;
+</span></span><span class=line><span class=cl>      ],
+</span></span><span class=line><span class=cl>      &#34;Resource&#34;: [
+</span></span><span class=line><span class=cl>        &#34;obs:*:*:Bucket:mybucket/test1/*&#34;,
+</span></span><span class=line><span class=cl>        &#34;obs:*:*:Bucket:mybucket/test2/aaa&#34;
+</span></span><span class=line><span class=cl>      ],
+</span></span><span class=line><span class=cl>      &#34;Condition&#34;: {
+</span></span><span class=line><span class=cl>        &#34;Bool&#34;: {
+</span></span><span class=line><span class=cl>          &#34;g:MFAPresent&#34;: [&#34;true&#34;]
+</span></span><span class=line><span class=cl>        },
+</span></span><span class=line><span class=cl>        &#34;StringEquals&#34;: {
+</span></span><span class=line><span class=cl>          &#34;g:Username&#34;: [&#34;abc&#34;, &#34;aaa&#34;],
+</span></span><span class=line><span class=cl>          &#34;obs:BucketName&#34;: [&#34;bucketName1&#34;, &#34;bucketName2&#34;]
+</span></span><span class=line><span class=cl>        },
+</span></span><span class=line><span class=cl>        &#34;IsNullOrEmpty&#34;: {
+</span></span><span class=line><span class=cl>          &#34;g:UserId&#34;: null
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>      }
+</span></span><span class=line><span class=cl>    }]
+</span></span><span class=line><span class=cl>  }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Action 长度不超过128
+</span></span><span class=line><span class=cl>{服务名简写}:{资源类型}:{权限操作}
+</span></span><span class=line><span class=cl>正则 ^(\*|[-._0-9a-zA-Z]+)(:[-_0-9a-zA-Z*?]+){0,2}$
+</span></span><span class=line><span class=cl>服务名简写，只能出现*或者真实的云服务简称
+</span></span><span class=line><span class=cl>资源类型，可以使用通配符*和?
+</span></span><span class=line><span class=cl>权限操作，动作必须是动词，采用驼峰格式，可以使用通配符*和?，例如list*表示所有以list开头的操作
+</span></span><span class=line><span class=cl>OBS:Bucket:ListAllMybuckets  查看OBS桶列表权限，其中OBS是服务名，Bucket是资源类型，ListAllMyBuckets是操作
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Resource
+</span></span><span class=line><span class=cl>&lt;cloud-service&gt;:&lt;service-name&gt;:&lt;region&gt;:&lt;account-id&gt;:&lt;resource-type&gt;:&lt;resource-path&gt;
+</span></span><span class=line><span class=cl>正则 ^([-._0-9a-zA-Z]{1,50})(:[-_0-9a-zA-Z*]{0,50})(:[-_0-9a-zA-Z*]{0,100})(:[-_0-9a-zA-Z*]{1,100})(:[^\\^;|~`{}\\[\\]&lt;&gt;]{1,1200})$
+</span></span><span class=line><span class=cl>云服务提供商，如果在某个云服务内部可以不用
+</span></span><span class=line><span class=cl>云服务简写，必须存在，不能使用通配
+</span></span><span class=line><span class=cl>资源所在区域，如果是全局服务的资源，填空或者用*填充，例如 cn-north-1
+</span></span><span class=line><span class=cl>租户标识，如果上下文可以限定租户id，也可以用*填充
+</span></span><span class=line><span class=cl>资源类型，可以使用通配符
+</span></span><span class=line><span class=cl>资源路径，可以使用通配符
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Condition 自带一些上下文信息，可以做判断
+</span></span><span class=line><span class=cl>g:UserName principal
+</span></span><span class=line><span class=cl>g:EpochTime environment
+</span></span></code></pre></div><a class=anchor id=其它-1></a><h1>其它 <a href=#%e5%85%b6%e5%ae%83-1 aria-hidden=true>#</a></h1><a class=anchor id=机机-vs-人机></a><h2>机机 VS. 人机 <a href=#%e6%9c%ba%e6%9c%ba-vs-%e4%ba%ba%e6%9c%ba aria-hidden=true>#</a></h2><p>分别对应了服务以及自然人的调用，两者有如下的区别：</p><ul><li>机机通过 AppCode 或者 AK/SK 进行访问，无需登录；人机需要登录，并在浏览器中保存会话标识信息。</li><li>机机可以通过 Token 定期刷新即可，一般分钟级；人机允许立即登出，会话有效期为天。</li><li>机机可以通过 API 调用任何接口，当然也可以进行权限控制；人机则会受权限控制。</li></ul><a class=anchor id=实现方式></a><h1>实现方式 <a href=#%e5%ae%9e%e7%8e%b0%e6%96%b9%e5%bc%8f aria-hidden=true>#</a></h1><a class=anchor id=基于jwt></a><h2>基于JWT <a href=#%e5%9f%ba%e4%ba%8ejwt aria-hidden=true>#</a></h2><p>通过 JWT 实现的一种基于 Token 鉴权方式，在 Token 中包含了角色信息，不同 API 会检查不同的角色，其中 JWT 负载部分包含了如下内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  exp: 1609654808,
+</span></span><span class=line><span class=cl>  role: [&#34;admin&#34;, &#34;readonly&#34;],
+</span></span><span class=line><span class=cl>  uid: &#34;g001003&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=实现介绍></a><h3>实现介绍 <a href=#%e5%ae%9e%e7%8e%b0%e4%bb%8b%e7%bb%8d aria-hidden=true>#</a></h3><p>内部包含了角色和用户两个表，通过 <code>type Backend interface</code> 接口定义 Backend 实现，包括了授权、获取用户信息等接口。</p><p>这里仅提供了一个通过内存保存用户信息的实现，对应了 <code>login/simple.go</code> 中的实现，包含了两个表 (或者说是缓存)：A) <code>roles</code> 角色信息，例如 <code>admin</code> <code>readonly</code> 等；B) <code>users</code> 用户信息，例如 UID、用户名、密码等信息。</p><p>内置的角色和用户详见如下。</p><a class=anchor id=密码验证></a><h3>密码验证 <a href=#%e5%af%86%e7%a0%81%e9%aa%8c%e8%af%81 aria-hidden=true>#</a></h3><p>保存用户密码时，必须要保证安全，简单来说，就是所谓 One-Way Hash 算法，这里采用的是 <code>golang.org/x/crypto/bcrypt</code> 中的实现，不过其计算比较耗时。</p><a class=anchor id=最佳实践></a><h1>最佳实践 <a href=#%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5 aria-hidden=true>#</a></h1><p>设计时通常会包含两个特殊的角色，可能名字不同：</p><ul><li><code>admin</code> 只具备基础的只读操作，但可以管理用户权限等。</li><li><code>super</code> 超级用户，除了不能管理用户之外，可以执行任何操作，所以，密码需要妥善管理。</li></ul><a class=anchor id=echo-auth></a><h2>Echo Auth <a href=#echo-auth aria-hidden=true>#</a></h2><a class=anchor id=token></a><h3>Token <a href=#token aria-hidden=true>#</a></h3><p>使用 JWT 机制，可以保存在 http header、cookie、query 中，通过 TokenLookup 参数进行配置，</p><p>正常来说敏感信息不会保存在</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&lt;Rule Effect=&#34;Permit&#34; RuleId=&#34;example&#34;&gt; &lt;!-- 如果检查通过，那么就是 Permit --&gt;
+</span></span><span class=line><span class=cl>	&lt;Condition&gt;
+</span></span><span class=line><span class=cl>		&lt;!-- 使用字符串比较函数，需要有两个入参 --&gt;
+</span></span><span class=line><span class=cl>		&lt;Apply FunctionId=&#34;urn:oasis:names:tc:xacml:1.0:function:string-equal&#34;&gt;
+</span></span><span class=line><span class=cl>			&lt;!-- 确保下面的值有且只有一个 --&gt;
+</span></span><span class=line><span class=cl>			&lt;Apply FunctionId=&#34;urn:oasis:names:tc:xacml:1.0:function:string-one-and-only&#34;&gt;
+</span></span><span class=line><span class=cl>				&lt;!-- 选择对应的字符串 --&gt;
+</span></span><span class=line><span class=cl>				&lt;AttributeDesignator AttributeId=&#34;urn:oasis:names:tc:xacml:1.0:subject:subject-id&#34; Category=&#34;urn:oasis:names:tc:xacml:1.0:subject-category:access-subject&#34; DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34; MustBePresent=&#34;true&#34;/&gt;
+</span></span><span class=line><span class=cl>			&lt;/Apply&gt;
+</span></span><span class=line><span class=cl>			&lt;!-- 定义上述比较的第二个参数 --&gt;
+</span></span><span class=line><span class=cl>			&lt;AttributeValue DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;Pamoda&lt;/AttributeValue&gt;
+</span></span><span class=line><span class=cl>		&lt;/Apply&gt;
+</span></span><span class=line><span class=cl>	&lt;/Condition&gt;
+</span></span><span class=line><span class=cl>&lt;/Rule&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&lt;ObligationExpressions&gt;
+</span></span><span class=line><span class=cl>  &lt;ObligationExpression FulfillOn=&#34;Permit&#34; ObligationId=&#34;email_obligation&#34;&gt;
+</span></span><span class=line><span class=cl>    &lt;AttributeAssignmentExpression AttributeId=&#34;email&#34;&gt;
+</span></span><span class=line><span class=cl>       &lt;AttributeValue DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;pamodaaw@gmail.com&lt;/AttributeValue&gt;
+</span></span><span class=line><span class=cl>    &lt;/AttributeAssignmentExpression&gt;
+</span></span><span class=line><span class=cl>  &lt;/ObligationExpression&gt;
+</span></span><span class=line><span class=cl>&lt;/ObligationExpressions&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&lt;Response xmlns=&#34;urn:oasis:names:tc:xacml:3.0:core:schema:wd-17&#34;&gt;
+</span></span><span class=line><span class=cl>  &lt;Result&gt;
+</span></span><span class=line><span class=cl>    &lt;Decision&gt;Permit&lt;/Decision&gt;
+</span></span><span class=line><span class=cl>    &lt;Status&gt;
+</span></span><span class=line><span class=cl>      &lt;StatusCode Value=&#34;urn:oasis:names:tc:xacml:1.0:status:ok&#34;/&gt;
+</span></span><span class=line><span class=cl>    &lt;/Status&gt;
+</span></span><span class=line><span class=cl>    &lt;Obligations&gt;
+</span></span><span class=line><span class=cl>       &lt;Obligation ObligationId=&#34;email_obligation&#34;&gt;
+</span></span><span class=line><span class=cl>         &lt;AttributeAssignment AttributeId=&#34;email&#34; DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;pamodaaw@gmail.com&lt;/AttributeAssignment&gt;
+</span></span><span class=line><span class=cl>       &lt;/Obligation&gt;
+</span></span><span class=line><span class=cl>    &lt;/Obligations&gt;
+</span></span><span class=line><span class=cl>  &lt;/Result&gt;
+</span></span><span class=line><span class=cl>&lt;/Response&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>---------------------&gt;
+</span></span><span class=line><span class=cl>&lt;Policy xmlns=&#34;urn:oasis:names:tc:xacml:3.0:core:schema:wd-17&#34;  PolicyId=&#34;sample_policy_8&#34; RuleCombiningAlgId=&#34;urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable&#34; Version=&#34;1.0&#34;&gt;
+</span></span><span class=line><span class=cl>   &lt;Target&gt;
+</span></span><span class=line><span class=cl>      &lt;AnyOf&gt;
+</span></span><span class=line><span class=cl>         &lt;AllOf&gt;
+</span></span><span class=line><span class=cl>            &lt;Match MatchId=&#34;urn:oasis:names:tc:xacml:1.0:function:string-equal&#34;&gt;
+</span></span><span class=line><span class=cl>               &lt;AttributeValue DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;pamoda&lt;/AttributeValue&gt;
+</span></span><span class=line><span class=cl>               &lt;AttributeDesignator AttributeId=&#34;urn:oasis:names:tc:xacml:1.0:subject:subject-id&#34; Category=&#34;urn:oasis:names:tc:xacml:1.0:subject-category:access-subject&#34; DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34; MustBePresent=&#34;true&#34;&gt;&lt;/AttributeDesignator&gt;
+</span></span><span class=line><span class=cl>            &lt;/Match&gt;
+</span></span><span class=line><span class=cl>            &lt;Match MatchId=&#34;urn:oasis:names:tc:xacml:1.0:function:string-equal&#34;&gt;
+</span></span><span class=line><span class=cl>               &lt;AttributeValue DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;GET&lt;/AttributeValue&gt;
+</span></span><span class=line><span class=cl>               &lt;AttributeDesignator AttributeId=&#34;urn:oasis:names:tc:xacml:1.0:action:action-id&#34; Category=&#34;urn:oasis:names:tc:xacml:3.0:attribute-category:action&#34; DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34; MustBePresent=&#34;true&#34;&gt;&lt;/AttributeDesignator&gt;
+</span></span><span class=line><span class=cl>            &lt;/Match&gt;
+</span></span><span class=line><span class=cl>         &lt;/AllOf&gt;
+</span></span><span class=line><span class=cl>      &lt;/AnyOf&gt;
+</span></span><span class=line><span class=cl>   &lt;/Target&gt;
+</span></span><span class=line><span class=cl>   &lt;Rule Effect=&#34;Permit&#34; RuleId=&#34;rule1&#34;&gt;
+</span></span><span class=line><span class=cl>      &lt;Condition&gt;
+</span></span><span class=line><span class=cl>         &lt;Apply FunctionId=&#34;urn:oasis:names:tc:xacml:1.0:function:string-equal&#34;&gt;
+</span></span><span class=line><span class=cl>            &lt;Apply FunctionId=&#34;urn:oasis:names:tc:xacml:1.0:function:string-one-and-only&#34;&gt;
+</span></span><span class=line><span class=cl>               &lt;AttributeDesignator AttributeId=&#34;urn:oasis:names:tc:xacml:1.0:subject:subject-id&#34; Category=&#34;urn:oasis:names:tc:xacml:1.0:subject-category:access-subject&#34; DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34; MustBePresent=&#34;true&#34;&gt;&lt;/AttributeDesignator&gt;
+</span></span><span class=line><span class=cl>            &lt;/Apply&gt;
+</span></span><span class=line><span class=cl>            &lt;AttributeValue DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;pamoda&lt;/AttributeValue&gt;
+</span></span><span class=line><span class=cl>         &lt;/Apply&gt;
+</span></span><span class=line><span class=cl>      &lt;/Condition&gt;
+</span></span><span class=line><span class=cl>   &lt;/Rule&gt;
+</span></span><span class=line><span class=cl>   &lt;Rule Effect=&#34;Deny&#34; RuleId=&#34;8b52dcce-cd23-44f0-a223-f80ca6cc1a05&#34;&gt;&lt;/Rule&gt;
+</span></span><span class=line><span class=cl>   &lt;ObligationExpressions&gt;
+</span></span><span class=line><span class=cl>      &lt;ObligationExpression FulfillOn=&#34;Permit&#34; ObligationId=&#34;email&#34;&gt;
+</span></span><span class=line><span class=cl>         &lt;AttributeAssignmentExpression AttributeId=&#34;email&#34;&gt;
+</span></span><span class=line><span class=cl>            &lt;AttributeValue DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;pamodaaw@gmail.com&lt;/AttributeValue&gt;
+</span></span><span class=line><span class=cl>         &lt;/AttributeAssignmentExpression&gt;
+</span></span><span class=line><span class=cl>      &lt;/ObligationExpression&gt;
+</span></span><span class=line><span class=cl>   &lt;/ObligationExpressions&gt;
+</span></span><span class=line><span class=cl>   &lt;AdviceExpressions&gt;
+</span></span><span class=line><span class=cl>      &lt;AdviceExpression AdviceId=&#34;email_advice&#34; AppliesTo=&#34;Permit&#34;&gt;
+</span></span><span class=line><span class=cl>         &lt;AttributeAssignmentExpression AttributeId=&#34;email&#34;&gt;
+</span></span><span class=line><span class=cl>            &lt;AttributeDesignator AttributeId=&#34;http://wso2.org/claims/emailaddress&#34; Category=&#34;urn:oasis:names:tc:xacml:3.0:subject-category:access-subject&#34; DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34; MustBePresent=&#34;true&#34;&gt;&lt;/AttributeDesignator&gt;
+</span></span><span class=line><span class=cl>         &lt;/AttributeAssignmentExpression&gt;
+</span></span><span class=line><span class=cl>      &lt;/AdviceExpression&gt;
+</span></span><span class=line><span class=cl>   &lt;/AdviceExpressions&gt;
+</span></span><span class=line><span class=cl>&lt;/Policy&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&lt;Request xmlns=&#34;urn:oasis:names:tc:xacml:3.0:core:schema:wd-17&#34; CombinedDecision=&#34;false&#34; ReturnPolicyIdList=&#34;false&#34;&gt;
+</span></span><span class=line><span class=cl>  &lt;Attributes Category=&#34;urn:oasis:names:tc:xacml:1.0:subject-category:access-subject&#34;&gt;
+</span></span><span class=line><span class=cl>    &lt;Attribute AttributeId=&#34;urn:oasis:names:tc:xacml:1.0:subject:subject-id&#34; IncludeInResult=&#34;false&#34;&gt;
+</span></span><span class=line><span class=cl>      &lt;AttributeValue DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;pamoda&lt;/AttributeValue&gt;
+</span></span><span class=line><span class=cl>    &lt;/Attribute&gt;
+</span></span><span class=line><span class=cl>  &lt;/Attributes&gt;
+</span></span><span class=line><span class=cl>  &lt;Attributes Category=&#34;urn:oasis:names:tc:xacml:3.0:attribute-category:action&#34;&gt;
+</span></span><span class=line><span class=cl>    &lt;Attribute AttributeId=&#34;urn:oasis:names:tc:xacml:1.0:action:action-id&#34; IncludeInResult=&#34;false&#34;&gt;
+</span></span><span class=line><span class=cl>      &lt;AttributeValue DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;GET&lt;/AttributeValue&gt;
+</span></span><span class=line><span class=cl>    &lt;/Attribute&gt;
+</span></span><span class=line><span class=cl>  &lt;/Attributes&gt;
+</span></span><span class=line><span class=cl>&lt;/Request&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&lt;Response xmlns=&#34;urn:oasis:names:tc:xacml:3.0:core:schema:wd-17&#34;&gt;
+</span></span><span class=line><span class=cl>  &lt;Result&gt;
+</span></span><span class=line><span class=cl>    &lt;Decision&gt;Permit&lt;/Decision&gt;
+</span></span><span class=line><span class=cl>    &lt;Status&gt;
+</span></span><span class=line><span class=cl>      &lt;StatusCode Value=&#34;urn:oasis:names:tc:xacml:1.0:status:ok&#34;/&gt;
+</span></span><span class=line><span class=cl>    &lt;/Status&gt;
+</span></span><span class=line><span class=cl>    &lt;Obligations&gt;
+</span></span><span class=line><span class=cl>      &lt;Obligation ObligationId=&#34;email&#34;&gt;
+</span></span><span class=line><span class=cl>        &lt;AttributeAssignment  AttributeId=&#34;email&#34; DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;pamodaaw@gmail.com&lt;/AttributeAssignment&gt;
+</span></span><span class=line><span class=cl>      &lt;/Obligation&gt;
+</span></span><span class=line><span class=cl>    &lt;/Obligations&gt;
+</span></span><span class=line><span class=cl>    &lt;AssociatedAdvice&gt;
+</span></span><span class=line><span class=cl>      &lt;Advice AdviceId=&#34;email_advice&#34; &gt;
+</span></span><span class=line><span class=cl>        &lt;AttributeAssignment  AttributeId=&#34;email&#34; DataType=&#34;http://www.w3.org/2001/XMLSchema#string&#34;&gt;pamoda@wso2.com&lt;/AttributeAssignment&gt;
+</span></span><span class=line><span class=cl>      &lt;/Advice&gt;
+</span></span><span class=line><span class=cl>    &lt;/AssociatedAdvice&gt;
+</span></span><span class=line><span class=cl>  &lt;/Result&gt;
+</span></span><span class=line><span class=cl>&lt;/Response&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>JSON版本
+</span></span><span class=line><span class=cl>http://docs.oasis-open.org/xacml/xacml-json-http/v1.1/csprd01/xacml-json-http-v1.1-csprd01.html
+</span></span></code></pre></div></div></div><div class="sidebar col-xl-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#核心特性>核心特性</a></li><li><a href=#基本概念>基本概念</a></li></ul></li><li><a href=#平台系统>平台系统</a><ul><li><a href=#登陆系统>登陆系统</a></li><li><a href=#用户管理>用户管理</a></li><li><a href=#角色管理>角色管理</a></li><li><a href=#权限管理>权限管理</a></li><li><a href=#密文保存>密文保存</a></li><li><a href=#其它>其它</a></li></ul></li><li><a href=#发展历史>发展历史</a><ul><li><a href=#策略>策略</a></li><li><a href=#基于策略>基于策略</a></li></ul></li><li><a href=#其它-1>其它</a><ul><li><a href=#机机-vs-人机>机机 VS. 人机</a></li></ul></li><li><a href=#实现方式>实现方式</a><ul><li><a href=#基于jwt>基于JWT</a></li></ul></li><li><a href=#最佳实践>最佳实践</a><ul><li><a href=#echo-auth>Echo Auth</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script><script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script><a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

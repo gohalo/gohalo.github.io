@@ -1,0 +1,65 @@
+<!doctype html><html lang=en-US><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>任务管理 | GoHalo</title>
+<link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/favicon/apple-touch-icon.png><link rel=icon href=https://gohalo.github.io/favicon/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/favicon/site.webmanifest><link rel=stylesheet href=https://gohalo.github.io/font-awesome/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.a44a20e27bcf33ab22e9f9c349f9a8cd.css integrity="md5-pEog4nvPM6si6fnDSfmozQ==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo
+</a><button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-versions data-bs-toggle=dropdown aria-expanded=false data-bs-display=static aria-label="Toggle version menu">
+latest</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 rounded border-0" aria-labelledby=header-versions><li><a class=dropdown-item href=/cn/docs/bootagent/Boot%20Agent%20Docs>Boot Agent Docs</a></li></ul></div><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li><li class=nav-item><button id=mode class="btn nav-link social-link" type=button aria-label="Toggle user interface mode">
+<span class=toggle-dark><i class="fa fa-star" aria-hidden=true></i></span>
+<span class=toggle-light><i class="fa fa-cog" aria-hidden=true></i></span></button></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="docs row flex-xl-nowrap"><div class=col-xl-2><div class="menubar align-items-center position-fixed"><ul><li><a href=/cn/docs/bootagent/latest/introduce/>简介</a></li><li><a href=/cn/docs/bootagent/latest/config/>配置管理</a></li><li><a href=/cn/docs/bootagent/latest/api/>接口通讯</a></li><li><a class=active href=/cn/docs/bootagent/latest/task/>任务管理</a></li><li><a href=/cn/docs/bootagent/latest/agent/>进程管理</a></li><li><a href=/cn/docs/bootagent/latest/develop/>源码介绍</a></li></ul></div></div><div class=col-xl-8><div class=content><p>任务包含了执行时间比较长的任务，例如安装、卸载等，被称为 Complex Task，还有就是重启、停止这种比较简单的任务，被称为 Simple Task。其中前者的所有 Agent 任务都会串行执行，而后者则允许 Agent 间并行执行。</p><p><strong>注意</strong> BootAgent 不会持久化任务信息，因此实现的各种任务需要保证任务的可重入性，也就是可以重复执行多次不会带来逻辑上的问题。</p><a class=anchor id=并发控制></a><h1>并发控制 <a href=#%e5%b9%b6%e5%8f%91%e6%8e%a7%e5%88%b6 aria-hidden=true>#</a></h1><p>包括了异步任务和同步任务，同步任务在下发解析时会立即开始执行(实现时一般为异步)，而异步任务则会串行执行，例如对于下载任务来说，主要是为了防止带宽不可控。</p><p><strong>注意</strong> 任务必须确保 <code>id</code> <code>action</code> <code>name</code> <code>version</code> 字段存在，如果 <code>id</code> 和 <code>action</code> 不存在，则会直接忽略任务；其中 <code>name</code> 和 <code>version</code> 用来确定操作的对象 (如果是全局配置不需要)。</p><p>对于 BootAgent 的任务都是可以立即执行完的，只有子 Agent 相关的任务</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>----- 安装，异步，用于第一次安装 注意，如果已经安装则尝试升级
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,  # 必选，任务ID信息，客户端上报执行结果时会带上
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: &#34;install&#34;,                           # 必选，指定任务操作
+</span></span><span class=line><span class=cl>    &#34;Name&#34;: &#34;BasicAgent&#34;,                          # 必选，需要操作的子Agent名称
+</span></span><span class=line><span class=cl>    &#34;Version&#34;: &#34;0.1.0&#34;,                            # 必选，操作子Agent的版本号
+</span></span><span class=line><span class=cl>    &#34;Parameters&#34;: {                                # 进程相关的参数，详见&lt;子进程管理&gt;中的配置参数
+</span></span><span class=line><span class=cl>         &#34;Speed&#34;: 100,                             # 可选，下载限速，默认是100，单位是KB/s
+</span></span><span class=line><span class=cl>         &#34;URL&#34;: &#34;ftp://server:port/BasicAgent/BasicAgent-0.1.0-0.x86_64.rpm&#34;,
+</span></span><span class=line><span class=cl>         &#34;Checksum&#34;: &#34;SHA256:4a34b8d7d3009bb9ef9475fbf33e7bbe4a1e8db003aefc578a241c2f51c2c2f2&#34;,
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 升级，异步
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: &#34;upgrade&#34;,
+</span></span><span class=line><span class=cl>    &#34;Name&#34;: &#34;BasicAgent&#34;,                         # 必选，需要操作的子Agent名称
+</span></span><span class=line><span class=cl>    &#34;Version&#34;: &#34;1.2.3&#34;,                           # 必选，及其版本号
+</span></span><span class=line><span class=cl>    &#34;Parameters&#34;: {
+</span></span><span class=line><span class=cl>        &#34;URL&#34;: &#34;ftp://server:port/BasicAgent/BasicAgent-0.1.0-0.x86_64.rpm&#34;,
+</span></span><span class=line><span class=cl>        &#34;Checksum&#34;: &#34;SHA256:4a34b8d7d3009bb9ef9475fbf33e7bbe4a1e8db003aefc578a241c2f51c2c2f2&#34;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 卸载，异步
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: &#34;uninstall&#34;,
+</span></span><span class=line><span class=cl>    &#34;Name&#34;: &#34;BasicAgent&#34;,                          # 必选，需要操作的子Agent名称
+</span></span><span class=line><span class=cl>    &#34;Version&#34;: &#34;0.1.0&#34;,                            # 可选，操作子Agent的版本号
+</span></span><span class=line><span class=cl>    &#34;Parameters&#34;: {
+</span></span><span class=line><span class=cl>        &#34;Force&#34;: true,                             # 可选，是否尝试强制卸载
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 进程操作，同步，需要确保进程已经安装，否则会报错
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: &#34;agent&#34;,
+</span></span><span class=line><span class=cl>    &#34;Name&#34;: &#34;BasicAgent&#34;,                         # 必选，需要操作的子Agent名称
+</span></span><span class=line><span class=cl>    &#34;Version&#34;: &#34;1.2.3&#34;,                           # 可选，及其版本号
+</span></span><span class=line><span class=cl>    &#34;Parameters&#34;: {
+</span></span><span class=line><span class=cl>        &#34;Operation&#34;: &#34;restart&#34;                    # 必选，对子进程的操作，包括了start、restart、stop
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>----- 配置相关，同步，这里是针对的是BootAgent，并非子Agent，目前暂不支持子Agent配置
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;ID&#34;: &#34;ddc8a9b9-55bd-4ddd-b53d-47095ee19466&#34;,
+</span></span><span class=line><span class=cl>    &#34;Action&#34;: &#34;config&#34;,
+</span></span><span class=line><span class=cl>    &#34;Parameters&#34;: {
+</span></span><span class=line><span class=cl>        &#34;ServerList&#34;: &#34;192.168.9.1:1234&#34;,   # 全局配置，服务端列表，不会修改默认的列表
+</span></span><span class=line><span class=cl>        &#34;Step&#34;: 1200,                       # 全局配置，状态上报时间间隔，单位是秒，其范围为[60, 3600]
+</span></span><span class=line><span class=cl>        &#34;Tags&#34;: &#34;svc=ECS,region=north&#34;      # 全局配置，本机标签信息，通过逗号分割
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></div><a class=anchor id=32-其它></a><h3>3.2 其它 <a href=#32-%e5%85%b6%e5%ae%83 aria-hidden=true>#</a></h3><ul><li>为了防止因为异常导致任务数太多，所以，会对任务总数进行限制。</li></ul></div></div><div class="sidebar col-xl-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#并发控制>并发控制</a><ul><li></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/bootstrap/js/bootstrap.bundle.min.js></script><script src=/main.b9cbcb174709877512d64e24f297f66a40c8d91c9a81128cb04bdd7b10247df8.js integrity="sha256-ucvLF0cJh3US1k4k8pf2akDI2RyagRKMsEvdexAkffg=" crossorigin=anonymous></script><a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

@@ -1,0 +1,47 @@
+#!/bin/python3
+
+import os
+import sys
+
+prefix = "https://www.ghproxy.cn/"
+
+def is_replaced(file):
+    with open(file, "r", encoding="utf-8") as o:
+        for l in o:
+            line = l.strip()
+            if not line.startswith("url = "):
+                continue
+            url = line[6:]
+            if url.startswith(prefix):
+                return True
+            else:
+                return False
+    sys.exit(1)
+
+def replace(file):
+    with open(file, "r", encoding="utf-8") as o, open(file+".bak", "w", encoding="utf-8") as t:
+        for l in o:
+            line = l.lstrip()
+            if not line.startswith("url = "):
+                t.write(l)
+                continue
+            url = line[6:]
+            if url.startswith(prefix):
+                t.write(l)
+                continue
+            t.write("\turl = " + prefix + url)
+    os.remove(file)
+    os.rename(file+".bak", file)
+
+dirs = "/home/andy/.local/share/nvim/lazy"
+for item in os.listdir(dirs):
+    path = os.path.join(dirs, item)
+    if not os.path.isdir(path):
+        continue
+    file = path + "/.git/config"
+    if not os.path.exists(file):
+        continue
+    print(file)
+    if is_replaced(file):
+        continue
+    replace(file)

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>源码实现 on</title><link>https://gohalo.github.io/cn/docs/bastion/latest/develop/</link><description>Recent content in 源码实现 on</description><generator>Hugo -- gohugo.io</generator><language>cn</language><atom:link href="https://gohalo.github.io/cn/docs/bastion/latest/develop/index.xml" rel="self" type="application/rss+xml"/><item><title>基础介绍</title><link>https://gohalo.github.io/cn/docs/bastion/latest/develop/basic/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://gohalo.github.io/cn/docs/bastion/latest/develop/basic/</guid><description>简介 # GoLang 基础库 golang.org/x/crypto/ssh 仅提供了基本 SSH 能力，其中 gliderlabs/ssh 是不错的服务端封装，包括更上层的 charmbracelet/wish 封装及其插件，这里大量参考该库，而 goph 是客户端封装。另外，还有些不错的 SSH 相关的工具，可以参考 gotty、wetty 等。
+命令行以及 Shell 的解析通过 urfave 实现，源码可以参考 gitHub 实现。
+同时在 cmd/examples 目录下包含了很多测试代码。
+golang.org/x/term 修改为 pkg/xterm 增加 SetHistory() 函数的实现。在列表选择时，可以不将数字保存到历史中，防止历史信息被污染。 各个模块之间有相互依赖关系，这里简单梳理如下。
+model 核心的对象，主要是与数据库交互，还包括了常用的公共对象 上下文 # 通常是通过 context.Context 来实现上下文的传递，除了作为定时器、退出等场景，最常用的是携带值，不过其实现的逻辑类似于线性链表，所以，通常希望不要携带太多的值，或者说不要嵌套太多层数。
+在实现时，尽量能通过某个结构体包含所有的信息，对于 SSH 来说，就是每个 Channel 为一个上下文，这个上下文中会尽量包括多的数据，获取到结构体之后可以直接修改对应的值。
+实现详解 # ssh.Server.ListenAndServe() 监听端口 |-net.Listen() 通过TCP监听服务 |-Listener.Accept() 在循环中接收请求，会处理临时报错 |-ssh.Server.HandleConnection() 处理请求，这里还是net的信息 |-ssh.NewServerConn() 对原始net.Conn的封装，同时包括了context.Context接口封装 | 会跟踪连接信息、设置超时时间(包括空闲、总超时等)、设置TraceID等 |-gossh.NewServerConn() 在调用之前会对鉴权用的接口进行封装，同时将ssh.Context实现传入 |-ssh.Server.HandleRequestes() 对全局的request的处理，不过没有作任何响应 | |-bastion.PasswordHandler() 会调用回调函数，这里会保存相关鉴权信息 |-bastion.PublicKeyHandler() |-bastion.</description></item><item><title>错误日志</title><link>https://gohalo.github.io/cn/docs/bastion/latest/develop/error/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://gohalo.github.io/cn/docs/bastion/latest/develop/error/</guid><description>错误处理 # 有如下的几个要求：
+区分类型，用来统计当前系统是否健康，有那些子系统报错，例如用户错误、数据库错误。 错误信息，处于安全考虑部分详细信息不会展示给客户，仅仅会在系统日志中打印，当然，有些是一致的。 国际化，Linux 中通过 LANG 环境变量设置，会处理 HTTP 请求、命令行等。 实现保存在 cargo.com/kite/errors 库中，包含了大部分相关的字段，而具体的错误定义在 api 中，使用时，在 api 中不会打印错误日志信息，只会返回错误。
+Equal() 判断错误是否相同 String() 包含详细信息 UserErr() 返回给用户错误 基础库 # 采用 GoLang 最基础的错误处理，也就是常规的 errors.New() fmt.Errorf() 使用，也包括基于 fmt.Errorf(&amp;quot;%w&amp;quot;) 这种方式，同时为了方便识别错误，在错误信息中会添加模块前缀。
+更多内容可以参考 pkg/secret 包的实现，错误信息会添加 secret: xxx 前缀，为了区分不同算法还可以是类似 secret(aes) 这种前缀。
+数据库 # 提供了 HandleDBError 对数据库的错误进行封装，例如，对于 MySQL 可以通过返回码判断错误类型。
+if ori, err := HandleDBError(db.Omit(&amp;#34;CreateAt&amp;#34;, &amp;#34;UpdateAt&amp;#34;).Create(group).Error, &amp;#34;user group&amp;#34;); err != nil { if ignoreExists &amp;amp;&amp;amp; ErrItemAlreadyExist.Equal(err) { return group, nil } logger.</description></item><item><title>权限管理</title><link>https://gohalo.github.io/cn/docs/bastion/latest/develop/auth/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://gohalo.github.io/cn/docs/bastion/latest/develop/auth/</guid><description>密钥管理 # 主要是用于加解密相关，其中部分场景需要进行解密，例如 SSH 登录密码的保存，登录前需要先解密；还有就是用户的登录密钥，因为只需要对密码进行验证，为了保证密码的安全性，采用单项加密算法。
+管理的密码除了算法还有版本信息，主要是为了方便进行迭代，最常见的是对称加解密的加密密钥修改，还有就是部分加密参数的调整，这些信息通过 Suites 维护，可看作是 CipherSuites 简写。
+在 配置文件 中可以参考配置。
+实现 # 通过 type Suites struct 保存相关的信息，默认会创建一个全局的对象，同时提供了类似 Verify() Encrypt() Decrypt() 等全局函数。
+加密后的信息类似 2$0$Avqruz6IAefMLJDC5Zn4t1xF+PNE9KL81MVGnA，分别为 加密算法 加密版本 加密信息 。
+权限管理 # 登录方式包含了 SSH-Key SSH-Password HTTP-Token HTTP-AKSK 四种方式，代码中通过 auth.AuthContext 保存鉴权相关信息，会通过 NewAuth() 函数根据类型创建，可以直接搜索该函数。
+在 NewAuth() 只会通过登录信息初始化，不会执行数据库查询等动作，不同的登录方式。
+type AuthInfo struct { Type *AuthType // 用户登录的类型，包括了ssh-key ssh-password http-token http-aksk Credential interface{} // 不同类型保存了不同认证信息，无需查询数据库 } type AuthContext struct { Info *AuthInfo // 不同登录方式对应的初始信息不同 User *model.</description></item><item><title>SSH 协议</title><link>https://gohalo.github.io/cn/docs/bastion/latest/develop/ssh/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://gohalo.github.io/cn/docs/bastion/latest/develop/ssh/</guid><description>鉴权 # SSH 提供了 password publickey keyboard-interactive 三种方式，可以参考 客户端使用 中的参数介绍，与之相同，在 GoLang 的 SSH 库提供了对应的几种验证方式。
+除此之外，还可以通过 NoClientAuth 和 NoClientAuthCallback 设置动态策略，而且允许返回 PartialSuccessError 方式设置多重的验证方式。
+数据透传 # 在用户登录鉴权的 Callback 函数中，可以使用 Permissions.Extensions 返回给应用层的一些鉴权相关信息，然后在 NewServerConn() 返回的 ServerConn.Permissions 中可以获取，感觉应该是 SSH 的标准扩展。
+但比较尴尬的是，该结构体只能返回字符串，例如用户的 ID，这也就意味着在鉴权接口中获取的用户详细信息(结构体)需要重新通过 ID 再获取一次，所以，为了避免这种不必要的开销，实现时通过 Context 保存信息。
+详见 Server.config()@server.go 中的实现。
+问题排查 # 默认登录 SSH 时会在鉴权过程中检查是否允许登录，不过这种方式具体的报错信息无法在客户端直接显示，一般就是 Permission denied (password,publickey) 错误信息，而没有具体原因。会导致客户很难定位问题，只能通过服务端日志排查，为此，允许在鉴权阶段直接登录，登录后再检查权限相关信息，报错直接返回客户端。
+当然，这种方式也有缺点，很多客户端在某种方式登录失败后会尝试其它方式，例如以此通过 publickey password 方式登录，这种方式会导致只能验证一种登录方式，需要客户端指定。
+源码中，鉴权阶段处理函数 PublicKeyHandler() PasswordHandler() 会指明当前阶段，然后进行鉴权处理。</description></item></channel></rss>
