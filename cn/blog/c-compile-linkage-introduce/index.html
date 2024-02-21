@@ -1,0 +1,172 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>C 编译链接 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=canonical href=https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/","url":"https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/","name":"C 编译链接","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2016-10-23T19:34:19CET","dateModified":"2016-10-23T19:34:19CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"C 编译链接","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/"},"datePublished":"2016-10-23T19:34:19CET","dateModified":"2016-10-23T19:34:19CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/c-compile-linkage-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"C 编译链接"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
+<span>页面目录</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#预编译>预编译</a></li><li><a href=#编译>编译</a></li><li><a href=#汇编>汇编</a></li><li><a href=#链接>链接</a></li></ul></li><li><a href=#静态链接库>静态链接库</a><ul><li><a href=#示例>示例</a></li><li><a href=#链接顺序>链接顺序</a></li></ul></li><li><a href=#动态链接库>动态链接库</a><ul><li><a href=#依赖库>依赖库</a></li><li><a href=#路径问题>路径问题</a></li><li><a href=#版本管理>版本管理</a></li><li><a href=#示例程序>示例程序</a></li></ul></li><li><a href=#动态库加载api>动态库加载API</a><ul><li><a href=#示例-1>示例</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#not-a-dynamic-executable>not a dynamic executable</a></li><li><a href=#库版本>库版本</a></li><li><a href=#动态库搜索路径>动态库搜索路径</a></li><li><a href=#杂项>杂项</a></li></ul></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#预编译>预编译</a></li><li><a href=#编译>编译</a></li><li><a href=#汇编>汇编</a></li><li><a href=#链接>链接</a></li></ul></li><li><a href=#静态链接库>静态链接库</a><ul><li><a href=#示例>示例</a></li><li><a href=#链接顺序>链接顺序</a></li></ul></li><li><a href=#动态链接库>动态链接库</a><ul><li><a href=#依赖库>依赖库</a></li><li><a href=#路径问题>路径问题</a></li><li><a href=#版本管理>版本管理</a></li><li><a href=#示例程序>示例程序</a></li></ul></li><li><a href=#动态库加载api>动态库加载API</a><ul><li><a href=#示例-1>示例</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#not-a-dynamic-executable>not a dynamic executable</a></li><li><a href=#库版本>库版本</a></li><li><a href=#动态库搜索路径>动态库搜索路径</a></li><li><a href=#杂项>杂项</a></li></ul></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>C 编译链接</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2016-10-23</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/program/ role=button>program</a>
+<a class="btn btn-light" href=https://gohalo.github.io/tags/c/c++/ role=button>c/c++</a></div></div><hr><div class=content-body><p>详细介绍下与 C 语言相关的概念。</p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>在程序由源码到可执行文件的编译过程实际有预处理 (Propressing)、编译 (Compilation)、汇编 (Assembly) 和链接 (Linking) 四步，在 <code>gcc</code> 中分别通过 <code>ccp</code> <code>cc1</code> <code>as</code> <code>ld</code> 四个命令来完成。</p><p><img src=images/compile-link-gcc-details.jpg alt="compile link gcc details" title="compile link gcc details"></p><p>如下详细介绍编译连接的过程。</p><h2 id=预编译>预编译 <a href=#%e9%a2%84%e7%bc%96%e8%af%91 class=anchor aria-hidden=true>#</a></h2><p>将源代码和头文件通过预编译成一个 <code>.i</code> 文件，相当与如下命令。</p><pre tabindex=0><code>$ gcc -E main.c -o main.i          # C
+$ cpp main.c &gt; main.i              # CPP
+</code></pre><p>与编译主要是处理源码中以 <code>"#"</code> 开始的与编译指令，主要的处理规则是：</p><ul><li>删除所有的 <code>"#define"</code> ，并且展开所有的宏定义。</li><li>处理所有条件预编译指令，比如 <code>"#if"</code>、<code>"#ifdef"</code>、<code>"#elif"</code>、<code>"#else"</code>、<code>"#endif"</code> 。</li><li>处理 <code>"#include"</code> ，将被包含的文件插入到该预编译指令的位置，该过程是递归的。</li><li>删除多有的注释 <code>"//"</code> 和 <code>"/* */"</code> 。</li><li>添加行号和文件名标识，如 <code>#2 "main.c" 2</code> ，用于编译时产生调试用的行号以及在编译时产生错误或警告时显示行号。</li><li>保留所有的 <code>"#pragma"</code> 编译器指令，因为编译器需要使用它们。</li></ul><p>经过预编译后的 <code>.i</code> 文件不包含任何宏定义，因为所有的宏已经被展开，并且包含的文件也已经被插入到 <code>.i</code> 文件中。所以，当无法判断宏定义是否正确或头文件包含是否正确时，可以查看该文件。</p><h2 id=编译>编译 <a href=#%e7%bc%96%e8%af%91 class=anchor aria-hidden=true>#</a></h2><p>编译过程就是把预处理后的文件进行一系列的词法分析、语法分析、语义分析以及优化后生成相应的汇编代码文件，这个是核心部分，也是最复杂的部分。</p><p>gcc 把预编译和编译合并成一个步骤，对于 C 语言使用的是 <code>cc1</code> ，C++ 使用的是 <code>cc1obj</code> 。</p><pre tabindex=0><code>$ gcc -S hello.i -o hello.s
+$ gcc -S main.c -o main.s
+</code></pre><h2 id=汇编>汇编 <a href=#%e6%b1%87%e7%bc%96 class=anchor aria-hidden=true>#</a></h2><p>汇编器是将汇编代码转化成机器码，每条汇编语句几乎都对应一条机器指令。汇编器不需要复杂的语法语义，也不用进行指令优化，只是根据汇编指令和机器指令的对照表一一翻译即可。</p><pre tabindex=0><code>$ gcc -c hello.s -o hello.o
+$ as main.s -o main.o
+$ gcc -c main.s -o main.o
+$ gcc -c main.c -o main.o
+</code></pre><h2 id=链接>链接 <a href=#%e9%93%be%e6%8e%a5 class=anchor aria-hidden=true>#</a></h2><p>可以通过 <code>gcc hello.c -o hello -v</code> 查看。</p><pre tabindex=0><code>$ gcc hello.o -o hello.exe
+</code></pre><p>尽量不要直接使用 <code>ld</code> 命令，如果通过 <code>-v</code> 参数查看详细的命令，可以看到最终链接是通过 <code>collect2</code> 完成的 (是对 <code>ld</code>x 的封装)，而且包含了很多类似 <code>crt1.o</code> <code>crti.o</code> 这类的依赖。</p><h1 id=静态链接库>静态链接库 <a href=#%e9%9d%99%e6%80%81%e9%93%be%e6%8e%a5%e5%ba%93 class=anchor aria-hidden=true>#</a></h1><p>库有动态与静态两种，Linux 中动态通常用 <code>.so</code> 为后缀，静态用 <code>.a</code> 为后缀，如：<code>libhello.so</code> <code>libhello.a</code>，静态链接库实际上就是将各个 <code>.o</code> 文件打包合并。</p><p>使用静态链接库时，连接器会找出程序所需的函数，然后将它们拷贝到执行文件，一旦连接成功，静态程序库也就不再需要了，缺点是占用的空间比较大，但是执行速度要快一些。</p><h2 id=示例>示例 <a href=#%e7%a4%ba%e4%be%8b class=anchor aria-hidden=true>#</a></h2><p>如果编译时使用静态库，那么所有依赖的基础库都需要安装静态版本，否则链接会失败，例如对于 <code>libc</code> 基础库，在 CentOS 中可以通过 <code>yum install glibc-static</code> 命令安装。</p><p>现在假设有一个 hello 程序开发包，它提供一个静态库 <code>libhello.a</code>，一个动态库 <code>libhello.so</code>，一个头文件 <code>hello.h</code>，头文件中提供 <code>foobar()</code> 这个函数的声明。</p><p>下面这段程序 <code>main.c</code> 使用 hello 库中的 <code>foobar()</code> 函数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cm>/* filename: foobar.c */</span>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;hello.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>foobar</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>puts</span><span class=p>(</span><span class=s>&#34;FooBar!&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/* filename: hello.c */</span>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;hello.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>hello</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>puts</span><span class=p>(</span><span class=s>&#34;Hello world!&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/* filename: hello.h */</span>
+</span></span><span class=line><span class=cl><span class=cp>#ifndef _HELLO_H__
+</span></span></span><span class=line><span class=cl><span class=cp>#define _HELLO_H__
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>hello</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>foobar</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cm>/* filename: main.c */</span>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&#34;hello.h&#34;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>foobar</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=nf>hello</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>当生成静态库时，需要先对源文件进行编译，然后使用 <code>ar(archive)</code> 命令连接成静态库。</p><pre tabindex=0><code>$ gcc -c hello.c -o hello.o
+$ gcc -c foobar.c -o foobar.o
+$ ar crv libhello.a hello.o foobar.o
+$ ar -t libhello.a                              // 查看打包的文件
+</code></pre><p><code>ar</code> 实际是一个打包工具，可以用来打包常见文件，不过现在被 <code>tar</code> 替代，目前主要是用于生成静态库，详细格式可以参考 <a href=http://en.wikipedia.org/wiki/Ar_(Unix)>ar(Unix) wiki</a> 。</p><pre tabindex=0><code>$ echo &#34;hello&#34; &gt; a.txt &amp;&amp; echo &#34;world&#34; &gt; b.txt
+$ ar crv text.a a.txt b.txt
+$ cat text.a
+</code></pre><p>在与静态库连接时，需要指定库的路径，默认不会将当前目录添加到搜索目录中。</p><pre tabindex=0><code>$ gcc main.c -o test -lhello                    // 库在默认路径下，如/usr/lib
+$ gcc main.c -lhello -L. -static -o main        // 通过-L指定库的路径
+
+$ gcc main.o -o main -WI,-Bstatic -lhello       // 报错，显示找不到-lgcc_s
+</code></pre><p>注意：这个特别的 <code>"-WI,-Bstatic"</code> 参数，实际上是传给了连接器 <code>ld</code>，指示它与静态库连接，如果系统中只有静态库可以不需要这个参数； 如果要和多个库相连接，而每个库的连接方式不一样，比如上面的程序既要和 <code>libhello</code> 进行静态连接，又要和 <code>libbye</code> 进行动态连接，其命令应为：</p><pre tabindex=0><code>$ gcc testlib.o -o test -WI,-Bstatic -lhello -WI,-Bdynamic -lbye
+</code></pre><p>最好不要进行分别编译、链接，因为在生成可执行文件时往往需要很多的其他文件，可以通过 <code>-v</code> 选项进行查看，如果通过如下方式进行编译通常会出现错误。</p><pre tabindex=0><code>$ gcc -c main.c
+$ ld main.o -L. -lhello
+</code></pre><h2 id=链接顺序>链接顺序 <a href=#%e9%93%be%e6%8e%a5%e9%a1%ba%e5%ba%8f class=anchor aria-hidden=true>#</a></h2><p>当一个项目中有多个静态库时，就可能会由于链接顺序不同导致 <code>undefined reference</code> 的报错，而实际上符号是有定义的，其根本原因是由于符号的查找算法引起的。</p><p>链接器查找符号针对的是单个目标文件 <code>.o</code> ，而非整个静态库，如果在某个目标文件中找到了所需的符号，那么就会将整个目标文件单独从静态库中提取出来，而非将整个链接库添加。</p><p>链接器在工作过程中，维护 3 个列表：A) 需要参与连接的目标文件列表 E；B) 一个未解析符号列表 U；C) 一个在 E 中所有目标文件定义过的所有符号列表 D 。</p><h1 id=动态链接库>动态链接库 <a href=#%e5%8a%a8%e6%80%81%e9%93%be%e6%8e%a5%e5%ba%93 class=anchor aria-hidden=true>#</a></h1><p>动态链接就是在程序运行时对符号进行重定位，确定符号对应的内存地址的过程，默认采用的是 Lazy Mode ，只解析那些用得到的符号，如果不需要就不会查找。</p><h2 id=依赖库>依赖库 <a href=#%e4%be%9d%e8%b5%96%e5%ba%93 class=anchor aria-hidden=true>#</a></h2><p>ELF 文件有一个特别的 Section <code>.dynamic</code>，存放了和动态链接相关的很多信息，例如动态链接器通过它找到该文件使用的动态链接库。</p><p>通过 <code>readelf -d | grep NEEDED</code> 可以找到该文件直接依赖的库，如果要查看所有依赖的库，那么可以通过 <code>ldd</code> 命令查看。</p><pre tabindex=0><code>$ readelf -d /bin/bash | grep NEED
+ 0x0000000000000001 (NEEDED)             Shared library: [libtinfo.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+
+$ ldd /bin/bash
+        linux-vdso.so.1 (0x00007ffd2438a000)
+        libtinfo.so.6 =&gt; /lib64/libtinfo.so.6 (0x00007fe7d3745000)
+        libdl.so.2 =&gt; /lib64/libdl.so.2 (0x00007fe7d3541000)
+        libc.so.6 =&gt; /lib64/libc.so.6 (0x00007fe7d317e000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007fe7d3c90000)
+</code></pre><p>其中 <code>linux-vdso.so.1</code> 是一个虚拟的动态链接库，对应进程内存映像的内核部分，而 <code>/lib/ld-linux-x86_64.so.2</code> 正好是动态链接器，系统需要用它来进行符号重定位。</p><p>而链接器实际上是在 <code>.interp</code> 中指定的，使用的是绝对路径，会先被装载到内存中，然后由该文件再加载其它动态库。</p><pre tabindex=0><code>$ readelf -p .interp /bin/bash
+
+String dump of section &#39;.interp&#39;:
+  [     0]  /lib64/ld-linux-x86-64.so.2
+</code></pre><h2 id=路径问题>路径问题 <a href=#%e8%b7%af%e5%be%84%e9%97%ae%e9%a2%98 class=anchor aria-hidden=true>#</a></h2><p>如果动态库不在搜索路径中，则会报 <code>cannot open shared object file: No such file or directory</code> 的错误。可以通过 <code>gcc --print-search-dirs</code> 命令查看默认的搜索路径。</p><p>查找顺序通常为：</p><ol><li>查找程序编译指定的路径，保存在 <code>.dynstr</code> 段，其中包含了一个以冒号分割的目录搜索列表。</li><li>查找环境变量 <code>LD_LIBRARY_PATH</code>，以冒号分割的目录搜索列表。</li><li>查找 <code>/etc/ld.so.conf</code> 。</li><li>默认路径 <code>/lib</code> 和 <code>/usr/lib</code> 。</li></ol><p>为了让执行程序顺利找到动态库，有三种方法：</p><h3 id=1-复制到指定路径>1. 复制到指定路径 <a href=#1-%e5%a4%8d%e5%88%b6%e5%88%b0%e6%8c%87%e5%ae%9a%e8%b7%af%e5%be%84 class=anchor aria-hidden=true>#</a></h3><p>把库拷贝到查找路径下，通常为 <code>/usr/lib</code> 和 <code>/lib</code> 目录下，或者通过 <code>gcc --print-search-dirs</code> 查看动态库的搜索路径。</p><h3 id=2-添加链接选项>2. 添加链接选项 <a href=#2-%e6%b7%bb%e5%8a%a0%e9%93%be%e6%8e%a5%e9%80%89%e9%a1%b9 class=anchor aria-hidden=true>#</a></h3><p>编译时添加链接选项，指定链接库的目录，此时会将该路径保存在二进制文件中。</p><pre tabindex=0><code>$ gcc -o test test.o -L. -lhello -Wl,-rpath,/home/lib:.
+$ readelf -d test | grep RPATH
+$ objdump -s -j .dynstr test                     // 查看.dynstr段的内容
+</code></pre><h3 id=3-设置环境变量>3. 设置环境变量 <a href=#3-%e8%ae%be%e7%bd%ae%e7%8e%af%e5%a2%83%e5%8f%98%e9%87%8f class=anchor aria-hidden=true>#</a></h3><p>执行时在 <code>LD_LIBRARY_PATH</code> 环境变量中加上库所在路径，例如动态库 <code>libhello.so</code> 在 <code>/home/test/lib</code> 目录下。</p><pre tabindex=0><code>$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/test/lib
+</code></pre><h3 id=4-修改配置文件>4. 修改配置文件 <a href=#4-%e4%bf%ae%e6%94%b9%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6 class=anchor aria-hidden=true>#</a></h3><p>修改 <code>/etc/ld.so.conf</code> 文件，把库所在的路径加到文件中，并执行 <code>ldconfig</code> 刷新配置。动态链接库通常保存在 <code>/etc/ld.so.cache</code> 文件中，执行 <code>ldconfig</code> 可以对其进行刷新。</p><h2 id=版本管理>版本管理 <a href=#%e7%89%88%e6%9c%ac%e7%ae%a1%e7%90%86 class=anchor aria-hidden=true>#</a></h2><p>对于共享库更新时通常会有兼容更新和不兼容更新，其实指的是二进制接口 (Application Binary Interface, ABI)，为了保证共享库的兼容性， Linux 采用一套规则来命名系统中的共享库。</p><p>实际上就是语意版本，其规则如下 <code>libname.so.x.y.z</code>，<code>name</code> 库名称，<code>x</code> <code>y</code> <code>z</code> 含义如下：</p><ul><li><code>x</code> 主版本号(Major Version Number)，重大升级，不同主版本不兼容。</li><li><code>y</code> 次版本号(Minor Version Number)，增量升级，增加了新接口，且保持原符号不变。</li><li><code>z</code> 发布版本号(Release Version Number)，错误修正、性能改进等，不添加、不修改接口。</li></ul><p>由于历史的原因最基本的 C 语言库 glibc 动态链接库不使用这种规则，如 <code>libc-x.y.z.so</code> 、<code>ld-x.y.z.so</code> ，在 <a href=https://www.usenix.org/legacy/publications/library/proceedings/als00/2000papers/papers/full_papers/browndavid/browndavid_html/>Library Interface Versioning in Solaris and Linux</a> 中，对 Salaris 和 Linux 的共享库版本机制和符号版本机制做了非常详细的介绍。</p><p>在 Linux 中采用 SO-NAME 的命名机制，每个库会对应一个 SO-NAME ，这个 SO-NAME 只保留主版本号，也即 SO-NAME 规定了共享库的接口。为了在同一系统中使用不同版本的库，可以在库文件名后加上版本号为后缀，例如：<code>libhello.so.1.0</code>，然后，使用时通过符号链接指向不同版本。</p><pre tabindex=0><code># ln -s libhello.so.1.0 libhello.so.1
+# ln -s libhello.so.1 libhello.so
+</code></pre><h2 id=示例程序>示例程序 <a href=#%e7%a4%ba%e4%be%8b%e7%a8%8b%e5%ba%8f class=anchor aria-hidden=true>#</a></h2><p>通过 <code>-fPIC</code> 参数生成与位置无关的代码，这样允许在任何地址被连接和装载。</p><pre tabindex=0><code>$ gcc -c -fPIC hello.c -o hello.o
+
+// 生成动态库，可能存在多个版本，通常指定版本号
+$ gcc -shared -Wl,-soname,libhello.so.1 -o libhello.so.1.0 hello.o
+
+// 另外再建立两个符号连接
+$ ln -s libhello.so.1.0 libhello.so.1
+$ ln -s libhello.so.1 libhello.so
+
+// 当然对于上述的步骤可以通过一步完成
+$ gcc -fPIC -shared -o libhello.so hello.c
+
+// 查看对应的soname
+$ readelf -d libhello.so.1.0 | grep SONAME
+// 查看符号
+$ nm -D libhello.so
+</code></pre><p>最重要的是传 <code>-shared</code> 参数使其生成是动态库而不是普通执行程序； <code>-Wl</code> 表示后面的参数也就是 <code>-soname,libhello.so.1</code> 直接传给连接器 <code>ld</code> 进行处理。</p><p>实际上，每一个库都有一个 <code>soname</code> ，当连接器发现它正在查找的程序库中有这样一个名称，连接器便会将 <code>soname</code> 嵌入连结中的二进制文件内，而不是它正在运行的实际文件名，在程序执行期间，程序会查找拥有 <code>soname</code> 名字的文件，而不是库的文件名，换句话说，<code>soname</code> 是库的区分标志。</p><p>其目的主要是允许系统中多个版本的库文件共存，习惯上在命名库文件的时候通常与 <code>soname</code> 相同 <code>libxxxx.so.major.minor</code> 其中，<code>xxxx</code> 是库的名字， <code>major</code> 是主版本号， <code>minor</code> 是次版本号。</p><h1 id=动态库加载api>动态库加载API <a href=#%e5%8a%a8%e6%80%81%e5%ba%93%e5%8a%a0%e8%bd%bdapi class=anchor aria-hidden=true>#</a></h1><p>对于 Linux 下的可执行文件 ELF 使用如下命令查看，可以发现其中有一个 <code>.interp</code> 段，它指明了将要被使用的动态链接器 (<code>/lib/ld-linux.so</code>)。</p><pre tabindex=0><code>$ readelf -l EXECUTABLE
+</code></pre><p>动态加载函数主要包括了下面的四个，依赖 <code>dlfcn.h</code> 头文件，定义在 <code>libdl.so</code> 库中。</p><pre tabindex=0><code>void *dlopen( const char *file, int mode );
+  用来打开一个文件，使对象文件可被程序访问，同时还会自动解析共享库中的依赖项，这样，如果打开了一个
+    依赖于其他共享库的对象，它就会自动加载它们，该函数返回一个句柄，该句柄用于后续的 API 调用。
+  mode 参数通知动态链接器何时执行再定位，有两个可能的值：
+    A) RTLD_NOW，表明动态链接器将会在调用 dlopen 时完成所有必要的再定位；
+    B) RTLD_LAZY，只在需要时执行再定位。
+
+void *dlsym( void *restrict handle, const char *restrict name );
+  通过句柄和连接符名称获取函数名或者变量名。
+
+char *dlerror();
+  返回一个可读的错误字符串，该函数没有参数，它会在发生前面的错误时返回一个字符串，在没有错误发生时返回NULL。
+
+char *dlclose( void *handle );
+  通知操作系统不再需要句柄和对象引用了。它完全是按引用来计数的，所以同一个共享对象的多个用户相互间
+    不会发生冲突（只要还有一个用户在使用它，它就会待在内存中）。
+    任何通过已关闭的对象的 dlsym 解析的符号都将不再可用。
+</code></pre><p>有了 ELF 对象的句柄，就可以通过调用 dlsym 来识别这个对象内的符号的地址了。该函数采用一个符号名称，如对象内的一个函数的名称，返回值为对象符号的解析地址。</p><h2 id=示例-1>示例 <a href=#%e7%a4%ba%e4%be%8b-1 class=anchor aria-hidden=true>#</a></h2><p>下面是一个动态加载的示例，通过如下的命令进行编译，其中选项 <code>-rdynamic</code> 用来通知链接器将所有符号添加到动态符号表中，目的是能够通过使用 <code>dlopen</code> 来实现向后跟踪。</p><pre tabindex=0><code>$ gcc -rdynamic -o dl library_libdl.c -ldl        # 编译
+$ ./dl                                            # 测试
+&gt; libm.so cosf 0.0
+   1.000000
+&gt; libm.so sinf 0.0
+   0.000000
+&gt; libm.so tanf 1.0
+   1.557408
+&gt; bye
+</code></pre><p>另外，可以通过如下方式简单使用。</p><pre tabindex=0><code>$ cat caculate.c                                     # 查看动态库源码
+int add(int a, int b) {
+    return (a + b);
+}
+int sub(int a, int b) {
+    return (a - b);
+}
+$ gcc -fPIC -shared caculate.c -o libcaculate.so     # 生成动态库
+$ cat foobar.c                                       # 测试源码
+#include &lt;stdio.h&gt;
+#include &lt;dlfcn.h&gt;
+#include &lt;stdlib.h&gt;
+
+typedef int (*CAC_FUNC)(int, int);                           // 定义函数指针类型
+int main(int argc, char** argv) {
+    void *handle;
+    char *error;
+    CAC_FUNC cac_func = NULL;
+
+    if ( !(handle=dlopen(&#34;./libcaculate.so&#34;, RTLD_LAZY)) ) { // 打开动态链接库
+        fprintf(stderr, &#34;!!! %s\n&#34;, dlerror());
+        exit(EXIT_FAILURE);
+    }
+
+    cac_func = dlsym(handle, &#34;add&#34;);                         // 获取一个函数
+    if ((error = dlerror()) != NULL)  {
+        fprintf(stderr, &#34;!!! %s\n&#34;, error);
+        exit(EXIT_FAILURE);
+    }
+    printf(&#34;add: %d\n&#34;, (cac_func)(2,7));
+
+    dlclose(handle);                                         // 关闭动态链接库
+    exit(EXIT_SUCCESS);
+}
+$ gcc -rdynamic -o foobar foobar.c -ldl              # 编译测试
+</code></pre><h1 id=其它>其它 <a href=#%e5%85%b6%e5%ae%83 class=anchor aria-hidden=true>#</a></h1><h2 id=not-a-dynamic-executable>not a dynamic executable <a href=#not-a-dynamic-executable class=anchor aria-hidden=true>#</a></h2><p>一般是由于不同的平台导致，例如在 x86 上查看 arm，或者在 64 位机器上查看 32 位。</p><p><code>ldd</code> 命令会通过默认的解析器进行解析，一般来说为 <code>ld-linux-aarch64.so.1</code> 或者 <code>ld-linux-x86-64.so.2</code> 。</p><pre tabindex=0><code>$ readelf -l &lt;EXEC_FILE&gt; | grep &#39;program interpreter&#39;
+</code></pre><p>如果存在 <code>locate</code> 命令，可以直接通过 <code>locate ld-linux</code> 查找当前机器所有类似文件。注意，可以通过 <code>updatedb</code> 更新。</p><p>而这个二进制文件所支持的平台可以通过 <code>file &lt;EXEC_FILE></code> 或者 <code>readelf -h &lt;EXEC_FILE></code> 命令查看。</p><h2 id=库版本>库版本 <a href=#%e5%ba%93%e7%89%88%e6%9c%ac class=anchor aria-hidden=true>#</a></h2><p>如果在高版本机器上编译二进制文件，然后复制到低版本 (主要是动态库) 上执行，那么就可能会出现类似 <code>version 'GLIBC_2.12' not found</code> 的报错，完整报错信息如下。</p><pre tabindex=0><code>&lt;EXEC_NAME&gt;: /lib64/libpthread.so.0: version `GLIBC_2.12&#39; not found (required by &lt;EXEC_NAME&gt;)
+</code></pre><p>这里就是因为依赖的 <code>glibc</code> 版本太低导致，通过 <code>strings /lib64/libc.so.6 | grep GLIBC</code> 查看当前库支持版本号，最高版本可以通过 <code>ldd --verion</code> 或者 <code>/lib64/libc.so.6</code> 查看。</p><p>最简单的，就是在编译的时候只依赖低版本的 <code>glibc</code>，这样在高版本上也可以使用。</p><h3 id=原因>原因 <a href=#%e5%8e%9f%e5%9b%a0 class=anchor aria-hidden=true>#</a></h3><p>从 <code>glibc 2.1</code> 开始，引入了 <a href=https://akkadia.org/drepper/symbol-versioning>Symbol Versioning</a> 的机制，每个符号都会对应一个版本号，例如：</p><pre tabindex=0><code>$ nm /lib64/libc.so.6 | grep &#34; memcpy&#34;
+</code></pre><p>当前二进制文件所有依赖的版本号，可以通过如下命令查看。</p><pre tabindex=0><code>$ nm &lt;exec file&gt; | awk -F &#39;@&#39; &#39;/@@GLIBC/{ print $3}&#39; | sort -t. -k 2 -nur
+</code></pre><p>当在一台高版本 glibc 上编译包是无法在一个低版本 glibc 的机器上运行的，通常有几种办法：A) 升级 glibc 库；B) 重新在低版本 glibc 上编译；C) 修改二进制文件；</p><h2 id=动态库搜索路径>动态库搜索路径 <a href=#%e5%8a%a8%e6%80%81%e5%ba%93%e6%90%9c%e7%b4%a2%e8%b7%af%e5%be%84 class=anchor aria-hidden=true>#</a></h2><pre tabindex=0><code>----- 这里是GNU LD的查看方式
+ld --verbose | grep SEARCH | tr -s &#39; ;&#39; \\012
+x86_64-pc-linux-gnu-ld --verbose | grep SEARCH | tr -s &#39; ;&#39; \\012
+----- 编译时的搜索路径
+gcc -print-search-dirs | grep libraries | tr -s &#39; ;=:&#39; \\012
+</code></pre><h2 id=杂项>杂项 <a href=#%e6%9d%82%e9%a1%b9 class=anchor aria-hidden=true>#</a></h2><h3 id=1-静态库生成动态库>1. 静态库生成动态库 <a href=#1-%e9%9d%99%e6%80%81%e5%ba%93%e7%94%9f%e6%88%90%e5%8a%a8%e6%80%81%e5%ba%93 class=anchor aria-hidden=true>#</a></h3><p>可以通过多个静态库生成动态库，而实际上静态库是一堆 <code>.o</code> 库的压缩集合，而生成动态库需要保证 <code>.o</code> 编译后是与地址无关的，也就是添加 <code>-fPIC</code> 参数。</p><h3 id=2-关于-preload>2. 关于 PreLoad <a href=#2-%e5%85%b3%e4%ba%8e-preload class=anchor aria-hidden=true>#</a></h3><p>正常来说 <code>ld-linux(8)</code> 会查找一个程序需要加载的库，然后解析执行，通过 <code>LD_PRELOAD</code> 或者 <code>/etc/ld.so.preload</code> 可以提前加载一些动态库。</p></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/c-linux-mock-wrap-unit-test/>C Mock 使用以及机制介绍</a></li><li><a class=text-body href=/cn/blog/cmake-some-tips/>CMake 常用示例</a></li><li><a class=text-body href=/cn/blog/cpp-some-pitfalls/>C/C++ 常见错误整理</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>

@@ -22,23 +22,25 @@ Hello World!!!
 </code></pre><h1 id=rustup>RustUp <a href=#rustup class=anchor aria-hidden=true>#</a></h1><p>除了上述的二进制安装方式之外，官方推荐的是 <a href=https://rustup.rs/>RustUp</a> 这个工具，不仅可以维护多个版本，还可以按需在不同版本之间切换。</p><h2 id=国内源配置>国内源配置 <a href=#%e5%9b%bd%e5%86%85%e6%ba%90%e9%85%8d%e7%bd%ae class=anchor aria-hidden=true>#</a></h2><p>国外的源都比较慢，这里增加如下字节的配置，详细可以参考 <a href=https://rsproxy.cn/>rsproxy.cn</a> 的介绍。</p><pre tabindex=0><code>$ cat ~/.cargo/config
 [source.crates-io]
 replace-with = &#39;rsproxy&#39;
-
 [source.rsproxy]
 registry = &#34;https://rsproxy.cn/crates.io-index&#34;
-
 [registries.rsproxy]
 index = &#34;https://rsproxy.cn/crates.io-index&#34;
-
+[http]
+check-revoke = false # 是否检查SSL证书废除
+proxy=&#34;http://user_name:user_password@proxy.example.com:8090&#34;
+[https]
+proxy=&#34;http://user_name:user_password@proxy.example.com:8090&#34;
 [net]
 git-fetch-with-cli = true
 $ cat ~/.bashrc
 export RUSTUP_DIST_SERVER=&#34;https://rsproxy.cn&#34;
 export RUSTUP_UPDATE_SERVER=&#34;https://rsproxy.cn/rustup&#34;
-</code></pre><p>其它还可以参考 <a href=http://mirrors.ustc.edu.cn/help/crates.io-index.html>中科大</a>、<a href=https://mirrors.tuna.tsinghua.edu.cn/help/rustup/>清华</a> 的代理，配置完之后可以通过如下命令安装。</p><pre tabindex=0><code>curl --proto &#39;=https&#39; --tlsv1.2 -sSf https://rsproxy.cn/rustup-init.sh | sh
-</code></pre><p>会将编译工具安装到 <code>~/.cargo/bin</code> 目录下，然后通过 <code>source "$HOME/.cargo/env"</code> 可以加载环境变量，也会默认添加到 <code>~/.bashrc</code> 文件中，如下是常用的命令。</p><pre tabindex=0><code>----- 安装stable的最新版本，一般每六周发布一次
+</code></pre><p>注意，如果在 <code>[net]</code> 中配置了 <code>git-fetch-with-cli=true</code> 也就是通过 git 客户端下载，那么就需要注意 <code>http.proxy</code> 和 <code>https.proxy</code> 两个参数。</p><p>另外，当代理的用户名密码有特殊字符时需要进行配置，详见 <a href=/cn/blog/network-proxy-http-https/>HTTP/HTTPS 代理协议</a> 中的介绍。</p><p>其它还可以参考 <a href=http://mirrors.ustc.edu.cn/help/crates.io-index.html>中科大</a>、<a href=https://mirrors.tuna.tsinghua.edu.cn/help/rustup/>清华</a> 的代理，配置完之后可以通过如下命令安装。</p><pre tabindex=0><code>curl --proto &#39;=https&#39; --tlsv1.2 -sSf https://rsproxy.cn/rustup-init.sh | sh
+</code></pre><p>一般是通过 <code>rustup-init.sh</code> 脚本安装，默认安装到 <code>~/.cargo</code> 目录下，安装完成后通过 <code>source ~/.cargo/env</code> 加载相关的环境变量即可，也就是将 <code>~/.cargo/bin</code> 添加到 <code>PATH</code> 环境变量中，默认也会添加到 <code>~/.bashrc</code> 文件中，可以通过 <code>rustc --version</code> 以及 <code>cargo --version</code> 查看版本以及是否安装成功。</p><pre tabindex=0><code>----- 安装stable的最新版本，一般每六周发布一次
 $ rustup update
 ----- 更新rustup自己
 $ rustup self update
 ----- 安装日更版
 $ rustup toolchain install nightly
-</code></pre></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/rust-handle-error/>Rust 中的错误处理</a></li><li><a class=text-body href=/cn/blog/python-package-management/>Python 包管理机制详解介绍</a></li><li><a class=text-body href=/cn/blog/rust-syntax-structure-details/>Rust 结构体详解</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
+</code></pre></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/rust-handle-error/>Rust 中的错误处理</a></li><li><a class=text-body href=/cn/blog/rust-memory-manage/>Rust 内存管理</a></li><li><a class=text-body href=/cn/blog/python-package-management/>Python 包管理机制详解介绍</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>

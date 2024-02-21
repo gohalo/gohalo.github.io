@@ -1,0 +1,379 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux Capabilites 机制详细介绍 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="在 Linux 系统中，有些操作是需要 root 用户权限才能操作的，常见的包括 chown、使用 Raw Sokcet (ping) 等，如果使用 sudo 就会导致配置管理和权限控制比较麻烦。
+为了只给这个程序开所需要的权限，Linux 提供了一套 capabilities 机制，这里详细介绍。
+"><link rel=canonical href=https://gohalo.github.io/cn/blog/linux-security-capabilities/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/linux-security-capabilities/","url":"https://gohalo.github.io/cn/blog/linux-security-capabilities/","name":"Linux Capabilites 机制详细介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2020-01-18T20:39:12CET","dateModified":"2020-01-18T20:39:12CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/linux-security-capabilities/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/linux-security-capabilities/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/linux-security-capabilities/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/linux-security-capabilities/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/linux-security-capabilities/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"Linux Capabilites 机制详细介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/linux-security-capabilities/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/linux-security-capabilities/"},"datePublished":"2020-01-18T20:39:12CET","dateModified":"2020-01-18T20:39:12CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/linux-security-capabilities/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/linux-security-capabilities/#/schema/image/2","url":null,"contentUrl":null,"caption":"Linux Capabilites 机制详细介绍"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
+<span>页面目录</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#设置capabilities>设置Capabilities</a></li><li><a href=#获取和设置>获取和设置</a></li><li><a href=#线程相关>线程相关</a></li></ul></li><li><a href=#能力继承>能力继承</a><ul><li><a href=#测试示例>测试示例</a></li></ul></li><li><a href=#示例程序>示例程序</a><ul><li><a href=#常见命令>常见命令</a></li></ul></li><li><a href=#权限管理>权限管理</a><ul><li><a href=#主进程>主进程</a></li><li><a href=#子进程>子进程</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#设置capabilities>设置Capabilities</a></li><li><a href=#获取和设置>获取和设置</a></li><li><a href=#线程相关>线程相关</a></li></ul></li><li><a href=#能力继承>能力继承</a><ul><li><a href=#测试示例>测试示例</a></li></ul></li><li><a href=#示例程序>示例程序</a><ul><li><a href=#常见命令>常见命令</a></li></ul></li><li><a href=#权限管理>权限管理</a><ul><li><a href=#主进程>主进程</a></li><li><a href=#子进程>子进程</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>Linux Capabilites 机制详细介绍</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2020-01-18</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/topic/ role=button>topic</a>
+<a class="btn btn-light" href=https://gohalo.github.io/tags/linux/ role=button>linux</a></div></div><hr><div class=content-body><p>在 Linux 系统中，有些操作是需要 root 用户权限才能操作的，常见的包括 chown、使用 Raw Sokcet (ping) 等，如果使用 sudo 就会导致配置管理和权限控制比较麻烦。</p><p>为了只给这个程序开所需要的权限，Linux 提供了一套 capabilities 机制，这里详细介绍。</p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>该机制是在 Linux 2.2 之后引入的，它将 root 用户的权限细分为不同的领域，可以分别启用或禁用；从而，在实际进行特权操作时，如果 euid 不是 root，便会检查是否具有该特权操作所对应的 capabilities，并以此为依据，决定是否可以执行特权操作。</p><p>一个完整的能力机制需要满足以下三个条件:</p><ol><li>对进程的所有特权操作，Linux 内核必须检查该进程该操作的特权位是否使能。</li><li>Linux 内核必须提供系统调用，允许进程能力的修改与恢复。</li><li>文件系统必须支持能力机制可以附加到一个可执行文件上，但文件运行时，将其能力附加到进程当中。</li></ol><p>到 Linux 内核版本 2.6.24 之前满足 1、2 两个条件，之后满足上述 3 个条件；也就是说，完整的 capabilities 支持是在 2.6.24 版本以后支持的。</p><p>注意，capabilities 是细分到线程的，每个线程都有自己对应的 capabilities 。</p><h2 id=设置capabilities>设置Capabilities <a href=#%e8%ae%be%e7%bd%aecapabilities class=anchor aria-hidden=true>#</a></h2><p>事实上 Linux 本身对权限的检查就是基于 capabilities 的，root 用户有全部的 capabilities，所以啥都能干。常用程序有：A) <code>getcap</code> 查看程序文件所具有的能力；B) <code>setcap</code> 设置程序文件的能力；C) <code>getpcaps</code> 获得进程所具有的能力。</p><p>最简单的例子 <code>ping</code> ，正常来说需要 <code>CAP_NET_RAW</code> 权限，可以通过如下的方式解决，常见的操作如下：</p><pre tabindex=0><code>----- 通过设置SUID获取root所有权限
+$ chown root:root /bin/ping
+$ chmod u+s /bin/ping
+----- 也可以设置SGID
+$ chmod g+s /bin/ping
+
+----- 对于ping增加Raw Socket权限
+$ setcap cap_net_raw=+ep ping
+参数：
+   cap_net_raw 对应设置capability的名字；
+   mode 也就是等号后面的内容，+ 表示启用，- 表示禁用；
+      e 是否激活
+      p 是否允许进程设置
+      i 子进程是否继承
+
+----- 同样以ping为例，可以通过如下方法查看其具有的Capability权限
+$ getcap /bin/ping
+</code></pre><p>这样普通用户执行这个 ping 命令，也可以正常使用 Raw Socket 这个权限了。</p><p>内核通过 <code>setxattr()</code> 系统调用执行，也就是为文件加上 <code>security.capability</code> 扩展属性。</p><h2 id=获取和设置>获取和设置 <a href=#%e8%8e%b7%e5%8f%96%e5%92%8c%e8%ae%be%e7%bd%ae class=anchor aria-hidden=true>#</a></h2><p>系统调用 <code>man 2 capget</code> 和 <code>man 2 capset</code> 可被用于获取和设置线程自身的 capabilities；此外，也可以使用 libcap 中提供的接口 <code>man 3 cap_get_proc</code> 和 <code>man 3 cap_set_proc</code> 。</p><h2 id=线程相关>线程相关 <a href=#%e7%ba%bf%e7%a8%8b%e7%9b%b8%e5%85%b3 class=anchor aria-hidden=true>#</a></h2><p>权限控制的最小粒度是线程，每个线程有三个与 Capabilities 相关的位图，分别为：</p><ul><li>Permitted，定义线程所能够拥有的特权的上限，如果需要的特权不在该集合中，是不能进行设置的；如果一个进程在该集合中丢失一个能力，除非特权用户再次赋予权限，否则无论如何不能再次获取该能力。</li><li>Inheritable，执行 fork() 运行其它进程时允许被继承的权限；</li><li>Effective，当前允许执行的特权。</li></ul><p>对应进程描述符 <code>struct task_struct</code> 中的 <code>cap_effective</code>、<code>cap_inheritable</code>、<code>cap_permitted</code>，可以通过 <code>/proc/PID/status</code> 来查看进程的能力。</p><p>从 2.6.24 开始，Linux 内核可以给可执行文件赋予能力，同样包含三个能力集：</p><ul><li>Permitted 当可执行文件执行时自动附加到进程中，会忽略 Inhertiable 集合；</li><li>Inheritable 与进程 Inheritable 集合做与操作，决定执行 execve 后新进程的 Permitted 集合；</li><li>Effective  实际不是集合，而是一个单独的位，用来决定进程的 Effective 集合。</li></ul><p>也就是说，Linux 系统中的能力分为两部分：A) 进程能力；B) 文件能力。Linux 内核最终检查的是进程能力中的 Effective，文件能力和进程能力中的其他部分用来完整能力继承、限制等方面的内容。</p><h1 id=能力继承>能力继承 <a href=#%e8%83%bd%e5%8a%9b%e7%bb%a7%e6%89%bf class=anchor aria-hidden=true>#</a></h1><p>也就是通过 <code>fork()</code> 新建进程时，子进程的能力，可以通过 <code>man 7 capabilities</code> 查看规则。</p><pre tabindex=0><code>P&#39;(ambient) = (file is privileged) ? 0 : P(ambient)
+P&#39;(permitted) = (P(inheritable) &amp; F(inheritable)) |
+		(F(permitted) &amp; cap_bset) | P&#39;(ambient)
+P&#39;(effective) = F(effective) ? P&#39;(permitted) : P&#39;(ambient)
+P&#39;(inheritable) = P(inheritable)    [i.e., unchanged]
+</code></pre><p><img src=images/capabilities-process-introduce.png alt="linux capabilities" title="linux capabilities"></p><p>带有 <code>'</code> 表示新的进程，这里主要讨论后三者的能力。</p><h2 id=测试示例>测试示例 <a href=#%e6%b5%8b%e8%af%95%e7%a4%ba%e4%be%8b class=anchor aria-hidden=true>#</a></h2><p>在 CentOS 中，有两个相关的包 <code>libcap-ng</code> 和 <code>libcap</code> ，一般使用的是后者，那么在使用时需要安装对应的开发版本，也就是需要通过 <code>yum install libcap-devel</code> 安装相关的头文件等。</p><p>如下两个分别为 <code>father.c</code> 以及 <code>child.c</code> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/types.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/capability.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>list_capability</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>__user_cap_header_struct</span> <span class=n>cap_header_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_user_header_t</span> <span class=n>cap_header</span> <span class=o>=</span> <span class=o>&amp;</span><span class=n>cap_header_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>__user_cap_data_struct</span> <span class=n>cap_data_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_user_data_t</span> <span class=n>cap_data</span> <span class=o>=</span> <span class=o>&amp;</span><span class=n>cap_data_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>cap_header</span><span class=o>-&gt;</span><span class=n>pid</span> <span class=o>=</span> <span class=nf>getpid</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>cap_header</span><span class=o>-&gt;</span><span class=n>version</span> <span class=o>=</span> <span class=n>_LINUX_CAPABILITY_VERSION_1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>capget</span><span class=p>(</span><span class=n>cap_header</span><span class=p>,</span> <span class=n>cap_data</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>perror</span><span class=p>(</span><span class=s>&#34;Failed capget&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Capability data: permitted=0x%x, effective=0x%x, inheritable=0x%x</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>permitted</span><span class=p>,</span> <span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>effective</span><span class=p>,</span> <span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>inheritable</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_t</span> <span class=n>caps</span> <span class=o>=</span> <span class=nf>cap_init</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_value_t</span> <span class=n>capList</span><span class=p>[</span><span class=mi>2</span><span class=p>]</span> <span class=o>=</span> <span class=p>{</span> <span class=n>CAP_DAC_OVERRIDE</span><span class=p>,</span> <span class=n>CAP_SYS_TIME</span> <span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//cap_set_flag(caps, CAP_EFFECTIVE, 2, capList, CAP_SET);
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nf>cap_set_flag</span><span class=p>(</span><span class=n>caps</span><span class=p>,</span> <span class=n>CAP_INHERITABLE</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=n>capList</span><span class=p>,</span> <span class=n>CAP_SET</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=nf>cap_set_flag</span><span class=p>(</span><span class=n>caps</span><span class=p>,</span> <span class=n>CAP_PERMITTED</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=n>capList</span><span class=p>,</span> <span class=n>CAP_SET</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span><span class=p>(</span><span class=nf>cap_set_proc</span><span class=p>(</span><span class=n>caps</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>perror</span><span class=p>(</span><span class=s>&#34;cap_set_proc&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>list_capability</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>execl</span><span class=p>(</span><span class=s>&#34;child&#34;</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>sleep</span><span class=p>(</span><span class=mi>1000</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/types.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;linux/capability.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>list_capability</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>__user_cap_header_struct</span> <span class=n>cap_header_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_user_header_t</span> <span class=n>cap_header</span> <span class=o>=</span> <span class=o>&amp;</span><span class=n>cap_header_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>__user_cap_data_struct</span> <span class=n>cap_data_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_user_data_t</span> <span class=n>cap_data</span> <span class=o>=</span> <span class=o>&amp;</span><span class=n>cap_data_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>cap_header</span><span class=o>-&gt;</span><span class=n>pid</span> <span class=o>=</span> <span class=nf>getpid</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>cap_header</span><span class=o>-&gt;</span><span class=n>version</span> <span class=o>=</span> <span class=n>_LINUX_CAPABILITY_VERSION_1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>capget</span><span class=p>(</span><span class=n>cap_header</span><span class=p>,</span> <span class=n>cap_data</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>perror</span><span class=p>(</span><span class=s>&#34;Failed capget&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Child capability data: permitted=0x%x, effective=0x%x, inheritable=0x%x</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>permitted</span><span class=p>,</span> <span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>effective</span><span class=p>,</span> <span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>inheritable</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nf>list_capability</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=nf>sleep</span><span class=p>(</span><span class=mi>1000</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><pre tabindex=0><code>$ gcc child.c -o child
+$ gcc father.c -o father -lcap
+# setcap cap_dac_override,cap_sys_time+ei child
+# setcap cap_dac_override,cap_sys_time+ip father
+</code></pre><p>单独执行时，child 可执行文件由 EI 的能力，而调用执行 child 的终端没有任何能力，那么对应公式(cap_bset默认全1)：</p><pre tabindex=0><code>P&#39;(permitted) = (P(inheritable) &amp; F(inheritable)) | (F(permitted) &amp; cap_bset)
+              = (0x0 &amp; 0x2000002) | (0x0 &amp; 全1) = 0x00
+P&#39;(effective) = F(effective) ? P&#39;(permitted) : 0
+              = 1 ? P&#39;(permitted) : 0 = P&#39;(permitted) = 0x00
+P&#39;(inheritable) = P(inheritable) = 0x00
+</code></pre><p>通过 father 调用执行时，child 文件有 EI 的能力，father 文件有 EP 能力，那么套用公式：</p><pre tabindex=0><code>P&#39;(permitted) = (P(inheritable) &amp; F(inheritable)) | (F(permitted) &amp; cap_bset)
+              = (0x2000002 &amp; 0x2000002) | (0x2000002 &amp; 全1) = 0x2000002
+P&#39;(effective) = F(effective) ? P&#39;(permitted) : 0
+              = 1 ? P&#39;(permitted) : 0 = P&#39;(permitted) = 0x2000002
+P&#39;(inheritable) = P(inheritable) = 0x2000002
+</code></pre><p>上述单独运行 child 可执行程序，其进程没有任何能力；但是有 father 进程来启动运行 child 可执行程序，其进程则有相应的能力。</p><h1 id=示例程序>示例程序 <a href=#%e7%a4%ba%e4%be%8b%e7%a8%8b%e5%ba%8f class=anchor aria-hidden=true>#</a></h1><p>对于 CentOS ，需要安装 libcap-devel 开发包才可以，当前的 Linux 系统中共有 37 项特权，可以从 <code>/usr/include/linux/capability.h</code> 文件中查看，编译使用 <code>-lcap</code> 。</p><p><strong>注意</strong> <code>DAC_OVERRIDE</code> 是 <code>DAC_READ_SEARCH</code> 的超集。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;errno.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/types.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/capability.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define ASIZE(arr)  (sizeof(arr)/sizeof(*arr))
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>list_caps</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=cp>#if 0</span><span class=c>
+</span></span></span><span class=line><span class=cl><span class=c>	cap_t caps;
+</span></span></span><span class=line><span class=cl><span class=c>	//caps = cap_get_pid(pid); /* get the process capabilities */
+</span></span></span><span class=line><span class=cl><span class=c>	caps = cap_get_proc();
+</span></span></span><span class=line><span class=cl><span class=c>	if (caps == NULL) {
+</span></span></span><span class=line><span class=cl><span class=c>		fprintf(stderr, &#34;[ERROR] Failed to get process capability, %s\n&#34;,
+</span></span></span><span class=line><span class=cl><span class=c>		strerror(errno));
+</span></span></span><span class=line><span class=cl><span class=c>		return -1;
+</span></span></span><span class=line><span class=cl><span class=c>	}
+</span></span></span><span class=line><span class=cl><span class=c>	fprintf(stdout, &#34;[INFO] Process %d was given capabilities %s\n&#34;,
+</span></span></span><span class=line><span class=cl><span class=c>		(int)getpid(), cap_to_text(caps, NULL));
+</span></span></span><span class=line><span class=cl><span class=c>	cap_free(caps);
+</span></span></span><span class=line><span class=cl><span class=c></span><span class=cp>#else
+</span></span></span><span class=line><span class=cl><span class=cp></span>	<span class=k>struct</span> <span class=n>__user_cap_header_struct</span> <span class=n>cap_header_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_user_header_t</span> <span class=n>cap_header</span> <span class=o>=</span> <span class=o>&amp;</span><span class=n>cap_header_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>__user_cap_data_struct</span> <span class=n>cap_data_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_user_data_t</span> <span class=n>cap_data</span> <span class=o>=</span> <span class=o>&amp;</span><span class=n>cap_data_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>cap_header</span><span class=o>-&gt;</span><span class=n>pid</span> <span class=o>=</span> <span class=nf>getpid</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>cap_header</span><span class=o>-&gt;</span><span class=n>version</span> <span class=o>=</span> <span class=n>_LINUX_CAPABILITY_VERSION_1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>capget</span><span class=p>(</span><span class=n>cap_header</span><span class=p>,</span> <span class=n>cap_data</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;[ERROR] Failed to get process cap, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>			<span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nf>fprintf</span><span class=p>(</span><span class=n>stdout</span><span class=p>,</span> <span class=s>&#34;[INFO] Capabilities data: permitted=0x%x effective=0x%x inheritable=0x%x</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>permitted</span><span class=p>,</span> <span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>effective</span><span class=p>,</span><span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>inheritable</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=cp>#endif
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_t</span> <span class=n>caps</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_value_t</span> <span class=n>caplist</span><span class=p>[]</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>CAP_NET_RAW</span><span class=p>,</span> <span class=n>CAP_NET_BIND_SERVICE</span><span class=p>,</span> <span class=n>CAP_SETUID</span><span class=p>,</span> <span class=n>CAP_SETGID</span><span class=p>,</span> <span class=n>CAP_SETPCAP</span>
+</span></span><span class=line><span class=cl>	<span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>list_caps</span><span class=p>()</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//caps = cap_get_proc();
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=k>if</span> <span class=p>((</span><span class=n>caps</span> <span class=o>=</span> <span class=nf>cap_init</span><span class=p>())</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;[ERROR] Failed to init capability, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>cap_set_flag</span><span class=p>(</span><span class=n>caps</span><span class=p>,</span> <span class=n>CAP_EFFECTIVE</span><span class=p>,</span> <span class=nf>ASIZE</span><span class=p>(</span><span class=n>caplist</span><span class=p>),</span> <span class=n>caplist</span><span class=p>,</span> <span class=n>CAP_SET</span><span class=p>)</span> <span class=o>||</span>
+</span></span><span class=line><span class=cl>	    <span class=nf>cap_set_flag</span><span class=p>(</span><span class=n>caps</span><span class=p>,</span> <span class=n>CAP_INHERITABLE</span><span class=p>,</span> <span class=nf>ASIZE</span><span class=p>(</span><span class=n>caplist</span><span class=p>),</span> <span class=n>caplist</span><span class=p>,</span> <span class=n>CAP_SET</span><span class=p>)</span> <span class=o>||</span>
+</span></span><span class=line><span class=cl>	    <span class=nf>cap_set_flag</span><span class=p>(</span><span class=n>caps</span><span class=p>,</span> <span class=n>CAP_PERMITTED</span><span class=p>,</span> <span class=nf>ASIZE</span><span class=p>(</span><span class=n>caplist</span><span class=p>),</span> <span class=n>caplist</span><span class=p>,</span> <span class=n>CAP_SET</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;[ERROR] Failed to set flag, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=nf>cap_free</span><span class=p>(</span><span class=n>caps</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>cap_set_proc</span><span class=p>(</span><span class=n>caps</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;[ERROR] Failed to set capability, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=nf>cap_free</span><span class=p>(</span><span class=n>caps</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>list_caps</span><span class=p>()</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>cap_free</span><span class=p>(</span><span class=n>caps</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=cm>/* resetting caps storage */</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>cap_clear</span><span class=p>(</span><span class=n>caps</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;[ERROR] Failed to clear capability, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=nf>cap_free</span><span class=p>(</span><span class=n>caps</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>cap_set_proc</span><span class=p>(</span><span class=n>caps</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;[ERROR] Failed to set capability, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=nf>cap_free</span><span class=p>(</span><span class=n>caps</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>list_caps</span><span class=p>()</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>cap_free</span><span class=p>(</span><span class=n>caps</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>cap_free</span><span class=p>(</span><span class=n>caps</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>如下是一个测试程序，确保在切换用户时保留能力： 1) 通过 <code>prctl(PR_SET_KEEPCAPS, 1L);</code> 保留能力；2) 通过 <code>cap_set_proc()</code> 重新设置 Effective 和 Permitted 的能力。</p><p>在切换之前，需要保证有 <code>CAP_SETUID</code>、<code>CAP_SETGID</code> 的权限即可。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;errno.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdlib.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/types.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/capability.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#define ASIZE(arr)  (sizeof(arr)/sizeof(*arr))
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>list_caps</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>__user_cap_header_struct</span> <span class=n>cap_header_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_user_header_t</span> <span class=n>cap_header</span> <span class=o>=</span> <span class=o>&amp;</span><span class=n>cap_header_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>__user_cap_data_struct</span> <span class=n>cap_data_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>cap_user_data_t</span> <span class=n>cap_data</span> <span class=o>=</span> <span class=o>&amp;</span><span class=n>cap_data_data</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>cap_header</span><span class=o>-&gt;</span><span class=n>pid</span> <span class=o>=</span> <span class=nf>getpid</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=n>cap_header</span><span class=o>-&gt;</span><span class=n>version</span> <span class=o>=</span> <span class=n>_LINUX_CAPABILITY_VERSION_1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>capget</span><span class=p>(</span><span class=n>cap_header</span><span class=p>,</span> <span class=n>cap_data</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;[ERROR] Failed to get process cap, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>			<span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nf>fprintf</span><span class=p>(</span><span class=n>stdout</span><span class=p>,</span> <span class=s>&#34;[INFO] Capabilities data: permitted=0x%x effective=0x%x inheritable=0x%x</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>permitted</span><span class=p>,</span> <span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>effective</span><span class=p>,</span><span class=n>cap_data</span><span class=o>-&gt;</span><span class=n>inheritable</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>void</span> <span class=nf>test</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kt>int</span> <span class=n>fd</span><span class=p>,</span> <span class=n>rc</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=kt>char</span> <span class=n>buffer</span><span class=p>[</span><span class=mi>1024</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>//fd = open(&#34;/tmp/user/group/test/read.txt&#34;, O_RDONLY);
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=n>errno</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>fd</span> <span class=o>=</span> <span class=nf>open</span><span class=p>(</span><span class=s>&#34;/tmp/read.txt&#34;</span><span class=p>,</span> <span class=n>O_RDONLY</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>fd</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Open read file error: %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=n>rc</span> <span class=o>=</span> <span class=nf>read</span><span class=p>(</span><span class=n>fd</span><span class=p>,</span> <span class=n>buffer</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>buffer</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>rc</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Read file error: %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nf>close</span><span class=p>(</span><span class=n>fd</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>buffer</span><span class=p>[</span><span class=n>rc</span><span class=p>]</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=nf>fprintf</span><span class=p>(</span><span class=n>stdout</span><span class=p>,</span> <span class=s>&#34;Got content: %s&#34;</span><span class=p>,</span> <span class=n>buffer</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>const</span> <span class=kt>char</span> <span class=o>*</span> <span class=k>const</span> <span class=n>user</span> <span class=o>=</span> <span class=s>&#34;monitor&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>passwd</span> <span class=o>*</span><span class=n>pwd</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>getuid</span><span class=p>()</span> <span class=o>!=</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Should run as root</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>pwd</span> <span class=o>=</span> <span class=nf>getpwnam</span><span class=p>(</span><span class=n>user</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>pwd</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;User &#39;%s&#39;does not exist</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>user</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kt>pid_t</span> <span class=n>pid</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>pid</span> <span class=o>=</span> <span class=nf>fork</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>pid</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Failed to fork child, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=n>pid</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span> <span class=cm>/* child */</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stdout</span><span class=p>,</span> <span class=s>&#34;[INFO] Child PID is %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>getpid</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=nf>list_caps</span><span class=p>()</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=cm>/* Set before change the effective user */</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=nf>prctl</span><span class=p>(</span><span class=n>PR_SET_KEEPCAPS</span><span class=p>,</span> <span class=mi>1L</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Failed to set keep caps flag, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>			<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=nf>setgid</span><span class=p>(</span><span class=n>pwd</span><span class=o>-&gt;</span><span class=n>pw_gid</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Cannot setgid to %s: %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>user</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=nf>setuid</span><span class=p>(</span><span class=n>pwd</span><span class=o>-&gt;</span><span class=n>pw_uid</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;Cannot setuid to %s: %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>user</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=nf>fprintf</span><span class=p>(</span><span class=n>stdout</span><span class=p>,</span> <span class=s>&#34;[INFO] Change to user &#39;%s&#39;, uid/gid=%d/%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>			<span class=n>user</span><span class=p>,</span> <span class=n>pwd</span><span class=o>-&gt;</span><span class=n>pw_gid</span><span class=p>,</span> <span class=n>pwd</span><span class=o>-&gt;</span><span class=n>pw_uid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=nf>list_caps</span><span class=p>()</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=kt>cap_t</span> <span class=n>caps</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>		<span class=c1>//CAP_DAC_OVERRIDE, CAP_SETUID, CAP_SETGID, CAP_NET_RAW, CAP_SETPCAP
+</span></span></span><span class=line><span class=cl><span class=c1></span>		<span class=kt>cap_value_t</span> <span class=n>caplist</span><span class=p>[]</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>CAP_DAC_OVERRIDE</span>
+</span></span><span class=line><span class=cl>		<span class=p>};</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>((</span><span class=n>caps</span> <span class=o>=</span> <span class=nf>cap_init</span><span class=p>())</span> <span class=o>==</span> <span class=nb>NULL</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;[ERROR] Failed to init capability, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>			<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=nf>cap_set_flag</span><span class=p>(</span><span class=n>caps</span><span class=p>,</span> <span class=n>CAP_EFFECTIVE</span><span class=p>,</span> <span class=nf>ASIZE</span><span class=p>(</span><span class=n>caplist</span><span class=p>),</span> <span class=n>caplist</span><span class=p>,</span> <span class=n>CAP_SET</span><span class=p>)</span> <span class=o>||</span>
+</span></span><span class=line><span class=cl>		    <span class=nf>cap_set_flag</span><span class=p>(</span><span class=n>caps</span><span class=p>,</span> <span class=n>CAP_PERMITTED</span><span class=p>,</span> <span class=nf>ASIZE</span><span class=p>(</span><span class=n>caplist</span><span class=p>),</span> <span class=n>caplist</span><span class=p>,</span> <span class=n>CAP_SET</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;[ERROR] Failed to set flag, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>			<span class=nf>cap_free</span><span class=p>(</span><span class=n>caps</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=nf>cap_set_proc</span><span class=p>(</span><span class=n>caps</span><span class=p>)</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nf>fprintf</span><span class=p>(</span><span class=n>stderr</span><span class=p>,</span> <span class=s>&#34;[ERROR] Failed to set capability, %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=nf>strerror</span><span class=p>(</span><span class=n>errno</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>			<span class=nf>cap_free</span><span class=p>(</span><span class=n>caps</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=nf>list_caps</span><span class=p>()</span> <span class=o>&lt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nf>cap_free</span><span class=p>(</span><span class=n>caps</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=nf>exit</span><span class=p>(</span><span class=mi>1</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=nf>test</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=nf>exit</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=cm>/* parent */</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nf>sleep</span><span class=p>(</span><span class=mi>1000</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在测试时遇到一个很奇葩的问题，当通过系统调用 <code>open("/tmp/read.txt", O_RDONLY)</code> 打开文件时，如果文件属主为 root，需要保证文件 group 的权限为可读，而非 others 文件权限为可读；而非 root 属主的文件，需要 others 文件权限为可读。</p><h2 id=常见命令>常见命令 <a href=#%e5%b8%b8%e8%a7%81%e5%91%bd%e4%bb%a4 class=anchor aria-hidden=true>#</a></h2><pre tabindex=0><code>----- 查看ping的能力
+$ getcap /bin/ping
+/bin/ping = cap_net_raw+ep
+
+----- 删除文件具有的能力
+$ setcap -r /bin/ping
+
+----- 获取保存在文件扩展编码中的内容
+$ getfattr -d -m &#34;^security\\.&#34; /bin/ping
+# file: bin/ping
+security.capability=0sAQAAAgAgAAAAAAAAAAAAAAAAAAA=
+
+----- 找到setuid-root或者setgid-root的文件 find / -perm /u=s
+$ find /usr/bin /usr/lib -perm /4000 -user root
+$ find /usr/bin /usr/lib -perm /2000 -group root
+</code></pre><h1 id=权限管理>权限管理 <a href=#%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86 class=anchor aria-hidden=true>#</a></h1><p>目前的场景为，启动一个有限权限的常驻进程，然后执行其它的命令，包括脚本。</p><h2 id=主进程>主进程 <a href=#%e4%b8%bb%e8%bf%9b%e7%a8%8b class=anchor aria-hidden=true>#</a></h2><p>简单来说，实现方案为，主进程在启动时会继承部分权限(限制常驻进程权限)，然后切换到 <code>monitor</code> 用户以非特权方式运行，切换后默认会失去所有权限(Eff)，需要重新再设置一次。</p><p>其中继承的权限包括了：</p><ol><li><code>CAP_DAC_OVERRIDE</code> 允许进程对所有的路径进行读写。</li><li><code>CAP_SETUID</code>, <code>CAP_SETGID</code> 允许切换用户，例如再次切换到root</li></ol><p>注意，在切换用户的时候只能设置已经限制后的权限。</p><h2 id=子进程>子进程 <a href=#%e5%ad%90%e8%bf%9b%e7%a8%8b class=anchor aria-hidden=true>#</a></h2><p>这里直接执行一个脚本，判断其是否有符合的权限，执行的方式是使用 <code>bash -c SCRIPTS</code> 命令，可以通过 <code>su - monitor "bash -c SCRIPTS"</code> 进行测试。</p><ol><li>主进程从 <code>root</code> 继承部分权限并切换到 <code>monitor</code> 用户，此时不会继承 <code>effective</code> 权限，需要重新设置。</li><li>通过 <code>fork+setgid/setuid+exec</code> 执行子进程，所执行的命令需要确保对应的用户有权限。</li></ol><p>因为 Linux 对 root 和 非root 的处理方式不一样，简单来说前者切换完用户之后同时会获取到 Prm、Eff 的权限，也就是说只要是 root 基本上就可以为所欲为了，无论之前有没有做过限制。</p><p>而从 root 切换了 非root 用户之后，所有的权限默认都会取消，除非手动再次设置。</p><p>注意，实测发现，在从 root 切换到 非root 后 Prm 权限会被取消，而从 非root 切换到 非root 时权限会保持不变。</p><h3 id=前提条件>前提条件 <a href=#%e5%89%8d%e6%8f%90%e6%9d%a1%e4%bb%b6 class=anchor aria-hidden=true>#</a></h3><p>这里假设直接执行二进制文件，而非脚本，也就是说只执行了一次 <code>execXXX</code> 。</p><p>如上，当从 非root 切换到 非root 之后，实际上权限会继承，但是当通过 <code>execXXX</code> 执行时，默认其对应的 Prm 权限仍然会被取消。</p><p>假设，需要添加 <code>CAP_DAC_OVERRIDE</code> 权限，就应该要确保如下的内容。</p><ul><li>在执行 <code>execXXX</code> 前的进程，需要确保在 Prm 中有 <code>CAP_DAC_OVERRIDE</code> 功能，这样才能添加到 <code>Inh</code> 中，子进程才能继承。</li><li>通过 <code>cap_set_flag()</code> 以及 <code>cap_set_proc()</code> 接口设置 <code>Inh</code> 中的 <code>CAP_DAC_OVERRIDE</code> 功能，这样通过 <code>exec</code> 执行后的子进程是有 <code>Inh</code> 权限的。</li><li>将对应的可执行文件设置 <code>Inh</code> <code>Eff</code> 权限，其中 <code>Inh</code> 会设置 <code>CapPrm</code> 也就是本进程允许的最大权限，而 <code>Eff</code> 会自动设置生效的 <code>CapEff</code> 也就是真正的权限。</li></ul><p>简单来说，需要确保 fork 的进程权限在 <code>Inh</code> 中，才有可能在 <code>exec</code> 中继承；当可执行文件设置了 <code>Inh</code> 和 <code>Eff</code> 之后，才会自动继承。</p><p>例如，测试的可执行二进制文件是 <code>/tmp/foobar</code>，那么可以通过如下方式设置。</p><pre tabindex=0><code># setcap cap_dac_override=ei /tmp/foobar
+</code></pre><h3 id=脚本执行>脚本执行 <a href=#%e8%84%9a%e6%9c%ac%e6%89%a7%e8%a1%8c class=anchor aria-hidden=true>#</a></h3><p>脚本的话会涉及到类似 <code>bash</code> <code>python</code> <code>perl</code> 的解析器，同时包含了执行的命令，按照上述的理论，就需要保证整个链路上的权限，也就是说要保证解析器、执行命令进行了上述配置。</p><pre tabindex=0><code># setcap cap_dac_override=ei /tmp/foobar/bash
+# setcap cap_dac_override=ei /tmp/foobar/foobar
+</code></pre><h3 id=总结>总结 <a href=#%e6%80%bb%e7%bb%93 class=anchor aria-hidden=true>#</a></h3><ol><li>从 root 切换到 非root 会自动将 <code>Prm</code> 清空，而从 非root 切换到 root 会自动保留原有的权限。</li><li>执行 <code>execXXX()</code> 函数时，如果不设置文件的权限，那么会自动清楚。</li></ol><h1 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h1><p>通过 <code>man 7 capabilities</code> 查看所有可用的 capabilities，而通过 <code>man 3 cap_from_text</code> 可以看到关于 capability mode 的表达式说明。</p></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/ssh-golang-examples/>GoLang 实现 SSH 相关示例</a></li><li><a class=text-body href=/cn/blog/linux-dnsmasq-introduce/>软件 DNSmasq 使用介绍</a></li><li><a class=text-body href=/cn/blog/topic-linux-security/>【专题】Linux 安全相关</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
