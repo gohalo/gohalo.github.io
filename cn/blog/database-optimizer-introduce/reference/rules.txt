@@ -1,0 +1,207 @@
+20241121
+starrocks/fe/fe-core/src/main/java/com/starrocks/sql/optimizer/rule/implementation
+    AssertOneRowImplementationRule.java
+    CTEAnchorImplementationRule.java
+    CTEAnchorToNoCTEImplementationRule.java
+    CTEConsumeInlineImplementationRule.java
+    CTEConsumerReuseImplementationRule.java
+    CTEProduceImplementationRule.java
+    DeltaLakeScanImplementationRule.java ==============> Scan
+    EsScanImplementationRule.java =====================> Scan
+    ExceptImplementationRule.java
+    FileScanImplementationRule.java ===================> Scan
+    FilterImplementationRule.java
+    HashAggImplementationRule.java
+    HashJoinImplementationRule.java
+    HiveScanImplementationRule.java ===================> Scan
+    HudiScanImplementationRule.java ===================> Scan
+    IcebergEqualityDeleteScanImplementationRule.java ==> Scan
+    IcebergMetadataScanImplementationRule.java ========> Scan
+    IcebergScanImplementationRule.java ================> Scan
+    ImplementationRule.java
+    IntersectImplementationRule.java
+    JDBCScanImplementationRule.java ===================> Scan
+    JoinImplementationRule.java
+    KuduScanImplementationRule.java ===================> Scan
+    LimitImplementationRule.java
+    MergeJoinImplementationRule.java
+    MetaScanImplementationRule.java ===================> Scan
+    MysqlScanImplementationRule.java ==================> Scan
+    NestLoopJoinImplementationRule.java
+    OdpsScanImplementationRule.java ===================> Scan
+    OlapScanImplementationRule.java ===================> Scan
+    PaimonScanImplementationRule.java =================> Scan
+    ProjectImplementationRule.java
+    RepeatImplementationRule.java
+    SchemaScanImplementationRule.java =================> Scan
+    TableFunctionImplementationRule.java
+    TableFunctionTableScanImplementationRule.java
+    TopNImplementationRule.java
+    UnionImplementationRule.java
+    ValuesImplementationRule.java
+    WindowImplementationRule.java
+starrocks/fe/fe-core/src/main/java/com/starrocks/sql/optimizer/rule/implementation/stream/
+    StreamAggregateImplementationRule.java
+    StreamImplementationRule.java
+    StreamJoinImplementationRule.java
+    StreamScanImplementationRule.java
+starrocks/fe/fe-core/src/main/java/com/starrocks/sql/optimizer/rule/transformation/
+    ApplyExceptionRule.java
+    ArrayDistinctAfterAggRule.java
+    CTEProduceAddProjectionRule.java
+    CastToEmptyRule.java
+    CollectCTEConsumeRule.java
+    CollectCTEProduceRule.java
+    ConvertToEqualForNullRule.java
+    DeriveRangeJoinPredicateRule.java
+    DistributionPruneRule.java
+    EliminateAggRule.java
+    EliminateGroupByConstantRule.java
+    EliminateJoinWithConstantRule.java
+    EliminateLimitZeroRule.java
+    ExistentialApply2JoinRule.java
+    ExistentialApply2OuterJoinRule.java
+    ExternalScanPartitionPruneRule.java
+    FineGrainedRangePredicateRule.java
+    ForceCTEReuseRule.java
+    GroupByCountDistinctDataSkewEliminateRule.java
+    GroupByCountDistinctRewriteRule.java
+    IcebergEqualityDeleteRewriteRule.java
+    IcebergPartitionsTableRewriteRule.java
+    InlineOneCTEConsumeRule.java
+    IntersectAddDistinctRule.java
+    JoinAssociateBaseRule.java
+    JoinAssociativityRule.java
+    JoinCommutativityRule.java
+    JoinCommutativityWithoutInnerRule.java
+    JoinLeftAsscomRule.java
+    LimitPruneTabletsRule.java
+    ListPartitionPruner.java
+    MaterializedViewTransparentRewriteRule.java
+    MergeApplyWithTableFunction.java
+    MergeLimitDirectRule.java ==========================> TopN
+    MergeLimitWithLimitRule.java =======================> TopN
+    MergeLimitWithSortRule.java ========================> TopN
+    MergeProjectWithChildRule.java
+    MergeTwoAggRule.java
+    MergeTwoFiltersRule.java
+    MergeTwoProjectRule.java
+    MinMaxCountOptOnScanRule.java
+    MultiDistinctByCTERewriter.java
+    MultiDistinctByMultiFuncRewriter.java
+    OnPredicateMoveAroundRule.java
+    PartitionColumnMinMaxRewriteRule.java
+    PartitionColumnValueOnlyOnScanRule.java
+    PartitionPruneRule.java
+    PruneAggregateColumnsRule.java
+    PruneAssertOneRowRule.java
+    PruneCTEConsumeColumnsRule.java
+    PruneCTEProduceRule.java
+    PruneEmptyDirectRule.java
+    PruneEmptyExceptRule.java
+    PruneEmptyIntersectRule.java
+    PruneEmptyJoinRule.java
+    PruneEmptyScanRule.java
+    PruneEmptyUnionRule.java
+    PruneEmptyWindowRule.java
+    PruneExceptColumnsRule.java
+    PruneFilterColumnsRule.java
+    PruneGroupByKeysRule.java
+    PruneHDFSScanColumnRule.java
+    PruneIntersectColumnsRule.java
+    PruneJoinColumnsRule.java
+    PruneProjectColumnsRule.java
+    PruneProjectEmptyRule.java
+    PruneProjectRule.java
+    PruneRepeatColumnsRule.java
+    PruneScanColumnRule.java
+    PruneTableFunctionColumnRule.java
+    PruneTopNColumnsRule.java
+    PruneTrueFilterRule.java
+    PruneUKFKGroupByKeysRule.java
+    PruneUKFKJoinRule.java
+    PruneUnionColumnsRule.java
+    PruneValuesColumnsRule.java
+    PruneWindowColumnsRule.java
+    PushDownAggToMetaScanRule.java =================> PushDown
+    PushDownAggregateGroupingSetsRule.java =========> PushDown
+    PushDownApplyAggFilterRule.java ================> PushDown
+    PushDownApplyAggProjectFilterRule.java =========> PushDown
+    PushDownApplyFilterRule.java ===================> PushDown
+    PushDownApplyLeftProjectRule.java ==============> PushDown
+    PushDownApplyLeftRule.java =====================> PushDown
+    PushDownApplyProjectRule.java ==================> PushDown
+    PushDownFlatJsonMetaToMetaScanRule.java ========> PushDown
+    PushDownJoinAggRule.java =======================> PushDown
+    PushDownJoinOnClauseRule.java ==================> PushDown
+    PushDownJoinOnExpressionToChildProject.java ====> PushDown
+    PushDownLimitCTEAnchor.java ====================> PushDown
+    PushDownLimitDirectRule.java ===================> PushDown
+    PushDownLimitJoinRule.java =====================> PushDown
+    PushDownLimitRankingWindowRule.java ============> PushDown
+    PushDownLimitUnionRule.java ====================> PushDown
+    PushDownPredicateAggRule.java ==================> PushDown
+    PushDownPredicateCTEAnchor.java ================> PushDown
+    PushDownPredicateCTEConsumeRule.java ===========> PushDown
+    PushDownPredicateExceptRule.java ===============> PushDown
+    PushDownPredicateIntersectRule.java ============> PushDown
+    PushDownPredicateJoinRule.java =================> PushDown
+    PushDownPredicateProjectRule.java ==============> PushDown
+    PushDownPredicateRankingWindowRule.java ========> PushDown
+    PushDownPredicateRepeatRule.java ===============> PushDown
+    PushDownPredicateScanRule.java =================> PushDown
+    PushDownPredicateSetRule.java ==================> PushDown
+    PushDownPredicateTableFunctionRule.java ========> PushDown
+    PushDownPredicateToExternalTableScanRule.java ==> PushDown
+    PushDownPredicateUnionRule.java ================> PushDown
+    PushDownPredicateWindowRule.java ===============> PushDown
+    PushDownProjectLimitRule.java ==================> PushDown
+    PushDownProjectToCTEAnchorRule.java ============> PushDown
+    PushDownTopNBelowOuterJoinRule.java ============> PushDown
+    PushDownTopNBelowUnionRule.java ================> PushDown
+    PushLimitAndFilterToCTEProduceRule.java
+    QuantifiedApply2JoinRule.java
+    QuantifiedApply2OuterJoinRule.java
+    RemoveAggregationFromAggTable.java
+    ReorderIntersectRule.java
+    RewriteBitmapCountDistinctRule.java
+    RewriteCountIfFunction.java
+    RewriteDuplicateAggregateFnRule.java
+    RewriteGroupingSetsByCTERule.java
+    RewriteHllCountDistinctRule.java
+    RewriteMultiDistinctRule.java
+    RewriteSimpleAggToHDFSScanRule.java
+    RewriteSimpleAggToMetaScanRule.java
+    RewriteSumByAssociativeRule.java
+    RewriteToVectorPlanRule.java
+    RewriteUnnestBitmapRule.java
+    ScalarApply2AnalyticRule.java
+    ScalarApply2JoinRule.java
+    SchemaTableEvaluateRule.java
+    SemiReorderRule.java
+    SeparateProjectRule.java
+    SkewJoinOptimizeRule.java
+    SplitAggregateRule.java
+    SplitLimitRule.java
+    SplitMultiPhaseAggRule.java
+    SplitScanORToUnionRule.java
+    SplitTopNRule.java
+    SplitTwoPhaseAggRule.java
+    TransformationRule.java
+    UnionToValuesRule.java
+starrocks/tree/main/fe/fe-core/src/main/java/com/starrocks/sql/optimizer/rule/transformation/materialization/
+starrocks/tree/main/fe/fe-core/src/main/java/com/starrocks/sql/optimizer/rule/transformation/pruner/
+starrocks/tree/main/fe/fe-core/src/main/java/com/starrocks/sql/optimizer/rule/join/
+    JoinOrder.java
+    JoinReorderCardinalityPreserving.java
+    JoinReorderDP.java
+    JoinReorderDummyStatistics.java
+    JoinReorderFactory.java
+    JoinReorderGreedy.java
+    JoinReorderHelper.java
+    JoinReorderLeftDeep.java
+    JoinReorderProperty.java
+    MultiJoinNode.java
+    ReorderJoinRule.java
+starrocks/tree/main/fe/fe-core/src/main/java/com/starrocks/sql/optimizer/rule/mv/
+starrocks/tree/main/fe/fe-core/src/main/java/com/starrocks/sql/optimizer/rule/tree/
