@@ -1,0 +1,239 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Linux Core 文件详细介绍 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Core 文件又称为 Core Dump 文件，对于线上的服务而言，也就意味着进程异常；而且，如果进程占用内存很大，但是 dump 到磁盘上，也会花很长时间。
+当然，Core 虽然会终止掉当前进程，但是也会保留下第一手的现场数据，包括了进程被终止时内存、CPU寄存器等信息，可以供后续开发人员进行调试。
+接下来，看看 MySQL 中 Core 文件的处理。
+简介 # 在开发一个程序时，程序可能会在运行过程中异常终止或者崩溃，这时操作系统就会把程序挂掉时的内存状态记录下来，并写入一个叫做 Core 的文件中，这种行为就叫做 Core Dump 操作，通过这个文件可以方便的进行调试。
+在使用半导体作为内存的材料前，人类使用的是线圈作为内存的材料，线圈叫做 Core，用线圈制作的内存就是 Core Memory。
+除了内存信息之外，还有些关键的程序运行状态也会同时 dump 下来，例如寄存器信息 (包括程序指针、栈指针等)、内存管理信息、其他处理器和操作系统状态和信息；而这些信息对于编程人员诊断和调试程序是非常有帮助。
+A core dump is the recorded state of the working memory of a computer program at a specific time, generally when the program has terminated abnormally (crashed). In practice, other key pieces of program state are usually dumped at the same time, including the processor registers, which may include the program counter and stack pointer, memory management information, and other processor and operating system flags and information."><link rel=canonical href=https://gohalo.github.io/cn/blog/c-linux-core-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/c-linux-core-introduce/","url":"https://gohalo.github.io/cn/blog/c-linux-core-introduce/","name":"Linux Core 文件详细介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2022-03-17T22:19:04CET","dateModified":"2022-03-17T22:19:04CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/c-linux-core-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/c-linux-core-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/c-linux-core-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/c-linux-core-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/c-linux-core-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"Linux Core 文件详细介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/c-linux-core-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/c-linux-core-introduce/"},"datePublished":"2022-03-17T22:19:04CET","dateModified":"2022-03-17T22:19:04CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/c-linux-core-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/c-linux-core-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"Linux Core 文件详细介绍"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
+<span>页面目录</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#开启coredump>开启CoreDump</a></li></ul></li><li><a href=#测试示例>测试示例</a></li><li><a href=#debuginfo>debuginfo</a><ul><li><a href=#包含信息>包含信息</a></li><li><a href=#如何生成>如何生成</a></li><li><a href=#搜索路径>搜索路径</a></li><li><a href=#生成marker探针>生成Marker探针</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#mysql>MySQL</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#开启coredump>开启CoreDump</a></li></ul></li><li><a href=#测试示例>测试示例</a></li><li><a href=#debuginfo>debuginfo</a><ul><li><a href=#包含信息>包含信息</a></li><li><a href=#如何生成>如何生成</a></li><li><a href=#搜索路径>搜索路径</a></li><li><a href=#生成marker探针>生成Marker探针</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#mysql>MySQL</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>Linux Core 文件详细介绍</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2022-03-17</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/program/ role=button>program</a></div></div><hr><div class=content-body><p>Core 文件又称为 Core Dump 文件，对于线上的服务而言，也就意味着进程异常；而且，如果进程占用内存很大，但是 dump 到磁盘上，也会花很长时间。</p><p>当然，Core 虽然会终止掉当前进程，但是也会保留下第一手的现场数据，包括了进程被终止时内存、CPU寄存器等信息，可以供后续开发人员进行调试。</p><p>接下来，看看 MySQL 中 Core 文件的处理。</p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p><img src=images/core-file-logo.jpg alt="core file logo" title="core file logo"></p><p>在开发一个程序时，程序可能会在运行过程中异常终止或者崩溃，这时操作系统就会把程序挂掉时的内存状态记录下来，并写入一个叫做 Core 的文件中，这种行为就叫做 Core Dump 操作，通过这个文件可以方便的进行调试。</p><blockquote><p>在使用半导体作为内存的材料前，人类使用的是线圈作为内存的材料，线圈叫做 Core，用线圈制作的内存就是 Core Memory。</p></blockquote><p>除了内存信息之外，还有些关键的程序运行状态也会同时 dump 下来，例如寄存器信息 (包括程序指针、栈指针等)、内存管理信息、其他处理器和操作系统状态和信息；而这些信息对于编程人员诊断和调试程序是非常有帮助。</p><blockquote><p>A core dump is the recorded state of the working memory of a computer program at a specific time, generally when the program has terminated abnormally (crashed). In practice, other key pieces of program state are usually dumped at the same time, including the processor registers, which may include the program counter and stack pointer, memory management information, and other processor and operating system flags and information. The name comes from the once-standard memory technology core memory. Core dumps are often used to diagnose or debug errors in computer programs.</p><p>On many operating systems, a fatal error in a program automatically triggers a core dump, and by extension the phrase &ldquo;to dump core&rdquo; has come to mean, in many cases, any fatal error, regardless of whether a record of the program memory is created.</p></blockquote><h2 id=开启coredump>开启CoreDump <a href=#%e5%bc%80%e5%90%afcoredump class=anchor aria-hidden=true>#</a></h2><p>可以使用命令 ulimit 开启，也可以在程序中通过 setrlimit 系统调用开启；先介绍下前者配置方式。</p><pre tabindex=0><code>----- 查看配置，如果为0，则说明未开启
+$ ulimit -c
+
+----- 设置转储文件大小，单位是blocks(KB)，unlimited表示不限
+# ulimit -c unlimited
+
+----- 设置转储文件大小为100KB
+# ulimit -c 100
+</code></pre><p>当设置为 unlimited 时，则表示不限制内核转储文件的大小，发生问题时所有的内存都将转储到文件中；对于大量消耗内存的程序可以限制转储文件的大小。</p><p>如果要持久化，可以修改 <code>/etc/security/limits.conf</code> 文件即可，参考如下示例。</p><pre tabindex=0><code>#&lt;domain&gt;      &lt;type&gt;  &lt;item&gt;         &lt;value&gt;
+    *           soft    core          unlimited
+</code></pre><p>默认生成的 core 文件保存在可执行文件所在目录下，文件名为 core；当然，也可以通过如下方式进行设置。</p><pre tabindex=0><code>----- 添加PID后缀
+# echo 1 &gt; /proc/sys/kernel/core_uses_pid
+
+----- 设置输出目录，格式为core-命令名-PID-时间戳
+# echo &#34;/tmp/core-%e-%p-%t&#34; &gt; /proc/sys/kernel/core_pattern
+
+常见参数：
+   %t: 设置文件转储时的 unix 时间，从 1970.1.1 0:00:00 开始的秒数。
+   %e: 执行的命令名。
+   %p: 被转储进程的 PID 。
+   %u: 被转储进程的真实用户 ID ，也即 UID 。
+   %g: 被转储进程的真实组 ID ，也即 GID 。
+   %s: 引发转储的信号编号。
+   %h: 主机名，同 uname(2) 返回的 nodename 。
+   %c: 转储文件大小的上限，2.6.24 以后可以使用。
+</code></pre><p>设置完 <code>core_pattern</code> 之后，<code>core_user_pid</code> 会无效，也可以通过 <code>sysctl</code> 进行设置。</p><pre tabindex=0><code># cat /etc/sysctl.conf
+kernel.core_pattern = /var/%e-%p-%t.core
+kernel.core_user_pid = 0
+# sysctl -p
+</code></pre><h1 id=测试示例>测试示例 <a href=#%e6%b5%8b%e8%af%95%e7%a4%ba%e4%be%8b class=anchor aria-hidden=true>#</a></h1><p>可以在程序执行期间发送 <code>SIGSEGV(11)</code> 信号，也即 <code>Ctrl+\</code> 快捷键。</p><pre tabindex=0><code>----- 使用Ctrl+\退出程序，产生core dump
+$ sleep 100
+^\Quit (core dumped)
+
+----- 或者发送SIGSEGV(11)信号
+# kill -s SIGSEGV $$
+# kill -11 &lt;pid&gt;
+</code></pre><p>接着看一个简单的示例程序。</p><pre tabindex=0><code>$ cat &lt;&lt; EOF &gt; create_core.c
+int a (int *p)
+{
+	int y = *p;
+	return y;
+}
+int main (void)
+{
+	int *p = NULL;
+	*p = 0;         // 访问0地址，发生Segmentation fault错误
+	return a(p);
+}
+EOF
+$ gcc -Wall -g create_core.c -o create_core
+$ ./create_core
+Segmentation fault (core dumped)
+</code></pre><p>也可以通过 API 进行设置，不过此时编译之后，在运行时需要 root 权限。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;stdio.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;unistd.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;sys/resource.h&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#define CORE_SIZE   1024 * 1024 * 500
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=kt>int</span> <span class=nf>main</span><span class=p>(</span><span class=kt>void</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>struct</span> <span class=n>rlimit</span> <span class=n>rlmt</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>getrlimit</span><span class=p>(</span><span class=n>RLIMIT_CORE</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>rlmt</span><span class=p>)</span> <span class=o>==</span> <span class=o>-</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;Before set rlimit CORE dump current is:%d, max is:%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_cur</span><span class=p>,</span> <span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_max</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_cur</span> <span class=o>=</span> <span class=p>(</span><span class=kt>rlim_t</span><span class=p>)</span><span class=n>CORE_SIZE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_max</span>  <span class=o>=</span> <span class=p>(</span><span class=kt>rlim_t</span><span class=p>)</span><span class=n>CORE_SIZE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>setrlimit</span><span class=p>(</span><span class=n>RLIMIT_CORE</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>rlmt</span><span class=p>)</span> <span class=o>==</span> <span class=o>-</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=nf>getrlimit</span><span class=p>(</span><span class=n>RLIMIT_CORE</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>rlmt</span><span class=p>)</span> <span class=o>==</span> <span class=o>-</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=nf>printf</span><span class=p>(</span><span class=s>&#34;After set rlimit CORE dump current is:%d, max is:%d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_cur</span><span class=p>,</span> <span class=p>(</span><span class=kt>int</span><span class=p>)</span><span class=n>rlmt</span><span class=p>.</span><span class=n>rlim_max</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kt>int</span> <span class=o>*</span><span class=n>ptr</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>  <span class=c1>// 测试非法内存，产生core文件
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=o>*</span><span class=n>ptr</span> <span class=o>=</span> <span class=mi>10</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>在调试时可以通过 <code>gdb program core-file</code> 调试，当然编译时，需要加上调试信息 <code>-g</code>。</p><pre tabindex=0><code>$ gdb core_demo core_demo.core.24816
+...
+Core was generated by &#39;./core_demo&#39;.
+Program terminated with signal 11, Segmentation fault.
+#0  0x080483cd in func (p=0x0) at core_demo.c:5
+5       int y = *p;
+(gdb)  where                        # 或者backtrace
+#0  0x080483cd in func (p=0x0) at core_demo.c:5
+#1  0x080483ef in main () at core_demo.c:12
+(gdb) info frame
+Stack level 0, frame at 0xffd590a4:
+ eip = 0x80483cd in func (core_demo.c:5); saved eip 0x80483ef
+ called by frame at 0xffd590c0
+ source language c.
+ Arglist at 0xffd5909c, args: p=0x0
+ Locals at 0xffd5909c, Previous frame&#39;s sp is 0xffd590a4
+ Saved registers:
+  ebp at 0xffd5909c, eip at 0xffd590a0
+</code></pre><p>从上面可以看出，可以还原 <code>core_demo</code> 执行时的场景，使用 <code>where</code> 或者 <code>backtrace</code> 查看当前程序调用函数栈帧，来定位 <code>core dump</code> 的文件行，还可以查看寄存器、变量等信息。</p><p>也可以通过如下方式查看。</p><pre tabindex=0><code>$ gdb -c core_demo.core.24816 core_demo
+$ gdb core_demo
+(gdb) core core_demo.core
+</code></pre><h1 id=debuginfo>debuginfo <a href=#debuginfo class=anchor aria-hidden=true>#</a></h1><p>一般线上生成的文件会删除 Debug、符号表信息，但是一旦有问题了，例如发生了 CoreDump ，那么就需要使用符号表了。</p><p>使用 <code>file test</code> 命令查看时，会显示改文件为 <code>not stripped</code> ，当通过 <code>nm test</code> 查看时会发现一堆的符号，或者通过 <code>readelf -S test</code> 查看。</p><p>为了能够使用 <code>gdb</code> 跟踪调试程序，需要在编译期使用 <code>-g</code> 选项；而对于系统库或是 Linux 内核，使用 <code>gdb</code> 调试或使用 <code>systemtap</code> 探测时，还需要安装相应的 <code>debuginfo</code> 包。</p><p>例如 <code>glibc</code> 及它的 <code>debuginfo</code> 包。</p><pre tabindex=0><code># yum --enablerep=base-debuginfo install glibc-debuginfo
+
+$ rpm -qa | grep glibc
+glibc-2.17-157.el7_3.1.x86_64
+glibc-debuginfo-2.17-157.el7_3.1.x86_64
+</code></pre><p>接下来，我们看看 <code>debuginfo</code> 包中包含了那些信息，该包是如何制作的，而且 <code>glibc</code> 和 <code>debuginfo</code> 是如何关联起来的。</p><h2 id=包含信息>包含信息 <a href=#%e5%8c%85%e5%90%ab%e4%bf%a1%e6%81%af class=anchor aria-hidden=true>#</a></h2><p>首先看看 <code>glibc-debuginfo</code> 包中包含有什么内容。</p><pre tabindex=0><code>$ rpm -ql glibc-debuginfo
+/usr/lib/debug
+/usr/lib/debug/.build-id
+/usr/lib/debug/.build-id/00
+/usr/lib/debug/.build-id/00/98d7f56d263e087a1abad592e81e3e79e26652
+/usr/lib/debug/.build-id/00/98d7f56d263e087a1abad592e81e3e79e26652.debug
+... ...
+/usr/lib/debug/lib64
+/usr/lib/debug/lib64/ld-2.17.so.debug
+/usr/lib/debug/lib64/ld-linux-x86-64.so.2.debug
+/usr/lib/debug/lib64/libBrokenLocale-2.17.so.debug
+/usr/lib/debug/lib64/libBrokenLocale.so.1.debug
+... ...
+/usr/src/debug/glibc-2.17-c758a686
+/usr/src/debug/glibc-2.17-c758a686/argp
+/usr/src/debug/glibc-2.17-c758a686/argp/argp-ba.c
+/usr/src/debug/glibc-2.17-c758a686/argp/argp-eexst.c
+/usr/src/debug/glibc-2.17-c758a686/argp/argp-fmtstream.c
+... ...
+</code></pre><p>可以看出 <code>glibc-debuginfo</code> 大致有三类文件：</p><ol><li>存放在 <code>/usr/lib/debug/</code> 下的 <code>.build-id/nn/nnn...nnn.debug</code> 文件，文件名是 hash key 。</li><li>存放在 <code>/usr/lib/debug/</code> 下的其它 <code>*.debug</code> 文件，其文件名，是库文件名+<code>.debug</code> 后缀。</li><li><code>glibc</code> 的源代码。</li></ol><p>当使用 <code>gdb</code> 调试时，需要在机器码与源代码之间，建立起映射关系，这就需要三个信息：</p><ul><li>机器码：可执行文件、动态链接库，例如上面的 <code>/lib64/libc-2.18.so</code>；</li><li>源代码：显然就是 <code>glibc-debuginfo</code> 中，包含的 <code>*.c</code> 和 <code>*.h</code> 等源文件；</li><li>映射关系：也就是保存在 <code>*.debug</code> 文件中的信息。</li></ul><h2 id=如何生成>如何生成 <a href=#%e5%a6%82%e4%bd%95%e7%94%9f%e6%88%90 class=anchor aria-hidden=true>#</a></h2><p>通过 <code>gcc -g</code> 编译时，默认机器码与源代码的映射关系会与可执行程序、动态链接库合并在一起；但是这样就导致文件特别大，而对于普通用户来说是不需要的。</p><p>正是了为解决这个问题，在 Linux 上的各种程序和库，在生成 RPM 时，就已经把 debuginfo 单独的抽取出来，因此形成了独立的 debuginfo 包。</p><pre tabindex=0><code>$ cat &lt;&lt; EOF &gt; foobar.c
+#include &lt;stdio.h&gt;
+int main(void)
+{
+	printf(&#34;Hello World!!!\n&#34;);
+	return 0;
+}
+EOF
+
+----- 其中参数-ggdb生成gdb格式调试信息
+$ gcc -ggdb foobar.c -o foobar
+----- 查看段信息，有一堆的.debug段
+$ readelf -S foobar
+
+----- 删除.debug段的信息，符号表和字符串还在，调试仍可以查看符号信息
+$ strip --strip-debug foobar
+----- 同时删除.symtab和.strtab，默认的操作
+$ strip --strip-all foobar
+
+----- 创建一个包含debuginfo的文件
+$ objcopy --only-keep-debug foobar foobar.debug
+----- 添加一个包含路径文件的.gnu_debuglink section，注意执行时文件必须存在
+$ objcopy --add-gnu-debuglink=foobar.debug foobar
+
+----- 或者一步到位
+$ eu-strip foobar -f foobar.debug
+
+----- 查看新添加的.gnu_debuglink section 
+$ objdump -s -j .gnu_debuglink test
+
+----- 清除原执行文件中的调试信息，如下两个操作相同
+$ objcopy --strip-debug foobar
+$ strip --strip-debug foobar
+
+----- 此时尝试加载调试符号时会报错
+$ gdb foobar
+GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-94.el7
+... ...
+Reading symbols from /tmp/foobar...(no debugging symbols found)...done.
+(gdb)
+
+----- 当然，现在可以指定gdb需要加载的debuginfo即可，如下两者相同
+$ gdb foobar -s foobar.debug
+$ gdb
+(gdb) file foobar
+(gdb) symbol-file foobar.debug
+</code></pre><p>显然，<code>gdb</code> 现在无法找到调试信息了；我们需要告诉 <code>gdb</code> 如何正确地找到它对应的 <code>debug</code> 文件，也就是上述的 <code>foobar.debug</code> 文件。</p><p>对于 Linux 下的 ELF(Executable and Linkable Format) 格式文件，可以通过一个 <code>.gnu_debuglink</code> 段来保存信息，可通过 <code>objcopy --add-gnu-debuglink</code> 添加。</p><pre tabindex=0><code>----- 添加一个包含路径文件的.gnu_debuglink section
+$ objcopy --add-gnu-debuglink=foobar.debug foobar
+
+----- 查看.gnu_debuglink section
+$ objdump -s -j .gnu_debuglink foobar
+foobar:     file format elf64-x86-64
+Contents of section .gnu_debuglink:
+ 0000 666f6f62 61722e64 65627567 00000000  foobar.debug....
+ 0010 ba8924f6
+
+----- 现在可以直接调试了
+$ gdb foobar
+GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-94.el7
+... ...
+Reading symbols from /tmp/test/foobar...Reading symbols from /tmp/test/foobar.debug...done.
+done.
+(gdb)
+</code></pre><p>上面的 <code>objcopy</code> 是把 <code>foobar.debug</code> 的文件名以及这个文件的 <code>CRC</code> 校验码，写到了<code>.gnu_debuglink</code> 这个 ELF 的头部值中，但是并没有告诉 <code>foobar.debug</code> 所在的路径。</p><h2 id=搜索路径>搜索路径 <a href=#%e6%90%9c%e7%b4%a2%e8%b7%af%e5%be%84 class=anchor aria-hidden=true>#</a></h2><p>在 Linux 中，在编译时会根据时间戳生成 <code>build-id</code>，并保存到 <code>gnu.build-id section</code> 中；可以通过如下命令查看 <code>"gnu.build-id" section</code> 信息。</p><pre tabindex=0><code>$ readelf -n foobar
+$ readelf -t foobar |grep build-id
+$ readelf --wide --sections foobar |grep build
+$ objdump -s -j .note.gnu.build-id foobar
+</code></pre><p>而 gdb 默认会搜索指定目录 (<code>show debug-file-directory</code>) 下与 <code>build-id</code> 关联的 <code>.debug</code> 文件。默认 <code>gdb</code> 搜索的文件名为 <code>NN/N...N.debug</code>, 前两个 <code>NN</code> 就是 <code>build-id</code> 前两位，后面的 <code>N...N</code> 则是 <code>build-id</code> 的剩余部分，只是改了个文件名而已。</p><p>而 <code>gdb</code> 则是通过下面的顺序查找 <code>foobar.debug</code> 文件：</p><pre tabindex=0><code>1. &lt;global debug directory&gt;/.build-id/nn/nnnn...nnnn.foobar.debug
+2. &lt;the path of foobar&gt;/foobar.debug
+3. &lt;the path of foobar&gt;/.debug/foobar.debug
+4. &lt;global debug directory&gt;/&lt;the patch of foobar&gt;/foobar.debug
+</code></pre><p>而 <code>&lt;global debug directory></code> 默认为 <code>/usr/lib/debug/</code>；可以通过 <code>set/show debug-file-directory</code> 命令来设置或查看这个值。</p><pre tabindex=0><code>(gdb) show debug-file-directory
+(gdb) set debug-file-directory PATH
+</code></pre><p>假设 <code>foobar</code> 的 <code>Build ID</code> 为 <code>3bda624ab466b7725faaf5cde424a5674a741c5d</code>，可将 <code>foobar.debug</code> 文件移动到 <code>/usr/lib/debug/.build-id/3b/da624ab466b7725faaf5cde424a5674a741c5d.debug</code> 。</p><p><code>foobar.debug</code> 默认会采用 <code>DWARF 4</code> 格式来保存调试信息，可以通过 <code>readelf -w foobar.debug</code> 来查看 <code>DWARF</code> 的内容；详见 <a href=http://dwarfstd.org/doc/DWARF4.pdf>DWARF Debugging Information Format Version 4</a> 。</p><p>如下是放置到默认路径下的一个示例：</p><pre tabindex=0><code>----- 查看二进制文件的BuildID，并添加默认目录下
+$ readelf -n test | grep Build
+    Build ID: e380efb0fe7873bcc96506035e8640a365b29ef4
+$ mkdir -p /usr/lib/debug/.build-id/e3
+$ mv test.debug /usr/lib/debug/.build-id/e3/80efb0fe7873bcc96506035e8640a365b29ef4.debug
+
+----- 查看当前debuginfo默认搜索目录，可通过set debug-file-directory path重新指定
+(gdb) show debug-file-directory
+The directory where separate debug symbols are searched for is &#34;/usr/lib/debug&#34;.  
+----- 会自动加载debuginfo文件
+(gdb) file test
+</code></pre><h2 id=生成marker探针>生成Marker探针 <a href=#%e7%94%9f%e6%88%90marker%e6%8e%a2%e9%92%88 class=anchor aria-hidden=true>#</a></h2><p>通过 <code>gcc -g</code> 命令，所有函数名都会自动的生成相应的 <code>debuginfo</code>，供 <code>systemtap</code> 进行探测， 其局限性在于，只能收集到函数调用的初始时刻、以及函数返回的结束时刻的上下文信息。</p><p>为了解决这个问题，又提出了一种新方法 <code>Compiled-in instrumentation</code>，可以把探针安插到指定的某行代码中，从而可以收集到那行代码执行时的上下文信息，这种探针被称为 <code>Marker</code> 探针。</p><p>编写 <code>Marker</code> 探针，示例如下：</p><pre tabindex=0><code>#include &lt;sys/sdt.h&gt;
+DTRACE_PROBE(provider, name)
+DTRACE_PROBE4(provider, name, arg1, arg2, arg3, arg4)
+</code></pre><p>写好 <code>Marker</code> 探针并成功编译后，可以使用下面的 <code>systemtap</code> 指令来查看 <code>Marker</code> 探针是否生效。</p><pre tabindex=0><code>stap -L &#39;process(&#34;/path/to/foobar&#34;).mark(&#34;*&#34;)&#39;
+</code></pre><p>详细可以参考 <a href=https://sourceware.org/systemtap/wiki/AddingUserSpaceProbingToApps>Adding User Space Probing to an Application (heapsort example)</a> 。</p><h1 id=其它>其它 <a href=#%e5%85%b6%e5%ae%83 class=anchor aria-hidden=true>#</a></h1><pre tabindex=0><code>----- 查找core文件，以及文件类型
+# find $HOME -name &#34;core*&#34;
+/home/oli/core.6440
+# file core
+core:      ELF 32-bit LSB core file Intel 80386, version 1 (SYSV), SVR4-style
+
+----- 查看是那个进程信息
+# strings core.6440 | head
+</code></pre><p>可以在 <code>core_pattern</code> 中加入管道符，然后调用用户程序，例如将转储文件压缩。</p><pre tabindex=0><code># echo &#34;|/usr/local/sbin/core_helper %e %p %t&#34; &gt; /proc/sys/kernel/core_pattern
+
+$ cat /usr/local/sbin/core_helper
+#!/bin/sh
+exec gzip - &gt; /var/$1-$2-$3.core.gz
+$ gunzip -c /var/xxx-xxx-xxx.core.gz &gt; ~/xxx-xxx-xxx.core
+</code></pre><p>可以将 <code>ulimit -S -c unlimited > /dev/null 2>&amp;1</code> 使用户登陆时即可以设置转储功能。默认内核会转储共享内存，可以设置排除共享内存。</p><h2 id=mysql>MySQL <a href=#mysql class=anchor aria-hidden=true>#</a></h2><p>对于一般进程，要让进程崩溃时能生成 <code>core file</code> 用于调试，只需要设置 <code>rlimit</code> 的 <code>core file size > 0</code> 即可；比如，用在 <code>ulimit -c unlimited</code> 时启动程序。</p><p>对 MySQL 来说，由于 <code>core file</code> 中会包含表空间的数据，所以默认情况下为了安全，<code>mysqld</code> 捕获了 <code>SEGV</code> 等信号，崩溃时并不会生成 <code>core file</code>，需要在 <code>my.cnf</code> 或启动参数中加上 <code>core-file</code> 。</p><pre tabindex=0><code>[mysqld]
+core_file = ON
+</code></pre><p>但是即使做到了以上两点，在 <code>mysqld crash</code> 时可能还是无法 <code>core dump</code> 。</p><p>如果程序通过 <code>seteuid()/setegid()</code> 系统调用，改变了进程的有效用户或组，则在默认情况下系统不会为这些进程生成 CoreDump 。简单来说，如果你当初是以用户 <code>A</code> 运行了某个程序，但在 <code>ps</code> 里看到的这个程序的用户却是 <code>B</code> 的话，那么这些进程就是调用了 <code>seteuid</code> 了。</p><p>对于 MySQL 来说，无论通过什么用户利用 <code>mysqld_safe</code> 启动，<code>mysqld</code> 的有效用户始终是 <code>mysql</code> 用户；为了能让 MySQL 生成 <code>core dump</code>，需要设置 <code>/proc/sys/fs/suid_dumpable</code> 文件的内容改为 <code>1</code> 。</p><p>之后，就可以用 <code>kill -SEGV</code> 让 <code>mysqld</code> 崩溃，测试一下能不能正常产生 <code>core file</code> 了。</p><h1 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h1><ul><li>关于 Core Dump 的常用命令可以参考 <a href=http://www.fromdual.com/hunting-the-core>Hunting the core</a> 。</li><li>对于如何分离 debuginfo 文件可以参考 <a href=https://sourceware.org/gdb/onlinedocs/gdb/Separate-Debug-Files.html>Debugging Information in Separate Files</a> 。</li><li>在 CentOS 中，对应的 debuginfo 信息可以直接从 <a href=http://debuginfo.centos.org/7/x86_64/>CentOS DebugInfo</a> 。</li></ul></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/rust-standard-library/>Rust 常用标准库介绍</a></li><li><a class=text-body href=/cn/blog/rust-basic-introduce/>Rust 基本介绍</a></li><li><a class=text-body href=/cn/blog/bash-pitfalls/>Bash 使用常见错误以及规避措施</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>

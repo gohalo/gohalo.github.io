@@ -1,0 +1,955 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Rust Tokio 简介 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=canonical href=https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/","url":"https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/","name":"Rust Tokio 简介","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2023-12-16T20:45:52CET","dateModified":"2023-12-16T20:45:52CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"Rust Tokio 简介","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/"},"datePublished":"2023-12-16T20:45:52CET","dateModified":"2023-12-16T20:45:52CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/rust-async-tokio-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"Rust Tokio 简介"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
+<span>页面目录</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#示例>示例</a></li><li><a href=#任务调度>任务调度</a></li></ul></li><li><a href=#runtime>Runtime</a><ul><li><a href=#spawn>Spawn</a></li><li><a href=#parkunpark>Park/Unpark</a></li></ul></li><li><a href=#future>Future</a><ul><li><a href=#leaffuture>LeafFuture</a></li><li><a href=#io>IO</a></li><li><a href=#sleep>Sleep</a></li></ul></li><li><a href=#调用队列>调用队列</a></li><li><a href=#源码解析>源码解析</a><ul><li><a href=#task>Task</a></li></ul></li><li><a href=#其它>其它</a></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#示例>示例</a></li><li><a href=#任务调度>任务调度</a></li></ul></li><li><a href=#runtime>Runtime</a><ul><li><a href=#spawn>Spawn</a></li><li><a href=#parkunpark>Park/Unpark</a></li></ul></li><li><a href=#future>Future</a><ul><li><a href=#leaffuture>LeafFuture</a></li><li><a href=#io>IO</a></li><li><a href=#sleep>Sleep</a></li></ul></li><li><a href=#调用队列>调用队列</a></li><li><a href=#源码解析>源码解析</a><ul><li><a href=#task>Task</a></li></ul></li><li><a href=#其它>其它</a></li><li><a href=#参考>参考</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>Rust Tokio 简介</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2023-12-16</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/rust/ role=button>rust</a>
+<a class="btn btn-light" href=https://gohalo.github.io/tags/program/ role=button>program</a></div></div><hr><div class=content-body><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>使用时在 <code>Cargo.toml</code> 的 <code>[dependencies]</code> 配置中添加 <code>tokio = "1.36.0"</code> 配置项即可，不过建议开始使用 <code>tokio = { version = "1.36.0", features = ["full"] }</code>，否则可能会报 <code>main function is not allowed to be async</code> 的错误。</p><p>在熟悉之后可以选择所需的特性，从而减少编译时间以及大小。</p><p>实现 Rust 异步核心包含了如下部分：</p><ul><li><code>Future</code> 一个零成本异步任务的 <code>trait</code> 定义，可暂停的异步任务，封装了异步计算的逻辑。</li><li><code>Executor</code> 当 <code>Future</code> 就绪后，用来调度 <code>Futures</code> 运行。</li><li><code>EventSources</code> 唤醒对应 <code>Future</code> 开始继续运行，对于异步 IO 来说通常称为 <code>Reactor</code> 。</li></ul><p>当 Future 被调度到 Executor 执行时，会包含如下三个阶段：</p><ul><li><code>Poll</code> 执行器调用 <code>Future</code> 执行，直到 <code>Future</code> 被阻塞。</li><li><code>Wait</code> 此时 <code>Future</code> 会返回 <code>Poll::Pending</code>，接着由 <code>Reactor</code> 进行跟踪，当等待事件到来时会唤醒。</li><li><code>Wake</code> 事件触发相应 <code>Future</code>，接着会被执行器再次调度执行。</li></ul><p>通过 <code>Executor</code> 和 <code>Reactor</code> 的组合就对应了所谓的 <code>Event Loop</code> 实现，只是 Rust 并未绑定到某个具体实现。</p><h2 id=示例>示例 <a href=#%e7%a4%ba%e4%be%8b class=anchor aria-hidden=true>#</a></h2><p>在源码的 <code>examples</code> 目录下有很多相关的示例代码，这里以 <code>hello_world.rs</code> 为例。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=k>use</span><span class=w> </span><span class=n>tokio</span>::<span class=n>io</span>::<span class=n>AsyncWriteExt</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>use</span><span class=w> </span><span class=n>tokio</span>::<span class=n>net</span>::<span class=n>TcpStream</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>use</span><span class=w> </span><span class=n>std</span>::<span class=n>error</span>::<span class=n>Error</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=cp>#[tokio::main]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>pub</span><span class=w> </span><span class=k>async</span><span class=w> </span><span class=k>fn</span> <span class=nf>main</span><span class=p>()</span><span class=w> </span>-&gt; <span class=nb>Result</span><span class=o>&lt;</span><span class=p>(),</span><span class=w> </span><span class=nb>Box</span><span class=o>&lt;</span><span class=k>dyn</span><span class=w> </span><span class=n>Error</span><span class=o>&gt;&gt;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>let</span><span class=w> </span><span class=k>mut</span><span class=w> </span><span class=n>stream</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>TcpStream</span>::<span class=n>connect</span><span class=p>(</span><span class=s>&#34;127.0.0.1:6142&#34;</span><span class=p>).</span><span class=k>await</span><span class=o>?</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=fm>println!</span><span class=p>(</span><span class=s>&#34;created stream&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>let</span><span class=w> </span><span class=n>result</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>stream</span><span class=p>.</span><span class=n>write_all</span><span class=p>(</span><span class=sa>b</span><span class=s>&#34;hello world</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>).</span><span class=k>await</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=fm>println!</span><span class=p>(</span><span class=s>&#34;wrote to stream; success=</span><span class=si>{:?}</span><span class=s>&#34;</span><span class=p>,</span><span class=w> </span><span class=n>result</span><span class=p>.</span><span class=n>is_ok</span><span class=p>());</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nb>Ok</span><span class=p>(())</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><p>在上述示例中，增加了 <code>$[tokio::main]</code> 之后，实际上等价于如下实现。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=n>tokio</span>::<span class=n>runtime</span>::<span class=n>Builder</span>::<span class=n>new_multi_thread</span><span class=p>()</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=p>.</span><span class=n>worker_threads</span><span class=p>(</span><span class=n>N</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=p>.</span><span class=n>enable_all</span><span class=p>()</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=p>.</span><span class=n>build</span><span class=p>()</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=p>.</span><span class=n>unwrap</span><span class=p>()</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=p>.</span><span class=n>block_on</span><span class=p>(</span><span class=k>async</span><span class=w> </span><span class=p>{</span><span class=w> </span><span class=o>..</span><span class=p>.</span><span class=w> </span><span class=p>});</span><span class=w>
+</span></span></span></code></pre></div><p>如下以简单的休眠为例，其中的 <code>Duration</code> 是 <code>std::time</code> 中的别名，可以直接使用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=k>use</span><span class=w> </span><span class=n>tokio</span>::<span class=n>time</span>::<span class=p>{</span><span class=n>sleep_until</span><span class=p>,</span><span class=w> </span><span class=n>Instant</span><span class=p>,</span><span class=w> </span><span class=n>Duration</span><span class=p>};</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=cp>#[tokio::main]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>async</span><span class=w> </span><span class=k>fn</span> <span class=nf>main</span><span class=p>()</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>sleep_until</span><span class=p>(</span><span class=n>Instant</span>::<span class=n>now</span><span class=p>()</span><span class=w> </span><span class=o>+</span><span class=w> </span><span class=n>Duration</span>::<span class=n>from_millis</span><span class=p>(</span><span class=mi>100</span><span class=p>)).</span><span class=k>await</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=fm>println!</span><span class=p>(</span><span class=s>&#34;100 ms have elapsed&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><h2 id=任务调度>任务调度 <a href=#%e4%bb%bb%e5%8a%a1%e8%b0%83%e5%ba%a6 class=anchor aria-hidden=true>#</a></h2><p>可以通过 <code>spawn()</code> 调度新任务，包含了 <code>tokio::runtime::Runtime</code> 和 <code>tokio::task</code> 两种方式，使用方式如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=k>use</span><span class=w> </span><span class=n>std</span>::<span class=n>thread</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>use</span><span class=w> </span><span class=n>std</span>::<span class=n>time</span>::<span class=n>Duration</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>fn</span> <span class=nf>main</span><span class=p>()</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>let</span><span class=w> </span><span class=n>rt</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>tokio</span>::<span class=n>runtime</span>::<span class=n>Runtime</span>::<span class=n>new</span><span class=p>().</span><span class=n>unwrap</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>rt</span><span class=p>.</span><span class=n>spawn</span><span class=p>(</span><span class=k>async</span><span class=w> </span><span class=k>move</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=fm>println!</span><span class=p>(</span><span class=s>&#34;Printing in a future (L1).&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>tokio</span>::<span class=n>time</span>::<span class=n>sleep</span><span class=p>(</span><span class=n>Duration</span>::<span class=n>from_secs</span><span class=p>(</span><span class=mi>1</span><span class=p>)).</span><span class=k>await</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=fm>println!</span><span class=p>(</span><span class=s>&#34;Printing in a future (L2).&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>});</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>thread</span>::<span class=n>sleep</span><span class=p>(</span><span class=n>Duration</span>::<span class=n>from_secs</span><span class=p>(</span><span class=mi>2</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=fm>println!</span><span class=p>(</span><span class=s>&#34;Runtime terminated.&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><p>通过 <code>Builder</code> 会返回 <code>runtime</code> 对象，然后在 <code>block_on()</code> 中等待异步任务完成，注意，这只是等待对应任务，并非是等待 <code>runtime</code> 中的所有任务执行完成，因为这里是在 <code>main</code> 函数，所以基本上也等价。</p><p>也可以将上述的 <code>rt.spawn()</code> 更换为 <code>rt.block_on()</code> 阻塞执行，这样就不需要在执行 <code>thread::sleep()</code> 了，然后修改 <code>spawn()</code> 的调用。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=k>use</span><span class=w> </span><span class=n>std</span>::<span class=n>time</span>::<span class=n>Duration</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>fn</span> <span class=nf>main</span><span class=p>()</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>let</span><span class=w> </span><span class=n>_rt</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>tokio</span>::<span class=n>runtime</span>::<span class=n>Runtime</span>::<span class=n>new</span><span class=p>().</span><span class=n>unwrap</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>tokio</span>::<span class=n>spawn</span><span class=p>(</span><span class=k>async</span><span class=w> </span><span class=k>move</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=fm>println!</span><span class=p>(</span><span class=s>&#34;Printing in a future (L1).&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>tokio</span>::<span class=n>time</span>::<span class=n>sleep</span><span class=p>(</span><span class=n>Duration</span>::<span class=n>from_secs</span><span class=p>(</span><span class=mi>1</span><span class=p>)).</span><span class=k>await</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=fm>println!</span><span class=p>(</span><span class=s>&#34;Printing in a future (L2).&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>});</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>thread</span>::<span class=n>sleep</span><span class=p>(</span><span class=n>Duration</span>::<span class=n>from_secs</span><span class=p>(</span><span class=mi>2</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=fm>println!</span><span class=p>(</span><span class=s>&#34;Runtime terminated.&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><p>此时会报 <code>there is no reactor running, must be called from the context of a Tokio 1.x runtime</code> 的错误，解决方法也很简单，需要显示通过 <code>let _guard = rt.enter()</code> 设置上下文。</p><h1 id=runtime>Runtime <a href=#runtime class=anchor aria-hidden=true>#</a></h1><p>在使用时需要提供异步运行时环境，创建的任务会在这个环境里运行，可以选择单线程或者多线程，而且可以同时存在。对于 IO 类型任务建议使用多线程，但是多线程间的通信会变的复杂，从而加重了线程间切换的开销，可能导致某些场景下性能可能降低。</p><p>用户态的协程实现是基于协作时的调度策略，详细可以参考 <a href=https://tokio.rs/blog/2019-10-scheduler>Making the Tokio scheduler 10x faster</a> 中的介绍。</p><p>在代码内部，会通过 <code>scheduler::Handle::current()</code> 获取当前 <code>Handle</code> 实现，相关代码调用逻辑如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=c1>// runtime/scheduler/mod.rs
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>use</span><span class=w> </span><span class=k>crate</span>::<span class=n>runtime</span>::<span class=n>context</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>impl</span><span class=w> </span><span class=n>Handle</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=k>fn</span> <span class=nf>current</span><span class=p>()</span><span class=w> </span>-&gt; <span class=nc>Handle</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>match</span><span class=w> </span><span class=n>context</span>::<span class=n>with_current</span><span class=p>(</span><span class=nb>Clone</span>::<span class=n>clone</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nb>Ok</span><span class=p>(</span><span class=n>handle</span><span class=p>)</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=n>handle</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nb>Err</span><span class=p>(</span><span class=n>e</span><span class=p>)</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=fm>panic!</span><span class=p>(</span><span class=s>&#34;</span><span class=si>{}</span><span class=s>&#34;</span><span class=p>,</span><span class=w> </span><span class=n>e</span><span class=p>),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>// runtime/context/current.rs
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=k>fn</span> <span class=nf>with_current</span><span class=o>&lt;</span><span class=n>F</span><span class=p>,</span><span class=w> </span><span class=n>R</span><span class=o>&gt;</span><span class=p>(</span><span class=n>f</span>: <span class=nc>F</span><span class=p>)</span><span class=w> </span>-&gt; <span class=nb>Result</span><span class=o>&lt;</span><span class=n>R</span><span class=p>,</span><span class=w> </span><span class=n>TryCurrentError</span><span class=o>&gt;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>where</span><span class=w> </span><span class=n>F</span>: <span class=nb>FnOnce</span><span class=p>(</span><span class=o>&amp;</span><span class=n>scheduler</span>::<span class=n>Handle</span><span class=p>)</span><span class=w> </span>-&gt; <span class=nc>R</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>match</span><span class=w> </span><span class=no>CONTEXT</span><span class=p>.</span><span class=n>try_with</span><span class=p>(</span><span class=o>|</span><span class=n>ctx</span><span class=o>|</span><span class=w> </span><span class=n>ctx</span><span class=p>.</span><span class=n>current</span><span class=p>.</span><span class=n>handle</span><span class=p>.</span><span class=n>borrow</span><span class=p>().</span><span class=n>as_ref</span><span class=p>().</span><span class=n>map</span><span class=p>(</span><span class=n>f</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nb>Ok</span><span class=p>(</span><span class=nb>Some</span><span class=p>(</span><span class=n>ret</span><span class=p>))</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=nb>Ok</span><span class=p>(</span><span class=n>ret</span><span class=p>),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nb>Ok</span><span class=p>(</span><span class=nb>None</span><span class=p>)</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=nb>Err</span><span class=p>(</span><span class=n>TryCurrentError</span>::<span class=n>new_no_context</span><span class=p>()),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nb>Err</span><span class=p>(</span><span class=n>_access_error</span><span class=p>)</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=nb>Err</span><span class=p>(</span><span class=n>TryCurrentError</span>::<span class=n>new_thread_local_destroyed</span><span class=p>()),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><p>其中 CONTEXT 是一个 TLS 变量，会在 <code>runtime.enter()[runtime/handle.rs]</code> 中通过 <code>context::try_set_current()</code> 设置指定的运行时，包括了如下几种：</p><ul><li><code>CurrentThread</code> 只在当前线程执行。</li><li><code>MultiThread</code> 允许在多个线程中执行，不过是空结构体，只作为标识。</li></ul><p>如下以 <code>MultiThread</code> 为例，从 <code>Builder</code> 开始，其构建过程的部分代码梳理如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=c1>// runtime/builder.rs
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>impl</span><span class=w> </span><span class=n>Builder</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>pub</span><span class=w> </span><span class=k>fn</span> <span class=nf>new_multi_thread</span><span class=p>()</span><span class=w> </span>-&gt; <span class=nc>Builder</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Builder</span>::<span class=n>new</span><span class=p>(</span><span class=n>Kind</span>::<span class=n>MultiThread</span><span class=p>,</span><span class=w> </span><span class=mi>61</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>pub</span><span class=w> </span><span class=k>fn</span> <span class=nf>enable_all</span><span class=p>(</span><span class=o>&amp;</span><span class=k>mut</span><span class=w> </span><span class=bp>self</span><span class=p>)</span><span class=w> </span>-&gt; <span class=kp>&amp;</span><span class=nc>mut</span><span class=w> </span><span class=bp>Self</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=bp>self</span><span class=p>.</span><span class=n>enable_io</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=bp>self</span><span class=p>.</span><span class=n>enable_time</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=bp>self</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>pub</span><span class=w> </span><span class=k>fn</span> <span class=nf>build</span><span class=p>(</span><span class=o>&amp;</span><span class=k>mut</span><span class=w> </span><span class=bp>self</span><span class=p>)</span><span class=w> </span>-&gt; <span class=nc>io</span>::<span class=nb>Result</span><span class=o>&lt;</span><span class=n>Runtime</span><span class=o>&gt;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>match</span><span class=w> </span><span class=o>&amp;</span><span class=bp>self</span><span class=p>.</span><span class=n>kind</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>Kind</span>::<span class=n>CurrentThread</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=bp>self</span><span class=p>.</span><span class=n>build_current_thread_runtime</span><span class=p>(),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=cp>#[cfg(all(feature = </span><span class=s>&#34;rt-multi-thread&#34;</span><span class=cp>, not(target_os = </span><span class=s>&#34;wasi&#34;</span><span class=cp>)))]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>Kind</span>::<span class=n>MultiThread</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=bp>self</span><span class=p>.</span><span class=n>build_threaded_runtime</span><span class=p>(),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=cp>#[cfg(all(tokio_unstable, feature = </span><span class=s>&#34;rt-multi-thread&#34;</span><span class=cp>, not(target_os = </span><span class=s>&#34;wasi&#34;</span><span class=cp>)))]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>Kind</span>::<span class=n>MultiThreadAlt</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=bp>self</span><span class=p>.</span><span class=n>build_alt_threaded_runtime</span><span class=p>(),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><pre tabindex=0><code>// runtime/runtime.rs 在 build_threaded_runtime()[runtime/builder.rs] 中创建 
+pub struct Runtime {
+    scheduler: Scheduler,  // 在 build_threaded_runtime() 中通过 enum Scheduler[runtime/runtime.rs] 进行了简单封装，用于区分不同的运行态
+    handle: Handle,  // 在 build_threaded_runtime() 中对 MultiThread::new()[multi/mod.rs] 创建对象进行封装
+    blocking_pool: BlockingPool,
+}
+pub(super) enum Scheduler {
+    CurrentThread(CurrentThread),
+    MultiThread(MultiThread),  // 内部封装内容在 build_threaded_runtime() 中通过 MultiThread::new()[multi/mod.rs] 创建
+    MultiThreadAlt(MultiThreadAlt),
+}
+// runtime/handle.rs
+pub struct Handle {
+    pub(crate) inner: scheduler::Handle,
+}
+// runtime/scheduler/mod.rs
+pub(crate) enum Handle {
+    CurrentThread(Arc&lt;current_thread::Handle&gt;),
+    MultiThread(Arc&lt;multi_thread::Handle&gt;),
+    MultiThreadAlt(Arc&lt;multi_thread_alt::Handle&gt;),
+    Disabled,
+}
+</code></pre><p>如上，Runtime 实际上经过了几次封装，最终才到了 MultiThread 的实现。</p><p>调用流程如下，在 build_threaded_runtime() 里有个 enter() + launch() 操作，这里会启动线程开始执行</p><pre tabindex=0><code>Builder::build_threaded_runtime()[runtime/builder.rs]
+ |-driver::Driver::new()[runtime/driver.rs]
+ |-blocking::create_blocking_pool()[runtime/blocking/mod.rs]
+ | |-BlockingPool::new()[runtime/blocking/pool.rs]
+ |-MultiThread::new()[runtime/scheduler/multi_thread/mod.rs]
+ | |-Parker::new()[runtime/scheduler/multi_thread/park.rs]
+ | |-worker::create()[runtime/scheduler/multi_thread/worker.rs] 这里会新建Core数量线程并启动
+ |   |-queue::local()[runtime/scheduler/multi_thread/queue.rs] 创建本地队列
+ |   |-OwnedTasks::new()
+ |-scheduler::Handle::MultiThread()[runtime/scheduler/multi_thread/mod.rs] 这里会新建一个Handle对象
+ |-Handle::enter()[runtime/handle.rs]
+ | |-try_set_current()[runtime/context/current.rs] 设置运行上下文
+ |-Launch::launch()
+ | |-runtime::spawn_blocking() 这里会遍历 drain 所有的 workers 执行该函数，
+ |-Runtime::from_parts()[runtime/runtime.rs] 这里会通过Scheduler
+
+OwnedTasks/LocalOwnedTasks::bind()[runtime/task/list.rs]
+new_task()[runtime/task/mod.rs] 这里会对 RawTask 进行封装，生成 Task、Notified、JoinHandle 几个变量
+ |-RawTask::new()[runtime/task/raw.rs]
+ | |-Cell::new()[runtime/task/core.rs] 在 Cell 中会包含 Header、Core、Trailer 三个核心部分，同样包含了 poll() 的实现
+ |-JoinHandle::new()[runtime/task/join.rs]
+
+
+这里的 Core::poll() 会执行 Future 的 poll 操作，
+修改状态时通过 Harness Lifecycle 进行加锁。
+Core.poll() runtime/task/core.rs
+pub(super) fn poll(&amp;self, mut cx: Context&lt;&#39;_&gt;) -&gt; Poll&lt;T::Output&gt; {
+</code></pre><p>如上，对于 <code>MultiThread</code> 来说，通过 <code>scheduler::Handle::current()</code> 返回的就是 <code>runtime/scheduler/multi_thread/handle.rs</code> 中的 <code>Handle</code> 实现了，一般会再调用 <code>handle.driver().io() handle.driver().signal()</code> 等函数实现，这样又会返回到 <code>runtime/driver.rs</code> 中的 <code>Handle</code> 实现。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=c1>// src/runtime/scheduler/mod.rs
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#[derive(Debug, Clone)]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=k>enum</span> <span class=nc>Handle</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=cp>#[cfg(feature = </span><span class=s>&#34;rt&#34;</span><span class=cp>)]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>CurrentThread</span><span class=p>(</span><span class=n>Arc</span><span class=o>&lt;</span><span class=n>current_thread</span>::<span class=n>Handle</span><span class=o>&gt;</span><span class=p>),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=cp>#[cfg(all(feature = </span><span class=s>&#34;rt-multi-thread&#34;</span><span class=cp>, not(target_os = </span><span class=s>&#34;wasi&#34;</span><span class=cp>)))]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>MultiThread</span><span class=p>(</span><span class=n>Arc</span><span class=o>&lt;</span><span class=n>multi_thread</span>::<span class=n>Handle</span><span class=o>&gt;</span><span class=p>),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=cp>#[cfg(all(tokio_unstable, feature = </span><span class=s>&#34;rt-multi-thread&#34;</span><span class=cp>, not(target_os = </span><span class=s>&#34;wasi&#34;</span><span class=cp>)))]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>MultiThreadAlt</span><span class=p>(</span><span class=n>Arc</span><span class=o>&lt;</span><span class=n>multi_thread_alt</span>::<span class=n>Handle</span><span class=o>&gt;</span><span class=p>),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=cp>#[cfg(not(feature = </span><span class=s>&#34;rt&#34;</span><span class=cp>))]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=cp>#[allow(dead_code)]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Disabled</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>// src/runtime/drivers.rs
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cp>#[derive(Debug)]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=k>struct</span> <span class=nc>Handle</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=sd>/// IO driver handle
+</span></span></span><span class=line><span class=cl><span class=sd></span><span class=w>    </span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=n>io</span>: <span class=nc>IoHandle</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=sd>/// Signal driver handle
+</span></span></span><span class=line><span class=cl><span class=sd></span><span class=w>    </span><span class=cp>#[cfg_attr(any(not(unix), loom), allow(dead_code))]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=n>signal</span>: <span class=nc>SignalHandle</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=sd>/// Time driver handle
+</span></span></span><span class=line><span class=cl><span class=sd></span><span class=w>    </span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=n>time</span>: <span class=nc>TimeHandle</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=sd>/// Source of `Instant::now()`
+</span></span></span><span class=line><span class=cl><span class=sd></span><span class=w>    </span><span class=cp>#[cfg_attr(not(all(feature = </span><span class=s>&#34;time&#34;</span><span class=cp>, feature = </span><span class=s>&#34;test-util&#34;</span><span class=cp>)), allow(dead_code))]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=n>clock</span>: <span class=nc>Clock</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><p>这里的 MultiThread 是一个空结构体，不占用任何内存空间，通常作为标识、占位使用。</p><p>内核退出则是通过 <code>Drop Runtime</code> 来实现的。</p><pre tabindex=0><code>Runtime::drop()[runtime/runtime.rs]
+ |-MultiThread::shutdown()[runtime/scheduler/multi_thread/mod.rs] 会根据Scheduler分别进行调度
+   |-Handle::shutdown()[runtime/scheduler/multi_thread/handle.rs]
+     |-Handle::close()[runtime/scheduler/multi_thread/worker.rs]
+       |-Shared::close()[runtime/scheduler/inject/shared.rs] 会将队列设置为 closed
+       |-Handle::notify_all()[runtime/scheduler/multi_thread/worker.rs] 通过调用 remotes 执行 unpark 参数
+</code></pre><p>关闭实际上是就是 runtime 已经不在对应生命周期内，会自动调用 drop() 接口，</p><h2 id=spawn>Spawn <a href=#spawn class=anchor aria-hidden=true>#</a></h2><p>如上有两种 <code>spawn()</code> 方式创建任务，分别通过 <code>tokio</code> 以及 <code>Runtime</code> 库，其中前者在 <code>tokio/src/lib.rs</code> 中有如下配置。</p><pre tabindex=0><code>pub mod task;
+cfg_rt! {
+    pub use task::spawn;
+}
+</code></pre><p>也就是实际实现在 <code>src/task/spawn.rs</code> 代码中。</p><pre tabindex=0><code>task::spawn()[task/spawn.rs] 这里会包含真正的 Future 实现
+ |-task::spawn_inner()
+   |-Handle::spawn() 这里会在 Context 上下文中执行
+</code></pre><p>后者的实现如下，最后殊途同归，这里以 MultiThread 为例。</p><pre tabindex=0><code>runtime/task/list.rs
+pub(crate) struct OwnedTasks&lt;S: &#39;static&gt; {
+    list: List&lt;S&gt;,
+    pub(crate) id: NonZeroU64,
+    closed: AtomicBool,
+}
+type List&lt;S&gt; = sharded_list::ShardedList&lt;Task&lt;S&gt;, &lt;Task&lt;S&gt; as Link&gt;::Target&gt;;
+
+util/sharded_list.rs
+pub(crate) struct ShardedList&lt;L, T&gt; {
+    lists: Box&lt;[Mutex&lt;LinkedList&lt;L, T&gt;&gt;]&gt;,  这里是根据Core创建的数组，数组中是List
+    count: AtomicUsize,
+    shard_mask: usize,
+}
+pub(crate) struct ShardGuard&lt;&#39;a, L, T&gt; {
+    lock: MutexGuard&lt;&#39;a, LinkedList&lt;L, T&gt;&gt;,
+    count: &amp;&#39;a AtomicUsize,
+    id: usize,
+}
+
+MultiThread::Handle::spawn()[multi/handle.rs]
+ |-MultiThread::Handle::bind_new_task() 这里会返回 JoinHandle
+   |-OwnedTasks::bind()[runtime/task/list.rs] 会通过 me.shared.owned.bind() 函数调用
+   | |-super::new_task()[runtime/task/mod.rs] 这里就是真正创建任务的过程了，返回的是 Notified 创建的对象
+   | | |-RawTask::new() runtime/task/raw.rs
+   | |-OwnedTasks::bind_inner()[runtime/task/list.rs] 会检查是否已经关闭
+   |   |-ShardedList::lock_shard()[util/sharded_list.rs] 这里会返回 ShardGuard 实现
+   |   |-ShardGuard::push()
+   |-MultiThread::Handle::schedule_option_task_without_yield()[runtime/task/list.rs] 这里对任务进行调度
+     |-MulitThread::Handle::schedule_task()[multi/worker.rs] 这里会在 with_current 中获取 Context 进行调度
+       |-Handle::schedule_task()[multi/worker.rs] 这里会在 with_current 中获取 Context 进行调度
+       |-Handle::schedule_local() 在本线程内创建
+       |-Handle::push_remote_task() 否则添加到全局任务队列中
+       |-Handle::notify_parked_remote()
+
+Handle::spawn_thread()[runtime/handle.rs] 这里应该是多线程创建运行线程的实现
+</code></pre><h2 id=parkunpark>Park/Unpark <a href=#parkunpark class=anchor aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=cp>#[derive(Debug)]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=k>struct</span> <span class=nc>ParkThread</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>inner</span>: <span class=nc>Arc</span><span class=o>&lt;</span><span class=n>Inner</span><span class=o>&gt;</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=sd>/// Unblocks a thread that was blocked by `ParkThread`.
+</span></span></span><span class=line><span class=cl><span class=sd></span><span class=cp>#[derive(Clone, Debug)]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=k>struct</span> <span class=nc>UnparkThread</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>inner</span>: <span class=nc>Arc</span><span class=o>&lt;</span><span class=n>Inner</span><span class=o>&gt;</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=cp>#[derive(Debug)]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>struct</span> <span class=nc>Inner</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>state</span>: <span class=nc>AtomicUsize</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>mutex</span>: <span class=nc>Mutex</span><span class=o>&lt;</span><span class=p>()</span><span class=o>&gt;</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>condvar</span>: <span class=nc>Condvar</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=cp>#[derive(Debug)]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=k>struct</span> <span class=nc>CachedParkThread</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>_anchor</span>: <span class=nc>PhantomData</span><span class=o>&lt;</span><span class=n>Rc</span><span class=o>&lt;</span><span class=p>()</span><span class=o>&gt;&gt;</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><p>实际上就是封装了一个 <code>Condvar</code> 实现内核级别的阻塞、唤醒。</p><h1 id=future>Future <a href=#future class=anchor aria-hidden=true>#</a></h1><p>之前已经介绍过，在类似 <code>Tokio</code> 这种的运行态中，需要实现对应的 <code>LeafFuture</code> 才行，如下是一个及其简单的 <code>Future</code> 实现，可以在 <code>Tokio</code> 中运行的简单实现，当超过指定时间之后输出 <code>Hello World</code> 信息。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=k>use</span><span class=w> </span><span class=n>std</span>::<span class=n>future</span>::<span class=n>Future</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>use</span><span class=w> </span><span class=n>std</span>::<span class=n>pin</span>::<span class=n>Pin</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>use</span><span class=w> </span><span class=n>std</span>::<span class=n>task</span>::<span class=p>{</span><span class=n>Context</span><span class=p>,</span><span class=w> </span><span class=n>Poll</span><span class=p>};</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>use</span><span class=w> </span><span class=n>std</span>::<span class=n>time</span>::<span class=p>{</span><span class=n>Duration</span><span class=p>,</span><span class=w> </span><span class=n>Instant</span><span class=p>};</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>struct</span> <span class=nc>Delay</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>when</span>: <span class=nc>Instant</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>impl</span><span class=w> </span><span class=n>Future</span><span class=w> </span><span class=k>for</span><span class=w> </span><span class=n>Delay</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>type</span> <span class=nc>Output</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=o>&amp;</span><span class=nb>&#39;static</span><span class=w> </span><span class=kt>str</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>fn</span> <span class=nf>poll</span><span class=p>(</span><span class=bp>self</span>: <span class=nc>Pin</span><span class=o>&lt;&amp;</span><span class=k>mut</span><span class=w> </span><span class=bp>Self</span><span class=o>&gt;</span><span class=p>,</span><span class=w> </span><span class=n>cx</span>: <span class=kp>&amp;</span><span class=nc>mut</span><span class=w> </span><span class=n>Context</span><span class=o>&lt;</span><span class=nb>&#39;_</span><span class=o>&gt;</span><span class=p>)</span><span class=w> </span>-&gt; <span class=nc>Poll</span><span class=o>&lt;&amp;</span><span class=nb>&#39;static</span><span class=w> </span><span class=kt>str</span><span class=o>&gt;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>if</span><span class=w> </span><span class=n>Instant</span>::<span class=n>now</span><span class=p>()</span><span class=w> </span><span class=o>&gt;=</span><span class=w> </span><span class=bp>self</span><span class=p>.</span><span class=n>when</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=fm>println!</span><span class=p>(</span><span class=s>&#34;Hello World!!!&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>Poll</span>::<span class=n>Ready</span><span class=p>(</span><span class=s>&#34;done&#34;</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w> </span><span class=k>else</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=c1>// Ignore this line for now.
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=w>            </span><span class=n>cx</span><span class=p>.</span><span class=n>waker</span><span class=p>().</span><span class=n>wake_by_ref</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>Poll</span>::<span class=n>Pending</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=cp>#[tokio::main]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>async</span><span class=w> </span><span class=k>fn</span> <span class=nf>main</span><span class=p>()</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>let</span><span class=w> </span><span class=n>when</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>Instant</span>::<span class=n>now</span><span class=p>()</span><span class=w> </span><span class=o>+</span><span class=w> </span><span class=n>Duration</span>::<span class=n>from_millis</span><span class=p>(</span><span class=mi>1000</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>let</span><span class=w> </span><span class=n>future</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>Delay</span><span class=w> </span><span class=p>{</span><span class=w> </span><span class=n>when</span><span class=w> </span><span class=p>};</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>let</span><span class=w> </span><span class=n>out</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>future</span><span class=p>.</span><span class=k>await</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=fm>assert_eq!</span><span class=p>(</span><span class=n>out</span><span class=p>,</span><span class=w> </span><span class=s>&#34;done&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><p>注意，此时会跑满单个 CPU 资源。</p><h2 id=leaffuture>LeafFuture <a href=#leaffuture class=anchor aria-hidden=true>#</a></h2><p>当在代码中调用 <code>let mut stream = TcpStream::connect(&amp;addr).await?;</code> 时，最终会生成类似如下的实现。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=kd>let</span><span class=w> </span><span class=k>mut</span><span class=w> </span><span class=n>stream</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>let</span><span class=w> </span><span class=k>mut</span><span class=w> </span><span class=n>future</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>TcpStream</span>::<span class=n>connect</span><span class=p>(</span><span class=o>&amp;</span><span class=n>addr</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>loop</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>match</span><span class=w> </span><span class=n>future</span><span class=p>.</span><span class=n>poll</span><span class=p>()</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nb>Ok</span><span class=p>(</span><span class=n>Async</span>::<span class=n>Ready</span><span class=p>(</span><span class=n>e</span><span class=p>))</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=k>break</span><span class=w> </span><span class=nb>Ok</span><span class=p>(</span><span class=n>e</span><span class=p>),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nb>Ok</span><span class=p>(</span><span class=n>Async</span>::<span class=n>NotReady</span><span class=p>)</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=kr>yield</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nb>Err</span><span class=p>(</span><span class=n>e</span><span class=p>)</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=k>break</span><span class=w> </span><span class=nb>Err</span><span class=p>(</span><span class=n>e</span><span class=p>),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=o>?</span><span class=p>;</span><span class=w>
+</span></span></span></code></pre></div><p>这里的 <code>TcpStream</code> 就是 Tokio 需要实现的底层 Future 代码。</p><h2 id=io>IO <a href=#io class=anchor aria-hidden=true>#</a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=c1>// src/net/tcp/stream.rs
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>pub</span><span class=w> </span><span class=k>struct</span> <span class=nc>TcpStream</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>io</span>: <span class=nc>PollEvented</span><span class=o>&lt;</span><span class=n>mio</span>::<span class=n>net</span>::<span class=n>TcpStream</span><span class=o>&gt;</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>async</span><span class=w> </span><span class=k>fn</span> <span class=nf>connect</span><span class=o>&lt;</span><span class=n>A</span>: <span class=nc>ToSocketAddrs</span><span class=o>&gt;</span><span class=p>(</span><span class=n>addr</span>: <span class=nc>A</span><span class=p>)</span><span class=w> </span>-&gt; <span class=nc>io</span>::<span class=nb>Result</span><span class=o>&lt;</span><span class=n>TcpStream</span><span class=o>&gt;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>// src/io/poll_evented.rs
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>pub</span><span class=p>(</span><span class=k>crate</span><span class=p>)</span><span class=w> </span><span class=k>struct</span> <span class=nc>PollEvented</span><span class=o>&lt;</span><span class=n>E</span>: <span class=nc>Source</span><span class=o>&gt;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>io</span>: <span class=nb>Option</span><span class=o>&lt;</span><span class=n>E</span><span class=o>&gt;</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>registration</span>: <span class=nc>Registration</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><p>在创建 IO 时，如 TcpListener accept 到一个 fd，那么这个 fd 会被包装为 TcpStream。TcpStream 内其实是一个 PollEvented 结构，很多面向用户的结构（如 UnixStream 等）都只是 PollEvented 的包装。</p><p>PollEvented 创建时即会做 fd 和 interest 的注册，drop 时会解注册。IO 的就绪状态和等待者是在一个统一的 Slab 中管理的（对应 Registration 这个概念）。PollEvented 内部包含 io 和 注册信息 两部分；注册信息 又持有了 Driver Handle 和 Ref。</p><p>在 PollEvented 创建时，会从 TLS 拿到当前 Driver 的 Handle，并将自己的 Interest 注册上去。注册的时候 Driver 内部会在 slab 中分配一块空间存放其状态信息（即 ScheduledIo），并在返回的注册信息中记录该状态在 slab 中的 index。</p><h2 id=sleep>Sleep <a href=#sleep class=anchor aria-hidden=true>#</a></h2><p>以 MultiThread 为例，就可以看到其中 Handle 的具体实现，其中实现相关的代码可以查看 <code>src/time</code> 以及 <code>src/runtime/time</code> 中。</p><pre tabindex=0><code>tokio::time::sleep_until() src/time/sleep.rs
+ |-Sleep::new_timeout()
+   |-TimerEntry::new() 这里会返回 Sleep 对象
+</code></pre><p>而 <code>Sleep</code> 实现了 <code>Future</code> 接口。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-rust data-lang=rust><span class=line><span class=cl><span class=k>pub</span><span class=w> </span><span class=k>struct</span> <span class=nc>Sleep</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>inner</span>: <span class=nc>Inner</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=cp>#[pin]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>entry</span>: <span class=nc>TimerEntry</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>impl</span><span class=w> </span><span class=n>Future</span><span class=w> </span><span class=k>for</span><span class=w> </span><span class=n>Sleep</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>type</span> <span class=nc>Output</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>fn</span> <span class=nf>poll</span><span class=p>(</span><span class=k>mut</span><span class=w> </span><span class=bp>self</span>: <span class=nc>Pin</span><span class=o>&lt;&amp;</span><span class=k>mut</span><span class=w> </span><span class=bp>Self</span><span class=o>&gt;</span><span class=p>,</span><span class=w> </span><span class=n>cx</span>: <span class=kp>&amp;</span><span class=nc>mut</span><span class=w> </span><span class=n>task</span>::<span class=n>Context</span><span class=o>&lt;</span><span class=nb>&#39;_</span><span class=o>&gt;</span><span class=p>)</span><span class=w> </span>-&gt; <span class=nc>Poll</span><span class=o>&lt;</span><span class=bp>Self</span>::<span class=n>Output</span><span class=o>&gt;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>match</span><span class=w> </span><span class=fm>ready!</span><span class=p>(</span><span class=bp>self</span><span class=p>.</span><span class=n>as_mut</span><span class=p>().</span><span class=n>poll_elapsed</span><span class=p>(</span><span class=n>cx</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nb>Ok</span><span class=p>(())</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=n>Poll</span>::<span class=n>Ready</span><span class=p>(()),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nb>Err</span><span class=p>(</span><span class=n>e</span><span class=p>)</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=fm>panic!</span><span class=p>(</span><span class=s>&#34;timer error: </span><span class=si>{}</span><span class=s>&#34;</span><span class=p>,</span><span class=w> </span><span class=n>e</span><span class=p>),</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></div><p>详细调用逻辑如下。</p><pre tabindex=0><code>Sleep::poll()
+ |-Sleep::poll_elapsed()
+   |-TimerEntry::poll_elapsed()
+     |-TimerEntry::reset()
+       |-TimerShared::extend_expiration()
+       |-Handle::register()  src/runtime/time/mod.rs
+create_time_driver
+</code></pre><h1 id=调用队列>调用队列 <a href=#%e8%b0%83%e7%94%a8%e9%98%9f%e5%88%97 class=anchor aria-hidden=true>#</a></h1><pre tabindex=0><code>// 本地队列实现
+runtime/scheduler/multi_thread/queue.rs
+/// Producer handle. May only be used from a single thread.
+pub(crate) struct Local&lt;T: &#39;static&gt; {
+    inner: Arc&lt;Inner&lt;T&gt;&gt;,
+}
+/// Consumer handle. May be used from many threads.
+pub(crate) struct Steal&lt;T: &#39;static&gt;(Arc&lt;Inner&lt;T&gt;&gt;);
+pub(crate) struct Inner&lt;T: &#39;static&gt; {
+    head: AtomicUnsignedLong,
+    tail: AtomicUnsignedShort,
+    buffer: Box&lt;[UnsafeCell&lt;MaybeUninit&lt;task::Notified&lt;T&gt;&gt;&gt;; LOCAL_QUEUE_CAPACITY]&gt;,
+}
+</code></pre><p>对于 Local 有对应的 <code>push_back()</code> 等函数的实现。</p><pre tabindex=0><code>Handle::schedule_task()[runtime/scheduler/multi_thread/worker.rs]
+ |-Handle::schedule_local()
+
+Context::run()[runtime/scheduler/multi_thread/worker.rs] 开始在死循环中运行
+ |-Core::tick() 增加 tick 计数
+ |-Context.maintenance() 处理一些维护任务
+ |-Core::next_task()[runtime/scheduler/multi_thread/worker.rs] 获取下一个需要执行的任务，会先尝试本地Worker获取
+ |-Context::run_task() 获取然后真正开始执行任务
+ | |-Local::push_back_or_overflow()[runtime/scheduler/multi_thread/queue.rs]
+ |   |-Local::push_overflow()
+ |-Core::steal_work() 本地无任务，尝试从其它线程获取，否则从全局获取
+ | |-Steal::steal_into() 开始窃取
+ | |-Handle::next_remote_task()[runtime/scheduler/multi_thread/worker.rs] 不行从全局获取，这里会加锁的
+ |   |-Shared::pop()[runtime/scheduler/inject/shared.rs]
+ |     |-Shared::pop_n() 会获取N个任务，这里就是1了，会封装为Pop
+ |     |-Pop::next()[runtime/scheduler/inject/pop.rs]
+ |-Context::run_task() 获取后同样会运行
+ |-Context.park() 没有任务开始等待
+
+// runtime/task/raw.rs
+/// Raw task handle
+#[derive(Clone)]
+pub(crate) struct RawTask {
+    ptr: NonNull&lt;Header&gt;,
+}
+
+// 真正保存全局任务队列的实现
+// runtime/scheduler/inject/synced.rs
+pub(crate) struct Synced {
+    /// True if the queue is closed.
+    pub(super) is_closed: bool,
+
+    /// Linked-list head.
+    pub(super) head: Option&lt;task::RawTask&gt;,
+
+    /// Linked-list tail.
+    pub(super) tail: Option&lt;task::RawTask&gt;,
+}
+
+// runtime/scheduler/inject/shared.rs
+pub(crate) struct Shared&lt;T: &#39;static&gt; {
+    /// Number of pending tasks in the queue. This helps prevent unnecessary
+    /// locking in the hot path.
+    pub(super) len: AtomicUsize,
+    _p: PhantomData&lt;T&gt;,
+}
+
+// 所有Worker的共享信息，包含全局队列实现
+// runtime/scheduler/multi_thread/worker.rs
+pub(crate) struct Shared {
+    /// Per-worker remote state. All other workers have access to this and is
+    /// how they communicate between each other.
+    remotes: Box&lt;[Remote]&gt;,
+
+    /// Global task queue used for:
+    ///  1. Submit work to the scheduler while **not** currently on a worker thread.
+    ///  2. Submit work to the scheduler when a worker run queue is saturated
+    pub(super) inject: inject::Shared&lt;Arc&lt;Handle&gt;&gt;,
+
+    /// Data synchronized by the scheduler mutex
+    pub(super) synced: Mutex&lt;Synced&gt;,
+}
+
+// runtime/scheduler/multi_thread/handle.rs
+pub(crate) struct Handle {
+    /// Task spawner
+    pub(super) shared: worker::Shared,
+
+    /// Resource driver handles
+    pub(crate) driver: driver::Handle,
+
+    /// Blocking pool spawner
+    pub(crate) blocking_spawner: blocking::Spawner,
+
+    /// Current random number generator seed
+    pub(crate) seed_generator: RngSeedGenerator,
+}
+
+// 注意，如下 Pop 时会同时传入 Synced 实现
+fn next_remote_task(&amp;self) -&gt; Option&lt;Notified&gt; {
+    if self.shared.inject.is_empty() {
+        return None;
+    }
+    let mut synced = self.shared.synced.lock();
+    // safety: passing in correct `idle::Synced`
+    unsafe { self.shared.inject.pop(&amp;mut synced.inject) }
+}
+</code></pre><p>另外，会通过 <code>runtime/coop.rs</code> 处理协作式的调度。</p><h1 id=源码解析>源码解析 <a href=#%e6%ba%90%e7%a0%81%e8%a7%a3%e6%9e%90 class=anchor aria-hidden=true>#</a></h1><p>简单来说，这也是一个通过 async 修饰的 Future 实现。</p><pre tabindex=0><code>TcpStream::connect() net/tcp/stream.rs 这是一个 async 函数
+ |-to_socket_addrs() 这里应该是做DNS解析，每个解析后的地址会调用如下函数
+ |-TcpStream::connect_addr() 建立链接
+   |-TcpStream::connect_mio()
+     |-TcpStream::new()
+     | |-PollEvented::new()
+     |   |-PollEvented::new_with_interest()
+     |     |-PollEvented::new_with_interest_and_handle()
+     |       |-Registration::new_with_interest_and_handle() 注意这里的第三个参数是 scheduler::Handle::current() 获取，也就是 scheduler.Handle，实际调用的是 handle.driver().io().add_source(io, interest)
+     |         |-Handle::driver() 这里会根据类型选择 MultiThread、CurrentThread 等实现
+     |-poll_fn() 这里会调用 poll_fn() 简单封装一个 Future 实现，详见future/poll_fn.rs，暂不清楚为什么
+       |-poll_read_ready() 这里有很多
+</code></pre><h2 id=task>Task <a href=#task class=anchor aria-hidden=true>#</a></h2><pre tabindex=0><code>// runtime/task/core.rs
+pub(crate) struct Header {
+    pub(super) state: State,
+    pub(super) queue_next: UnsafeCell&lt;Option&lt;NonNull&lt;Header&gt;&gt;&gt;,
+    pub(super) vtable: &amp;&#39;static Vtable,
+    pub(super) owner_id: UnsafeCell&lt;Option&lt;NonZeroU64&gt;&gt;,
+    pub(super) tracing_id: Option&lt;tracing::Id&gt;,
+}
+pub(super) struct CoreStage&lt;T: Future&gt; {
+    stage: UnsafeCell&lt;Stage&lt;T&gt;&gt;,
+}
+pub(super) struct Core&lt;T: Future, S&gt; {
+    pub(super) scheduler: S,
+    pub(super) task_id: Id,
+    pub(super) stage: CoreStage&lt;T&gt;,
+}
+pub(super) struct Cell&lt;T: Future, S&gt; {
+    pub(super) header: Header,
+    pub(super) core: Core&lt;T, S&gt;,
+    pub(super) trailer: Trailer,
+}
+
+// runtime/task/raw.rs
+pub(crate) struct RawTask {
+    ptr: NonNull&lt;Header&gt;,
+}
+
+// runtime/task/mod.rs
+pub(crate) struct Task&lt;S: &#39;static&gt; {
+    raw: RawTask,
+    _p: PhantomData&lt;S&gt;,
+}
+pub(crate) struct Notified&lt;S: &#39;static&gt;(Task&lt;S&gt;);
+pub(crate) struct LocalNotified&lt;S: &#39;static&gt; {
+    task: Task&lt;S&gt;,
+    _not_send: PhantomData&lt;*const ()&gt;,
+}
+pub(crate) struct UnownedTask&lt;S: &#39;static&gt; {
+    raw: RawTask,
+    _p: PhantomData&lt;S&gt;,
+}
+
+
+
+
+# LocalSet
+对于多线程 runtime 来说，任务可能会在不同的线程上执行，对于某些任务如果只能在固定线程运行，那么可以使用 LocalSet 功能。
+https://rust-book.junmajinlong.com/ch100/02_understand_tokio_task.html
+https://www.cnblogs.com/SantiagoZhang/p/16505647.html
+
+# 源码解析
+## 任务创建
+
+Runtime.block_on() 这里会封装一个入口，实际调用通过 Scheduler 设置，包括 CurrentThread、MultiThread 等
+ |-MultiThread.block_on()
+   |-runtime::context::enter_runtime() 这里的调用逻辑实在是有点复杂，没有搞懂 src/runtime/context/runtime.rs ，猜测应该是调用如下函数
+     |-BlockingRegionGuard::block_on()
+       |-CachedParkThread::block_on() 对应的 Future 会传递到这里，这里会构造 Waker 等，有死循环
+         |-CachedParkThread::waker()
+fn block_on&lt;F: Future&gt;(&amp;self, future: F) -&gt; F::Output
+
+
+
+
+// 定义了虚拟表 runtime/task/waker.rs
+static WAKER_VTABLE: RawWakerVTable =
+    RawWakerVTable::new(clone_waker, wake_by_val, wake_by_ref, drop_waker);
+fn raw_waker(header: NonNull&lt;Header&gt;) -&gt; RawWaker {
+    let ptr = header.as_ptr() as *const ();
+    RawWaker::new(ptr, &amp;WAKER_VTABLE)
+}
+
+src/runtime/task/mod.rs
+#[repr(transparent)]
+pub(crate) struct Task&lt;S: &#39;static&gt; {
+    raw: RawTask,
+    _p: PhantomData&lt;S&gt;,
+}
+
+
+
+
+
+RawTask.wake_by_val()
+
+
+runtime 实现了 Send 和 Sync 这两个 Trait，因此可以将 runtime 包在 Arc 里，然后跨线程使用相同的 runtime 实现。
+
+
+
+
+MultiThread::block_on() runtime/scheduler/multi_thread/mod.rs
+ |-runtime::context::enter_runtime() 调用时会传入一个匿名函数，最终调用如下
+   |-BlockingRegionGuard::block_on() runtime/context/blocking.rs
+     |-CachedParkThread::block_on() runtime/park.rs 这里会阻塞循环调用
+pub(crate) fn block_on&lt;F: Future&gt;(&amp;mut self, f: F) -&gt; Result&lt;F::Output, AccessError&gt; {
+    use std::task::Context;
+    use std::task::Poll::Ready;
+
+    let waker = self.waker()?;
+    let mut cx = Context::from_waker(&amp;waker);
+
+    pin!(f);
+
+    loop {
+        if let Ready(v) = crate::runtime::coop::budget(|| f.as_mut().poll(&amp;mut cx)) {
+            return Ok(v);
+        }
+        self.park();
+    }
+}
+这里实际上就是一直调用该函数了，除此之外，还包括了 spawn() 函数。在执行 spawn() 函数时，有两种方法：
+* Runtime[runtime/handle.rs] 最终会调用具体 Scheduler 执行，例如 MultiThread 对应了 runtime/scheduler/multi_thread/handle.rs 中的 Handle 实现。
+* tokio::spawn() 这也是最常用的，在 lib.rs 中通过 pub use task::spawn 将相关实现保留到了库级别。
+Handle::spawn() runtime/handle.rs
+ |-Handle::spawn_named()
+   |-runtime::task::Id::next() 获取任务ID
+     |-MultiThread::Handle::spawn() 这里通过 self.inner.spawn(future, id) 调用，如下以 MultiThread 实现为例
+task::spawn() task/spawn.rs
+ |-task::spawn_inner()
+   |-MultiThread::Handle::spawn() 会通过 context::with_current 调用
+这种方式要求 Future 是 Future + Send + &#39;static
+
+
+
+
+# MultiThread
+
+
+runtime/scheduler/multi_thread/worker.rs
+/// State shared across all workers
+pub(crate) struct Shared {
+    pub(crate) owned: OwnedTasks&lt;Arc&lt;Handle&gt;&gt;, // 添加到该Executor的任务列表
+
+
+
+    /// Per-worker remote state. All other workers have access to this and is
+    /// how they communicate between each other.
+    remotes: Box&lt;[Remote]&gt;,
+
+    /// Global task queue used for:
+    ///  1. Submit work to the scheduler while **not** currently on a worker thread.
+    ///  2. Submit work to the scheduler when a worker run queue is saturated
+    pub(super) inject: inject::Shared&lt;Arc&lt;Handle&gt;&gt;,
+
+    /// Coordinates idle workers
+    idle: Idle,
+
+
+    /// Data synchronized by the scheduler mutex
+    pub(super) synced: Mutex&lt;Synced&gt;,
+
+    /// Cores that have observed the shutdown signal
+    ///
+    /// The core is **not** placed back in the worker to avoid it from being
+    /// stolen by a thread that was spawned as part of `block_in_place`.
+    #[allow(clippy::vec_box)] // we&#39;re moving an already-boxed value
+    shutdown_cores: Mutex&lt;Vec&lt;Box&lt;Core&gt;&gt;&gt;,
+
+    /// The number of cores that have observed the trace signal.
+    pub(super) trace_status: TraceStatus,
+
+    /// Scheduler configuration options
+    config: Config,
+
+    /// Collects metrics from the runtime.
+    pub(super) scheduler_metrics: SchedulerMetrics,
+
+    pub(super) worker_metrics: Box&lt;[WorkerMetrics]&gt;,
+
+    /// Only held to trigger some code on drop. This is used to get internal
+    /// runtime metrics that can be useful when doing performance
+    /// investigations. This does nothing (empty struct, no drop impl) unless
+    /// the `tokio_internal_mt_counters` `cfg` flag is set.
+    _counters: Counters,
+}
+
+runtime/scheduler/multi_thread/handle.rs
+/// Handle to the multi thread scheduler
+pub(crate) struct Handle {
+    /// Task spawner
+    pub(super) shared: worker::Shared,
+
+    /// Resource driver handles
+    pub(crate) driver: driver::Handle,
+
+    /// Blocking pool spawner
+    pub(crate) blocking_spawner: blocking::Spawner,
+
+    /// Current random number generator seed
+    pub(crate) seed_generator: RngSeedGenerator,
+}
+
+
+const TOKEN_WAKEUP: mio::Token = mio::Token(0);
+const TOKEN_SIGNAL: mio::Token = mio::Token(1);
+
+
+
+runtime/io/scheduled_io.rs
+pub(crate) struct ScheduledIo {
+    pub(super) linked_list_pointers: UnsafeCell&lt;linked_list::Pointers&lt;Self&gt;&gt;,
+    readiness: AtomicUsize, // 为了兼容32位，只用了32位
+    waiters: Mutex&lt;Waiters&gt;,
+}
+Driver::park() runtime/io/driver.rs
+ |-Driver::turn() 会获取IO然后调度
+   |-ScheduledIo::set_readiness()
+这里对应的唤醒实现为 Handle.unpark() 实现。
+
+/// Future returned by `readiness()`，这里会应用 Future 接口
+struct Readiness&lt;&#39;a&gt; {
+    scheduled_io: &amp;&#39;a ScheduledIo,
+    state: State,
+    /// Entry in the waiter `LinkedList`.
+    waiter: UnsafeCell&lt;Waiter&gt;,
+}
+
+runtime/io/registration.rs
+pub(crate) struct Registration {
+    /// Handle to the associated runtime.
+    /// TODO: this can probably be moved into `ScheduledIo`.
+    handle: scheduler::Handle,
+
+    /// Reference to state stored by the driver.
+    shared: Arc&lt;ScheduledIo&gt;,
+}
+
+
+net/tcp/stream.rs
+pub struct TcpStream {
+    io: PollEvented&lt;mio::net::TcpStream&gt;,
+}
+io/poll_evented.rs
+pub(crate) struct PollEvented&lt;E: Source&gt; {
+    io: Option&lt;E&gt;,
+    registration: Registration,
+}
+
+pub(crate) fn new(io: E) -&gt; io::Result&lt;Self&gt; {
+    PollEvented::new_with_interest(io, Interest::READABLE | Interest::WRITABLE)
+}
+pub(crate) fn new_with_interest(io: E, interest: Interest) -&gt; io::Result&lt;Self&gt; {
+    Self::new_with_interest_and_handle(io, interest, scheduler::Handle::current())
+}
+pub(crate) fn new_with_interest_and_handle(mut io: E, interest: Interest, handle: scheduler::Handle) -&gt; io::Result&lt;Self&gt; {
+    let registration = Registration::new_with_interest_and_handle(&amp;mut io, interest, handle)?;
+    Ok(Self {
+        io: Some(io),
+        registration,
+    })
+}
+
+runtime/io/registration.rs
+pub(crate) fn new_with_interest_and_handle(io: &amp;mut impl Source, interest: Interest, handle: scheduler::Handle) -&gt; io::Result&lt;Registration&gt; {
+    let shared = handle.driver().io().add_source(io, interest)?;  // 这里的数据结构是怎么保存的
+    Ok(Registration { handle, shared })
+}
+
+add_source() 对应的实现在 runtime/io/driver.rs
+
+
+
+
+runtime/io/driver.rs
+/// I/O driver, backed by Mio.
+pub(crate) struct Driver {
+    /// True when an event with the signal token is received
+    signal_ready: bool,
+
+    /// Reuse the `mio::Events` value across calls to poll.
+    events: mio::Events,
+
+    /// The system event queue.
+    poll: mio::Poll,
+}
+
+/// A reference to an I/O driver.
+pub(crate) struct Handle {
+    /// Registers I/O resources.
+    registry: mio::Registry,
+
+    /// Tracks all registrations
+    registrations: RegistrationSet,
+
+    /// State that should be synchronized
+    synced: Mutex&lt;registration_set::Synced&gt;,
+
+    /// Used to wake up the reactor from a call to `turn`.
+    /// Not supported on `Wasi` due to lack of threading support.
+    #[cfg(not(target_os = &#34;wasi&#34;))]
+    waker: mio::Waker,
+
+    pub(crate) metrics: IoDriverMetrics,
+}
+
+impl Handle {
+    pub(super) fn add_source(&amp;self, source: &amp;mut impl mio::event::Source, interest: Interest) -&gt; io::Result&lt;Arc&lt;ScheduledIo&gt;&gt; {
+        let scheduled_io = self.registrations.allocate(&amp;mut self.synced.lock())?;
+        let token = scheduled_io.token();
+
+        // we should remove the `scheduled_io` from the `registrations` set if registering
+        // the `source` with the OS fails. Otherwise it will leak the `scheduled_io`.
+        if let Err(e) = self.registry.register(source, token, interest.to_mio()) {
+            // safety: `scheduled_io` is part of the `registrations` set.
+            unsafe {
+                self.registrations
+                    .remove(&amp;mut self.synced.lock(), &amp;scheduled_io)
+            };
+
+            return Err(e);
+        }
+
+        // TODO: move this logic to `RegistrationSet` and use a `CountedLinkedList`
+        self.metrics.incr_fd_count();
+
+        Ok(scheduled_io)
+    }
+}
+
+
+
+几乎每个模块里都会有 Driver 和 Handle 两个模块，如下以简单的 signal 为例。
+https://docs.rs/tokio/latest/tokio/signal/index.html
+
+
+runtime/signal/mod.rs:33:pub(crate) struct Handle {
+runtime/time/handle.rs:5:pub(crate) struct Handle {
+runtime/io/driver.rs:32:pub(crate) struct Handle {
+runtime/driver.rs:21:pub(crate) struct Handle {
+runtime/handle.rs:14:pub struct Handle {
+runtime/scheduler/current_thread/mod.rs:32:pub(crate) struct Handle {
+runtime/scheduler/multi_thread_alt/handle.rs:17:pub(crate) struct Handle {
+runtime/scheduler/multi_thread/handle.rs:21:pub(crate) struct Handle {
+
+signal()
+ |-signal_with_handle()
+   |-signal_enable()
+     |-Handle::check_inner()
+pub fn signal(kind: SignalKind) -&gt; io::Result&lt;Signal&gt; {
+    let handle = scheduler::Handle::current();
+    let rx = signal_with_handle(kind, handle.driver().signal())?;
+
+    Ok(Signal {
+        inner: RxFuture::new(rx),
+    })
+}
+
+runtime/scheduler/defer.rs
+pub(crate) struct Defer {
+    deferred: RefCell&lt;Vec&lt;Waker&gt;&gt;,  // 这里是个数组啊
+}
+
+runtime/scheduler/multi_thread/worker.rs
+pub(crate) struct Context {
+    worker: Arc&lt;Worker&gt;,
+    core: RefCell&lt;Option&lt;Box&lt;Core&gt;&gt;&gt;,
+    pub(crate) defer: Defer,
+}
+
+runtime/scheduler/multi_thread/worker.rs 这里的 Run 也会调用如下函数
+Handle::block_on()[runtime/handle.rs]
+ |-context::enter_runtime()[runtime/scheduler/multi_thread/worker.rs]
+
+其中设置，就在上述的 enter_runtime() 函数中。
+
+
+
+https://zhuanlan.zhihu.com/p/104098627
+https://juejin.cn/post/7216217118588747837
+https://rustmagazine.github.io/rust_magazine_2021/chapter_12/monoio.html
+https://rust-lang.github.io/async-book/02_execution/04_executor.html
+https://tony612.github.io/tokio-internals/02_main_thread_2.html
+https://www.driftluo.com/article/c88d853a-7ad4-47ea-b7b4-778dec039350
+https://xie.infoq.cn/article/5694ce615d1095cf6e1a5d0ae
+https://zhuanlan.zhihu.com/p/129273132
+https://stevenbai.top/books-futures-explained/book/6_future_example.html
+https://juejin.cn/post/7063022099689897991
+https://zlotus.github.io/2021/04/14/writing-an-os-in-rust-4.1/
+https://zhuanlan.zhihu.com/p/66028983
+https://dongs.xyz/post/behind-tokio-spawn/
+
+这里有个自己实现的，应该是字节的代码
+https://www.ihcblog.com/rust-runtime-design-1/
+
+https://stevenbai.top/books-futures-explained/book/1_futures_in_rust.html
+https://rust-book.junmajinlong.com/ch100/01_understand_tokio_runtime.html
+
+
+
+
+
+
+https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
+src/util/rand.rs 这里有个 FastRand 的实现
+
+runtime/scheduler/multi_thread/worker.rs
+调度运行的核心
+
+如何优雅关闭
+https://tokio.rs/tokio/topics/shutdown
+
+
+
+# MultiThread
+// runtime/scheduler/multi_thread/handle.rs
+pub(crate) struct Handle {
+    pub(super) shared: worker::Shared, // 详见如下 Shared 实现
+    pub(crate) driver: driver::Handle, // 应该是对应 struct Handle[runtime/driver.rs] 实现
+    pub(crate) blocking_spawner: blocking::Spawner,
+    pub(crate) seed_generator: RngSeedGenerator,
+}
+// 下面这个结构体里的 inject+synced 操作实在是没有搞懂啊，整这么复杂吗
+// runtime/scheduler/multi_thread/worker.rs
+pub(crate) struct Shared {
+    remotes: Box&lt;[Remote]&gt;,
+    pub(super) inject: inject::Shared&lt;Arc&lt;Handle&gt;&gt;,
+    idle: Idle,
+    pub(crate) owned: OwnedTasks&lt;Arc&lt;Handle&gt;&gt;,
+    pub(super) synced: Mutex&lt;Synced&gt;,
+    shutdown_cores: Mutex&lt;Vec&lt;Box&lt;Core&gt;&gt;&gt;,
+    pub(super) trace_status: TraceStatus,
+    config: Config,
+    pub(super) scheduler_metrics: SchedulerMetrics,
+    pub(super) worker_metrics: Box&lt;[WorkerMetrics]&gt;,
+    _counters: Counters,
+}
+// 这里的 mutex 执行了 lock() 之后竟然可以跟 .inject 怀疑是 loom 工具的原因
+// runtime/scheduler/multi_thread/worker.rs
+pub(super) fn close(&amp;self) {
+    if self.shared.inject.close(&amp;mut self.shared.synced.lock().inject) {
+        self.notify_all();
+    }
+}
+// runtime/scheduler/inject/shared.rs
+pub(crate) struct Shared&lt;T: &#39;static&gt; {
+    pub(super) len: AtomicUsize,
+    _p: PhantomData&lt;T&gt;,
+}
+// runtime/scheduler/inject/synced.rs
+pub(crate) struct Synced {
+    pub(super) is_closed: bool,
+    pub(super) head: Option&lt;task::RawTask&gt;,
+    pub(super) tail: Option&lt;task::RawTask&gt;,
+}
+
+全局任务获取，详见
+next_remote_task()
+ |-
+
+
+/// State shared across all workers
+pub(crate) struct Shared {
+    /// Per-worker remote state. All other workers have access to this and is
+    /// how they communicate between each other.
+    remotes: Box&lt;[Remote]&gt;,
+
+    /// Global task queue used for:
+    ///  1. Submit work to the scheduler while **not** currently on a worker thread.
+    ///  2. Submit work to the scheduler when a worker run queue is saturated
+    pub(super) inject: inject::Shared&lt;Arc&lt;Handle&gt;&gt;,
+
+    /// Coordinates idle workers
+    idle: Idle,
+
+    /// Collection of all active tasks spawned onto this executor.
+    pub(crate) owned: OwnedTasks&lt;Arc&lt;Handle&gt;&gt;,
+
+    /// Data synchronized by the scheduler mutex
+    pub(super) synced: Mutex&lt;Synced&gt;,
+
+    /// Cores that have observed the shutdown signal
+    ///
+    /// The core is **not** placed back in the worker to avoid it from being
+    /// stolen by a thread that was spawned as part of `block_in_place`.
+    #[allow(clippy::vec_box)] // we&#39;re moving an already-boxed value
+    shutdown_cores: Mutex&lt;Vec&lt;Box&lt;Core&gt;&gt;&gt;,
+
+    /// The number of cores that have observed the trace signal.
+    pub(super) trace_status: TraceStatus,
+
+    /// Scheduler configuration options
+    config: Config,
+
+    /// Collects metrics from the runtime.
+    pub(super) scheduler_metrics: SchedulerMetrics,
+
+    pub(super) worker_metrics: Box&lt;[WorkerMetrics]&gt;,
+
+    /// Only held to trigger some code on drop. This is used to get internal
+    /// runtime metrics that can be useful when doing performance
+    /// investigations. This does nothing (empty struct, no drop impl) unless
+    /// the `tokio_internal_mt_counters` `cfg` flag is set.
+    _counters: Counters,
+}
+
+fn next_remote_task(&amp;self) -&gt; Option&lt;Notified&gt; {
+    if self.shared.inject.is_empty() {
+        return None;
+    }
+    let mut synced = self.shared.synced.lock();
+    // safety: passing in correct `idle::Synced`
+    unsafe { self.shared.inject.pop(&amp;mut synced.inject) }
+}
+</code></pre><h1 id=其它>其它 <a href=#%e5%85%b6%e5%ae%83 class=anchor aria-hidden=true>#</a></h1><p>在 <code>4165601b</code> 提交中引入了新的 multi-threaded runtime 实现，可以有效提升调度效率，不过在超过 16 核之后，由于 mutex 会引入比较大的性能下降，所以当前仅作为测试版本，详见 <code>tokio/src/runtime/scheduler/multi_thread_alt</code> 中的实现。</p><h1 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h1><ul><li><a href=https://tokio.rs/tokio/tutorial>Tokio Tutorial</a> 官方相关的教程，同时有很多底层的介绍。</li><li><a href=https://tokio.rs/blog/2019-10-scheduler>Making the Tokio scheduler 10x faster</a> 官方关于内部调度器的优化介绍。</li><li><a href=https://hegdenu.net/posts/task-scheduled-time-in-console/>Task Scheduled Time in Console</a> 一个不错的 Tokio 调度监控实现。</li></ul></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/rust-third-serde/>Rust 序列化、反序列化实现</a></li><li><a class=text-body href=/cn/blog/rust-advanced-syntax-trait/>Rust Trait 详解</a></li><li><a class=text-body href=/cn/blog/rust-life-time/>Rust 生命周期管理</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>

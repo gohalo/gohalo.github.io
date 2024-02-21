@@ -1,0 +1,146 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Hudi 基本介绍 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Hadoop Updates and Incrementals, Hudi 是一个 Uber 开源的 Data Lakes 的解决方案。
+"><link rel=canonical href=https://gohalo.github.io/cn/blog/hudi-basic-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/hudi-basic-introduce/","url":"https://gohalo.github.io/cn/blog/hudi-basic-introduce/","name":"Hudi 基本介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2022-09-21T22:23:32CET","dateModified":"2022-09-21T22:23:32CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/hudi-basic-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/hudi-basic-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/hudi-basic-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/hudi-basic-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/hudi-basic-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"Hudi 基本介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/hudi-basic-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/hudi-basic-introduce/"},"datePublished":"2022-09-21T22:23:32CET","dateModified":"2022-09-21T22:23:32CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/hudi-basic-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/hudi-basic-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"Hudi 基本介绍"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
+<span>页面目录</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#基本概念>基本概念</a><ul><li><a href=#主键--分区>主键 & 分区</a></li><li><a href=#文件布局-file-layouts>文件布局 File Layouts</a></li><li><a href=#清理服务>清理服务</a></li></ul></li><li><a href=#示例>示例</a><ul><li><a href=#简单介绍>简单介绍</a></li><li><a href=#mergeinto>MergeInto</a></li><li><a href=#查询>查询</a></li></ul></li><li><a href=#目录结构>目录结构</a><ul><li><a href=#元数据>元数据</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#hudi-cli>Hudi Cli</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#基本概念>基本概念</a><ul><li><a href=#主键--分区>主键 & 分区</a></li><li><a href=#文件布局-file-layouts>文件布局 File Layouts</a></li><li><a href=#清理服务>清理服务</a></li></ul></li><li><a href=#示例>示例</a><ul><li><a href=#简单介绍>简单介绍</a></li><li><a href=#mergeinto>MergeInto</a></li><li><a href=#查询>查询</a></li></ul></li><li><a href=#目录结构>目录结构</a><ul><li><a href=#元数据>元数据</a></li></ul></li><li><a href=#其它>其它</a><ul><li><a href=#hudi-cli>Hudi Cli</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>Hudi 基本介绍</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2022-09-21</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/warehouse/ role=button>warehouse</a>
+<a class="btn btn-light" href=https://gohalo.github.io/tags/hive/ role=button>hive</a></div></div><hr><div class=content-body><p>Hadoop Updates and Incrementals, Hudi 是一个 Uber 开源的 Data Lakes 的解决方案。</p><h1 id=基本概念>基本概念 <a href=#%e5%9f%ba%e6%9c%ac%e6%a6%82%e5%bf%b5 class=anchor aria-hidden=true>#</a></h1><p>Hudi 支持 COW MOR 两种格式，前者每次更新会刷新原数据，导致写入放大；后者则保存增量信息，每次读取会合并增量信息。</p><p>所有的湖格式实际上都为了解决新鲜度(准确性)、成本和查询延时(实时性)这个三角问题，要保证其中一项就需要牺牲另外两项。例如，为了提升新鲜度，引入了 MOR 包，就导致的了成本和查询延迟增加，主要是增量日志、查询时的 Merge 操作。</p><h2 id=主键--分区>主键 & 分区 <a href=#%e4%b8%bb%e9%94%ae--%e5%88%86%e5%8c%ba class=anchor aria-hidden=true>#</a></h2><p>每条记录都由 HoodieKey 唯一标识，由分区路径和记录键组成，记录键在分区内保持唯一，记录键则通过 KeyGenerator 生成，支持多种形式以适配不同场景。</p><p>主键在 Hudi 中是一等公民，根据主键去重，同时利用 <code>preCombineField</code> 判断是否替换旧数据，只要比较大就替换，一般是 ts 时间戳，如果不设置则默认每次都用最新数据替换。</p><h2 id=文件布局-file-layouts>文件布局 File Layouts <a href=#%e6%96%87%e4%bb%b6%e5%b8%83%e5%b1%80-file-layouts class=anchor aria-hidden=true>#</a></h2><p>文件在存储介质上的分布，Hudi 会严格管理文件的命名、存放位置、大小等，会选择合适的实际新建、合并以及分裂数据文件。</p><p>对于 MOR 来说，文件切片 File Slice 由基本文件和多个增量日志文件组成，而 COW 只存在基础数据文件，不含日志文件。其中 File Slice 与某个提交关联，是文件组织系统中的最小管理单元。</p><p>相同 FileID 的文件属于同一个 File Group，通常会有多个不同的版本 (InstantTime) 的数据文件或者再加上日志文件的组合，当某个 File Group 超过阈值之后会创建新的 File Group，可以通过分区路径和文件 ID 唯一标识。</p><h2 id=清理服务>清理服务 <a href=#%e6%b8%85%e7%90%86%e6%9c%8d%e5%8a%a1 class=anchor aria-hidden=true>#</a></h2><p>每次数据更新都会生成新的文件，对于 COW 会生成一个新版本的数据文件用于保存更新后的记录，而 MOR 则会将增量更新写入日志文件以避免重写数据文件。这样，随着时间都可能导致文件版本数无限增长，这就需要通过一个服务回收不需要的历史版本。</p><h1 id=示例>示例 <a href=#%e7%a4%ba%e4%be%8b class=anchor aria-hidden=true>#</a></h1><p>这里以 SparkSQL 为例进行操作。</p><h2 id=简单介绍>简单介绍 <a href=#%e7%ae%80%e5%8d%95%e4%bb%8b%e7%bb%8d class=anchor aria-hidden=true>#</a></h2><pre tabindex=0><code>----- 执行命令行时已经包含 hudi-sparkX.X-bundle_xxx.jar 路径
+$ spark-sql --master yarn --deploy-mode client
+----- 否则需要如下方式指定参数
+$ spark-sql --jars hudi-spark-bundle/target/hudi-spark3.3-bundle_2.12-0.13.1.jar \
+   --conf &#39;spark.serializer=org.apache.spark.serializer.KryoSerializer&#39; \
+   --conf &#39;spark.sql.extensions=org.apache.spark.sql.hudi.HoodieSparkSessionExtension&#39;
+</code></pre><p>接着可以创建表结构。</p><pre tabindex=0><code>spark-sql&gt; CREATE TABLE test_hudi_table(
+  id INT,
+  name STRING,
+  price DOUBLE,
+  ts LONG,
+  dt STRING
+)
+USING hudi
+PARTITIONED BY(dt)
+OPTIONS (
+  type = &#39;mor&#39;,
+  primaryKey = &#39;id&#39;,
+  preCombineField = &#39;ts&#39;
+) LOCATION &#39;/tmp/hudi_mor_table&#39;;
+</code></pre><p>对于 <code>LOCATION</code> 参数来说，默认一般是 HDFS 存储，也可以通过如下方式指定本地盘，或者显示指定 HDFS 存储。</p><pre tabindex=0><code>set hoodie.clean.automatic=false;
+
+run clean on h1;
+run clean on &#34;/tmp/hudi_mor_table&#34;;
+
+----- 在本地磁盘下创建
+file:///tmp/hudi_mor_table
+----- 指定HDFS存储
+hdfs://hacluster/tmp/hudi_mor_table
+</code></pre><p>建表语句的元数据信息会同步到 Hive MetaStore 中，此时，如果登录 Hive 查看元数据，可以看到如下内容。</p><pre tabindex=0><code>$ beeline
+jdbc:hive2://xxx&gt; SHOW TABLES;
++---------------------+
+|      tab_name       |
++---------------------+
+| test_hudi_table     |
+| test_hudi_table_ro  |
+| test_hudi_table_rt  |
++---------------------+
+3 rows selected (0.263 seconds)
+</code></pre><p>MOR 表会自动生成 ro/rt 后缀的表，实际上就是 Read Optimized 和 Real Time 的缩写，</p><p>如下是常用的 SQL 语句。</p><pre tabindex=0><code>INSERT INTO test_hudi_table SELECT 1 AS id, &#39;hudi&#39; AS name, 10 AS price, 1000 AS ts, &#39;2021-05-05&#39; AS dt;
+INSERT INTO test_hudi_table SELECT 2, &#39;spark&#39;, 30.0, 1000, &#39;2021-05-05&#39;;
+INSERT INTO test_hudi_table VALUES(3, &#39;hello&#39;, 10.0, 1000, &#39;2021-05-05&#39;);
+SELECT * FROM test_hudi_table WHERE price &gt; 20.0;
+UPDATE test_hudi_table SET price = 20 WHERE id = 1;
+DELETE FROM test_hudi_table WHERE id = 1;
+DROP TABLE test_hudi_table_rt;
+DROP TABLE test_hudi_table_ro;
+DROP TABLE test_hudi_table;
+SHOW TABLES;
+</code></pre><p>当执行如下 SQL 时，由于 <code>id=3</code> 中的 <code>ts=1000>500</code> 实际不会替换，除非将 <code>ts</code> 替换为 <code>1500</code> 值。</p><pre tabindex=0><code>INSERT INTO test_hudi_table VALUES(3, &#39;not_change&#39;, 10.0, 500, &#39;2021-05-05&#39;);
+</code></pre><h2 id=mergeinto>MergeInto <a href=#mergeinto class=anchor aria-hidden=true>#</a></h2><p>可以将两个表的数据按照规则进行合并。</p><pre tabindex=0><code>CREATE TABLE test_hudi_update(
+  id INT,
+  name STRING,
+  price DOUBLE,
+  ts LONG,
+  dt STRING
+)
+USING hudi
+PARTITIONED BY(dt)
+OPTIONS (
+  type = &#39;mor&#39;,
+  primaryKey = &#39;id&#39;,
+  preCombineField = &#39;ts&#39;
+) LOCATION &#39;/tmp/hudi_mor_update&#39;;
+
+INSERT INTO test_hudi_update VALUES
+(3, &#39;hello&#39;, 50.0, 1000, &#39;2021-05-05&#39;),
+(4, &#39;world&#39;, 10.0, 1000, &#39;2021-05-05&#39;);
+
+MERGE INTO test_hudi_table AS target
+USING test_hudi_update AS source
+ON target.id = source.id
+WHEN MATCHED THEN UPDATE SET target.price = target.price + source.price
+WHEN NOT MATCHED THEN INSERT *;
+</code></pre><h2 id=查询>查询 <a href=#%e6%9f%a5%e8%af%a2 class=anchor aria-hidden=true>#</a></h2><p>Hudi 支持如下几种查询类型：</p><ul><li>Snapshot 用于查询某个时间点的快照，默认类型，会查询到最新数据，对于 MOR 来说会将 Base 和增量日志进行合并；而 COW 就是最新的数据文件了。</li><li>Read Optimized 优化查询可能会读到旧的数据，对于 MOR 来说就是只读取 Base 数据。</li><li>Time Travel 数据时按照时间线排序的，可以根据具体的时间进行查询。</li><li>Incremental 获取两个提交范围内的数据。</li></ul><p>注意，只能查询到写入 Hudi 表的数据，也就是给定的 COMMIT/COMPACTION 之后的最新数据。</p><pre tabindex=0><code>INSERT INTO test_hudi_table VALUES(3, &#39;hello&#39;, 10.0, 1000, &#39;2021-05-05&#39;);
+
+----- Snapshot Query
+SELECT id, name, price, ts FROM test_hudi_table;
+----- Optimized Read Query 当配置了 hoodie.query.as.ro.table=true 之后会自动生成
+SELECT id, name, price, ts FROM test_hudi_table_ro;
+----- Time Travel Query 如果没有严格匹配上，则返回比指定时间略老的数据
+SELECT id, name, price, ts FROM test_hudi_table TIMESTAMP AS OF &#39;20240116113746358&#39;;
+SELECT id, name, price, ts FROM test_hudi_table TIMESTAMP AS OF &#39;20240419170531565&#39;;
+SELECT id, name, price, ts FROM test_hudi_table TIMESTAMP AS OF &#39;2024-01-16 11:37:46&#39;;
+SELECT id, name, price, ts FROM test_hudi_table TIMESTAMP AS OF &#39;2024-04-19 17:05:31&#39;;
+
+----- 查看直接空值即可
+SET hoodie.datasource.query.type=incremental;
+hoodie.datasource.read.begin.instanttime=20240419170531565
+hoodie.datasource.read.end.instanttime=202305160000 # optional
+
+----- 在 Hive 中可以根据提交时间排序
+SELECT `_hoodie_commit_time` AS t, id, name FROM test_hudi_table ORDER BY t;
+</code></pre><p>通过 spark-shell 可以查看版本。</p><pre tabindex=0><code>call show_clustering(table =&gt; &#39;test_hudi_table&#39;);
+call show_table_properties(table =&gt; &#39;test_hudi_table&#39;);
+</code></pre><h1 id=目录结构>目录结构 <a href=#%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84 class=anchor aria-hidden=true>#</a></h1><pre tabindex=0><code>cow/.hoodis/
+cow/.hoodis/.aux
+cow/.hoodis/.temp
+cow/.hoodis/20230523174532.commit   组成时间线的文件
+cow/.hoodis/20230523174532.commit.inflight
+cow/.hoodis/20230523174532.commit.requested
+cow/.hoodis/archived
+cow/.hoodis/hoodie.properties   基础的表配置信息，例如表名、版本等
+cow/americas/
+cow/americas/.hoodis_partition_metadata  元数据，保存了提交的时间和分区深度信息，文本格式保存
+cow/americas/.1419a23b-5ecd-46e6-b96c-07a395c8029a-0_20230828160921471.log.1_0-103-148
+cow/americas/1419a23b-5ecd-46e6-b96c-07a395c8029a-0_0-81-116_20230828160921471.parquet
+</code></pre><p>Hudi 数据集的目录结构和 Hive 非常相似，数据集根据分区打散到不同目录，分区字段以文件夹形式存在，文件夹包含该分区的所有文件，非分区则在数据目录下保存。</p><ul><li><code>.hoodie</code> 元数据目录，包括版本管理 (Timeline)、归档信息 (过时的 Instant)、Instant 提交信息 (包括提交行为、时间戳、状态等)。</li><li>剩下目录是按分区实际存储的数据，分区键可以指定，基础数据文件采用 <code>Parquet</code> 格式保存，针对读进行了优化；还包含一个元数据日志文件 <code>.log*</code>，同样进行了写优化；还包括分区元数据 <code>.hoodie_partition_metadata</code> 文件。</li></ul><p>注意，COW 只有数据文件，而 MOR 格式才会通过 AVRO 格式保存增量日志信息。</p><h2 id=元数据>元数据 <a href=#%e5%85%83%e6%95%b0%e6%8d%ae class=anchor aria-hidden=true>#</a></h2><p>Hudi 将一系列 CURD 操作称为 Timeline，而 Timeline 中的某次操作称为 Instant，其核心能力就是维护 Timeline，依次提供即时视图以及按到达顺序检索数据。其实现是在元数据目录下以日期进行保存相关信息，如下是一个简单的示例：</p><pre tabindex=0><code>cow/.hoodis/20230523174532904.commit
+cow/.hoodis/20230523174532904.commit.inflight
+cow/.hoodis/20230523174532904.commit.requested
+</code></pre><p>其文件格式为 <code>&lt;action timestamp>.&lt;action type>[.&lt;action state>]</code>，介绍如下：</p><ul><li><code>timestamp</code> 首次调度时间，提供毫秒级的粒度，作为单调递增的时间线唯一标识。</li><li><code>action</code> 标示操作类型，包括了 <code>commit/deltacommit</code> 更新数据 (包括插入、更新、删除)；<code>compaction/clean</code> 内部操作；<code>savepoint/restore</code> 恢复操作。</li><li><code>state</code> 标识状态，包括了 A) <code>requested</code> 调度运行；B) <code>inflight</code> 正在运行；C) <code>completed</code> 执行完成。</li></ul><p>元数据通过 JSON 或者 AVRO 格式保存，包括了表的修改信息，可以用来做数据恢复、使用 Snapshot 隔离级别等。其中常见 <code>action</code> 介绍如下：</p><ul><li><code>COMMITS</code> 一批数据的原子写入。</li><li><code>CLEANS</code> 后台任务，用于清理掉不需要的历史数据。</li><li><code>DELTA_COMMIT</code> 写入 MOR 表的增量数据，通常可以作为增量日志文件保存。</li><li><code>COMPACTION</code> 后台任务，用于将行格式的增量数据合并为列式数据，会生成一个特殊的提交。</li></ul><h1 id=其它>其它 <a href=#%e5%85%b6%e5%ae%83 class=anchor aria-hidden=true>#</a></h1><h2 id=hudi-cli>Hudi Cli <a href=#hudi-cli class=anchor aria-hidden=true>#</a></h2><p>用于管理 Hudi 数据集，可以查看提交、文件系统、统计信息等，还支持手动执行压缩、取消压缩等。</p><pre tabindex=0><code>$ hudi-cli.sh
+----- 链接到某个表，该目录下为 .hoodie 目录
+hudi-&gt; connect --path /tmp/hudi_mor_table
+----- 查看表的描述信息
+hudi-&gt; desc
+hudi-&gt; fetch table schema
+----- 查看帮助文档，可以跟具体的命令
+hudi-&gt; help
+
+----- 查看提交信息，在比较少时可以使用，默认按照时间倒序排列
+hudi-&gt; commits show
+----- 对提交信息排序
+hudi-&gt; commits show --sortBy &#34;Total Bytes Written&#34; --desc true --limit 10
+----- 查看写入分区信息
+hudi-&gt; commit showpartitions --commit 20240116113420705 --sortBy &#34;Total Bytes Written&#34; --desc true --limit 10
+----- 写入到文件级别信息
+hudi-&gt; commit showfiles --commit 20240116113420705 --sortBy &#34;Partition Path&#34;
+
+----- 文件系统视图，分区由文件组组成，文件组包含按时间片提交的文件切片组成
+hudi-&gt; show fsview all
+hudi-&gt; show fsview latest --partitionPath &#34;2018/08/31&#34;
+----- 文件统计信息
+hudi-&gt; stats filesizes --partitionPath 2016/09/01 --sortBy &#34;95th&#34; --desc true --limit 10
+----- 写入耗时
+hudi-&gt; stats wa
+
+----- 查看待处理的压缩
+hudi-&gt; compactions show all
+</code></pre><h1 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h1><ul><li><a href=https://hudi.apache.org/tech-specs/>Apache Hudi Technical Specification</a> 官方的技术参考文档。</li><li>官网 <a href=https://hudi.apache.org/>Hudi</a> 提供了下载、文档等，最常用的可以参考 <a href=https://hudi.apache.org/docs/quick-start-guide>Quick Start</a> 中的内容。</li><li><a href=https://blog.datumagic.com/p/apache-hudi-from-zero-to-one-110>Apache Hudi: From Zero To One</a> 比较经典的 Hudi 相关材料。</li></ul></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/hdfs-basic-introduce/>HDFS 基本介绍</a></li><li><a class=text-body href=/cn/blog/kafka-commands-cheatsheet/>Kafka 常用命令</a></li><li><a class=text-body href=/cn/blog/hive-basic-introduce/>Hive 基本介绍</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>

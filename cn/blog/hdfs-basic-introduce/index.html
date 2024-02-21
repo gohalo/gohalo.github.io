@@ -1,0 +1,270 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>HDFS 基本介绍 | GoHalo</title><link rel=stylesheet href=/static/syntax.css><link rel=stylesheet href=https://gohalo.github.io/main.c459e32cfef70be8c28586c3b8bc93e2.css integrity="md5-xFnjLP73C+jChYbDuLyT4g==" crossorigin=anonymous><style type=text/css>.content-body p{text-indent:2em}.content-body li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Hadoop Distributed File System, HDFS
+"><link rel=canonical href=https://gohalo.github.io/cn/blog/hdfs-basic-introduce/><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/1","name":"","url":"https://gohalo.github.io/","sameAs":[],"image":{"@type":"ImageObject","@id":"https://gohalo.github.io/#/schema/image/1","url":"https://gohalo.github.io/\u003cnil\u003e","width":null,"height":null,"caption":""}},{"@type":"WebSite","@id":"https://gohalo.github.io/#/schema/website/1","url":"https://gohalo.github.io/","name":"GoHalo","description":"","publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"}},{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/hdfs-basic-introduce/","url":"https://gohalo.github.io/cn/blog/hdfs-basic-introduce/","name":"HDFS 基本介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/#/schema/website/1"},"about":{"@id":"https://gohalo.github.io/#/schema/person/1"},"datePublished":"2022-07-21T22:23:32CET","dateModified":"2022-07-21T22:23:32CET","breadcrumb":{"@id":"https://gohalo.github.io/cn/blog/hdfs-basic-introduce/#/schema/breadcrumb/1"},"primaryImageOfPage":{"@id":"https://gohalo.github.io/cn/blog/hdfs-basic-introduce/#/schema/image/2"},"inLanguage":"","potentialAction":[{"@type":"ReadAction","target":["https://gohalo.github.io/cn/blog/hdfs-basic-introduce/"]}]},{"@type":"BreadcrumbList","@id":"https://gohalo.github.io/cn/blog/hdfs-basic-introduce/#/schema/breadcrumb/1","name":"Breadcrumbs","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/","url":"https://gohalo.github.io/","name":"Home"}},{"@type":"ListItem","position":2,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/","url":"https://gohalo.github.io/cn/","name":"Cn"}},{"@type":"ListItem","position":3,"item":{"@type":"WebPage","@id":"https://gohalo.github.io/cn/blog/","url":"https://gohalo.github.io/cn/blog/","name":"Blog"}},{"@type":"ListItem","position":4,"item":{"@id":"https://gohalo.github.io/cn/blog/hdfs-basic-introduce/"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://gohalo.github.io/#/schema/article/1","headline":"HDFS 基本介绍","description":"","isPartOf":{"@id":"https://gohalo.github.io/cn/blog/hdfs-basic-introduce/"},"mainEntityOfPage":{"@id":"https://gohalo.github.io/cn/blog/hdfs-basic-introduce/"},"datePublished":"2022-07-21T22:23:32CET","dateModified":"2022-07-21T22:23:32CET","author":{"@id":"https://gohalo.github.io/#/schema/person/2"},"publisher":{"@id":"https://gohalo.github.io/#/schema/person/1"},"image":{"@id":"https://gohalo.github.io/cn/blog/hdfs-basic-introduce/#/schema/image/2"}}]},{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://gohalo.github.io/#/schema/person/2","name":null,"sameAs":[]}]},{"@context":"https://schema.org","@graph":[{"@type":"ImageObject","@id":"https://gohalo.github.io/cn/blog/hdfs-basic-introduce/#/schema/image/2","url":null,"contentUrl":null,"caption":"HDFS 基本介绍"}]}]}</script><meta name=theme-color content><link rel=icon href=https://gohalo.github.io/favicon.ico sizes=any><link rel=icon type=image/svg+xml href=https://gohalo.github.io/logo.svg><link rel=apple-touch-icon sizes=180x180 href=https://gohalo.github.io/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=https://gohalo.github.io/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=https://gohalo.github.io/favicon-16x16.png><link rel=manifest crossorigin=use-credentials href=https://gohalo.github.io/site.webmanifest></head><body class="blog single"><div class=sticky-top><div class=header-bar></div><header class="navbar navbar-expand-lg navbar-light doks-navbar"><nav class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class="btn btn-menu order-2 d-block d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasDoks aria-controls=offcanvasDoks aria-label="Open main menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><div class="offcanvas offcanvas-end border-0 py-lg-1" tabindex=-1 id=offcanvasDoks data-bs-backdrop=true aria-labelledby=offcanvasDoksLabel><div class="header-bar d-lg-none"></div><div class="offcanvas-header d-lg-none"><h2 class="h5 offcanvas-title ps-2" id=offcanvasDoksLabel><a class=text-dark href=/cn/>GoHalo</a></h2><button type=button class="btn-close text-reset me-2" data-bs-dismiss=offcanvas aria-label="Close main menu"></button></div><div class="offcanvas-body p-4 p-lg-0"><ul class="nav flex-column flex-lg-row align-items-lg-center mt-2 mt-lg-0 ms-lg-2 me-lg-auto"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle ps-0 py-1" href=# id=navbarDropdownMenuLink role=button data-bs-toggle=dropdown aria-expanded=false>项目
+<span class=dropdown-caret><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"/></svg></span></a><ul class="dropdown-menu dropdown-menu-main shadow rounded border-0" aria-labelledby=navbarDropdownMenuLink><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class=dropdown-item href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/>博客</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class="nav-link ps-0 py-1" href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg><small class="ms-2 d-lg-none">GitHub</small></a></li></ul></div></div></nav></header></div><div class="wrap container-xxl" role=document><div class=content><article><div class="row justify-content-center"><nav class="toc d-none d-xl-block col-xl-3"><div class=d-xl-none><button class="btn btn-outline-primary btn-sm doks-toc-toggle collapsed" type=button data-bs-toggle=collapse data-bs-target=#onThisPage aria-controls=doks-docs-nav aria-expanded=false aria-label="Toggle On this page navigation">
+<span>页面目录</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-expand" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Expand</title><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" class="doks doks-collapse" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Collapse</title><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></span></button><div class=collapse id=onThisPage><div class="card card-body mt-3 py-1"><div class=page-links><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#namenode>NameNode</a></li></ul></li><li><a href=#安装部署>安装部署</a><ul><li><a href=#ssl-配置>SSL 配置</a></li><li><a href=#安全集群>安全集群</a></li></ul></li><li><a href=#常用命令>常用命令</a></li><li><a href=#用户>用户</a></li></ul></nav></div></div></div></div><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#namenode>NameNode</a></li></ul></li><li><a href=#安装部署>安装部署</a><ul><li><a href=#ssl-配置>SSL 配置</a></li><li><a href=#安全集群>安全集群</a></li></ul></li><li><a href=#常用命令>常用命令</a></li><li><a href=#用户>用户</a></li></ul></nav></nav><div class="blog-wrapper col-md-12 col-xl-9"><div class=blog-header><h1>HDFS 基本介绍</h1><div class="blog-meta mb-3"><span class=ms-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5.0 010 .708l-3 3a.5.5.0 01-.708.0l-1.5-1.5a.5.5.0 11.708-.708L7.5 9.793l2.646-2.647a.5.5.0 01.708.0z"/><path d="M3.5.0a.5.5.0 01.5.5V1h8V.5a.5.5.0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5.0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/></svg></span><span class=mx-2>2022-07-21</span>
+<span class=mx-2><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentcolor" class="bi bi-tags" viewBox="0 0 16 16"><path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414.0l-7-7A1 1 0 012 6.586V2z"/><path d="M5.5 5a.5.5.0 110-1 .5.5.0 010 1zm0 1a1.5 1.5.0 100-3 1.5 1.5.0 000 3zM1 7.086a1 1 0 00.293.707L8.75 15.25l-.043.043a1 1 0 01-1.414.0l-7-7A1 1 0 010 7.586V3a1 1 0 011-1v5.086z"/></svg></span><a class="btn btn-light" href=https://gohalo.github.io/tags/warehouse/ role=button>warehouse</a></div></div><hr><div class=content-body><p>Hadoop Distributed File System, HDFS</p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>在 Hadoop 生态下的分布式文件系统，有如下的特点：</p><ol><li>大数据文件，适合 TB 级大文件存储。</li><li>分块多副本，将完整大文件分块多副本均匀存储到不同服务器上，可以提高并发以及防止数据丢失。</li><li>流式数据写入，无法动态修改文件内容，文件写入后不再变化，即使变化也只能在文件末尾添加内容。</li></ol><p>当单个文件比较大时，单块磁盘无法保存，那么可以将其切分成很多小块，然后分散存储在不同的服务器上，各个服务器通过网络连接，组成一个整体。在 <code>3.x</code> 以上的版本中每个块是 <code>128M</code>，会自动切割并分散存储在 <code>DataNode</code> 节点上，用户可以在 <code>hdfs-site.xml</code> 配置文件中通过 <code>dfs.replication</code> 参数配置副本数。</p><p>采用的是主从结构，主节点为 <code>NameNode</code> 从节点为 <code>DataNode</code> 。</p><h2 id=namenode>NameNode <a href=#namenode class=anchor aria-hidden=true>#</a></h2><p>文件被分成了多份 Block 数据，在访问某个文件时需要确定由哪些文件组成，具体在哪些机器上，这也就是所谓的元数据。文件、Block、目录等大概会占用 150 字节，所以比较适合大文件存储，而小文件的存储效率过低。</p><p>所有的读写操作都与元数据相关，当文件很多之后，对应的元数据必然很大，那么就可能会引入并发性能问题，所以，性能、高可用是元数据操作的关键特性。</p><h1 id=安装部署>安装部署 <a href=#%e5%ae%89%e8%a3%85%e9%83%a8%e7%bd%b2 class=anchor aria-hidden=true>#</a></h1><p>可以从 <a href=https://hadoop.apache.org/releases.html>Hadoop Release</a> 下载相应的二进制版本，一些默认配置可以参考 <code>share/doc/hadoop/hadoop-project-dist</code> 目录。</p><pre tabindex=0><code>----- 解压保存在/opt/module/hadoop目录下
+# mkdir -p /opt/module/hadoop/data/{data,name}
+----- 添加环境变量，并验证安装正常
+# vim /etc/profile
+export HDFS_NAMENODE_USER=root
+export HDFS_DATANODE_USER=root
+export HDFS_SECONDARYNAMENODE_USER=root
+export HADOOP_HOME=/opt/module/hadoop
+export PATH=${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin:${PATH}
+# source /etc/profile
+# hadoop version
+----- 配置免密登录，注意，对本机也需要进行配置，或者直接添加到
+# ssh-keygen -t rsa -f ~/.ssh/id_rsa -N &#34;&#34; -C &#34;hadoop related&#34;
+# ssh-copy-id -i ~/.ssh/id_rsa.pub root@localhost
+</code></pre><p>直接在单节点上部署。</p><pre tabindex=0><code>----- 修改全局参数，例如HDFS的URL、Hadoop临时目录等
+# vim ${HADOOP_HOME}/etc/hadoop/core-site.xml
+&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;
+&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;
+&lt;configuration&gt;
+  &lt;property&gt;
+    &lt;name&gt;fs.defaultFS&lt;/name&gt;
+    &lt;value&gt;hdfs://package:8020/&lt;/value&gt;
+  &lt;/property&gt;
+&lt;/configuration&gt;
+
+----- HDFS相关的参数，例如名称和数据节点的保存位置，文件副本数，文件读取权限
+# vim ${HADOOP_HOME}/etc/hadoop/hdfs-site.xml
+&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;
+&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;
+&lt;configuration&gt;
+  &lt;property&gt;
+    &lt;name&gt;dfs.namenode.http-address&lt;/name&gt;
+    &lt;value&gt;0.0.0.0:9870&lt;/value&gt;
+  &lt;/property&gt;
+  &lt;property&gt;
+    &lt;name&gt;dfs.replication&lt;/name&gt;
+    &lt;value&gt;1&lt;/value&gt;
+  &lt;/property&gt;
+  &lt;property&gt;
+    &lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;
+    &lt;value&gt;/opt/module/hadoop/data/name&lt;/value&gt;
+  &lt;/property&gt;
+  &lt;property&gt;
+    &lt;name&gt;dfs.datanode.name.dir&lt;/name&gt;
+    &lt;value&gt;/opt/module/hadoop/data/data&lt;/value&gt;
+  &lt;/property&gt;
+&lt;/configuration&gt;
+
+----- 格式化NameNode的命令，详见如下的介绍
+# hdfs namenode -format
+
+----- 如果通过start-dfs.sh启动会同时开启SecondaryNamenode，这里直接简单启动
+# hadoop-daemon.sh start namenode
+# hadoop-daemon.sh start datanode
+
+----- 上述命令适合比较老的集群
+# hdfs --daemon stop namenode
+# hdfs --daemon start namenode
+# hdfs --daemon stop datanode
+# hdfs --daemon start datanode
+</code></pre><p>Hadoop 集群中的 NameNode 节点用来管理文件系统的命令空间以及文件块的元数据信息，通常在部署、重建、修复集群时使用，会清理 NameNode 上的所有元数据，包括文件、目录、权限、命名空间等信息，将 NameNode 格式化为一个新的状态，所以执行前需要先备份数据。</p><p>启动之后就可以通过上述的 <code>dfs.namenode.http-address</code> 配置项访问 Hadoop 界面。</p><h2 id=ssl-配置>SSL 配置 <a href=#ssl-%e9%85%8d%e7%bd%ae class=anchor aria-hidden=true>#</a></h2><p>Java 中包含了 KeyStore 和 TrustStore 两种，本质上都是 KeyStore 只是存放密钥的所有者不同而已，只不过通过文件名区分类型以及用途，其中 KeyStore 存放自己的私钥和公钥，而 TrustStore 则存放自己信任对象的公钥。</p><pre tabindex=0><code>----- 创建CA证书，密码为 YourPass ，正常需要发送到各个 Client 节点，单机就不需要发送了
+openssl req -new -x509 -keyout /opt/module/keys/ssl/hadoop_ca_key -out /opt/module/keys/ssl/hadoop_ca_cert -days 9999 -subj &#39;/C=CN/ST=ZheJiang/L=HangZhou/O=FooBar/OU=Security/CN=example.com&#39;
+----- 生成 KeyStore 文件，并导出证书文件，需要输入 KeyStore 的密码，可以通过 -storetype PKCS12 配置不同格式，不过建议使用默认
+keytool -genkey -keystore hadoop.keystore -alias localhost -validity 9999 -keyalg RSA -keysize 2048 -dname &#34;C=CN, ST=ZheJIang, L=HangZhou, O=Foobar, OU=Security, CN=example.com&#34;
+keytool -certreq -alias localhost -keystore hadoop.keystore -file hadoop_cert
+----- 导入并生成 truststore 文件
+keytool -keystore hadoop.truststore -alias CARoot -import -file hadoop_ca_cert
+----- 用CA对导出证书进行签名
+openssl x509 -req -CA hadoop_ca_cert -CAkey hadoop_ca_key -in hadoop_cert -out hadoop_cert_signed -days 9999 -CAcreateserial
+----- 将CA和已经签名的证书导入 keystore 中
+keytool -keystore hadoop.keystore -alias CARoot -import -file hadoop_ca_cert
+keytool -keystore hadoop.keystore -alias localhost -import -file hadoop_cert_signed
+</code></pre><p>然后修改如下配置。</p><pre tabindex=0><code>----- 修改 hdfs 相关配置文件，设置为支持 HTTPS
+# vim /opt/module/hadoop/etc/hadoop/hdfs-site.xml
+&lt;property&gt;
+  &lt;name&gt;dfs.http.policy&lt;/name&gt;
+  &lt;value&gt;HTTPS_ONLY&lt;/value&gt;
+&lt;/property&gt;
+----- 修改客户端配置文件，直接从模板复制即可
+# vim /opt/module/hadoop/etc/hadoop/ssl-client.xml
+&lt;property&gt;
+  &lt;name&gt;ssl.client.truststore.location&lt;/name&gt;
+  &lt;value&gt;/opt/module/keys/ssl/hadoop.truststore&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.client.truststore.password&lt;/name&gt;
+  &lt;value&gt;YourPass&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.client.truststore.type&lt;/name&gt;
+  &lt;value&gt;jks&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+  &lt;name&gt;ssl.client.keystore.location&lt;/name&gt;
+  &lt;value&gt;/opt/module/keys/ssl/hadoop.keystore&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.client.keystore.password&lt;/name&gt;
+  &lt;value&gt;YourPass&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.client.keystore.keypassword&lt;/name&gt;
+  &lt;value&gt;YourPass&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.client.keystore.type&lt;/name&gt;
+  &lt;value&gt;PCKS12&lt;/value&gt;
+&lt;/property&gt;
+----- 修改服务端配置文件，同样从模板复制即可
+# vim /opt/module/hadoop/etc/hadoop/ssl-server.xml
+&lt;property&gt;
+  &lt;name&gt;ssl.server.truststore.location&lt;/name&gt;
+  &lt;value&gt;/opt/module/keys/ssl/hadoop.truststore&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.server.truststore.password&lt;/name&gt;
+  &lt;value&gt;YourPass&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.server.truststore.type&lt;/name&gt;
+  &lt;value&gt;jks&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+  &lt;name&gt;ssl.server.keystore.location&lt;/name&gt;
+  &lt;value&gt;/opt/module/keys/ssl/hadoop.keystore&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.server.keystore.password&lt;/name&gt;
+  &lt;value&gt;YourPass&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.server.keystore.keypassword&lt;/name&gt;
+  &lt;value&gt;YourPass&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.server.keystore.type&lt;/name&gt;
+  &lt;value&gt;PKCS12&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;ssl.server.exclude.cipher.list&lt;/name&gt;
+  &lt;value&gt;TLS_ECDHE_RSA_WITH_RC4_128_SHA,SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA,
+  SSL_RSA_WITH_DES_CBC_SHA,SSL_DHE_RSA_WITH_DES_CBC_SHA,
+  SSL_RSA_EXPORT_WITH_RC4_40_MD5,SSL_RSA_EXPORT_WITH_DES40_CBC_SHA,
+  SSL_RSA_WITH_RC4_128_MD5&lt;/value&gt;
+&lt;/property&gt;
+</code></pre><p>注意，此时需要通过默认的 <code>9871</code> 端口访问 NameNode 的 Web 页面，也可以在 <code>hdfs-site.xml</code> 文件中通过 <code>dfs.namenode.https-address</code> 配置项修改。</p><h2 id=安全集群>安全集群 <a href=#%e5%ae%89%e5%85%a8%e9%9b%86%e7%be%a4 class=anchor aria-hidden=true>#</a></h2><p>通过 Kerberos 配置，其中的 DataNode 启动时会对安全性进行检查，除了要配置 Kerberos 相关的内容外，还需要配置 SSL 才行。另外，因为进行鉴权时经常会验证域名，所以建议要先配置好，这里本地使用 package 作为主机名。</p><pre tabindex=0><code>----- 创建一个Principal
+# kadmin -proot/admin -w&#39;Mrs@2022&#39; -q&#34;addprinc -randkey hadoop/package&#34;
+----- 生成所需的Keytab文件
+# kadmin -proot/admin -w&#39;Mrs@2022&#39; -q&#34;ktadd -k /opt/module/keys/hadoop.keytab hadoop/package&#34;
+----- 可以加载到缓存
+# kinit -kt /opt/module/keys/hadoop.keytab hadoop/package
+----- 注意这里有个大坑，详见 Tips#1
+# klist
+Ticket cache: FILE:/tmp/krb5cc_0
+Default principal: hadoop/package@EXAMPLE.COM
+
+Valid starting       Expires              Service principal
+08/24/2023 11:12:55  08/25/2023 11:12:55  krbtgt/EXAMPLE.COM@EXAMPLE.COM
+        renew until 08/24/2023 11:12:55
+</code></pre><p>查看时必须要保证 <code>Ticket Cache</code> 信息是以 <code>FILE</code> 的格式保存，在 CentOS 中还可能存在 <code>KEYRING</code> 和 <code>KCM</code> 等其它格式，需要将 <code>default_ccache_name</code> 配置项删除或者修改为 <code>FILE:/tmp/krb5cc_%{uid}</code> 这种方式。</p><p>注意，修改包括 <code>/etc/krb5.conf</code> 和 <code>/etc/krb5.conf.d/</code> 中的相关配置。</p><p>然后增加如下配置项，并重启 NameNode 和 DataNode 即可，另外，调试可以通过如下环境变量开启。</p><pre tabindex=0><code>export HADOOP_ROOT_LOGGER=DEBUG,console
+export HADOOP_OPTS=&#34;-Dsun.security.krb5.debug=true -Djavax.net.debug=ssl&#34;
+</code></pre><p>然后修改配置文件。</p><pre tabindex=0><code>----- Hadoop开启安全认证
+# vim /opt/module/hadoop/etc/hadoop/core-site.xml
+&lt;property&gt;
+  &lt;name&gt;hadoop.security.authorization&lt;/name&gt;
+  &lt;value&gt;true&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;hadoop.security.authentication&lt;/name&gt;
+  &lt;value&gt;kerberos&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;hadoop.rpc.protection&lt;/name&gt;
+  &lt;value&gt;authentication&lt;/value&gt;
+&lt;/property&gt;
+
+----- HDFS配置安全规则
+# vim /opt/module/hadoop/etc/hadoop/hdfs-site.xml
+&lt;property&gt; &lt;!-- HDFS开启安全配置 --&gt;
+  &lt;name&gt;dfs.block.access.token.enable&lt;/name&gt;
+  &lt;value&gt;true&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt; &lt;!-- NameNode开启安全配置 --&gt;
+  &lt;name&gt;dfs.namenode.kerberos.principal&lt;/name&gt;
+  &lt;value&gt;hadoop/_HOST@EXAMPLE.COM&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;dfs.namenode.keytab.file&lt;/name&gt;
+  &lt;value&gt;/opt/module/keys/hadoop.keytab&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;dfs.namenode.kerberos.internal.spnego.principal&lt;/name&gt;
+  &lt;value&gt;hadoop/_HOST@EXAMPLE.COM&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt; &lt;!-- DataNode开启安全配置 --&gt;
+  &lt;name&gt;dfs.datanode.kerberos.principal&lt;/name&gt;
+  &lt;value&gt;hadoop/_HOST@ESRICHINA.COM&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;dfs.datanode.keytab.file&lt;/name&gt;
+  &lt;value&gt;/opt/module/keys/hadoop.keytab&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;dfs.datanode.kerberos.https.principal&lt;/name&gt;
+  &lt;value&gt;hadoop/_HOST@EXAMPLE.COM&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;dfs.datanode.address&lt;/name&gt;
+  &lt;value&gt;0.0.0.0:61004&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;dfs.datanode.http.address&lt;/name&gt;
+  &lt;value&gt;0.0.0.0:61006&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+  &lt;name&gt;dfs.data.transfer.protection&lt;/name&gt;
+  &lt;value&gt;integrity&lt;/value&gt;
+&lt;/property&gt;
+</code></pre><p>默认 Hadoop 会使用 Kerberos Principal 中的第一部分作为用户名，如果之前使用的是 <code>root</code> 创建的资源，那么当切换为类似 <code>hadoop/package@EXAMPLE.com</code> 这种的默认对应的用户为 <code>hadoop</code>，那么就会出现权限问题，最简单的方式是将其统一进行映射。</p><pre tabindex=0><code>  &lt;property&gt;
+    &lt;name&gt;hadoop.security.auth_to_local&lt;/name&gt;
+    &lt;value&gt;
+RULE:[2:$1@$0](.*@EXAMPLE.COM)s/.*/root/
+DEFAULT
+    &lt;/value&gt;
+  &lt;/property&gt;
+</code></pre><h1 id=常用命令>常用命令 <a href=#%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4 class=anchor aria-hidden=true>#</a></h1><pre tabindex=0><code>----- 查看集群用户信息
+hadoop fs -ls /user
+----- 检查集群状态，包括NS、机器数等
+hdfs fsck /
+----- 设置副本数
+hadoop fs -setrep -R 4 FilePath
+
+----- 查看根目录，通过-R参数递归查看
+hadoop fs -ls /
+----- 统计信息，包括了目录个数、文件个数、文件总大小等信息
+hadoop fs -count &lt;hdfs path&gt;
+----- 文件大小，可以使用参数-h方便可读、-s总大小
+hadoop fs -du &lt;hdfs path&gt;
+----- 查看状态信息，格式有%b(文件大小)、%o(Block大小)、%n(文件名)、%r(副本个数)、%y(最后一次修改日期)
+hadoop fs -stat [format] &lt;hdfs path&gt;
+----- 上传文件，目的地可以是文件名或者目录，注意路径必须存在
+hadoop fs -put &lt;local file path&gt; &lt;hdfs file/dir path&gt;
+----- 下载文件，如果本地文件存在则不会下载
+hadoop fs -get &lt;hdfs file/dir path&gt; &lt;local file/dir path&gt;
+----- 删除文件，如果是目录需要使用-r参数，默认会放到回收站
+hadoop fs -rm &lt;hdfs file/dir path&gt;
+hadoop fs -rm -r -skipTrash &lt;hdfs file/dir path&gt;
+----- 创建目录，多个层级需要使用-p参数
+hadoop fs -mkdir &lt;hdfs dir path&gt;
+----- 删除目录，需要先确保目录为空
+hadoop fs -rmdir &lt;hdfs dir path&gt;
+</code></pre><p>其它，常用命令包括了复制 <code>-cp</code>、移动 <code>-mv</code> 等。</p><pre tabindex=0><code>----- 清空回收站，数据会在一分钟后清除
+hdfs dfs -expunge
+----- 日志分区占用空间大小
+hdfs dfs -du -s -h /tmp/logs/dc_admin/logs
+----- 检查健康的节点
+hadoop dfsadmin -report
+</code></pre><h1 id=用户>用户 <a href=#%e7%94%a8%e6%88%b7 class=anchor aria-hidden=true>#</a></h1><p>HDFS 提供了一套兼容 POSIX 的文件权限模型，包括粗粒度的 POSIX UGO 模型和细粒度的 POSIX ACL 协议。在使用时会从用户身份认证、用户组映射、数据访问鉴权三个环节进行验证，如果其中某个失败，那么就会返回报错。</p><p>使用客户端的常见操作，例如上传、下载等，都会通过一个用户来进行操作，当开启 ACL 之后还会通过用户信息来进行权限校验，默认会按照如下规则按照优先级获取：</p><ul><li><code>export HADOOP_USER_NAME=root</code> 通过环境变量配置，相比来说优先级更高。</li><li><code>export HADOOP_CLIENT_OPTS=-DHADOOP_USER_NAME=root</code> 执行 hdfs 脚本时会作为参数传入。</li><li>使用当前用户。</li></ul><p>如果是启用了 Kerberos 认证时，包含了：A) 从系统缓存票据 (Ticket) 内获取用户信息；B) 指定 Principal 以及 Keytab 文件调用 Hadoop 接口完成 Kerberos 认证并从中获取用户信息。</p><pre tabindex=0><code>----- 通过缓存票据完成鉴权
+# kinit root
+# klist
+# hdfs dfs -mkdir /user
+</code></pre></div></div></div></article><div class=related-posts><hr><div class="row justify-content-center"><div class=col><h2 class=section-title>相关阅读</h2></div></div><ul><li><a class=text-body href=/cn/blog/kafka-commands-cheatsheet/>Kafka 常用命令</a></li><li><a class=text-body href=/cn/blog/hive-basic-introduce/>Hive 基本介绍</a></li><li><a class=text-body href=/cn/blog/warehouse-format-parquet/>Parquet 文件格式详解</a></li></ul></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class="order-first order-lg-last text-center"><ul class=list-inline><li class=list-inline-item><a href=/privacy-policy/>隐私声明</a></li></ul></div></div><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer></body></html>
