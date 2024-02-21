@@ -1,0 +1,225 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>ETCD 简介 | GoHalo</title><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content="Etcd 是一个分布式可靠的键值存储系统，提供了与 ZooKeeper 相似的功能，通过 GoLang 开发而非 Java ，采用 RAFT 算法而非 PAXOS 算法。
+相比来所，etcd 的安装使用更加简单有效。
+"><link rel=stylesheet href=https://gohalo.github.io/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.eb11f1061f1f48355609e7868ebc993f.css integrity="md5-6xHxBh8fSDVWCeeGjryZPw==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn btn-doks-light dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>ETCD 简介</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2016-08-14</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/database/ role=button>database</a></div></div><hr><div class=content><p>Etcd 是一个分布式可靠的键值存储系统，提供了与 ZooKeeper 相似的功能，通过 GoLang 开发而非 Java ，采用 RAFT 算法而非 PAXOS 算法。</p><p>相比来所，etcd 的安装使用更加简单有效。</p><p><img src=images/etcd-horizontal-color.svg alt="ectd logo" title="etcd logo"></p><h1 id=简介>简介 <a href=#%e7%ae%80%e4%bb%8b class=anchor aria-hidden=true>#</a></h1><p>A distributed, reliable key-value store for the most critical data of a distributed system.</p><p>严格来说，ETCD 主要用于保存一些元数据信息，一般小于 1GB 对大于 1GB 的可以使用新型的分布式数据库，例如 TiDB 等，通常适用于 CP 场景。</p><h2 id=安装>安装 <a href=#%e5%ae%89%e8%a3%85 class=anchor aria-hidden=true>#</a></h2><p>可以直接从 <a href=https://github.com/coreos/etcd/releases>github release</a> 下载非源码包，也就是已经编译好的二进制包，一般包括了 etcd + etcdctl 。</p><h3 id=源码安装>源码安装 <a href=#%e6%ba%90%e7%a0%81%e5%ae%89%e8%a3%85 class=anchor aria-hidden=true>#</a></h3><p>下载 ectd 源码构建，在源码中，实际上已经包含了工程所使用的库，在编译时可以直接修改 build 脚本，例如对于 raftexample 的编译，在该脚本中会设置一堆的环境变量，以引用本项目中的三方库。</p><pre tabindex=0><code>----- 需要go编译器支持，设置好GOPATH环境变量
+$ go version
+$ echo $GOPATH
+
+----- 新建目录并下载代码，并编译
+$ mkdir -p $GOPATH/src/github.com/coreos
+$ cd $GOPATH/src/github.com/coreos
+$ git clone https://github.com/coreos/etcd.git
+$ cd etcd &amp;&amp; git checkout v3.1.0
+$ ./build
+$ ./bin/etcd
+</code></pre><h2 id=单机单进程测试>单机单进程测试 <a href=#%e5%8d%95%e6%9c%ba%e5%8d%95%e8%bf%9b%e7%a8%8b%e6%b5%8b%e8%af%95 class=anchor aria-hidden=true>#</a></h2><p>启动单进程服务，并进行测试。</p><pre tabindex=0><code>----- 启动单个本地进程，会监听127.1:2379端口
+$ ./etcd
+
+----- 使用API v3版本，并测试添加获取参数
+$ export ETCDCTL_API=3
+$ ./etcdctl put foo bar
+OK
+$ ./etcdctl get foo
+foo
+bar
+
+$ ./etcdctl --write-out=table --endpoints=localhost:2379 member list
+
+----- 只打印值信息，不打印key
+$ ./etcdctl get foo --print-value-only
+bar
+----- 打印十六进制格式
+$ ./etcdctl get foo --hex
+\x66\x6f\x6f
+\x62\x61\x72
+----- 指定范围为foo~foo3
+$ ./etcdctl get foo foo3
+foo
+foo1
+foo2
+foo3
+----- 指定前缀，且只显示前两个
+$ ./etcdctl get --prefix --limit=2 foo
+foo
+foo1
+</code></pre><h2 id=单机集群测试>单机集群测试 <a href=#%e5%8d%95%e6%9c%ba%e9%9b%86%e7%be%a4%e6%b5%8b%e8%af%95 class=anchor aria-hidden=true>#</a></h2><p>在搭建本地集群时，可以直接使用 goreman 工具，默认使用的是当前目录下的 Procfile 配置文件，运行前需要确保配置正确。</p><pre tabindex=0><code>----- 检查配置是否合法
+$ goreman check
+----- 启动，或者指定配置文件启动
+$ goreman start
+$ goreman -f MyProcfile start
+----- 查看当前的状态
+$ goreman run status
+----- 停止、启动、重启某个进程(stop start restart)
+$ goreman run stop PROCESS_NAME
+</code></pre><p>简单来说，通过 <code>goreman start</code> 启动即可，此时会在当前目录下生成 <code>infra{1,2,3}.etcd</code> 三个目录，用于保存各个进程的信息。</p><h1 id=api>API <a href=#api class=anchor aria-hidden=true>#</a></h1><p>实际上 API 基本上决定了 etcd 提供了哪些服务，通过 HTTP API 对外提供服务，这种接口更方便各种语言对接，命令行可以使用 httpie 或者 curl 调用。</p><p>数据按照树形的结构组织，类似于 Linux 的文件系统，也有目录和文件的区别，不过一般被称为 nodes，其中数据相关的 endpoint 都是以 <code>/v2/keys</code> 开头 (v2 表示当前 API 的版本)，比如 <code>/v2/keys/names/cizixs</code> 。</p><p>要创建一个值，只要使用 PUT 方法在对应的 url endpoint 设置就行。如果对应的 key 已经存在， PUT 也会对 key 进行更新。</p><h2 id=curd>CURD <a href=#curd class=anchor aria-hidden=true>#</a></h2><pre tabindex=0><code>----- 不存在则创建，否则修改，当超过TTL后，会自动删除
+http PUT http://127.0.0.1:2379/v2/keys/message value==&#34;hello, etcd&#34; ttl==5
+http GET http://127.0.0.1:2379/v2/keys/message
+http DELETE http://127.0.0.1:2379/v2/keys/message
+</code></pre><p>在创建 key 的时候，如果它所在路径的目录不存在，会自动被创建，所以在多数情况下我们不需要关心目录的创建，如果要单独创建一个目录可以指定参数 <code>dir=true</code>。</p><pre tabindex=0><code>http PUT http://127.0.0.1:2379/v2/keys/anotherdir dir==true
+</code></pre><p>注意，ECTD 提供了类似 Linux 中 <code>.</code> 开头的隐藏机制，以 <code>_</code> 开头的节点也是默认隐藏的，不会在列出目录的时候显示，只有知道隐藏节点的完整路径，才能够访问它的信息。</p><h2 id=监听机制>监听机制 <a href=#%e7%9b%91%e5%90%ac%e6%9c%ba%e5%88%b6 class=anchor aria-hidden=true>#</a></h2><p>通过监听机制，可以在某个 key 发生变化时，通知对应的客户端，主要用于服务发现，集群中有信息更新时可以被及时发现并作出相应处理。</p><pre tabindex=0><code>http http://127.0.0.1:2379/v2/keys/foo wait==true
+</code></pre><p>使用 <code>recursive=true</code> 参数，可以用来监听某个目录。</p><h2 id=比较更新>比较更新 <a href=#%e6%af%94%e8%be%83%e6%9b%b4%e6%96%b0 class=anchor aria-hidden=true>#</a></h2><p>在分布式环境中，需要解决多个客户端的竞争问题，通过 etcd 提供的原子操作 CompareAndSwap (CAS)，可以很容易实现分布式锁。简单来说，这个命令只有在客户端提供的条件成立的情况下才会更新对应的值。</p><pre tabindex=0><code>http PUT http://127.0.0.1:2379/v2/keys/foo prevValue==bar value==changed
+</code></pre><p>只有当之前的值为 bar 时，才会将其更新成 changed 。</p><h2 id=比较删除>比较删除 <a href=#%e6%af%94%e8%be%83%e5%88%a0%e9%99%a4 class=anchor aria-hidden=true>#</a></h2><p>同样是原子操作，只有在客户端提供的条件成立的情况下，才会执行删除操作；支持 prevValue 和 prevIndex 两种条件检查，没有 prevExist，因为删除不存在的值本身就会报错。</p><pre tabindex=0><code>http DELETE http://127.0.0.1:2379/v2/keys/foo prevValue==bar
+</code></pre><h2 id=监控集群>监控集群 <a href=#%e7%9b%91%e6%8e%a7%e9%9b%86%e7%be%a4 class=anchor aria-hidden=true>#</a></h2><p>Etcd 还保存了集群的数据信息，包括节点之间的网络信息，操作的统计信息。</p><h2 id=成员管理>成员管理 <a href=#%e6%88%90%e5%91%98%e7%ae%a1%e7%90%86 class=anchor aria-hidden=true>#</a></h2><p>在 <code>/v2/members</code> 下保存着集群中各个成员的信息。</p><h1 id=常见操作>常见操作 <a href=#%e5%b8%b8%e8%a7%81%e6%93%8d%e4%bd%9c class=anchor aria-hidden=true>#</a></h1><h2 id=etcdctl>etcdctl <a href=#etcdctl class=anchor aria-hidden=true>#</a></h2><p>这个实际上是封装了 HTTP 请求的一个客户端，用于更方便的与服务端进行交互。</p><pre tabindex=0><code>----- 设置一个key的值
+$ etcdctl set /message &#34;hello, etcd&#34;
+hello, etcd
+
+----- 获取key的值
+$ etcdctl get /message
+hello, etcd
+
+----- 获取key值的同时，显示更详细的元数据信息
+$ etcdctl -o extended get /message
+Key: /message
+Created-Index: 1073
+Modified-Index: 1073
+TTL: 0
+Index: 1073
+
+hello, etcd
+
+----- 如果获取的key不存在，则会直接报错
+$ etcdctl get /notexist
+Error:  100: Key not found (/notexist) [1048]
+
+----- 设置key的ttl，过期后会被自动删除
+$ etcdctl set /tempkey &#34;gone with wind&#34; --ttl 5
+gone with wind
+
+----- 如果key的值是&#34;hello, etcd&#34;，就把它替换为&#34;goodbye, etcd&#34;
+$ etcdctl set --swap-with-value &#34;hello, world&#34; /message &#34;goodbye, etcd&#34;
+Error:  101: Compare failed ([hello, world != hello, etcd]) [1050]
+$ etcdctl set --swap-with-value &#34;hello, etcd&#34; /message &#34;goodbye, etcd&#34;
+goodbye, etcd
+
+----- 仅当key不存在时创建
+$ etcdctl mk /foo bar
+bar
+$ etcdctl mk /foo bar
+Error:  105: Key already exists (/foo) [1052]
+
+----- 自动创建排序的key
+$ etcdctl mk --in-order /queue job1
+job1
+$ etcdctl mk --in-order /queue job2
+job2
+$ etcdctl ls --sort /queue
+/queue/00000000000000001053
+/queue/00000000000000001054
+
+----- 更新key的值或者ttl，只有当key已经存在的时候才会生效，否则报错
+$ etcdctl update /message &#34;I&#39;am changed&#34;
+I&#39;am changed
+$ etcdctl get /message
+I&#39;am changed
+$ etcdctl update /notexist &#34;I&#39;am changed&#34;
+Error:  100: Key not found (/notexist) [1055]
+$ etcdctl update --ttl 3 /message &#34;I&#39;am changed&#34;
+I&#39;am changed
+$ etcdctl get /message
+Error:  100: Key not found (/message) [1057]
+
+----- 删除某个key
+$ etcdctl mk /foo bar
+bar
+$ etcdctl rm /foo
+PrevNode.Value: bar
+$ etcdctl get /foo
+Error:  100: Key not found (/foo) [1062]
+
+----- 只有当key的值匹配的时候，才进行删除
+$ etcdctl mk /foo bar
+bar
+$ etcdctl rm --with-value wrong /foo
+Error:  101: Compare failed ([wrong != bar]) [1063]
+$ etcdctl rm --with-value bar /foo
+
+----- 创建一个目录
+$ etcdctl mkdir /dir
+
+----- 删除空目录
+$ etcdctl mkdir /dir/subdir/
+$ etcdctl rmdir /dir/subdir/
+
+----- 删除非空目录
+$ etcdctl rmdir /dir
+Error:  108: Directory not empty (/dir) [1071]
+$ etcdctl rm --recursive /dir
+
+----- 列出目录的内容
+$ etcdctl ls /
+/queue
+/anotherdir
+/message
+
+----- 递归列出目录的内容
+$ etcdctl ls --recursive /
+/anotherdir
+/message
+/queue
+/queue/00000000000000001053
+/queue/00000000000000001054
+
+----- 监听某个key，当key改变的时候会打印出变化
+$ etcdctl watch /message
+changed
+
+----- 监听某个目录，当目录中任何node改变的时候，都会打印出来
+$ etcdctl watch --recursive /
+[set] /message
+changed
+
+----- 一直监听，除非CTRL + C导致退出监听
+$ etcdctl watch --forever /message
+new value
+chaned again
+Wola
+
+----- 监听目录，并在发生变化的时候执行一个命令
+$ etcdctl exec-watch --recursive / -- sh -c &#34;echo change detected.&#34;
+change detected.
+change detected.
+
+----- 检查集群的健康状态
+$ etcdctl cluster-health
+
+----- 查看集群的成员列表
+$ etcdctl member list
+</code></pre><p><strong>注意</strong> 默认只保存了 1000 个历史事件，所以不适合有大量更新操作的场景，这样会导致数据的丢失，其使用的典型应用场景是配置管理和服务发现，这些场景都是读多写少的。</p><h2 id=clientv3>ClientV3 <a href=#clientv3 class=anchor aria-hidden=true>#</a></h2><p>在 ETCD 的源码目录下保存了一个 clientv3 的代码，详细可以参考 <a href=https://github.com/coreos/etcd/tree/master/clientv3>ETCD ClientV3</a> 。</p><h3 id=etcdctl-v3>etcdctl V3 <a href=#etcdctl-v3 class=anchor aria-hidden=true>#</a></h3><pre tabindex=0><code>----- 使用V3版本需要提前设置环境变量，否则etcdctl --version查看
+$ ETCDCTL_API=3 ./etcdctl version
+etcdctl version: 3.3.1
+API version: 2
+
+----- 查看当前集群的列表，默认使用本地2379端口，也可以通过参数指定
+$ ETCDCTL_API=3 ./etcdctl member list
+$ ETCDCTL_API=3 ./etcdctl --endpoints=127.0.0.1:2379,127.0.0.1:22379,127.0.0.1:32379 member list
+
+----- CURD，可以指定输出格式、前缀匹配
+$ ETCDCTL_API=3 ./etcdctl put foo &#34;Hello World!&#34;
+$ ETCDCTL_API=3 ./etcdctl get foo
+$ ETCDCTL_API=3 ./etcdctl --write-out=&#34;json&#34; get foo
+$ ETCDCTL_API=3 ./etcdctl --prefix get foo
+$ ETCDCTL_API=3 ./etcdctl --prefix del foo
+
+----- 查看集群状态
+$ ETCDCTL_API=3 ./etcdctl --write-out=table endpoint status
+$ ETCDCTL_API=3 ./etcdctl endpoint health
+
+----- 管理集群成员add remove update list
+$ ETCDCTL_API=3 ./etcdctl --write-out=table member list
+
+----- 查看告警
+$ ETCDCTL_API=3 ./etcdctl alarm list
+</code></pre><h2 id=压测>压测 <a href=#%e5%8e%8b%e6%b5%8b class=anchor aria-hidden=true>#</a></h2><p>在源码中内置了一个压测工具 <code>tools/benchmark</code> ，类似于 raftexample ，同样可以通过修改 <code>build</code> 文件编译。</p><p>详细的使用方法可以查看源码中的文档 <a href=https://github.com/coreos/etcd/blob/master/Documentation/op-guide/performance.md>Github op-guide performance</a> 。</p><pre tabindex=0><code>$ go build -o &#34;${out}/benchmark&#34; ${REPO_PATH}/tools/benchmark || return
+</code></pre><pre tabindex=0><code>----- 可以先查看当前集群的状态
+$ ETCDCTL_API=3 ./etcdctl --endpoints=127.0.0.1:2379,127.0.0.1:22379,127.0.0.1:32379 \
+     --write-out=table endpoint status
+
+$ ./benchmark --endpoints=127.0.0.1:2379 --target-leader --conns=1 --clients=1 \
+	put --key-size=8 --sequential-keys --total=10000 --val-size=256
+</code></pre><h1 id=参考>参考 <a href=#%e5%8f%82%e8%80%83 class=anchor aria-hidden=true>#</a></h1></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#简介>简介</a><ul><li><a href=#安装>安装</a></li><li><a href=#单机单进程测试>单机单进程测试</a></li><li><a href=#单机集群测试>单机集群测试</a></li></ul></li><li><a href=#api>API</a><ul><li><a href=#curd>CURD</a></li><li><a href=#监听机制>监听机制</a></li><li><a href=#比较更新>比较更新</a></li><li><a href=#比较删除>比较删除</a></li><li><a href=#监控集群>监控集群</a></li><li><a href=#成员管理>成员管理</a></li></ul></li><li><a href=#常见操作>常见操作</a><ul><li><a href=#etcdctl>etcdctl</a></li><li><a href=#clientv3>ClientV3</a></li><li><a href=#压测>压测</a></li></ul></li><li><a href=#参考>参考</a></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/js/bootstrap.bundle.min.js></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>

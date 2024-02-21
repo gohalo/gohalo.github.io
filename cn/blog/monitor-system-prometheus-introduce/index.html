@@ -1,0 +1,60 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Prometheus 监控系统 | GoHalo</title><meta name=robots content="index, follow"><meta name=googlebot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=bingbot content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"><meta name=google-site-verification content="p7jJ5d3kF9yxRhpIo5GgHXAZ1ATKVyZhV2kf6mEGOv0"><meta name=description content><link rel=stylesheet href=https://gohalo.github.io/css/font-awesome.min.css><link rel=stylesheet href=/css/syntax.min.c70103877c799b924f50023b6b01eca010d7e2808885a74f9ea662cc47379ae1.css integrity="sha256-xwEDh3x5m5JPUAI7awHsoBDX4oCIhadPnqZizEc3muE=" crossorigin=anonymous><link rel=stylesheet href=/css/main.min.eb11f1061f1f48355609e7868ebc993f.css integrity="md5-6xHxBh8fSDVWCeeGjryZPw==" crossorigin=anonymous><style type=text/css>.main p{text-indent:2em}.main li p{text-indent:0}</style><noscript><style>img.lazyload{display:none}</style></noscript></head><body><div class=sticky-top><div class=header-bar></div><nav class="navbar navbar-expand-lg navbar-light bg-light"><div class="container-xxl flex-wrap flex-lg-nowrap" aria-label="Main navigation"><a class="navbar-brand order-0" href=/cn aria-label=GoHalo>GoHalo</a>
+<button class=navbar-toggler type=button data-bs-toggle=collapse data-bs-target=#navbarSupportedContent aria-controls=navbarSupportedContent aria-expanded=false aria-label="Toggle navigation">
+<span class=navbar-toggler-icon></span></button><div class="collapse navbar-collapse" id=navbarSupportedContent><ul class="navbar-nav me-auto mb-2 mb-lg-0"><li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href=# id=navbarDropdown role=button data-bs-toggle=dropdown aria-expanded=false>项目</a><ul class=dropdown-menu aria-labelledby=navbarDropdown><li><a class=dropdown-item href=/cn/project/bastion/>Bastion</a></li><li><a class="dropdown-item disabled" href=/cn/project/bootserver/>BootServer</a></li></ul></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/>博客</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/archives/>归档</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/blog/tags/>标签</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/slide/>幻灯片</a></li><li class=nav-item><a class=nav-link aria-current=page href=/cn/docs/>文档</a></li></ul><hr class="text-black-50 my-4 d-lg-none"><div class=dropdown><button class="btn btn-doks-light dropdown-toggle" id=header-languages data-bs-toggle=dropdown aria-expanded=false data-bs-display=static>
+中文</button><ul class="dropdown-menu dropdown-menu-lg-end me-lg-2 shadow rounded border-0" aria-labelledby=header-languages><li><a class=dropdown-item rel=alternate href=https://gohalo.github.io/en hreflang=en lang=en>English</a></li></ul></div><ul class="nav flex-column flex-lg-row"><li class=nav-item><a class="nav-link social-link" href=/cn/about><i class="fa fa-user" aria-hidden=true></i></a></li><li class=nav-item><a class="nav-link social-link" href=https://github.com/gohalo title=GitHub><i class="fa fa-github-alt" aria-hidden=true></i></a></li></ul></div></div></nav></div><div class="main container-xxl" role=document><div class="blog row"><div class="col-md-12 col-xl-9 mt-4"><div class=header><h1>Prometheus 监控系统</h1><div class="meta mb-3"><i class="fa fa-calendar" aria-hidden=true></i>
+<span class=mx-2>2019-06-01</span>
+<i class="fa fa-tags" aria-hidden=true></i>
+<a class=text-body href=https://gohalo.github.io/cn/tags/linux/ role=button>linux</a>
+<a class=text-body href=https://gohalo.github.io/cn/tags/monitor/ role=button>monitor</a></div></div><hr><div class=content><h1 id=prometheus>Prometheus <a href=#prometheus class=anchor aria-hidden=true>#</a></h1><p>Prometheus 是由 SoundCloud 开发的一套监控系统，包括了基础的监控框架，报警系统以及时序列数据库(TSDB)。</p><ul><li>支持多维度数据模型；</li><li>灵活的查询语言，类 SQL 语言；</li></ul><p>数据的采集是通过 HTTP 协议周期性的拉取数据，所以只要暴露标准的 HTTP 接口即可 (被称为 exporter)，集成的成本很低，而且有很多开源的 exporter 直接使用。</p><h2 id=安装>安装 <a href=#%e5%ae%89%e8%a3%85 class=anchor aria-hidden=true>#</a></h2><p>假设使用的安装目录为 <code>/opt/promethues</code> ，在该目录下安装 <code>Prometheus</code>、<code>AlertManager</code> 等工具。</p><p>直接从 <a href=https://prometheus.io/download/>Prometheus Download</a> 上下载二进制包，然后复制到安装目录即可。</p><pre tabindex=0><code># prometheus --version
+# prometheus --config.file=prometheus.yml
+</code></pre><p>此时会启动一个默认的界面，可以直接访问安装机器的 9090 端口，如下是一些常见的 API 接口：</p><ul><li><code>/metrics</code> 显示自身运行状态，默认会自动采集；</li><li><code>/targets</code> 采集的目标URL，也就是exporter的地址；</li></ul><h2 id=配置文件>配置文件 <a href=#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6 class=anchor aria-hidden=true>#</a></h2><p>也就是启动的时候通过 <code>--config.file</code> 参数指定的文件。</p><pre tabindex=0><code>global:
+  scrape_interval:     15s # 默认的采集间隔
+  external_labels:
+    monitor: &#39;codelab-monitor&#39;
+scrape_configs:            # 抓取对象的配置
+  - job_name: &#39;prometheus&#39; # 会在如下配置的每条记录添加{&#39;job_name&#39;:&#39;prometheus&#39;}标签
+    scrape_interval: 5s    # 覆盖默认的采集间隔
+	static_configs:        # 也就是需要抓取的路径
+    - targets: [&#39;localhost:9090&#39;]
+	  labels:
+	    group: &#39;self&#39;
+</code></pre><p>详细配置可以参考 <a href=https://prometheus.io/docs/prometheus/latest/configuration/configuration/>Prometheus Configuration</a> 。</p><h2 id=系统配置>系统配置 <a href=#%e7%b3%bb%e7%bb%9f%e9%85%8d%e7%bd%ae class=anchor aria-hidden=true>#</a></h2><p>运行的时候会尽量是以非 root 用户运行。</p><pre tabindex=0><code># groupadd -g 3434 -o -r prometheus
+# useradd -u 3434 -o -r -g prometheus -m -d /opt/prometheus/prometheus -s /sbin/nologin prometheus
+</code></pre><p>新建 systemd 的相关配置，这样就不需要在管理日志等。</p><pre tabindex=0><code># cat /etc/systemd/system/prometheus.service
+[Unit]
+Description=Prometheus Monitor System
+After=network.target
+[Service]
+Type=simple
+User=prometheus
+ExecStart=/opt/prometheus/prometheus/prometheus --config.file=/opt/prometheus/prometheus/prometheus.yml --storage.tsdb.path=/opt/prometheus/prometheus/data
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
+# systemctl status prometheus
+# systemctl start prometheus
+</code></pre><h2 id=系统指标>系统指标 <a href=#%e7%b3%bb%e7%bb%9f%e6%8c%87%e6%a0%87 class=anchor aria-hidden=true>#</a></h2><p>主要是通过 <code>node_exporter</code> 实现，同样可以新建一个 systemd 的配置文件。</p><pre tabindex=0><code># cat /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Prometheus Node Exporter
+After=network.target
+[Service]
+Type=simple
+User=prometheus
+ExecStart=/opt/prometheus/node_exporter/node_exporter
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
+# systemctl restart node_exporter
+</code></pre><p>然后，在上述的配置文件中添加如下的内容。</p><pre tabindex=0><code>  - job_name: &#39;linux&#39;
+    scrape_interval: 5s
+    static_configs:
+    - targets: [&#39;localhost:9100&#39;]
+	  labels:
+	    group: &#39;host&#39;
+</code></pre><h1 id=grafana>Grafana <a href=#grafana class=anchor aria-hidden=true>#</a></h1><h2 id=安装-1>安装 <a href=#%e5%ae%89%e8%a3%85-1 class=anchor aria-hidden=true>#</a></h2><p>直接从 <a href=https://grafana.com/grafana/download>Grafana Download</a> 可以查看下载路径以及安装方式。</p><pre tabindex=0><code># systemctl start grafana-server.service
+</code></pre><p>然后通过 <code>3000</code> 端口访问即可，该端口通过 <code>/etc/grafana/grafana.ini</code> 中的 <code>http_port</code> 配置。</p><ol><li>通过 admin/admin 登录，此时需要修改为更安全的密码；</li><li>配置数据源，选择 Prometheus 并配置访问地址；</li><li>可以从 Prometheus 中直接导入默认的模板；</li></ol><h2 id=promql>PromQL <a href=#promql class=anchor aria-hidden=true>#</a></h2><p>Prometheus Query Language, PromQL</p><p>查询结果主要有 3 种类型：</p><ul><li>瞬时数据 (Instant Vector)，只包含一组时序，每个时序只有一个点，例如 <code>http_requests_total</code> ；</li><li>区间数据 (Range Vector)，包含一组时序，每个时序有多个点，例如 <code>http_requests_total[5m]</code> ；</li><li>纯量数据 (Scalar)，纯量只有一个数字，没有时序，例如 <code>count(http_requests_total)</code>。</li></ul><p>其查询的条件也很简单，因为时序数据通过名字和一组标签构成，在过滤的时候也是通过标签进行过滤。</p><pre tabindex=0><code>http_requests_total{code=&#34;200&#34;}
+http_requests_total{code!=&#34;200&#34;}
+http_requests_total{code=~&#34;2..&#34;}
+http_requests_total{code!~&#34;2..&#34;}
+</code></pre></div></div><div class="sidebar col-xl-3 mt-2"><div id=toc class=position-fixed><nav id=TableOfContents><ul><li><a href=#prometheus>Prometheus</a><ul><li><a href=#安装>安装</a></li><li><a href=#配置文件>配置文件</a></li><li><a href=#系统配置>系统配置</a></li><li><a href=#系统指标>系统指标</a></li></ul></li><li><a href=#grafana>Grafana</a><ul><li><a href=#安装-1>安装</a></li><li><a href=#promql>PromQL</a></li></ul></li></ul></nav></div></div></div></div><footer class="footer text-muted"><div class=container-xxl><div class=row><div class=text-center>Built by GoHalo, generated with <a class=text-muted href=https://gohugo.io>Hugo</a>, and hosted on GitHub Pages</div></div><div class=row><div class=text-center>Copyright © 2013-2024 GoHalo. All Rights Reserved.</div></div></div></footer><script src=https://gohalo.github.io/js/bootstrap.bundle.min.js></script>
+<a href=# class="btn btn-light btn-lg backtop" title=返回顶部><i class="fa fa-angle-double-up" aria-hidden=true></i></a></body></html>
